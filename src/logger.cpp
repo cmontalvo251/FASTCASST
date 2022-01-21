@@ -43,8 +43,7 @@ int main(int argc,char* argv[]) {
     if (lastLOGtime < currentTime) {
       lastLOGtime+=LOGRATE;
       logger.append(sense.sense_matrix);
-      logger.append(sense.sense_matrix_dot);
-      //logger.println();
+      logger.println();
     }
 
     //PRINT TO STDOUT

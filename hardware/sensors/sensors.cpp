@@ -2,9 +2,9 @@
 
 //Constructor
 sensors::sensors() {
-  sense_matrix.zeros(15,1,"Full State From Sensors");
-  sense_matrix_dot.zeros(15,1,"Full Statedot From Sensors");
-  NUMVARS = 30; //15 + 15
+  sense_matrix.zeros(29,1,"Full State From Sensors");
+  //sense_matrix_dot.zeros(15,1,"Full Statedot From Sensors");
+  NUMVARS = 29; //15 + 15
   //Set names of headers
   headernames = (char**)malloc(NUMVARS*sizeof(char*));
   headernames[0] = "Sense X(m)";
@@ -22,21 +22,20 @@ sensors::sensors() {
   headernames[12] = "Sense Mx(Gauss)";
   headernames[13] = "Sense My(Gauss)";
   headernames[14] = "Sense Mz(Gauss)";
-  headernames[15] = "Sense X dot (m)";
-  headernames[16] = "Sense Y dot (m)";
-  headernames[17] = "Sense Z dot (m)";
-  headernames[18] = "Sense Roll dot (deg)";
-  headernames[19] = "Sense Pitch dot (deg)";
-  headernames[20] = "Sense Yaw dot (deg)";
-  headernames[21] = "Sense U dot (m/s)";
-  headernames[22] = "Sense V dot (m/s)";
-  headernames[23] = "Sense W dot (m/s)";
-  headernames[24] = "Sense P dot (deg/s)";
-  headernames[25] = "Sense Q dot (deg/s)";
-  headernames[26] = "Sense R dot (deg/s)";
-  headernames[27] = "Sense Mx dot (Gauss)";
-  headernames[28] = "Sense My dot (Gauss)";
-  headernames[29] = "Sense Mz dot (Gauss)";
+  headernames[15] = "Sense GPS Latitude (deg)";
+  headernames[16] = "Sense GPS Longitude (deg)";
+  headernames[17] = "Sense GPS Altitude (m)";
+  headernames[18] = "Sense GPS Heading (deg)";
+  headernames[19] = "IMU Heading (deg)";
+  headernames[20] = "Sense Analog 1 (V)";
+  headernames[21] = "Sense Analog 2 (V)";
+  headernames[22] = "Sense Analog 3 (V)";
+  headernames[23] = "Sense Analog 4 (V)";
+  headernames[24] = "Sense Analog 5 (V)";
+  headernames[25] = "Sense Analog 6 (V)";
+  headernames[26] = "Sense Pressure (Pa)";
+  headernames[27] = "Sense Pressure Altitude (m)";
+  headernames[28] = "Sense Temperature (C)";
 }
 
 //Get numvars
@@ -65,13 +64,13 @@ void sensors::poll(double currentTime,double elapsedTime) {
   //Initialize everything to -99
   sense_matrix.mult_eq(0);
   sense_matrix.plus_eq(-99);
-  sense_matrix_dot.mult_eq(0);
-  sense_matrix_dot.plus_eq(-99);
+  //sense_matrix_dot.mult_eq(0);
+  //sense_matrix_dot.plus_eq(-99);
 
   ///XYZ
-  sense_matrix_dot.set(1,1,satellites.X);
-  sense_matrix_dot.set(2,1,satellites.Y);
-  sense_matrix_dot.set(3,1,satellites.Z);
+  sense_matrix.set(1,1,satellites.X);
+  sense_matrix.set(2,1,satellites.Y);
+  sense_matrix.set(3,1,satellites.Z);
 
   //PTP
   sense_matrix.set(4,1,orientation.roll);
@@ -94,7 +93,24 @@ void sensors::poll(double currentTime,double elapsedTime) {
   sense_matrix.set(14,1,orientation.my);
   sense_matrix.set(15,1,orientation.mz);
 
-  //XYZDOT - Probably would need to run the GPS coordinates through a derivative
+  //GPS
+  sense_matrix.set(16,1,satellites.latitude);
+  sense_matrix.set(17,1,satellites.longitude);
+  sense_matrix.set(18,1,satellites.altitude);
+  sense_matrix.set(19,1,satellites.heading);
+
+  //IMU
+  sense_matrix.set(20,1,orientation.yaw);
+
+  //Analog
+  sense_matrix.vecset(21,26,analog.results,1);
+
+  //Barometer
+  sense_matrix.set(27,1,atm.pressure);
+  sense_matrix.set(28,1,atm.altitude);
+  sense_matrix.set(29,1,atm.temperature);
+
+  /* //XYZDOT - Probably would need to run the GPS coordinates through a derivative
   //filter. If we really need these I can get them. 
   //???
 
@@ -110,7 +126,7 @@ void sensors::poll(double currentTime,double elapsedTime) {
   //????
 
   //MXYZDOT
-  //????
+  //???? */
 
 }
 

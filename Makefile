@@ -44,7 +44,7 @@ loggersil:
 
 ##Logger is on RPI but all it does is take data
 logger:
-	make all TYPE="AUTO" EXECUTABLE="logger.cpp" PLATFORM="RPI" MAIN="src/logger.o" WIRINGPI="-lwiringpi"
+	make all TYPE="AUTO" EXECUTABLE="logger.exe" PLATFORM="RPI" MAIN="src/logger.o" WIRINGPI="-lwiringPi"
 
 #Demo sil is on DESKTOP but only does RCIN>IMU>CONTROL>RCOUT
 demosil:
@@ -52,7 +52,7 @@ demosil:
 
 #Demo is demosil but on rpi
 demo:
-	make all TYPE="AUTO" EXECUTABLE="demo.exe" PLATFORM="RPI" RX="FLYSKY" MAIN="src/demo.o" WIRINGPI="-lwiringpi"
+	make all TYPE="AUTO" EXECUTABLE="demo.exe" PLATFORM="RPI" RX="FLYSKY" MAIN="src/demo.o" WIRINGPI="-lwiringPi"
 
 #Simonly is just a repeat of all but it is written here to be thorough
 simonly:
@@ -65,7 +65,7 @@ sil:
 
 #Auto mode. Fully deployed on platform. Modeling routine is off
 auto:
-	make all TYPE="AUTO" EXECUTABLE="auto.exe" PLATFORM="RPI" RX="FLYSKY" WIRINGPI="-lwiringpi"
+	make all TYPE="AUTO" EXECUTABLE="auto.exe" PLATFORM="RPI" RX="FLYSKY" WIRINGPI="-lwiringPi"
 
 hil:
 	echo 'WIP'

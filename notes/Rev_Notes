@@ -1,0 +1,292 @@
+===========================1/2/2022==========================
+
+Happy New Year. I finally created the Youtube videos for SysML and 
+uploaded them to this repo. The code is now ready to be broken, built back 
+up and turned into software that looks like the SysML diagram.
+
+===========================12/31/2021=========================
+
+I made all the SysML diagrams on paper so the next step is to actually
+create the diagrams on the computer and make a screen cast about it.
+
+===========================12/30/2021=========================
+
+Alright the aerodynamics model standard has been changed to external
+forces and moments for any vehicle. The next item on the agenda is to 
+code a CubeSAT in LEO and deprecate the Orbit++ model from aerospace.git
+
+Ok CubeSAT LEO model works. Just need to deprecate Orbit++ in aerospace
+Took all day man.
+
+Ok the Orbit++ model has been deprecated. Next step is SysML analysis.
+so you just need your notebook.
+
+===========================12/29/2021=========================
+
+I have started breaking the code. I have moved a lot of files 
+all over the place. Right now I have folders for SIM, DEMO and LOGGER
+but I cannot test DEMO or LOGGER nor can I test AUTO or HIL because I
+do not have the hardware. I will just have to cross that bridge next 
+week. Everything I want to do with the make file is done though so it's
+time to move on to the next task in the main .tasks file
+Next task is to rename all the aerodynamics.cpp files to forces.cpp
+
+============================11/17/2021========================
+
+FASTSim works on Tank, Quadcopter and X8 now in AUTO mode and SIMONLY/SIL
+I could test it on the plane but that seems superfluous since we're 
+going to fly the quads/X8 first. I guess if ANTX comes out of nowhere
+we can run FASTSim on the BatWing
+
+============================9/30/2021======================
+
+Alot has changed in the code. Simpilot is almost fully operational
+and the rcout class has been completely overhauled. I am currently tuning the
+controller right now in simulation and should have something working properly 
+in a day or so.
+
+==============================9/25/2021======================
+
+Haven't been commenting here very much but I am starting to work on the rcout 
+class. It's moving slow but I have a branch called RCOUTPUT and I for right now
+have rcout working in SIMONLY and SIL mode which isn't saying much because it doesn't
+do anything in that mode. The real test will be AUTO mode
+
+=============================9/15/2021=========================
+
+Added controller.* for quadcopter into Simpilot. All that's left is to add
+the RCOUT commands and Simpilot will be done.
+
+==============================9/14/2021===========================
+
+Added a very crude aerodynamic model to the quadcopter model and also added a super simple autopilot
+loop to the controller.cpp file. Need to now copy it over into SimPilot. 
+Haven't touched the work tasks because I haven't done it on the pi just yet.
+
+==============================9/13/2021===============================
+
+Maxwell's ground contact model has been merged. 
+The actuator dynamics branch has been merged.
+Software has been cleaned up a bit and SimPilot got a clean compile
+SimPilot is now in FASTSim in its own folder
+RCInput works with XBOX controller both in the RCtest and in Simpilot.
+The IMU on Desktop works as well. Working on the Controller for a quadcopter
+right now.
+
+==============================9/12?/2021==============================
+
+I forgot to take notes on this but I overhauled the crap out of the plotting routine.
+I need to keep working on it to actually test the actuator model.
+
+Ok process logs works without actuators. Let's....wait. Let's add sensor errors
+first.
+
+Sensor errors works. It kind of worries me because well the controller doesn't do
+too well but then again this is a dumb contorller on a Portalcube
+
+Alright. Time to turn on actuators....Well after a bit of tinkering. Actuator dynamics
+is working. Time to merge :|
+
+==============================9/7/2021=================================
+
+MORE EDITS TO FASTSim for actuator dynamics. Now is the time to try and compile and get rid of compilation errors. Then it is time for run time errors.
+
+Code now compiles so it's time for runtime errors
+
+Code compiles and runs without actuators. Need to get plotting routine working
+
+==============================9/6/2021==================================
+
+Started working on actuator dynamics. Kind of a bear. Since I stopped halfway through I have probably breaked the fuck out the code but just run it in debug mode. What you need to do is get the logger to log the right number of variables and add the actuator states to the integrator
+
+Ok I think actuator dynamics are ready but you need to run through code line by line before you even attempt to compile and run because there is no way this shit is going to work
+
+I would say the next thing you need to do is run through the main.cpp
+routine and make sure everything is passed through correctly especially 
+with actuator dynamics on or off
+
+The other thing that is currently totally messed up is the way the system logs data
+I think the integrator has the 6DOF states and the actuator states but the sensor measurements only have the 6DOF states. I'm assuming it does not have the actuator states. But if we're running the RK4 I'd like to know the control signals, the actuator state and the actuator error state. So I need to figure out how to do that.
+
+==============================9/3/2021===================================
+
+With the help of Maxwell I was able to fix the sensor errors issue.
+Turns out it was massive issue that required fixing in MATLAB.cpp (quat2euler)
+and in Dynamics.cpp to normalize the quaternions
+
+==============================8/27/2021=================================
+
+Added a quadcopter model to the simulation using a camo texture. Nothing fancy
+
+Copied the portalcube aerodynamics file and controller file over to the quadcopter
+
+still need to edit it to be accurate to a quad but at least it's in there
+
+==============================8/17/2021=================================
+
+Cleaned up and overhauled these rev_notes and the work_tasks.
+
+Also added a #ifdef RK4_H to main.cpp
+
+==============================7/29/2021==================================
+
+Created a HIL.git on Github and moved all hardware related routines over there
+May end up moving the Sensors routine over there as well and maybe the Datalogger
+routine but I haven't decided.
+
+Anyway when I did that I made sure everything was still working properly
+
+===============================6/22/2021 ================================
+
+Still need to keep working on actuator dynamics above but I moved this to 
+a README file.
+
+Just FYI. I was working on FASTLogger and the IMU, ADC, GPS and BARO
+all work now. Yay.
+
+Ok first things first. Time to break the code for FASTSim.
+
+Alright I got rid of make_links and added all the appropriate -I's in the makefile. It looks a lot better now.
+
+Next is to move the Navio folder over to a Navio Archive folder. To do that
+I need to ssh into the Navio in my home.
+
+Ok I cp'ed the current Navio folder to a NavioOG folder and deleted all
+custom made routines that way it is preserved as is and is never touched. I pushed that to the master
+
+I then tested all the C++_Examples but I made its own folder called Examples. If you open up NavioOG you'll see how much nicer it looks
+
+Then I took alll of the Navio blocks and placed them into appropriate folders in C.git. You'll notice that FASTSim uses RCInput from C.git on my Github but FASTPilot et al uses RCInput from Navio2. This means there's a duplicate and this is very bad. So I organized all of the routines even if they don't compile. There is no Navio folder now. All of the modules are within other folders. There is a NavioOG folder that has all of the original routines to make sure you can go back and test worst case
+
+With everything royally messed up I made sure FASTSim and FASTLogger compile on both laptop and desktop
+
+Now both FASTLogger and FASTSim work with the new folder structure.
+
+Problem is that the -L and -I's are insane and I think it's time to
+make those a bit cleaner so we need to do yet another overhaul.....
+
+I did one more overhaul where I used the <> instead of the "" so the -I and -L are cleaner
+
+================================================================================
+
+4/30/2021 - Long time no see. I am here fixing the plotting routine because for some reason the commands from the controller are printing correctly but the actual values are not. Currently investigating the issue here. Ok false alarm. Turns out those values were actually from the RX which are always empty anyway in SIMONLY mode.
+
+Ok so it's time to continue working on Actuator dynamics. So I looked at what I did and I don't like it. In my opinion the user should only be in charge of the following things. 
+
+actuator values -> Forces produced by those values
+
+So what we need to do is the following. 
+
+1.) Integrate the state vector to produce State.
+2.) Send STate to the sensor routine and receive the polluted state
+3.) Send pollutted state to controller built by the user to produce ctlcomms
+4.) Send ctlcomms to actuator dynamics to produce actuators values
+5.) Pollute actuator values with ACTUATOR ERRORS by some percentage
+6.) Send actuator values to aerodynamics routine written by user to produce Forces and moments
+
+Ok let's get started. 
+
+1.) Integrate state vector to produce state. That's done in the integrator.state
+line of code so we're done there.
+2.) Send State to the sensor routine to receive polluted state. I think this is maybe 
+in the vehicle.loop routine but I'm not sure. Grading now so will have to check
+later
+
+===================================================================================
+
+4/1/2021 - Been busy. Started writing a README to get up and running because it's been a while. I also started doing this revision "Add separate input file folders and have argv grab the root directory of your input files including the objs and stuff". So I finished the README and I got the input files to work properly which is nice. Collin also sent me an X8 model. The textures are super messed up but hey it's a start
+
+2/26/2021 - Added RCTECH USB contorller in the lab to FASTsim. To get this to work you need to run RCInput by iself and make sure the mapping is set up correctly. Then change the stick min and max values in RCINput.h and then add a -D to the makefile for this controller
+
+Also tried to import a UAM cad modle but it has wayyyy too many vertices and no texture for mapping
+
+2/9/2021 - When I compiled SIMONLY on the RPI it turns out that I didn't have the -DRPI directive in place. So I had to fix a few things. It is working now which is nice.
+
+My plan for actuator dynamics is this - In some input file you need to tell the dynamics routine the number of actuators and the time constant of each one. Then it will run through a for loop and integrate those dynamics The first order filter equation is as follows actuator_var_dot = time_constant*(actuator_command - actuator_var) So the question then is what is the actuator command???? Is this from the controller?? On line 184 of Dynamics.cpp I send ctl.ctlcomms to the aero model. So what I need to do is send the cltcomms to a first order filter and then send state.actuator_var to the aero model So I had the aerodynamics.h routine set the number of actuators rather then set it in the input files so all you need to do is create a public variable in aerodynamics.h and the have the dynamics routine use that to create dynamics. Seems simple enough
+
+2/4/2021 - Compiled SIMONLY on RPI. Only thing you need to do is get rid of OPENGL in the Makefile and the make_links script. 
+
+1/29/2021 - Add polling rates for the Receiver and the control loop. I think that's every
+thing we need for polling rates. I would say the next thing to work on is actuator dynamics.
+For actuator dynamics I'm not entirely sure how I want to do this. So forces in this routine
+are all in the aerodynamics model. So I think we need to have an extra error value (in percent)
+in the simulation flags portion and then send it to the aero model. Let's try that. Oh ok wait 
+this is for actuator errors. Lol. Let's just do that anyway right now. Ok not entirely sure if it's exactly how I want it but actuator errors are in the sim now. It's in the aerodynamics model which I'm not too crazy about. I'd rather it be in maybe the dynamics class or something but I'm not sure what to do here. At least the hooks are in there properly. So the last thing I need to do is add the actuator dynamics. Can you tell I've been delaying the crap out of it?
+
+1/28/2021 - Sensors errors have been added. It doesn't necessarily work and there's a ton
+of holes in the system but hey you can add sensor errors and sensor noise and you can plot
+the output of those sensors. Anyway the next thing to add in my opinion is the control
+cycle. That seems like an easy thing to add
+
+1/27/2021 - Still kind of upset at how last night went I created a simple quadcopter.obj
+and threw it into FASTPilot. That's a private repo but the fact is you can make your own
+obj file provided you use the same format as the cube that's in this repo.
+
+1/26/2021 - Added some comments to make sure I know what to do next. I made a CAD for a 
+quadcopter but it sucks. I downloaded a *.blend from the internet and tried to make an
+OBJ but it just looks terrible. I did learn alot though. What you need to do is add a 
+texture to the UV tab. Then select all the vertices in edit of your object and hit U 
+for unwrap. Once you do that you can export everything to an OBJ. If you did it right
+you will see v for vertices vn for normals vt for texture vertices and then f for face
+in the format f v/vt/vn. The quadcopter I did create was so freaking big that the 
+integrator would just kind of keep integrating in the background before you could
+see what was happening. So I created a wait loop in the main routine here to cross_sleep
+until the opengl routine was operational. My recommendation is to get a better CAD model
+by just building a CAD model yourself or getting a grad student to do it.
+
+1/25/2021 - Changed the default camera to follow the first object in the series which if
+you set it up correctly is the main object. I also added a zaxis offset to the camera in
+render.txt file so now you can have the camera slightly above the ground. I also added a
+ground plane check. When you're below the ground and with a negative zdot you stop. It's
+not completely tested but at least it somewhat works for now. I would say the sim is ready
+to add the quadcopter obj and dynamic model. 
+
+1/10/2021 - Added full autopilot for portal cube, I have not coded a stabilize mode but I
+I think I know how to do it. If you hold the left joystick you can turn the autopilot on
+and off just like a trainer switch. I also created a mapping function to map the joystick
+keys to standard receiver inputs
+
+1/9/2021 - Test aerodynamics and autopilot. Autopilot is not completely done but I'm making
+progress
+
+1/8/2021 - Alright I added placeholders for aerodynamics and controller models with 
+hooks in place. We basically need to test everything I just wrote. My vote is to get
+the fictitious sensors to work. After that my vote is to work on the aircraft autopilot.
+Then to work on the quad autopilot
+
+1/7/2021 - Added 6DOF dynamic model. Added RCInput class but it is not 
+implemented. My suggestion is to make a bare bones aerodynamic model first 
+and test open loop
+
+1/6/2021 - opengl model is finally working and ready to go!!!
+
+1/5/2021 - Added opengl but system does not move. Still need to add boost 
+threads to get this to work properly
+
+1/2/2021 - Added point mass model on flat earth, added environment class. 
+Fixed some compilation flags.
+
+1/1/2021 - Added Datalogger, RK4 routine and point mass model in space using 
+Dynamics class
+
+12/10/2020 - Added Loop timer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

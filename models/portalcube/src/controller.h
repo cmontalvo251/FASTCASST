@@ -21,7 +21,7 @@ private:
 public:
   MATLAB control_matrix;
   void loop(MATLAB rx_matrix,MATLAB sense_matrix);
-  void init(MATLAB configuration_matrix); //var is open ended right now
+  void init(MATLAB in_configuration_matrix); //var is open ended right now
   //constructor
   controller();
 };

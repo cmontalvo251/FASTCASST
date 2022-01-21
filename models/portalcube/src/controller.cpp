@@ -9,10 +9,10 @@ controller::controller() {
 };
 
 //Initialization
-void controller::init(MATLAB configuration_matrix) {
+void controller::init(MATLAB in_configuration_matrix) {
   control_matrix.zeros(NUMSIGNALS,1,"Control Signals"); //The standards must be TAERA1A2A3A4
   printf("Controller Received Configuration Matrix \n");
-  configuration_matrix.disp();
+  in_configuration_matrix.disp();
 }
 
 //Main Control Loop

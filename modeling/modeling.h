@@ -1,10 +1,10 @@
 #ifndef MODELING_H
-#define MODELIN_H
+#define MODELING_H
 
 ////Modeling Routine that only runs in SIMONLY, SIL and HIL modes
 
 //Helper Modules
-#include <MATLAB/MATLAB.cpp>
+#include <MATLAB/MATLAB.h>
 
 /////INPUTS TO MODELING
 // 1 - Root Folder Name

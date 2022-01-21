@@ -27,3 +27,5 @@ class hardware {
   //Constructor
   hardware();
 }
+
+#endif

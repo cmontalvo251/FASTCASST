@@ -27,16 +27,16 @@ FASTSim SysML:
     ✔ Batwing @done (21-12-31 20:38)
    ✔ First Video is your struggle with something new @done (22-01-02 09:39)
    ✔ Second Video is on SysML diagrams @done (22-01-02 09:39)
-   ☐ Rename C++.git to FAST.git
+   ✔ Rename C++.git to FAST.git @done (22-01-20 23:30)
    ☐ Make the software look like the SysML diagram. This will probably break everything
    ✔ Put the Makefile in FAST that way you can do - make Demo or make Logger find a way to do this @done (21-12-29 17:27)
    ✔ I want the main.cpp for all the below routines to never have to be edited. @done (21-12-29 17:27)
       ✔ LOGGER - move from FASTSensors to here @done (21-12-29 17:27)
       ✔ DEMO - this is SimPilot @done (21-12-29 17:27)
       ✔ SIM  - This is FASTsim @done (21-12-29 17:27)
-   ☐ Save FASTPilot.git on Gitlab for proprietary software 
-   ☐ Merge all changes above
-   ☐ Delete HIL on Github.
+   ✔ Save FASTPilot.git on Gitlab for proprietary software @done (22-01-20 23:35)
+   ✔ Merge all changes above @done (22-01-20 23:31)
+   ✔ Delete HIL on Github. @done (22-01-20 23:35) I archived this instead
 
 HIL:
 

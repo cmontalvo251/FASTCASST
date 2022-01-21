@@ -30,9 +30,10 @@ class IMU {
   void setTemperature(double);
   void loop(double);
   void printALL();
+  void getTrueHeading();
   void printEuler();
   void printRates();
-  void filter();
+  void filterGyro();
 };
 
 #endif

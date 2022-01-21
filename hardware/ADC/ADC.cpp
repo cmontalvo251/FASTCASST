@@ -72,7 +72,7 @@ void ADC::get_results() {
 }
 
 void ADC::print_results() {
-	printf(" ADC = ");
+  //printf(" ADC = ");
 	for (int i = 0;i < channel_count;i++) {
 		printf("%lf ",results.get(i+1,1));
 	}

@@ -14,6 +14,10 @@ double PRINT = 0;
 #include <ADC/ADC.h>
 ADC analog;
 
+//Barometer and Thermometer
+#include <BaroTemp/BaroTemp.h>
+BaroTemp atm;
+
 int main(int argc,char* argv[]) {
   printf("FASTKit Logger \n");
 
@@ -28,6 +32,9 @@ int main(int argc,char* argv[]) {
     //First Analog to Digital Converter
     analog.get_results();
 
+    //Then we poll the barometer and temperature sensor (needs current time)
+    atm.poll(t);
+
     //PRINT TO STDOUT
     if (PRINT < t) {
       PRINT+=PRINTRATE;
@@ -35,6 +42,9 @@ int main(int argc,char* argv[]) {
       printf("%lf ",t);
       //Analog signals
       analog.print_results();
+      //Barometer and Temperature
+      printf("%lf %lf %lf ",atm.pressure,atm.altitude,atm.temperature);
+      //Newline
       printf("\n");
     }
   }

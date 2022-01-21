@@ -8,15 +8,11 @@ using namespace std;
 #include <Timer/timer.h>
 TIMER watch;
 #define PRINTRATE 0.1 //Rate of printing to stdout
-double PRINT = 0;
+double lastPRINTtime = 0;
 
-//Analog Signals
-#include <ADC/ADC.h>
-ADC analog;
-
-//Barometer and Thermometer
-#include <BaroTemp/BaroTemp.h>
-BaroTemp atm;
+//Need Sensors class to read all sensors
+#include <hardware/sensors/sensors.h>
+sensors sense; 
 
 int main(int argc,char* argv[]) {
   printf("FASTKit Logger \n");
@@ -25,25 +21,18 @@ int main(int argc,char* argv[]) {
   while (1) {
 
     //Get Current Time
-    double t = watch.getTimeSinceStart();
+    double currentTime = watch.getTimeSinceStart();
 
-    //Logger is Explicit so we will now get data from all sensors
-
-    //First Analog to Digital Converter
-    analog.get_results();
-
-    //Then we poll the barometer and temperature sensor (needs current time)
-    atm.poll(t);
+    //Logger Simply uses the sensor class to poll everything
+    sense.poll(currentTime);
 
     //PRINT TO STDOUT
-    if (PRINT < t) {
-      PRINT+=PRINTRATE;
+    if (lastPRINTtime < currentTime) {
+      lastPRINTtime+=PRINTRATE;
       //Time
-      printf("%lf ",t);
-      //Analog signals
-      analog.print_results();
-      //Barometer and Temperature
-      printf("%lf %lf %lf ",atm.pressure,atm.altitude,atm.temperature);
+      printf("%lf ",currentTime);
+      //Poll all sensors
+      sense.print();
       //Newline
       printf("\n");
     }

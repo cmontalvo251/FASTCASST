@@ -93,8 +93,6 @@ clean:
 	rm src/*.o
 	echo ' ' > $(COMMON)/MATLAB/d.o
 	rm $(COMMON)/*/*.o
-	echo ' ' > $(HARDWARE)/d.o
-	rm $(HARDWARE)/*.o
 	echo ' ' > $(HARDWARE)/ADC/d.o
 	rm $(HARDWARE)/*/*.o
 	echo ' ' > $(MODELING)/d.o

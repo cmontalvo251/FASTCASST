@@ -26,6 +26,6 @@ class hardware {
   void init(char root_folder_name);
   //Constructor
   hardware();
-}
+};
 
 #endif

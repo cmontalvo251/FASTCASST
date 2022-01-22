@@ -1,3 +1,17 @@
+==========================1/21/2022=============================
+
+The loggersil scripts works in Desktop and RPI but the logger
+script doesn't work on RPI. I think it was because I didn't
+initialize the IMU so I added that in. I just need to test it.
+
+I just finished coding the demosil script and it works. Again I just
+need to test it on the RPI in demo mode.
+
+Next to do item is to get simonly working which will be quite a
+bit to get up and running because I have to get the entire dynamics
+routine operational. I can at least start with the overall flow of
+simonly and then slowly build it up. 
+
 ==========================1/19/2022=============================
 
 Ok I finally started working on this code. The beginning of the semester 

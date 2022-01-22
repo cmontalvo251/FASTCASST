@@ -29,6 +29,11 @@ int main(int argc,char* argv[]) {
   logger.appendheaders(sense.headernames,sense.getNumVars());
   logger.printheaders();
 
+  //Pick the IMU you want to use
+  //0 = MPU9250
+  //1 = LSM9DS1
+  sense.initIMU(0);
+
   //Enter into infinite while loop
   while (1) {
 

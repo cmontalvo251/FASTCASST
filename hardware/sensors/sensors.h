@@ -35,6 +35,8 @@ class sensors {
   char** headernames,headernames_dot;
   //constructor
   sensors();
+  //Initialize the IMU
+  void initIMU(int);
   //Polling routine
   void poll(double currentTime,double elapsedTime);
   //Printing routine

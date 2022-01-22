@@ -43,6 +43,13 @@ int sensors::getNumVars() {
   return NUMVARS;
 }
 
+///Initialize the IMU
+void sensors::initIMU(int sensor_type) {
+  //sensor_type == 0 -> MPU9250
+  //sensor_type == 1 -> LSM9DS1
+  orientation.init(sensor_type);
+}
+
 //Polling routine to read all sensors
 void sensors::poll(double currentTime,double elapsedTime) {
   //First Analog to Digital Converter

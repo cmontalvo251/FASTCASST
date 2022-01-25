@@ -3,7 +3,8 @@
 0.01	 !RC Rate // seconds (to run as fast as possible)
 0.01	 !CTL Rate // seconds
 1.0      !Telemetry Rate (seconds)
-0	 !Control System (only used without PIC 0=off,1=on)
+0        !IMUTYPE (0=MPU,1=LSM)
+0	 	 !Control System (-1=controlled by PIC,0=off all the time,1=on all the time)
 1.0 	 !mass  //Point Mass
 1.0 	 !Ixx
 1.0 	 !Iyy

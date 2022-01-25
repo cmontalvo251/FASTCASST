@@ -27,10 +27,16 @@
 class modeling {
  private:
  public:
+  //Status
+  int ok=1;
+  //Timing
+  double TFINAL=1,TIMESTEP=0.1;
   //constructor
   modeling();
   //initialization routine
-  void init(char root_folder_name,MATLAB in_simulation_matrix);
+  void init(char root_folder_name[],MATLAB in_simulation_matrix);
+  //Loop
+  void loop(double currentTime);
 };
 
 #endif

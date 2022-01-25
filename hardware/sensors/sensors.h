@@ -26,11 +26,11 @@ class sensors {
  private:
   ADC analog;
   BaroTemp atm;
-  IMU orientation;
   GPS satellites;
   int NUMVARS;
  public:
-  //Public variables
+  //Public variables and classes
+  IMU orientation;
   MATLAB sense_matrix,sense_matrix_dot;
   char** headernames,headernames_dot;
   //constructor

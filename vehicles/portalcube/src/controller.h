@@ -15,12 +15,18 @@
 //Needed for matrices
 #include <MATLAB/MATLAB.h>
 
+//This is for stick values
+#include <RCIO/RCIO.h>
+
 class controller {
 private:
-  int NUMSIGNALS=4; //Number of control signals
+  double elapsedTime=0,lastTime=0;
+  double zprev=-99;
+  int CONTROLLER_FLAG = -99;
 public:
+  int NUMSIGNALS=4; //Number of control signals
   MATLAB control_matrix;
-  void loop(MATLAB rx_matrix,MATLAB sense_matrix);
+  void loop(double currentTime,int rx_array[],MATLAB sense_matrix);
   void init(MATLAB in_configuration_matrix); //var is open ended right now
   //constructor
   controller();

@@ -21,14 +21,14 @@ FLAGS=-DDEBUG
 LIB=-L/usr/local/lib -L./
 #FAST is using boost for threading #sudo apt-get install libboost-all-dev
 THREAD=-lpthread -lboost_system -lboost_thread -lboost_date_time 
-MODELPATH=models/$(MODEL)/src
+MODELPATH=vehicles/$(MODEL)/src
 INCLUDE=-I${COMMON} -I${HARDWARE} -I${MODELPATH} -I./ -I${GEO}
 ###COMMON
 COMMONSOURCES=$(wildcard $(COMMON)/*/*.cpp)
 ###HARDWARE
 HARDWARESOURCES=$(wildcard $(HARDWARE)/*/*.cpp)
 ###MODEL
-MODELSOURCES=$(wildcard Models/$(MODEL)/src/*.cpp)
+MODELSOURCES=$(wildcard vehicles/$(MODEL)/src/*.cpp)
 ##MOELING
 MODELINGSOURCES=$(wildcard $(MODELING)/*.cpp)
 ###GEOGRAPHIC LIB

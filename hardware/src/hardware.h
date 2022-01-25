@@ -9,6 +9,12 @@
 //and import data files
 #include <Datalogger/Datalogger.h>
 
+//RCIO will take care of the receiver and pwm signals
+#include <RCIO/RCIO.h>
+
+//Need Sensors class to read all sensors
+#include <sensors/sensors.h>
+
 ///////////Inputs to Hardware Class///////////////
 // 1 - Root Folder name (char*)
 // 2 - Control Matrix (MATLAB)
@@ -29,10 +35,20 @@ class hardware {
   double lastLOGtime = 0;
   Datalogger logger;
  public:
+  //RCIO Class
+  RCIO rc;
+  //Sensors class
+  sensors sense;
+  //Status
+  int ok = 1;
+  //Rates
+  double PRINTRATE=1.0;
   //Outputs
   MATLAB in_simulation_matrix,in_configuration_matrix;
   //Initialization routine needs the root folder name
-  void init(char root_folder_name[]);
+  void init(char root_folder_name[],int NUMSIGNALS);
+  //Hardware loop
+  void loop();
   //Constructor
   hardware();
 };

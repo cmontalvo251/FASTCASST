@@ -7,7 +7,7 @@ using namespace std;
 //Timer 
 #include <Timer/timer.h>
 TIMER watch;
-#define PRINTRATE 0.1 //Rate of printing to stdout
+#define PRINTRATE 1e20 //Rate of printing to stdout
 double lastPRINTtime = 0;
 
 //Need Sensors class to read all sensors

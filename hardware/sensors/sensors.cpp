@@ -141,14 +141,19 @@ void sensors::poll(double currentTime,double elapsedTime) {
 
 //Printing Routine
 void sensors::print() {
-  //Analog signals
-  analog.print_results();
-  //Barometer and Temperature
-  printf("%lf %lf %lf ",atm.pressure,atm.altitude,atm.temperature);
-  //Roll Pitch Yaw
-  printf("%lf %lf %lf ",orientation.roll,orientation.pitch,orientation.yaw);
+  //XYZ
+  //Q0123
+  printf("Q0123 = %lf %lf %lf %lf ",orientation.ahrs.q0,orientation.ahrs.q1,orientation.ahrs.q2,orientation.ahrs.q3);
+  //Euler
+  printf("PTP = %lf %lf %lf ",orientation.roll,orientation.pitch,orientation.yaw);  
+  //UVW
   //PQR
-  printf("%lf %lf %lf ",orientation.roll_rate,orientation.pitch_rate,orientation.yaw_rate);
+  printf("PQR = %lf %lf %lf ",orientation.roll_rate,orientation.pitch_rate,orientation.yaw_rate);
+  //MXYZ
   //GPS
-  printf("%lf %lf %lf ",satellites.latitude,satellites.longitude,satellites.altitude);
+  //printf("%lf %lf %lf ",satellites.latitude,satellites.longitude,satellites.altitude);
+  //Analog signals
+  //analog.print_results();
+  //Barometer and Temperature
+  //printf("%lf %lf %lf ",atm.pressure,atm.altitude,atm.temperature);
 }

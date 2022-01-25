@@ -87,7 +87,7 @@ void IMU::loop(double elapsedTime){
 
   //Convert Quaternions to Euler Angles
   ahrs.getEuler(&pitch,&roll,&yaw);
-
+  //printf("(PTP) = %lf %lf %lf \n",pitch,roll,yaw);
   getTrueHeading();
 
 }

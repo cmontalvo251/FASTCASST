@@ -115,7 +115,8 @@ void AHRS::updateNOMAG(float ax,float ay,float az,float gx,float gy,float gz,flo
   float halfex, halfey, halfez;
   float qa, qb, qc;
 
-  //printf("Raw Accelerometer %lf %lf %lf \n",ax,ay,az);
+  printf(" gx,gy,gz A = %lf %lf %lf ",gx,gy,gz);
+  printf("Raw Accelerometer %lf %lf %lf \n",ax,ay,az);
 
   ax /= GEARTH;
   ay /= GEARTH;
@@ -202,6 +203,7 @@ void AHRS::setGyroOffset(float offx,float offy,float offz)
 
 void AHRS::getEuler(double *roll,double *pitch,double *yaw)
 {
+  //printf("Q = %lf %lf %lf %lf ",q0,q1,q2,q3);
   *roll = atan2(2*(q0*q1+q2*q3), 1-2*(q1*q1+q2*q2)) * 180.0/M_PI;
   *pitch = asin(2*(q0*q2-q3*q1)) * 180.0/M_PI;
   *yaw = -atan2(2*(q0*q3+q1*q2), 1-2*(q2*q2+q3*q3)) * 180.0/M_PI;

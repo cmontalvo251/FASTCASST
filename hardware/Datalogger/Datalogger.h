@@ -36,10 +36,6 @@ class Datalogger {
   void setLogVars(int);
 };
 
-
-
-
-
 #endif
 
 

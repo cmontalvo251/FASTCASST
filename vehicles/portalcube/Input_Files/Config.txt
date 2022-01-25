@@ -1,0 +1,13 @@
+1.0 	 !Standard Out Print Rate // seconds (set to negative)
+0.01  	 !Data logging rate // seconds (numbers if you want)
+0.01	 !RC Rate // seconds (to run as fast as possible)
+0.01	 !CTL Rate // seconds
+1.0      !Telemetry Rate (seconds)
+0	 !Control System (only used without PIC 0=off,1=on)
+1.0 	 !mass  //Point Mass
+1.0 	 !Ixx
+1.0 	 !Iyy
+1.0 	 !Izz
+
+##Everything related to the software that doesn't involve simulation
+##like polling and logging rates

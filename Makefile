@@ -97,5 +97,5 @@ clean:
 	rm $(HARDWARE)/*/*.o
 	echo ' ' > $(MODELING)/d.o
 	rm $(MODELING)/*.o
-	echo ' ' > models/portalcube/src/d.o
-	rm models/portalcube/src/*.o
+	echo ' ' > vehicles/portalcube/src/d.o
+	rm vehicles/portalcube/src/*.o

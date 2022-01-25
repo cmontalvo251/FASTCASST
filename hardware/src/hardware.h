@@ -4,6 +4,11 @@
 //Helper Modules
 #include <MATLAB/MATLAB.h>
 
+//Datalogger class
+//Need datalogger to log data to disk
+//and import data files
+#include <Datalogger/Datalogger.h>
+
 ///////////Inputs to Hardware Class///////////////
 // 1 - Root Folder name (char*)
 // 2 - Control Matrix (MATLAB)
@@ -21,9 +26,13 @@
 
 class hardware {
  private:
+  double lastLOGtime = 0;
+  Datalogger logger;
  public:
+  //Outputs
+  MATLAB in_simulation_matrix,in_configuration_matrix;
   //Initialization routine needs the root folder name
-  void init(char root_folder_name);
+  void init(char root_folder_name[]);
   //Constructor
   hardware();
 };

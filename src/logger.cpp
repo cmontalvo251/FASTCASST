@@ -7,7 +7,7 @@ using namespace std;
 //Timer 
 #include <Timer/timer.h>
 TIMER watch;
-#define PRINTRATE 1e20 //Rate of printing to stdout
+#define PRINTRATE 0.1 //Rate of printing to stdout
 double lastPRINTtime = 0;
 
 //Need Sensors class to read all sensors
@@ -38,24 +38,23 @@ int main(int argc,char* argv[]) {
   while (1) {
 
     //Get Current Time and elapsed Time
-    double currentTime = watch.getTimeSinceStart();
-    double elapsedTime = watch.getTimeElapsed();
+    watch.updateTime();
 
     //Logger Simply uses the sensor class to poll everything
-    sense.poll(currentTime,elapsedTime);
+    sense.poll(watch.currentTime,watch.elapsedTime);
 
     //PRINT TO FILE
-    if (lastLOGtime < currentTime) {
+    if (lastLOGtime < watch.currentTime) {
       lastLOGtime+=LOGRATE;
       logger.append(sense.sense_matrix);
       logger.println();
     }
 
     //PRINT TO STDOUT
-    if (lastPRINTtime < currentTime) {
+    if (lastPRINTtime < watch.currentTime) {
       lastPRINTtime+=PRINTRATE;
       //Time
-      printf("%lf ",currentTime);
+      printf("%lf ",watch.currentTime);
       //Poll all sensors
       sense.print();
       //Newline

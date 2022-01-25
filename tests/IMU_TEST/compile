@@ -1,0 +1,20 @@
+#!/bin/bash
+
+echo ' RM ' 
+rm *.o *.exe
+echo ' MATH '
+g++ -c -w -std=c++11 -Wno-psabi -L/usr/local/lib -L./ mathp.cpp -o mathp.o
+echo ' LSM '
+g++ -c -w -std=c++11 -Wno-psabi -L/usr/local/lib -L./ LSM9DS1.cpp -o LSM9DS1.o
+echo ' MPU '
+g++ -c -w -std=c++11 -Wno-psabi -L/usr/local/lib -L./ MPU9250.cpp -o MPU9250.o
+echo ' TIM '
+g++ -c -w -std=c++11 -Wno-psabi -L/usr/local/lib -L./ timer.cpp -o timer.o
+echo ' IMU '
+g++ -c -w -std=c++11 -Wno-psabi -L/usr/local/lib -L./ IMU.cpp -o IMU.o
+echo ' AHRS ' 
+g++ -c -w -std=c++11 -Wno-psabi -L/usr/local/lib -L./ AHRS.cpp -o AHRS.o
+echo ' MAIN ' 
+g++ -c -w -std=c++11 -Wno-psabi -L/usr/local/lib -L./ main.cpp -o main.o
+echo ' EXE '
+g++ timer.o mathp.o MPU9250.o LSM9DS1.o IMU.o AHRS.o main.o -o test.exe -L/usr/local/lib -L./

@@ -38,6 +38,16 @@ modeling model;
 int main(int argc,char* argv[]) {
   printf("FASTKit Software version 42.0 \n");
 
+  ////////////////////??CHECK FOR SUDO IF RUNNING IN AUTO MODE/////////
+  #ifdef AUTO
+  if (getuid()) {
+    fprintf(stderr, "Not root. Please launch like this: sudo %s\n", argv[0]);
+    exit(1);
+  }
+  #endif
+  ///////////////////////////////////////////////////////////////////
+
+
   ////The main routine needs to grab the root file name//////
   char root_folder_name[256];
   if (argc > 1) {
@@ -73,23 +83,12 @@ void loop() {
   //Enter into while loop while hardware and the model are ok
   int system_ok = system_check();
   double lastPRINTtime = 0;
-  double currentTime = 0;
-  double elapsedTime = 0;
-  #ifndef REALTIME
-  elapsedTime = model.TIMESTEP;
-  #endif
-
   printf("Main Loop Begin \n");
   
   while (system_check()) {
 
     ///////////TIMING UPDATE/////////////////
-    #ifdef REALTIME
-    currentTime = watch.getTimeSinceStart();
-    elapsedTime = watch.getTimeElapsed();
-    #else
-    currentTime+=model.TIMESTEP;
-    #endif
+    watch.updateTime();
     /////////////////////////////////////////
 
     //////////HARDWARE LOOP//////////////////
@@ -98,26 +97,26 @@ void loop() {
     #ifdef MODELING
     hw.send(model.model_matrix);
     #endif
-    hw.loop(currentTime,elapsedTime,control.control_matrix);
+    hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
     /////////////////////////////////////////
 
     //////////CONTROL LOOP///////////////////
     //Runs as quickly as possible since the sensor states change 
     //as quickly as possible
-    control.loop(currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
+    control.loop(watch.currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
     /////////////////////////////////////////
 
     ///////////MODELING LOOP/////////////////
     #ifdef MODELING
-    model.loop(currentTime,hw.rc.out.pwm_array);
+    model.loop(watch.currentTime,hw.rc.out.pwm_array);
     #endif
     /////////////////////////////////////////
 
     //PRINT TO STDOUT
-    if (lastPRINTtime < currentTime) {
+    if (lastPRINTtime < watch.currentTime) {
       lastPRINTtime+=hw.PRINTRATE;
       //Time
-      printf("%lf ",currentTime);
+      printf("%lf ",watch.currentTime);
       //First 4 RX signals
       hw.rc.in.printRCstate(-4);
       //Roll Pitch Yaw

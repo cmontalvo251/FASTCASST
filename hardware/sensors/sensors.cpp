@@ -143,7 +143,7 @@ void sensors::poll(double currentTime,double elapsedTime) {
 void sensors::print() {
   //XYZ
   //Q0123
-  printf("Q0123 = %lf %lf %lf %lf ",orientation.ahrs.q0,orientation.ahrs.q1,orientation.ahrs.q2,orientation.ahrs.q3);
+  //printf("Q0123 = %lf %lf %lf %lf ",orientation.ahrs.q0,orientation.ahrs.q1,orientation.ahrs.q2,orientation.ahrs.q3);
   //Euler
   printf("PTP = %lf %lf %lf ",orientation.roll,orientation.pitch,orientation.yaw);  
   //UVW

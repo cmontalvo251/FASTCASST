@@ -67,36 +67,24 @@ void IMU::loop(double elapsedTime){
   mpulsm->update();
   mpulsm->read_accelerometer(&ax, &ay, &az);
   mpulsm->read_gyroscope(&gx, &gy, &gz);
-  //Comment out temperature to save time.
-  //temperature = mpulsm->read_temperature()/TEMP_SCALE;
 
   ///SUBSTRACT OFFSETS HERE
   gx-=offset[0];
   gy-=offset[1];
   gz-=offset[2];
-  #endif
-
-  //Filter the Gyro
-  filterGyro();
   
-  #ifndef DESKTOP
   //printf(" gx,gy,gz B = %lf %lf %lf ",gx,gy,gz);
+  temperature = mpulsm->read_temperature()/TEMP_SCALE;
+
   //ahrs.update(ax,ay,az,gx,gy,gz,mx,my,mz,elapsedTime);
   ahrs.updateNOMAG(ax,ay,az,gx,gy,gz,elapsedTime);
-  #endif
-
-  //Convert Quaternions to Euler Angles
   ahrs.getEuler(&pitch,&roll,&yaw);
-
-  //printf("(PTP) = %lf %lf %lf \n",pitch,roll,yaw);
-  getTrueHeading();
-
+  #endif
+  //Call the filter
+  filter();
 }
 
-void IMU::getTrueHeading() {
-}
-
-void IMU::filterGyro() {
+void IMU::filter() {
   //Bumblebee has a first order filter using a Tustin Transformation
   //but that is for the motor signals. Apparently the filter works well for all 8 motors
   //but fails when you shut off motors. If we were to implement that filter we would

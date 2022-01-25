@@ -21,6 +21,15 @@ RCIO rc;
 int main(int argc,char* argv[]) {
   printf("FASTKit Demo \n");
 
+  ////////////////////??CHECK FOR SUDO IF RUNNING IN AUTO MODE/////////
+  #ifdef AUTO
+  if (getuid()) {
+    fprintf(stderr, "Not root. Please launch like this: sudo %s\n", argv[0]);
+    exit(1);
+  }
+  #endif
+  ///////////////////////////////////////////////////////////////////
+
   //Pick the IMU you want to use
   //0 = MPU9250
   //1 = LSM9DS1
@@ -32,15 +41,14 @@ int main(int argc,char* argv[]) {
   //Enter into infinite while loop
   while (1) {
 
-    //Get Current Time and elapsed Time
-    double currentTime = watch.getTimeSinceStart();
-    double elapsedTime = watch.getTimeElapsed();
+    //Update watch
+    watch.updateTime();
 
     //Read the Receiver Signals
     rc.read();
 
     //Poll the imu
-    orientation.loop(elapsedTime);
+    orientation.loop(watch.elapsedTime);
 
     //We will hard code a simple PID loop here
 
@@ -81,10 +89,10 @@ int main(int argc,char* argv[]) {
     rc.out.pwm_array[3] = motor_lower_right;
 
     //PRINT TO STDOUT
-    if (lastPRINTtime < currentTime) {
+    if (lastPRINTtime < watch.currentTime) {
       lastPRINTtime+=PRINTRATE;
       //Time
-      printf("%lf ",currentTime);
+      printf("%lf ",watch.currentTime);
       //First 4 receiver signals
       rc.printIn(-4);
       //Print Roll Pitch and Yaw

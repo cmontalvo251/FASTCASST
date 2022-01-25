@@ -22,20 +22,15 @@ class TIMER {
   double start_sec_,prevTime_;
   time_t rawtime_;
   clock_t t_;
-  ////////////////////////THESE FUNCTIONS HAVE BEEN MOVED TO PRIVATE FUNCTIONS
-  ////////////////////////BECAUSE UPDATETIME IS THE ONLY THING YOU NEED
-  ////////////////////////ONLY USE THESE FUNCTIONS AND MOVE THEM TO PUBLIC IF
-  /////////////////////////YOU KNOW WHAT YOU'RE DOING
   void getCurrentTime();
   double getSeconds();
-  double getTimeElapsed(); //give time elapsed from subsequent function calls in seconds
-  double getTimeSinceStart(); //gives time from when the start_sec_ was created.
-  void resetStartTime(); //use this function to reset the start timer
-  ///////////////////////////////////////////////////////////////////////
   struct tm* ptm_;
   struct timespec ts;
  public:
   double currentTime,elapsedTime;
+  double getTimeElapsed(); //give time elapsed from subsequent function calls in seconds
+  double getTimeSinceStart(); //gives time from when the start_sec_ was created.
+  void resetStartTime(); //use this function to reset the start timer
   void updateTime();
   void printTime();
   //Constructor

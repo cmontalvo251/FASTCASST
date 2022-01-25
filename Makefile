@@ -40,7 +40,7 @@ OBJECTS=$(SOURCES:.cpp=.o)
 
 ##Logger SIL is on DESKTOP and basically takes and logs fictitious data
 loggersil:
-	make all TYPE="SIL" EXECUTABLE="loggersil.exe" MAIN="src/logger.o"
+	make all TYPE="SIL" EXECUTABLE="loggersil.exe" MAIN="src/logger.o" MODELINGSOURCES=
 
 ##Logger is on RPI but all it does is take data
 logger:
@@ -48,7 +48,7 @@ logger:
 
 #Demo sil is on DESKTOP but only does RCIN>IMU>CONTROL>RCOUT
 demosil:
-	make all TYPE="SIL" EXECUTABLE="demosil.exe" MAIN="src/demo.o"
+	make all TYPE="SIL" EXECUTABLE="demosil.exe" MAIN="src/demo.o" MODELINGSOURCES=
 
 #Demo is demosil but on rpi
 demo:
@@ -61,7 +61,7 @@ simonly:
 #SIL runs the main routine with openGL 
 #sudo apt-get install freeglut3-dev
 sil:
-	make all TYPE="SIL" EXECUTABLE="sil.exe" RENDER="-lGL -lGLU -lglut" OPENGLSOURCES="modeling/opengl.cpp" THREAD="-lpthread -lboost_system -lboost_thread -lboost_date_time"
+	make all TYPE="SIL" EXECUTABLE="sil.exe" RENDER="-lGL -lGLU -lglut" OPENGLSOURCES="modeling/opengl/opengl.cpp" THREAD="-lpthread -lboost_system -lboost_thread -lboost_date_time"
 
 #Auto mode. Fully deployed on platform. Modeling routine is off
 auto:

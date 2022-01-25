@@ -13,7 +13,7 @@
 #if defined (SIL) || (HIL)
 #if defined (DESKTOP)
 #define OPENGL
-#include <modeling/opengl.h>
+#include <modeling/opengl/opengl.h>
 #endif
 #endif
 

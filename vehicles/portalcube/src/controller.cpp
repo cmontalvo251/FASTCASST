@@ -10,10 +10,18 @@ controller::controller() {
 //Initialization
 void controller::init(MATLAB in_configuration_matrix) {
   control_matrix.zeros(NUMSIGNALS,1,"Control Signals"); //The standards must be TAERA1A2A3A4
+  set_defaults();
   printf("Controller Received Configuration Matrix \n");
   //in_configuration_matrix.disp();
   CONTROLLER_FLAG = in_configuration_matrix.get(7,1);
   printf("Controller Setup \n");
+}
+
+void controller::set_defaults() {
+  control_matrix.set(1,1,OUTMIN);
+  control_matrix.set(2,1,OUTMID);
+  control_matrix.set(3,1,OUTMID);
+  control_matrix.set(4,1,OUTMID);
 }
 
 //Main Control Loop
@@ -23,10 +31,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Which means you can't have more control signals than receiver signals
 
   //Default Control Signals
-  control_matrix.set(1,1,OUTMIN);
-  control_matrix.set(2,1,OUTMAX);
-  control_matrix.set(3,1,OUTMAX);
-  control_matrix.set(4,1,OUTMAX);
+  set_defaults();
 
   //I want to keep track of timeElapsed so that I can run integrators
   //and compute derivates

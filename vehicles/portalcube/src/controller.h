@@ -23,6 +23,7 @@ private:
   double elapsedTime=0,lastTime=0;
   double zprev=-99;
   int CONTROLLER_FLAG = -99;
+  void set_defaults();
 public:
   int NUMSIGNALS=4; //Number of control signals
   MATLAB control_matrix;

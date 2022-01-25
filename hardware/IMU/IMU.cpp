@@ -76,16 +76,18 @@ void IMU::loop(double elapsedTime){
   gz-=offset[2];
   #endif
 
-  //Call the filter
+  //Filter the Gyro
   filterGyro();
   
   #ifndef DESKTOP
   //printf(" gx,gy,gz B = %lf %lf %lf ",gx,gy,gz);
   //ahrs.update(ax,ay,az,gx,gy,gz,mx,my,mz,elapsedTime);
   ahrs.updateNOMAG(ax,ay,az,gx,gy,gz,elapsedTime);
-  ahrs.getEuler(&pitch,&roll,&yaw);
   #endif
-  
+
+  //Convert Quaternions to Euler Angles
+  ahrs.getEuler(&pitch,&roll,&yaw);
+
   getTrueHeading();
 
 }

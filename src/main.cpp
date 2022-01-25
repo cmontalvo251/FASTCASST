@@ -61,7 +61,7 @@ int main(int argc,char* argv[]) {
 
   //Initialize Model if it's on
   #ifdef MODELING
-  model.init(root_folder_name,hw.in_simulation_matrix);
+  model.init(root_folder_name,hw.in_simulation_matrix,hw.in_configuration_matrix);
   #endif
 
   //Begin main loop but run as a separate function in anticipation of threading
@@ -93,16 +93,23 @@ void loop() {
     /////////////////////////////////////////
 
     //////////HARDWARE LOOP//////////////////
-    hw.loop();
+    //This runs as fast as possible
+    //Need a routine that sends the model matrix to the hardware routine
+    #ifdef MODELING
+    hw.send(model.model_matrix);
+    #endif
+    hw.loop(currentTime,elapsedTime,control.control_matrix);
     /////////////////////////////////////////
 
     //////////CONTROL LOOP///////////////////
+    //Runs as quickly as possible since the sensor states change 
+    //as quickly as possible
     control.loop(currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
     /////////////////////////////////////////
 
     ///////////MODELING LOOP/////////////////
     #ifdef MODELING
-    model.loop(currentTime);
+    model.loop(currentTime,hw.rc.out.pwm_array);
     #endif
     /////////////////////////////////////////
 
@@ -117,6 +124,8 @@ void loop() {
       printf("%lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
       //PQR
       printf("%lf %lf %lf ",hw.sense.orientation.roll_rate,hw.sense.orientation.pitch_rate,hw.sense.orientation.yaw_rate);
+      //PWM Array
+      hw.rc.out.print();
       //Newline
       printf("\n");
     }

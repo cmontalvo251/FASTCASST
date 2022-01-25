@@ -30,12 +30,16 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
 
   /////EXTRACT DATA FROM CONFIG FILE
   PRINTRATE = in_configuration_matrix.get(1,1);
+  RCRATE = in_configuration_matrix.get(3,1);
 
   //Pick the IMU you want to use
   //0 = MPU9250
   //1 = LSM9DS1
-  int IMUTYPE = in_configuration_matrix.get(6,1);
+  int IMUTYPE = in_configuration_matrix.get(5,1);
   sense.initIMU(IMUTYPE);
+
+  //Set the Filter Constant
+  sense.orientation.FilterConstant = in_configuration_matrix.get(6,1);
   
   //Initialize Logger
   //logger.init("data/",sense.getNumVars());
@@ -44,6 +48,47 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //logger.printheaders();
 }
 
-void hardware::loop() {
-  //printf("Hardware Loop \n");
+//This version of the loop runs assuming you are saving data from the simulation 
+//environment
+void hardware::send(MATLAB model_matrix) {
+  //X,Y,Z
+  sense.satellites.X = model_matrix.get(1,1);
+  sense.satellites.Y = model_matrix.get(2,1);
+  sense.satellites.Z = model_matrix.get(3,1);
+
+  //Quaternions
+  //model_matrix.disp();
+  sense.orientation.ahrs.q0 = model_matrix.get(4,1);
+  sense.orientation.ahrs.q1 = model_matrix.get(5,1);
+  sense.orientation.ahrs.q2 = model_matrix.get(6,1);
+  sense.orientation.ahrs.q3 = model_matrix.get(7,1);
+
+  //Set gx,gy,gz from sense_matrix for filtering (notice the wierd ordering)
+  sense.orientation.gy = model_matrix.get(11,1);
+  sense.orientation.gx = model_matrix.get(12,1);
+  sense.orientation.gz = -model_matrix.get(13,1);
+
+  //Still need all the other sensor states but not right now
+
+}
+
+//This version of the loop runs assuming you are polling from real hardware
+void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix) {
+  //Here we poll the receiver
+  if (currentTime > nextRCtime) {
+    rc.read();
+    nextRCtime=currentTime+RCRATE;
+  }
+
+  //Poll all as quickly as possible sensors - This puts all raw data into the sense matrix
+  sense.poll(currentTime,elapsedTime);
+
+  //I then need to populate the pwm_array with the control signals as quickly as possible
+  for (int i = 0;i<rc.out.NUMSIGNALS;i++) {
+    rc.out.pwm_array[i] = control_matrix.get(i+1,1);
+  }
+
+  //And then send the pwm_array to the servos and ESCs as quickly as possible
+  //The write function has a built in saturation block no need to worry there
+  rc.out.write();
 }

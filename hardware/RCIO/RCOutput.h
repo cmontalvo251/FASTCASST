@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #define OUTMIN 1100
+#define OUTMID 1500
 #define OUTMAX 2000
 
 class RCOutput {

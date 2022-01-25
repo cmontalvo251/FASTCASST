@@ -2,40 +2,42 @@
 
 //Constructor
 sensors::sensors() {
-  sense_matrix.zeros(29,1,"Full State From Sensors");
+  //Make sure this is the same as the modeling matrix-1
+  NUMVARS = 30;
+  sense_matrix.zeros(30,1,"Full State From Sensors");
   //sense_matrix_dot.zeros(15,1,"Full Statedot From Sensors");
-  NUMVARS = 29; //15 + 15
   //Set names of headers
   headernames = (char**)malloc(NUMVARS*sizeof(char*));
   headernames[0] = "Sense X(m)";
   headernames[1] = "Sense Y(m)";
   headernames[2] = "Sense Z(m)";
-  headernames[3] = "Sense Roll(deg)";
-  headernames[4] = "Sense Pitch(deg)";
-  headernames[5] = "Sense Yaw(deg)";
-  headernames[6] = "Sense U(m/s)";
-  headernames[7] = "Sense V(m/s)";
-  headernames[8] = "Sense W(m/s)";
-  headernames[9] = "Sense P(deg/s)";
-  headernames[10] = "Sense Q(deg/s)";
-  headernames[11] = "Sense R(deg/s)";
-  headernames[12] = "Sense Mx(Gauss)";
-  headernames[13] = "Sense My(Gauss)";
-  headernames[14] = "Sense Mz(Gauss)";
-  headernames[15] = "Sense GPS Latitude (deg)";
-  headernames[16] = "Sense GPS Longitude (deg)";
-  headernames[17] = "Sense GPS Altitude (m)";
-  headernames[18] = "Sense GPS Heading (deg)";
-  headernames[19] = "IMU Heading (deg)";
-  headernames[20] = "Sense Analog 1 (V)";
-  headernames[21] = "Sense Analog 2 (V)";
-  headernames[22] = "Sense Analog 3 (V)";
-  headernames[23] = "Sense Analog 4 (V)";
-  headernames[24] = "Sense Analog 5 (V)";
-  headernames[25] = "Sense Analog 6 (V)";
-  headernames[26] = "Sense Pressure (Pa)";
-  headernames[27] = "Sense Pressure Altitude (m)";
-  headernames[28] = "Sense Temperature (C)";
+  headernames[3] = "Q0";
+  headernames[4] = "Q1";
+  headernames[5] = "Q2";
+  headernames[6] = "Q3";
+  headernames[7] = "Sense U(m/s)";
+  headernames[8] = "Sense V(m/s)";
+  headernames[9] = "Sense W(m/s)";
+  headernames[10] = "Sense P(deg/s)";
+  headernames[11] = "Sense Q(deg/s)";
+  headernames[12] = "Sense R(deg/s)";
+  headernames[13] = "Sense Mx(Gauss)";
+  headernames[14] = "Sense My(Gauss)";
+  headernames[15] = "Sense Mz(Gauss)";
+  headernames[16] = "Sense GPS Latitude (deg)";
+  headernames[17] = "Sense GPS Longitude (deg)";
+  headernames[18] = "Sense GPS Altitude (m)";
+  headernames[19] = "Sense GPS Heading (deg)";
+  headernames[20] = "IMU Heading (deg)";
+  headernames[21] = "Sense Analog 1 (V)";
+  headernames[22] = "Sense Analog 2 (V)";
+  headernames[23] = "Sense Analog 3 (V)";
+  headernames[24] = "Sense Analog 4 (V)";
+  headernames[25] = "Sense Analog 5 (V)";
+  headernames[26] = "Sense Analog 6 (V)";
+  headernames[27] = "Sense Pressure (Pa)";
+  headernames[28] = "Sense Pressure Altitude (m)";
+  headernames[29] = "Sense Temperature (C)";
 }
 
 //Get numvars
@@ -59,7 +61,6 @@ void sensors::poll(double currentTime,double elapsedTime) {
   atm.poll(currentTime);
 
   ///Read the IMU (ptp,pqr)
-  orientation.FilterConstant = 0.0; //0 for no filtering and 1.0 for overfiltering
   orientation.loop(elapsedTime); 
 
   //Read the GPS
@@ -79,43 +80,44 @@ void sensors::poll(double currentTime,double elapsedTime) {
   sense_matrix.set(2,1,satellites.Y);
   sense_matrix.set(3,1,satellites.Z);
 
-  //PTP
-  sense_matrix.set(4,1,orientation.roll);
-  sense_matrix.set(5,1,orientation.pitch);
-  sense_matrix.set(6,1,orientation.yaw);
+  //Quaternions
+  sense_matrix.set(4,1,orientation.ahrs.q0);
+  sense_matrix.set(5,1,orientation.ahrs.q1);
+  sense_matrix.set(6,1,orientation.ahrs.q2);
+  sense_matrix.set(7,1,orientation.ahrs.q3);
 
   //UWV
   //Assume that the vehicle is traveling straight so V and W are zero
-  sense_matrix.set(7,1,satellites.speed);
-  sense_matrix.set(8,1,0);
+  sense_matrix.set(8,1,satellites.speed);
   sense_matrix.set(9,1,0);
+  sense_matrix.set(10,1,0);
 
   //PQR
-  sense_matrix.set(10,1,orientation.roll_rate);
-  sense_matrix.set(11,1,orientation.pitch_rate);
-  sense_matrix.set(12,1,orientation.yaw_rate);
+  sense_matrix.set(11,1,orientation.roll_rate);
+  sense_matrix.set(12,1,orientation.pitch_rate);
+  sense_matrix.set(13,1,orientation.yaw_rate);
 
   //MXYZ
-  sense_matrix.set(13,1,orientation.mx);
-  sense_matrix.set(14,1,orientation.my);
-  sense_matrix.set(15,1,orientation.mz);
+  sense_matrix.set(14,1,orientation.mx);
+  sense_matrix.set(15,1,orientation.my);
+  sense_matrix.set(16,1,orientation.mz);
 
   //GPS
-  sense_matrix.set(16,1,satellites.latitude);
-  sense_matrix.set(17,1,satellites.longitude);
-  sense_matrix.set(18,1,satellites.altitude);
-  sense_matrix.set(19,1,satellites.heading);
+  sense_matrix.set(17,1,satellites.latitude);
+  sense_matrix.set(18,1,satellites.longitude);
+  sense_matrix.set(19,1,satellites.altitude);
+  sense_matrix.set(20,1,satellites.heading);
 
   //IMU
-  sense_matrix.set(20,1,orientation.yaw);
+  sense_matrix.set(21,1,orientation.yaw);
 
   //Analog
-  sense_matrix.vecset(21,26,analog.results,1);
+  sense_matrix.vecset(22,27,analog.results,1);
 
   //Barometer
-  sense_matrix.set(27,1,atm.pressure);
-  sense_matrix.set(28,1,atm.altitude);
-  sense_matrix.set(29,1,atm.temperature);
+  sense_matrix.set(28,1,atm.pressure);
+  sense_matrix.set(29,1,atm.altitude);
+  sense_matrix.set(30,1,atm.temperature);
 
   /* //XYZDOT - Probably would need to run the GPS coordinates through a derivative
   //filter. If we really need these I can get them. 

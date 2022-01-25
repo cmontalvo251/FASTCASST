@@ -33,6 +33,7 @@
 class hardware {
  private:
   double lastLOGtime = 0;
+  double nextRCtime = 0;
   Datalogger logger;
  public:
   //RCIO Class
@@ -42,13 +43,15 @@ class hardware {
   //Status
   int ok = 1;
   //Rates
-  double PRINTRATE=1.0;
+  double PRINTRATE=1.0,RCRATE=1.0;
   //Outputs
   MATLAB in_simulation_matrix,in_configuration_matrix;
   //Initialization routine needs the root folder name
   void init(char root_folder_name[],int NUMSIGNALS);
-  //Hardware loop
-  void loop();
+  //Send routine that sends model matrix to hardware to emulate sensors
+  void send(MATLAB model_matrix);
+  //Main hardware loop
+  void loop(double currentTime,double elapsedTime,MATLAB control_matrix);
   //Constructor
   hardware();
 };

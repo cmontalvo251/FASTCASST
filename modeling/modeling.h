@@ -5,6 +5,7 @@
 
 //Helper Modules
 #include <MATLAB/MATLAB.h>
+#include <Timer/timer.h>
 
 ///If running SIL or HIL and on a desktop (anything with a rendering environment)
 //we need to turn on OPENGL this way the PIC actually has something to fly.
@@ -26,7 +27,11 @@
 
 class modeling {
  private:
+    int NUMVARS,NUMINTEGRATIONSTATES;
+    void rk4step();
  public:
+  //Matrices
+  MATLAB model_matrix,integration_matrix,model_sense_matrix;
   //Status
   int ok=1;
   //Timing
@@ -34,9 +39,11 @@ class modeling {
   //constructor
   modeling();
   //initialization routine
-  void init(char root_folder_name[],MATLAB in_simulation_matrix);
+  void init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB in_configuration_matrix);
   //Loop
-  void loop(double currentTime);
+  void loop(double currentTime,int pwm_array[]);
+  //RK4step
+  void rk4step(int pwm_array[]);
 };
 
 #endif

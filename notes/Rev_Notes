@@ -1,6 +1,18 @@
 =========================1/24/2022==============================
 
 Started working on simonly. Hardware block is slowly building up.
+I think controller and hardware block are done. Need to build up
+modeling environment in simonly then add opengl for sil
+
+Crap. There's no datalogger right now. :(
+
+Now that I think about it the auto mode will work on the RPi.
+
+So i need to test
+
+logger, demo and auto on the rpi and debug.
+
+simonly and sil are still needed for the laptop simulation.
 
 ==========================1/21/2022=============================
 

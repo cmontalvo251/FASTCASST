@@ -1,5 +1,7 @@
-import Util.util
-import GPS.ublox as UBLX
+import sys
+sys.path.append('Util')
+import util
+import ublox as UBLX
 import numpy as np
 
 class GPS():

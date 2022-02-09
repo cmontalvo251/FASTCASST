@@ -3,6 +3,7 @@ __pycache__
 *~*
 *.bak
 board_notes
+*.pyc
 
 # Prerequisites
 *.d

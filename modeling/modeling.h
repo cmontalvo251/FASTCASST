@@ -6,6 +6,7 @@
 //Helper Modules
 #include <MATLAB/MATLAB.h>
 #include <Timer/timer.h>
+#include <RK4/rk4.h>
 
 ///If running SIL or HIL and on a desktop (anything with a rendering environment)
 //we need to turn on OPENGL this way the PIC actually has something to fly.
@@ -27,8 +28,9 @@
 
 class modeling {
  private:
-    int NUMVARS,NUMINTEGRATIONSTATES;
-    void rk4step();
+  RK4 integrator;
+  int NUMVARS,NUMINTEGRATIONSTATES;
+  void rk4step();
  public:
   //Matrices
   MATLAB model_matrix,integration_matrix,model_sense_matrix;

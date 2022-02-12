@@ -96,3 +96,17 @@ void TIMER::updateTime() {
   //Reset prevTime
   prevTime_ = currentTime;
 }
+
+void TIMER::incrementTime(double TIMESTEP) {
+  currentTime += TIMESTEP;
+  //Compute Elapsed Time 
+  elapsedTime = currentTime - prevTime_;
+  //Reset prevTime
+  prevTime_ = currentTime;
+}
+
+void TIMER::init(double time) {
+  currentTime = time;
+  elapsedTime = 0;
+  prevTime_ = 0;
+}

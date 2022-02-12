@@ -26,7 +26,7 @@ GPS::GPS() {
   time_vec.zeros(NGPS,1,"time_vec");
 }
 
-void GPS::poll(float currentTime,int FILEOPEN) {
+void GPS::poll(float currentTime) {
   lastTime = currentTime;
   #ifndef DESKTOP
   sensor.decodeSingleMessage(Ublox::NAV_POSLLH, pos_data);
@@ -54,12 +54,19 @@ void GPS::poll(float currentTime,int FILEOPEN) {
     latitude = pos_data[2]/10000000.0; //lon - Maxwell says it may be lon lat
     longitude = pos_data[1]/10000000.0; //lat - It really is lon lat
     altitude = pos_data[3]/1000.0; ///height above ellipsoid 1984?
-    //If the measurement is good and the file is open we need to compute speed as well.
-    if (FILEOPEN) {
+    //If the measurement is good
+    if (VALIDGPS) {
       computeGroundTrack(currentTime);
     } else {
-      //otherwise set the origin
+      printf("GPS Coordinate initialized. Resetting GPS Vals \n");
+      VALIDGPS = 1;
+      //Set the origin
       setOrigin(latitude,longitude);
+      //Convert to XYZ
+      ConvertGPS2XY();
+      //Reset Prev Values
+      xprev = X;
+      yprev = Y;
     }
   }
   //else {
@@ -71,11 +78,20 @@ void GPS::poll(float currentTime,int FILEOPEN) {
   //dist_vec.disp();
   //time_vec.disp();
     
-}	  
+}
+
+void GPS::reset() {
+  if (!VALIDGPS){
+    VALIDGPS = 1;
+    xprev = X;
+    yprev = Y;
+  }
+}
 
 void GPS::setOrigin(double latitude,double longitude) {
   X_origin = latitude;
   Y_origin = longitude;
+  printf("Origin Set = %lf %lf \n",X_origin,Y_origin);
 }
 
 void GPS::setXYZ(double Xin,double Yin,double Zin) {
@@ -107,7 +123,8 @@ void GPS::ConvertXYZ2LLH() {
   latitude = dlat + X_origin;
   //printf("dlat = %lf latitude = %lf X = %lf origin = %lf \n",dlat,latitude,X,X_origin);
   longitude = Y/(GPSVAL*cos(X_origin*PI/180.0)) + Y_origin;
-  altitude = -Z;  
+  altitude = -Z;
+  //printf("LLH = %lf %lf %lf \n",latitude,longitude,altitude);
 }
 
 void GPS::ConvertGPS2XY(){
@@ -127,7 +144,7 @@ void GPS::ConvertGPS2XY(){
   } else {
     Z = -altitude;
   }
-  //printf("2 latitude = %lf X = %lf origin = %lf \n",latitude,X,X_origin);
+  //printf("ConvertLLH2XY: %lf %lf %lf %lf \n",X,Y,latitude,longitude);
 }
 
 void GPS::computeGroundTrack(double current_time) {
@@ -157,15 +174,17 @@ void GPS::computeGroundTrack(double current_time) {
   double previous_distance = dist_vec.get(em1,1);
   double new_distance = dist + previous_distance;
   dist_vec.set(end_pt,1,new_distance);
+  time_vec.set(end_pt,1,current_time);
 
-  time_vec.set(end_pt,1,current_time/1000000.0);
-
+  //dist_vec.disp();
+  //time_vec.disp();
   double del_dist = dist_vec.get(end_pt,1) - dist_vec.get(start_pt,1);
   double del_time = time_vec.get(end_pt,1) - time_vec.get(start_pt,1);
 
   //printf("%lf %lf %lf %lf %lf %lf \n",dist_vec.get(end_pt,1),dist_vec.get(start_pt,1),time_vec.get(end_pt,1),time_vec.get(start_pt,1),del_dist,del_time);
   
   speed = del_dist/del_time;
+  //printf("Speed = %lf \n",speed);
   
   end_pt += 1;
   start_pt += 1;

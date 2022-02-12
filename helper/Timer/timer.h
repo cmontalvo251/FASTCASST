@@ -37,6 +37,8 @@ class TIMER {
  public:
   double currentTime,elapsedTime;
   void updateTime();
+  void init(double);
+  void incrementTime(double);
   void printTime();
   //Constructor
   TIMER();

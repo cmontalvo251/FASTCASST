@@ -16,6 +16,7 @@ class Datalogger {
   void init(char* directory,int length);
   void findfile(char* directory);
   void print(MATLAB);
+  void printvar(double);
   void print();
   void println(MATLAB);
   void println();
@@ -24,6 +25,7 @@ class Datalogger {
   void flush();
   void open();
   void printheaders();
+  void appendheader(char*);
   void appendheaders(char** headers,int length);
   void append(MATLAB matrix);
   int ImportFile(char* filename,MATLAB* data,char* name,int length);

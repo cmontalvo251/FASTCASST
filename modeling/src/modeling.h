@@ -6,7 +6,8 @@
 //Helper Modules
 #include <MATLAB/MATLAB.h>
 #include <Timer/timer.h>
-#include <RK4/rk4.h>
+#include <RK4/RK4.h>
+#include <Rotation/Rotation3.h>
 
 ///If running SIL or HIL and on a desktop (anything with a rendering environment)
 //we need to turn on OPENGL this way the PIC actually has something to fly.
@@ -14,7 +15,7 @@
 #if defined (SIL) || (HIL)
 #if defined (DESKTOP)
 #define OPENGL
-#include <modeling/opengl/opengl.h>
+#include <opengl/opengl.h>
 #endif
 #endif
 
@@ -30,7 +31,16 @@ class modeling {
  private:
   RK4 integrator;
   int NUMVARS,NUMINTEGRATIONSTATES;
-  void rk4step();
+  MATLAB State,k,I,pqr,cgdotI,cgdotB,ptpdot,FTOTALI,FTOTALB,FGNDB,MGNDB,MTOTALI,MTOTALB;
+  MATLAB pqrdot,Iinv,q0123,I_pqr,uvwdot,pqrskew_I_pqr,Kuvw_pqr,state,statedot;
+  MATLAB actuatorState,actuatorStatedot,actuatorErrorPercentage,cg,ptp,BVECB;
+  MATLAB actuatorTimeConstants,BVECB_Tesla;
+  double mass,tlastRCread=-99,tlastCTL=-99,tRC,tCTL;
+  Rotation3 ine2bod321;
+  //environment env;
+  //double ACTUATOR_ERROR_PERCENT;
+  void rk4step(double,int[]);
+  void Derivatives(double,int[]);
  public:
   //Matrices
   MATLAB model_matrix,integration_matrix,model_sense_matrix;

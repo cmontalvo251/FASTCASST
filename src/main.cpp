@@ -11,10 +11,6 @@ int system_check();
 //Timer
 #include <Timer/timer.h>
 TIMER watch;
-//Check for realtime clock
-#ifndef SIMONLY
-#define REALTIME
-#endif
 
 //The Hardware environment is always running
 #include <hardware/src/hardware.h>
@@ -29,7 +25,7 @@ controller control;
 #if defined (SIL) || (SIMONLY) || (HIL)
 #if defined (DESKTOP)
 #define MODELING
-#include <modeling/modeling.h>
+#include <modeling/src/modeling.h>
 modeling model;
 #endif
 #endif
@@ -84,17 +80,28 @@ void loop() {
   int system_ok = system_check();
   double lastPRINTtime = 0;
   printf("Main Loop Begin \n");
+
+  //Initialize the Timer if we're running in Software mode
+  #ifdef MODELING
+  watch.init(-model.TIMESTEP);
+  #endif
   
   while (system_check()) {
 
     ///////////TIMING UPDATE/////////////////
+    #ifdef MODELING
+    //The system clock is updated by integrating the timestep by 1 timestep
+    watch.incrementTime(model.TIMESTEP);
+    #else
+    //Use real time clock
     watch.updateTime();
+    #endif
     /////////////////////////////////////////
 
     //////////HARDWARE LOOP//////////////////
     //This runs as fast as possible
     //Need a routine that sends the model matrix to the hardware routine
-    #ifdef MODELING 
+    #ifdef MODELING
     hw.send(model.model_matrix);
     #endif
     hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);

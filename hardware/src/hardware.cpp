@@ -30,6 +30,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
 
   /////EXTRACT DATA FROM CONFIG FILE
   PRINTRATE = in_configuration_matrix.get(1,1);
+  LOGRATE = in_configuration_matrix.get(2,1);
   RCRATE = in_configuration_matrix.get(3,1);
 
   //Pick the IMU you want to use
@@ -42,10 +43,11 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   sense.orientation.FilterConstant = in_configuration_matrix.get(6,1);
   
   //Initialize Logger
-  //logger.init("data/",sense.getNumVars());
+  logger.init("data/",sense.getNumVars()+1);
   //Set and log headers
-  //logger.appendheaders(sense.headernames,sense.getNumVars());
-  //logger.printheaders();
+  logger.appendheader("Time (sec)");
+  logger.appendheaders(sense.headernames,sense.getNumVars());
+  logger.printheaders();
 }
 
 //This version of the loop runs assuming you are saving data from the simulation 
@@ -55,6 +57,10 @@ void hardware::send(MATLAB model_matrix) {
   sense.satellites.X = model_matrix.get(1,1);
   sense.satellites.Y = model_matrix.get(2,1);
   sense.satellites.Z = model_matrix.get(3,1);
+  //We need to reset the GPS values if we haven't gotten a valid coorinate yet
+  sense.satellites.reset();
+  //printf("%lf %lf %lf \n",sense.satellites.X,sense.satellites.Y,sense.satellites.Z);
+  //PAUSE();
 
   //Quaternions
   //model_matrix.disp();
@@ -86,6 +92,12 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   //I then need to populate the pwm_array with the control signals as quickly as possible
   for (int i = 0;i<rc.out.NUMSIGNALS;i++) {
     rc.out.pwm_array[i] = control_matrix.get(i+1,1);
+  }
+
+  if (currentTime > nextLOGtime) {
+    logger.printvar(currentTime);
+    logger.println(sense.sense_matrix);
+    nextLOGtime=currentTime+LOGRATE;
   }
 
   //And then send the pwm_array to the servos and ESCs as quickly as possible

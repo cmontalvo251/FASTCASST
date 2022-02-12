@@ -23,6 +23,17 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   for (int i = 1;i<NUMINTEGRATIONSTATES;i++) {
     integration_matrix.set(i,1,in_simulation_matrix.get(i+2,1));
   }
+
+  //Get Mass and Inertia parameters
+  mass = in_configuration_matrix.get(8,1);
+  I.zeros(3,3,"Inertia");
+  I.set(1,1,in_configuration_matrix.get(9,1));
+  I.set(2,2,in_configuration_matrix.get(9,1));
+  I.set(3,3,in_configuration_matrix.get(9,1));
+  Iinv.zeros(3,3,"Inverse Inertia");
+  Iinv.overwrite(I);
+  Iinv.inverse();
+  
   //integration_matrix.disp();
   //PAUSE();
 
@@ -30,9 +41,33 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   model_matrix.vecset(1,NUMINTEGRATIONSTATES,integration_matrix,1);
 
   //Initialize Integrator
-  integrator.init(13,TIMESTEP);
+  integrator.init(NUMINTEGRATIONSTATES,TIMESTEP);
   //Then initialize the Initial conditions
   integrator.set_ICs(integration_matrix);
+
+  //6DOF VARS
+  //Always create these just because I don't want to think about
+  //when we actually need them and it's really easy to create them
+  cg.zeros(3,1,"Center of Mass");
+  ptp.zeros(3,1,"Roll Pitch Yaw");
+  FTOTALI.zeros(3,1,"Total Forces Inertial Frame");
+  q0123.zeros(4,1,"Quaternions");
+  cgdotI.zeros(3,1,"Velocity Inertial");
+  cgdotB.zeros(3,1,"Velocity Body Frame");
+  ptpdot.zeros(3,1,"Euler Derivatives");
+  pqr.zeros(3,1,"Angular Velocity Body Frame");
+  pqrdot.zeros(3,1,"Derivative of Angular Velocity");
+  uvwdot.zeros(3,1,"Derivaitves of Velocity Body Frame");
+  FGNDB.zeros(3,1,"Ground Forces Body Frame");
+  FTOTALB.zeros(3,1,"Total Forces Body Frame");
+  MTOTALI.zeros(3,1,"Total Moments Inertial Frame");
+  MTOTALB.zeros(3,1,"Total Moments Body Frame");
+  MGNDB.zeros(3,1,"Ground Moments Body Frame");
+  I_pqr.zeros(3,1,"I times pqr");
+  pqrskew_I_pqr.zeros(3,1,"pqr cross I times pqr");
+  Kuvw_pqr.zeros(3,1,"uvw cross pqr");
+  BVECB.zeros(3,1,"Body Frame Magnetic Field (nT)");
+  BVECB_Tesla.zeros(3,1,"Body Frame Magnetic Field (Teslas)");
 }
 
 ///Loop
@@ -44,28 +79,30 @@ void modeling::loop(double currentTime,int pwm_array[]) {
     //break
     return;
   }
+  //integration_matrix.disp();
 
   //Run RK4 Loop
-  rk4step(pwm_array);
+  rk4step(currentTime,pwm_array);
+
+  //Reset the Integration matrix
+  integration_matrix.overwrite(integrator.State);
 
   //Copy the states over to the model matrix for opengl and hardware loops
-  model_matrix.vecset(1,13,integration_matrix,1);
+  model_matrix.vecset(1,NUMINTEGRATIONSTATES,integration_matrix,1);
 
   //Add sensor noise if needed
 }
 
-void modeling::rk4step(int pwm_array[]) {
+void modeling::rk4step(double currentTime,int pwm_array[]) {
   //Integrate one timestep by running a 4 step RK4 integrator
   for (int i = 1;i<=4;i++){
-    vehicle.Derivatives(t,integrator.StateDel,integrator.k);
+    Derivatives(currentTime,pwm_array);
     integrator.integrate(i);
   }
-  //Integrate time
-  t += TIMESTEP;
 }
 
 
-void modeling::Derivatives(double t,MATLAB State,MATLAB k) {
+void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //The Derivatives are vehicle independent except for the 
   //forces and moments
 
@@ -90,9 +127,17 @@ void modeling::Derivatives(double t,MATLAB State,MATLAB k) {
   ////////////////////KINEMATICS///////////////
 
   //Extract individual States from State Vector
-  cgdotB.vecset(1,3,State,8);
-  q0123.vecset(1,4,State,4);
-  pqr.vecset(1,3,State,11);
+  cgdotB.vecset(1,3,integrator.StateDel,8); //uvw
+  q0123.vecset(1,4,integrator.StateDel,4);
+  pqr.vecset(1,3,integrator.StateDel,11);
+  //This is used to rotate things from body to inertial and vice versa
+  ine2bod321.L321(q0123, 1);
+
+  ///Linear Kinematics (xyzdot = TIB uvw)
+  ine2bod321.rotateBody2Inertial(cgdotI,cgdotB);
+  integrator.k.vecset(1,3,cgdotI,1);
+
+  ///Rotational Kinematics (Quaternion Derivatives)
   double q0 = q0123.get(1,1);
   double q1 = q0123.get(2,1);
   double q2 = q0123.get(3,1);
@@ -100,50 +145,42 @@ void modeling::Derivatives(double t,MATLAB State,MATLAB k) {
   double p = pqr.get(1,1);
   double q = pqr.get(2,1);
   double r = pqr.get(3,1);
-  //This is used to rotate things from body to inertial and vice versa
-  ine2bod321.L321(q0123, 1);
-
-  ///Linear Kinematics (xyzdot = TIB uvw)
-  ine2bod321.rotateBody2Inertial(cgdotI,cgdotB);
-  k.vecset(1,3,cgdotI,1);
-
-  ///Rotational Kinematics (Quaternion Derivatives)
-  k.set(4,1,(-p*q1-q*q2-r*q3)/2.0);
-  k.set(5,1,(p*q0+r*q2-q*q3)/2.0);
-  k.set(6,1,(q*q0-r*q1+p*q3)/2.0);
-  k.set(7,1,(r*q0+q*q1-p*q2)/2.0);
+  integrator.k.set(4,1,(-p*q1-q*q2-r*q3)/2.0);
+  integrator.k.set(5,1,(p*q0+r*q2-q*q3)/2.0);
+  integrator.k.set(6,1,(q*q0-r*q1+p*q3)/2.0);
+  integrator.k.set(7,1,(r*q0+q*q1-p*q2)/2.0);
 
   ////////////////FORCE AND MOMENT MODEL///////////////////////
 
   //Gravity Model and Magnetic Field model
-  env.gravitymodel(State);
-  env.groundcontactmodel(State,k);
-  env.getCurrentMagnetic(t,State);
+  //env.gravitymodel(integrator.StateDel);
+  //env.groundcontactmodel(integrator.StateDel,integrator.k);
+  //env.getCurrentMagnetic(t,integrator.StateDel);
   //The getCurrentMagnetic routine populates env.BVECINE which is the magnetometer
   //value in the inertial frame. we need to rotate this to the body frame and
   //convert to teslas
-  ine2bod321.rotateInertial2Body(BVECB,env.BVECINE);
-  BVECB_Tesla.overwrite(BVECB);
-  BVECB_Tesla.mult_eq(1e-9);
+  //ine2bod321.rotateInertial2Body(BVECB,env.BVECINE);
+  //BVECB_Tesla.overwrite(BVECB);
+  //BVECB_Tesla.mult_eq(1e-9);
   //Send to environment model
-  env.BVECB_Tesla.overwrite(BVECB_Tesla);
+  //env.BVECB_Tesla.overwrite(BVECB_Tesla);
 
   //External Forces Model
   //Send the external forces model the actuator_state instead of the ctlcomms
-  extforces.ForceMoment(t,State,k,actuatorError,env);
+  //extforces.ForceMoment(t,integrator.StateDel,integrator.k,actuatorError,env);
 
   //Add Up Forces and Moments
-  FTOTALI.overwrite(env.FGRAVI); //add gravity 
+  //FTOTALI.overwrite(env.FGRAVI); //add gravity 
 
   //Rotate Forces to body frame
-  ine2bod321.rotateInertial2Body(FGNDB,env.FGNDI);
-  ine2bod321.rotateInertial2Body(FTOTALB,FTOTALI);
+  //ine2bod321.rotateInertial2Body(FGNDB,env.FGNDI);
+  //ine2bod321.rotateInertial2Body(FTOTALB,FTOTALI);
 
   //Add External Forces and Moments
   //FTOTALB.disp();
   //env.FGRAVI.disp();
-  FTOTALB.plus_eq(extforces.FB);
-  FTOTALB.plus_eq(FGNDB);
+  //FTOTALB.plus_eq(extforces.FB);
+  //FTOTALB.plus_eq(FGNDB);
   //extforces.FB.disp();
   //FGNDB.disp();
   //FTOTALB.disp();  
@@ -153,19 +190,19 @@ void modeling::Derivatives(double t,MATLAB State,MATLAB k) {
 
   //Translational Dynamics
   Kuvw_pqr.cross(pqr,cgdotB);
-  FTOTALB.mult_eq(1.0/m); 
+  FTOTALB.mult_eq(1.0/mass); 
   uvwdot.minus(FTOTALB,Kuvw_pqr); 
-  k.vecset(8,10,uvwdot,1);
+  integrator.k.vecset(8,10,uvwdot,1);
 
   //Rotate Ground Contact Friction to Body
   //env.MGNDI.disp();
-  ine2bod321.rotateInertial2Body(MGNDB,env.MGNDI);
+  //ine2bod321.rotateInertial2Body(MGNDB,env.MGNDI);
   //MGNDB.disp();
   //PAUSE();
 
   //Moments vector
-  MTOTALB.overwrite(extforces.MB);
-  MTOTALB.plus_eq(MGNDB);
+  //MTOTALB.overwrite(extforces.MB);
+  //MTOTALB.plus_eq(MGNDB);
 
   ///Rotational Dynamics
   //pqrskew = [0 -r q;r 0 -p;-q p 0];  
@@ -182,7 +219,7 @@ void modeling::Derivatives(double t,MATLAB State,MATLAB k) {
   pqrdot.mult(Iinv,MTOTALB);
   
   //Save pqrdot
-  k.vecset(11,13,pqrdot,1);
+  integrator.k.vecset(11,13,pqrdot,1);
 
   ////////////////////////////////////////////////////////////////
 }

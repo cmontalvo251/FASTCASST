@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdint>
-#include "Common/gpio.h"
-#include "Common/Led.h"
+#include <GPIO/gpio.h>
+#include <LED/Led.h>
 
 class RGBled {
 public:

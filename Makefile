@@ -12,7 +12,7 @@ WIRINGPI=
 
 ###COMPILER AND OTHER FLAGS
 CC=g++
-COMMON=helper
+HELPER=helper
 HARDWARE=hardware
 MODELING=modeling
 GEO=GeographicLib
@@ -22,20 +22,20 @@ LIB=-L/usr/local/lib -L./
 #FAST is using boost for threading #sudo apt-get install libboost-all-dev
 THREAD=-lpthread -lboost_system -lboost_thread -lboost_date_time 
 MODELPATH=vehicles/$(MODEL)/src
-INCLUDE=-I${COMMON} -I${HARDWARE} -I${MODELPATH} -I./ -I${GEO}
-###COMMON
-COMMONSOURCES=$(wildcard $(COMMON)/*/*.cpp)
+INCLUDE=-I${HELPER} -I${HARDWARE} -I${MODELPATH} -I${MODELING} -I./ -I${GEO}
+###HELPER
+HELPERSOURCES=$(wildcard $(HELPER)/*/*.cpp)
 ###HARDWARE
 HARDWARESOURCES=$(wildcard $(HARDWARE)/*/*.cpp)
 ###MODEL
 MODELSOURCES=$(wildcard vehicles/$(MODEL)/src/*.cpp)
 ##MOELING
-MODELINGSOURCES=$(wildcard $(MODELING)/*.cpp)
+MODELINGSOURCES=$(wildcard $(MODELING)/*/*.cpp)
 ###GEOGRAPHIC LIB
 GEOSOURCES=$(wildcard ${GEO}/*.cpp)
 
 ###COMBINE ALL SOURCES
-SOURCES=$(COMMONSOURCES) $(HARDWARESOURCES) $(MODELSOURCES) $(OPENGLSOURCES) $(GEOSOURCES) $(MODELINGSOURCES)
+SOURCES=$(HELPERSOURCES) $(HARDWARESOURCES) $(MODELSOURCES) $(OPENGLSOURCES) $(GEOSOURCES) $(MODELINGSOURCES)
 OBJECTS=$(SOURCES:.cpp=.o)
 
 ##Logger SIL is on DESKTOP and basically takes and logs fictitious data
@@ -91,11 +91,11 @@ clean:
 	rm *.exe
 	echo ' ' > src/d.o
 	rm src/*.o
-	echo ' ' > $(COMMON)/MATLAB/d.o
-	rm $(COMMON)/*/*.o
+	echo ' ' > $(HELPER)/MATLAB/d.o
+	rm $(HELPER)/*/*.o
 	echo ' ' > $(HARDWARE)/ADC/d.o
 	rm $(HARDWARE)/*/*.o
-	echo ' ' > $(MODELING)/d.o
-	rm $(MODELING)/*.o
+	echo ' ' > $(MODELING)/RK4/d.o
+	rm $(MODELING)/*/*.o
 	echo ' ' > vehicles/portalcube/src/d.o
 	rm vehicles/portalcube/src/*.o

@@ -11,10 +11,10 @@ sensors::sensors() {
   headernames[0] = "Sense X(m)";
   headernames[1] = "Sense Y(m)";
   headernames[2] = "Sense Z(m)";
-  headernames[3] = "Q0";
-  headernames[4] = "Q1";
-  headernames[5] = "Q2";
-  headernames[6] = "Q3";
+  headernames[3] = "Sense Q0";
+  headernames[4] = "Sense Q1";
+  headernames[5] = "Sense Q2";
+  headernames[6] = "Sense Q3";
   headernames[7] = "Sense U(m/s)";
   headernames[8] = "Sense V(m/s)";
   headernames[9] = "Sense W(m/s)";
@@ -64,7 +64,7 @@ void sensors::poll(double currentTime,double elapsedTime) {
   orientation.loop(elapsedTime); 
 
   //Read the GPS
-  satellites.poll(currentTime,1); //This will compute XYZ as well. For now we are using 
+  satellites.poll(currentTime); //This will compute XYZ as well. For now we are using 
   //hardcoded GPS coordinates
 
   ///////////////////??THEN POPULATE STATE VECTOR////////////////////

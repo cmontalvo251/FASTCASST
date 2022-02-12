@@ -54,6 +54,11 @@ void Datalogger::setLogVars(int num) {
   length = num;
 }
 
+void Datalogger::appendheader(char* header) {
+  logheader[headerctr] = header;
+  headerctr++;
+}
+
 void Datalogger::appendheaders(char **headers,int length){
   for (int i = 0;i<length;i++) {
     logheader[headerctr] = headers[i];
@@ -82,7 +87,12 @@ void Datalogger::append(MATLAB in) {
   }
 }
 
-//Print function
+//Print functions
+void Datalogger::printvar(double var) {
+  fprintf(outfile,"%lf,",var);
+  flush();
+}
+
 void Datalogger::print(MATLAB out) {
   logctr = 1;
   out.vecfprintf(outfile);

@@ -1,8 +1,8 @@
 #ifndef LED_NAVIO2_H
 #define LED_NAVIO2_H
 
-#include <Common/Led.h>
-#include <Navio2/RGBled.h>
+#include <LED/Led.h>
+#include <LED/RGBled.h>
 
 class Led_Navio2 : public Led
 {

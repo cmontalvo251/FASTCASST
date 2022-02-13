@@ -9,6 +9,11 @@ opengl.
 
 Not sure what I want to do but that's on the agenda.
 
+Ok so dynamics require the environment so we either do opengl
+or we do the environment. I guess we can do the environment.
+
+Alright the environment has been added. Now we can add the dynamics
+
 =========================2/11/2022===========================
 
 Added datalogger to hardware block. Need to add a datalogger to

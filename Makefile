@@ -15,27 +15,24 @@ CC=g++
 HELPER=helper
 HARDWARE=hardware
 MODELING=modeling
-GEO=GeographicLib
 COMPILE=-c -w -std=c++11 -Wno-psabi
 FLAGS=-DDEBUG
 LIB=-L/usr/local/lib -L./
 #FAST is using boost for threading #sudo apt-get install libboost-all-dev
 THREAD=-lpthread -lboost_system -lboost_thread -lboost_date_time 
 MODELPATH=vehicles/$(MODEL)/src
-INCLUDE=-I${HELPER} -I${HARDWARE} -I${MODELPATH} -I${MODELING} -I./ -I${GEO}
+INCLUDE=-I${HELPER} -I${HARDWARE} -I${MODELPATH} -I${MODELING} -I./
 ###HELPER
 HELPERSOURCES=$(wildcard $(HELPER)/*/*.cpp)
 ###HARDWARE
 HARDWARESOURCES=$(wildcard $(HARDWARE)/*/*.cpp)
-###MODEL
-MODELSOURCES=$(wildcard vehicles/$(MODEL)/src/*.cpp)
 ##MOELING
 MODELINGSOURCES=$(wildcard $(MODELING)/*/*.cpp)
-###GEOGRAPHIC LIB
-GEOSOURCES=$(wildcard ${GEO}/*.cpp)
+###MODEL
+MODELSOURCES=$(wildcard vehicles/$(MODEL)/src/*.cpp)
 
 ###COMBINE ALL SOURCES
-SOURCES=$(HELPERSOURCES) $(HARDWARESOURCES) $(MODELSOURCES) $(OPENGLSOURCES) $(GEOSOURCES) $(MODELINGSOURCES)
+SOURCES=$(HELPERSOURCES) $(HARDWARESOURCES) $(MODELSOURCES) $(OPENGLSOURCES) $(MODELINGSOURCES)
 OBJECTS=$(SOURCES:.cpp=.o)
 
 ##Logger SIL is on DESKTOP and basically takes and logs fictitious data

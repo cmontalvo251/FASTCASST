@@ -50,7 +50,7 @@
 ///DEFAULT STICK_MAX AND MIN
 #define STICK_MAX 2016. //uS
 #define STICK_MIN 992. //uS
-#define STICK_MID 1502. //uS
+#define STICK_MID 1500. //uS
 #define IDLE 1200. //uS
 
 #ifdef RCTECH

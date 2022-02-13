@@ -74,6 +74,13 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   Iinv.zeros(3,3,"Inverse Inertia");
   Iinv.overwrite(I);
   Iinv.inverse();
+
+  //Initialize the environment
+  env.setMass(mass);
+  env.init(in_simulation_matrix);
+
+  //Initialize the external force model
+  FORCES_FLAG = in_simulation_matrix.get(16,1);
   
   //integration_matrix.disp();
   //PAUSE();
@@ -205,34 +212,39 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   ////////////////FORCE AND MOMENT MODEL///////////////////////
 
   //Gravity Model and Magnetic Field model
-  //env.gravitymodel(integrator.StateDel);
-  //env.groundcontactmodel(integrator.StateDel,integrator.k);
-  //env.getCurrentMagnetic(t,integrator.StateDel);
+  env.gravitymodel(integrator.StateDel);
+  env.groundcontactmodel(integrator.StateDel,integrator.k);
+  env.getCurrentMagnetic(currentTime,integrator.StateDel);
   //The getCurrentMagnetic routine populates env.BVECINE which is the magnetometer
   //value in the inertial frame. we need to rotate this to the body frame and
   //convert to teslas
-  //ine2bod321.rotateInertial2Body(BVECB,env.BVECINE);
-  //BVECB_Tesla.overwrite(BVECB);
-  //BVECB_Tesla.mult_eq(1e-9);
+  ine2bod321.rotateInertial2Body(BVECB,env.BVECINE);
+  BVECB_Tesla.overwrite(BVECB);
+  BVECB_Tesla.mult_eq(1e-9);
   //Send to environment model
-  //env.BVECB_Tesla.overwrite(BVECB_Tesla);
+  env.BVECB_Tesla.overwrite(BVECB_Tesla);
 
   //External Forces Model
   //Send the external forces model the actuator_state instead of the ctlcomms
-  //extforces.ForceMoment(t,integrator.StateDel,integrator.k,pwmarray,env);
-
+  if (FORCES_FLAG) {
+    extforces.ForceMoment(currentTime,integrator.StateDel,integrator.k,pwm_array,env);
+  } else {
+    extforces.FB.mult_eq(0); //Zero these out just to make sure something is in here
+    extforces.MB.mult_eq(0);
+  }
+  
   //Add Up Forces and Moments
-  //FTOTALI.overwrite(env.FGRAVI); //add gravity 
+  FTOTALI.overwrite(env.FGRAVI); //add gravity 
 
   //Rotate Forces to body frame
-  //ine2bod321.rotateInertial2Body(FGNDB,env.FGNDI);
-  //ine2bod321.rotateInertial2Body(FTOTALB,FTOTALI);
+  ine2bod321.rotateInertial2Body(FGNDB,env.FGNDI);
+  ine2bod321.rotateInertial2Body(FTOTALB,FTOTALI);
 
   //Add External Forces and Moments
   //FTOTALB.disp();
   //env.FGRAVI.disp();
-  //FTOTALB.plus_eq(extforces.FB);
-  //FTOTALB.plus_eq(FGNDB);
+  FTOTALB.plus_eq(extforces.FB);
+  FTOTALB.plus_eq(FGNDB);
   //extforces.FB.disp();
   //FGNDB.disp();
   //FTOTALB.disp();  
@@ -248,13 +260,14 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
 
   //Rotate Ground Contact Friction to Body
   //env.MGNDI.disp();
-  //ine2bod321.rotateInertial2Body(MGNDB,env.MGNDI);
+  ine2bod321.rotateInertial2Body(MGNDB,env.MGNDI);
   //MGNDB.disp();
   //PAUSE();
 
   //Moments vector
-  //MTOTALB.overwrite(extforces.MB);
-  //MTOTALB.plus_eq(MGNDB);
+  MTOTALB.mult_eq(0);
+  MTOTALB.overwrite(extforces.MB);
+  MTOTALB.plus_eq(MGNDB);
 
   ///Rotational Dynamics
   //pqrskew = [0 -r q;r 0 -p;-q p 0];  

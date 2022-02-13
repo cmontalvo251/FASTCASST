@@ -6,7 +6,6 @@
 //Helper Modules
 #include <MATLAB/MATLAB.h>
 #include <Timer/timer.h>
-#include <RK4/RK4.h>
 #include <Rotation/Rotation3.h>
 #include <Datalogger/Datalogger.h>
 
@@ -23,6 +22,10 @@
 ///Specific header files for the vehicle being simulated
 #include "forces.h"
 
+///Headers required to simulate the virtual environment
+#include <RK4/RK4.h>
+#include <Environment/environment.h>
+
 /////INPUTS TO MODELING
 // 1 - Root Folder Name
 // 2 - UART Control Matrix (MATLAB) or Control_Matrix
@@ -38,14 +41,15 @@ class modeling {
   char** headernames;
   Datalogger logger;
   RK4 integrator;
-  int NUMVARS,NUMINTEGRATIONSTATES;
+  int NUMVARS,NUMINTEGRATIONSTATES,FORCES_FLAG;
   MATLAB State,k,I,pqr,cgdotI,cgdotB,ptpdot,FTOTALI,FTOTALB,FGNDB,MGNDB,MTOTALI,MTOTALB;
   MATLAB pqrdot,Iinv,q0123,I_pqr,uvwdot,pqrskew_I_pqr,Kuvw_pqr,state,statedot;
   MATLAB actuatorState,actuatorStatedot,actuatorErrorPercentage,cg,ptp,BVECB;
   MATLAB actuatorTimeConstants,BVECB_Tesla;
   double mass,tlastRCread=-99,tlastCTL=-99,tRC,tCTL;
   Rotation3 ine2bod321;
-  //environment env;
+  environment env;
+  forces extforces;
   //double ACTUATOR_ERROR_PERCENT;
   void rk4step(double,int[]);
   void Derivatives(double,int[]);

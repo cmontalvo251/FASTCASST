@@ -14,6 +14,10 @@ or we do the environment. I guess we can do the environment.
 
 Alright the environment has been added. Now we can add the dynamics
 
+Dynamics have been added. The only thing left is the opengl model
+and of course threading which I'm not looking forward to. The kids are
+crying I will probably leave that for another day. 
+
 =========================2/11/2022===========================
 
 Added datalogger to hardware block. Need to add a datalogger to

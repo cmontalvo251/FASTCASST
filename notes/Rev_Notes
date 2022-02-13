@@ -1,6 +1,18 @@
+========================2/13/2022==========================
+
+Added a datalogger to the modeling class and edited the python script
+to plot both. That makes the data file way freaking easier.
+
+I can add the dynamics of the specific vehicle OR
+the environment OR
+opengl.
+
+Not sure what I want to do but that's on the agenda.
+
 =========================2/11/2022===========================
 
-Added datalogger to hardware block. Need to add a datalogger to modeling block. also added dynamics. Still need environment
+Added datalogger to hardware block. Need to add a datalogger to
+modeling block. also added dynamics. Still need environment  
 
 =========================1/24/2022==============================
 

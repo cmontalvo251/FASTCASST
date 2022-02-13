@@ -8,6 +8,7 @@
 #include <Timer/timer.h>
 #include <RK4/RK4.h>
 #include <Rotation/Rotation3.h>
+#include <Datalogger/Datalogger.h>
 
 ///If running SIL or HIL and on a desktop (anything with a rendering environment)
 //we need to turn on OPENGL this way the PIC actually has something to fly.
@@ -19,6 +20,9 @@
 #endif
 #endif
 
+///Specific header files for the vehicle being simulated
+#include "forces.h"
+
 /////INPUTS TO MODELING
 // 1 - Root Folder Name
 // 2 - UART Control Matrix (MATLAB) or Control_Matrix
@@ -29,6 +33,10 @@
 
 class modeling {
  private:
+  double LOGRATE = 0.1;
+  double nextLOGtime = 0;
+  char** headernames;
+  Datalogger logger;
   RK4 integrator;
   int NUMVARS,NUMINTEGRATIONSTATES;
   MATLAB State,k,I,pqr,cgdotI,cgdotB,ptpdot,FTOTALI,FTOTALB,FGNDB,MGNDB,MTOTALI,MTOTALB;

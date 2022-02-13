@@ -3,4 +3,6 @@
 echo 'About to delete all text files in logs/'
 rm data/*.txt
 rm data/*.csv
+rm logs/*.txt
+rm logs/*.csv
 echo 'Files deleted. Hope there was not anything important in there'

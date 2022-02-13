@@ -24,12 +24,53 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
     integration_matrix.set(i,1,in_simulation_matrix.get(i+2,1));
   }
 
+  //Get log rate
+  LOGRATE = in_configuration_matrix.get(2,1);
+  //Set names of headers
+  headernames = (char**)malloc(NUMVARS*sizeof(char*));
+  headernames[0] = "X(m)";
+  headernames[1] = "Y(m)";
+  headernames[2] = "Z(m)";
+  headernames[3] = "Q0";
+  headernames[4] = "Q1";
+  headernames[5] = "Q2";
+  headernames[6] = "Q3";
+  headernames[7] = "U(m/s)";
+  headernames[8] = "V(m/s)";
+  headernames[9] = "W(m/s)";
+  headernames[10] = "P(deg/s)";
+  headernames[11] = "Q(deg/s)";
+  headernames[12] = "R(deg/s)";
+  headernames[13] = "Mx(Gauss)";
+  headernames[14] = "My(Gauss)";
+  headernames[15] = "Mz(Gauss)";
+  headernames[16] = "GPS Latitude (deg)";
+  headernames[17] = "GPS Longitude (deg)";
+  headernames[18] = "GPS Altitude (m)";
+  headernames[19] = "GPS Heading (deg)";
+  headernames[20] = "IMU Heading (deg)";
+  headernames[21] = "Analog 1 (V)";
+  headernames[22] = "Analog 2 (V)";
+  headernames[23] = "Analog 3 (V)";
+  headernames[24] = "Analog 4 (V)";
+  headernames[25] = "Analog 5 (V)";
+  headernames[26] = "Analog 6 (V)";
+  headernames[27] = "Pressure (Pa)";
+  headernames[28] = "Pressure Altitude (m)";
+  headernames[29] = "Temperature (C)";
+  //Initialize Logger
+  logger.init("logs/",NUMVARS);
+  //Set and log headers
+  logger.appendheader("Time (sec)");
+  logger.appendheaders(headernames,NUMVARS);
+  logger.printheaders();
+
   //Get Mass and Inertia parameters
   mass = in_configuration_matrix.get(8,1);
   I.zeros(3,3,"Inertia");
   I.set(1,1,in_configuration_matrix.get(9,1));
-  I.set(2,2,in_configuration_matrix.get(9,1));
-  I.set(3,3,in_configuration_matrix.get(9,1));
+  I.set(2,2,in_configuration_matrix.get(10,1));
+  I.set(3,3,in_configuration_matrix.get(11,1));
   Iinv.zeros(3,3,"Inverse Inertia");
   Iinv.overwrite(I);
   Iinv.inverse();
@@ -91,6 +132,17 @@ void modeling::loop(double currentTime,int pwm_array[]) {
   model_matrix.vecset(1,NUMINTEGRATIONSTATES,integration_matrix,1);
 
   //Add sensor noise if needed
+
+  //Note we have a bunch more variables that aren't included in the integration
+  //states. GPS LLH is an example. 
+
+  //Log data if needed
+  if (currentTime > nextLOGtime) {
+    logger.printvar(currentTime);
+    logger.println(model_matrix);
+    nextLOGtime=currentTime+LOGRATE;
+  }
+
 }
 
 void modeling::rk4step(double currentTime,int pwm_array[]) {
@@ -167,7 +219,7 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
 
   //External Forces Model
   //Send the external forces model the actuator_state instead of the ctlcomms
-  //extforces.ForceMoment(t,integrator.StateDel,integrator.k,actuatorError,env);
+  //extforces.ForceMoment(t,integrator.StateDel,integrator.k,pwmarray,env);
 
   //Add Up Forces and Moments
   //FTOTALI.overwrite(env.FGRAVI); //add gravity 

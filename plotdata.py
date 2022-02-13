@@ -21,27 +21,38 @@ os.system('./simonly.exe')
 pp = PDF(0,plt)
 #Open File
 datafile = open('data/0.csv','r')
-headers = datafile.readline().split(',')
-numVars = len(headers)
+logfile = open('logs/0.csv','r')
+dataheaders = datafile.readline().split(',')
+logheaders = logfile.readline().split(',')
+numVars = len(logheaders)
 print('Number of Vars = ',numVars)
-print(headers)
+print(logheaders)
 #Grab entire data file
-data = []
+sense_data = []
+model_data = []
 for line in datafile:
     row = line.split(',')
     numarray = [np.float(x) for x in row]
-    data.append(numarray)
-data = np.array(data)
+    sense_data.append(numarray)
+sense_data = np.array(sense_data)
+for line in logfile:
+    row = line.split(',')
+    numarray = [np.float(x) for x in row]
+    model_data.append(numarray)
+model_data = np.array(model_data)
 #Plot everything
-time = data[:,0]
+sense_time = sense_data[:,0]
+model_time = model_data[:,0]
 for x in range(1,numVars):
     fig = plt.figure()
     plti = fig.add_subplot(1,1,1)
-    plti.plot(time,data[:,x])
+    plti.plot(sense_time,sense_data[:,x],label=dataheaders[x])
+    plti.plot(model_time,model_data[:,x],label=logheaders[x])
     plti.set_xlabel('Time (sec)')
-    plti.set_ylabel(headers[x])
-    print(headers[x])
+    plti.set_ylabel(logheaders[x])
+    print(logheaders[x])
     plti.grid()
+    plti.legend()
     plti.get_yaxis().get_major_formatter().set_useOffset(False)
     plt.gcf().subplots_adjust(left=0.18)
     pp.savefig()

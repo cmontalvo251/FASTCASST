@@ -47,6 +47,8 @@ RenderControl glhandle_g;
 boost::mutex statemutex; //this is so we can access the glhandle_g.state variables externally and internally
 boost::mutex timemutex;
 boost::mutex controlmutex;
+boost::mutex okmutex;
+boost::mutex GLmutex;
 
 /////////Define Letters/////
 /////Numbers and Special characters///
@@ -240,6 +242,8 @@ void KeyPressed(unsigned char key,int x,int y)
   if ((key == 27) || (key == 'q'))
     {
       printf("Quitting RenderControl \n");
+      glhandle_g.ok = 0;
+      glhandle_g.ready = 0;
       glutDestroyWindow(glhandle_g.figure);
     }
   if (key == 'c')
@@ -689,6 +693,12 @@ void CameraControl::Update(StateHistory state)
 }
 
 //////////////////MAINWINDOW///////////////////////
+
+int RenderControl::isok() {
+  okmutex.lock();
+  return ok;
+  okmutex.unlock();
+}
 
 void RenderControl::WindowInitialize(bool Full,int argc,char** argv)
 {

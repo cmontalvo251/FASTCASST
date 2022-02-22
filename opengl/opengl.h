@@ -184,6 +184,7 @@ public:
 class RenderControl {
  private:
  public:
+  int isok();
   int figure,Width,Height;
   int savepics,counter,itime;
   int ok;
@@ -212,9 +213,11 @@ class RenderControl {
 
 //Create OPENGL variable but make it extern so it isn't created more than once */
 extern RenderControl glhandle_g;
+extern boost::mutex GLmutex;
 extern boost::mutex statemutex;
 extern boost::mutex controlmutex;
 extern boost::mutex timemutex;
+extern boost::mutex okmutex;
 //Create OPENGL static member functions
 void DrawGLScene();
 void ResizeGLScene(int,int);

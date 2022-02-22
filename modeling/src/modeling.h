@@ -54,6 +54,7 @@ class modeling {
   void rk4step(double,int[]);
   void Derivatives(double,int[]);
   double keyboardVars[4];
+  //boost::thread render;
  public:
   //Matrices
   MATLAB model_matrix,integration_matrix,model_sense_matrix;

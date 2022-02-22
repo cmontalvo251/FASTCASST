@@ -1,6 +1,13 @@
 ========================2/22/2022==========================
 
-Alright time to add opengl 
+Alright time to add opengl. I had a huge boost library issue
+but everything is fine now. There are a few other issues
+with opengl like right now it starts at 1 second and the portal
+cube shoots straight up oh and the keyboard doesn't work
+
+1.) Starts at 1 second
+2.) Shoots straight up
+3.) keyboard doesn't work
 
 ========================2/13/2022==========================
 

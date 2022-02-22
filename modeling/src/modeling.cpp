@@ -159,7 +159,16 @@ void modeling::loop(double currentTime,int pwm_array[]) {
 
   //Send the model matrix to opengl
   #ifdef OPENGL_H
-  glhandle_g.state.UpdateRender(currentTime,cg,ptp,1,keyboardVars);
+  GLmutex.lock();
+  if (glhandle_g.ready == 1) {
+    glhandle_g.state.UpdateRender(currentTime,cg,ptp,1,keyboardVars);
+  } else {
+    printf("GL Handle Closed \n");
+    GLmutex.unlock();
+    //pthread_cancel(render.native_handle());
+    exit(1);
+  }
+  GLmutex.unlock();
   #endif
 
   //Add sensor noise if needed

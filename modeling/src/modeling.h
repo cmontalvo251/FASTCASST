@@ -53,6 +53,7 @@ class modeling {
   //double ACTUATOR_ERROR_PERCENT;
   void rk4step(double,int[]);
   void Derivatives(double,int[]);
+  double keyboardVars[4];
  public:
   //Matrices
   MATLAB model_matrix,integration_matrix,model_sense_matrix;
@@ -63,11 +64,14 @@ class modeling {
   //constructor
   modeling();
   //initialization routine
-  void init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB in_configuration_matrix);
+  void init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB in_configuration_matrix,int argc,char** argv);
   //Loop
   void loop(double currentTime,int pwm_array[]);
   //RK4step
   void rk4step(int pwm_array[]);
 };
+
+//Render Loop function
+void renderloop(char* root_folder_name,int argc,char** argv);
 
 #endif

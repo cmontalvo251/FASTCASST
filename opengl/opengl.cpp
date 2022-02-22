@@ -43,7 +43,7 @@ using namespace std;
 using namespace boost;
 
 //This creates a variable called glhandle_g (_g for global)
-OPENGL glhandle_g;
+RenderControl glhandle_g;
 boost::mutex statemutex; //this is so we can access the glhandle_g.state variables externally and internally
 boost::mutex timemutex;
 boost::mutex controlmutex;
@@ -58,12 +58,12 @@ GLubyte Numbers[10][24] = {{0x7E,0x00,0xFF,0x00,0xE3,0x00,0xD3,0x00,0xD3,0x00,0x
 GLubyte Special[2][24] = {{0x00,0x00,0x3E,0x00,0x3E,0x00,0x3E,0x00,0x3E,0x00,0x00,0x00,0x00,0x00,0x3E,0x00,0x3E,0x00,0x3E,0x00,0x3E,0x00,0x00,0x00},{0xF0,0x00,0xF0,0x00,0xF0,0x00,0xF0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}};
 
 //Constructor
-OPENGL::OPENGL() {
+RenderControl::RenderControl() {
   ok = 0;
   counter = 0;
 }
 
-void OPENGL::loop(int argc,char** argv,char fileroot[],int inFarplane,int inWidth,int inHeight) {
+void RenderControl::loop(int argc,char** argv,char fileroot[],int inFarplane,int inWidth,int inHeight) {
   bool Full;
   int NumObjects,ii;
   char objectfile[256]={NULL};
@@ -73,7 +73,7 @@ void OPENGL::loop(int argc,char** argv,char fileroot[],int inFarplane,int inWidt
   ifstream file;
   //Initialize itime which governs when to print to std out
   itime = 0;
-  printf("Initializeing OpenGL Rendering Environment\n");
+  printf("Initializeing RenderControl Rendering Environment\n");
   if (fileroot != NULL) {
     strcat(objectfile,fileroot);
   }
@@ -239,7 +239,7 @@ void KeyPressed(unsigned char key,int x,int y)
 
   if ((key == 27) || (key == 'q'))
     {
-      printf("Quitting OpenGL \n");
+      printf("Quitting RenderControl \n");
       glutDestroyWindow(glhandle_g.figure);
     }
   if (key == 'c')
@@ -690,7 +690,7 @@ void CameraControl::Update(StateHistory state)
 
 //////////////////MAINWINDOW///////////////////////
 
-void OPENGL::WindowInitialize(bool Full,int argc,char** argv)
+void RenderControl::WindowInitialize(bool Full,int argc,char** argv)
 {
   FILE* file;
   char name[256],OS[256];

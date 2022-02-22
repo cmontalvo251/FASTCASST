@@ -58,7 +58,7 @@ simonly:
 #SIL runs the main routine with openGL 
 #sudo apt-get install freeglut3-dev
 sil:
-	make all TYPE="SIL" EXECUTABLE="sil.exe" RENDER="-lGL -lGLU -lglut" OPENGLSOURCES="modeling/opengl/opengl.cpp" THREAD="-lpthread -lboost_system -lboost_thread -lboost_date_time"
+	make all TYPE="SIL" EXECUTABLE="sil.exe" RENDER="-lGL -lGLU -lglut" OPENGLSOURCES="opengl/opengl.cpp" THREAD="-lpthread -lboost_system -lboost_thread -lboost_date_time"
 
 #Auto mode. Fully deployed on platform. Modeling routine is off
 auto:

@@ -5,7 +5,7 @@ modeling::modeling() {
 }
 
 //Initialization 
-void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB in_configuration_matrix) {
+void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB in_configuration_matrix,int argc,char** argv) {
   printf("Modeling Root Folder Name = %s \n",root_folder_name);
   //in_simulation_matrix.disp();
 
@@ -94,9 +94,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   integrator.set_ICs(integration_matrix);
 
   //6DOF VARS
-  //Always create these just because I don't want to think about
-  //when we actually need them and it's really easy to create them
-  cg.zeros(3,1,"Center of Mass");
+  cg.zeros(3,1,"Center of Mass"); 
   ptp.zeros(3,1,"Roll Pitch Yaw");
   FTOTALI.zeros(3,1,"Total Forces Inertial Frame");
   q0123.zeros(4,1,"Quaternions");
@@ -116,7 +114,28 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   Kuvw_pqr.zeros(3,1,"uvw cross pqr");
   BVECB.zeros(3,1,"Body Frame Magnetic Field (nT)");
   BVECB_Tesla.zeros(3,1,"Body Frame Magnetic Field (Teslas)");
+
+  //Kick off the render loop in its own thread if open gl is on
+  #ifdef OPENGL_H
+  printf("Kicking off OpenGL \n");
+  boost::thread render(renderloop,root_folder_name,argc,argv);
+  //Wait for the opengl routine to actually start
+  while (glhandle_g.ready == 0) {
+    cross_sleep(1);
+  }
+  #endif
+
 }
+
+///render loop if OPENGL is on
+#ifdef OPENGL_H
+void renderloop(char* root_folder_name,int argc,char** argv) {
+  int Farplane = 10000;
+  int width = 600;
+  int height = 600;
+  glhandle_g.loop(argc,argv,root_folder_name,Farplane,width,height);
+}
+#endif
 
 ///Loop
 void modeling::loop(double currentTime,int pwm_array[]) {
@@ -137,6 +156,11 @@ void modeling::loop(double currentTime,int pwm_array[]) {
 
   //Copy the states over to the model matrix for opengl and hardware loops
   model_matrix.vecset(1,NUMINTEGRATIONSTATES,integration_matrix,1);
+
+  //Send the model matrix to opengl
+  #ifdef OPENGL_H
+  glhandle_g.state.UpdateRender(currentTime,cg,ptp,1,keyboardVars);
+  #endif
 
   //Add sensor noise if needed
 
@@ -186,11 +210,14 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   ////////////////////KINEMATICS///////////////
 
   //Extract individual States from State Vector
+  cg.vecset(1,3,integrator.StateDel,1);
   cgdotB.vecset(1,3,integrator.StateDel,8); //uvw
   q0123.vecset(1,4,integrator.StateDel,4);
   pqr.vecset(1,3,integrator.StateDel,11);
   //This is used to rotate things from body to inertial and vice versa
   ine2bod321.L321(q0123, 1);
+  //Set ptp
+  ine2bod321.getptp(ptp);
 
   ///Linear Kinematics (xyzdot = TIB uvw)
   ine2bod321.rotateBody2Inertial(cgdotI,cgdotB);

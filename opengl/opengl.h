@@ -181,7 +181,7 @@ public:
 };
 
 
-class OPENGL {
+class RenderControl {
  private:
  public:
   int figure,Width,Height;
@@ -207,11 +207,11 @@ class OPENGL {
   //Statehistory functions
   void GetNewState();
   //Constructor
-  OPENGL();
+  RenderControl();
 };
 
 //Create OPENGL variable but make it extern so it isn't created more than once */
-extern OPENGL glhandle_g;
+extern RenderControl glhandle_g;
 extern boost::mutex statemutex;
 extern boost::mutex controlmutex;
 extern boost::mutex timemutex;

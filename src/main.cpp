@@ -30,6 +30,17 @@ modeling model;
 #endif
 #endif
 
+//If running in SIL or HIL mode you need to run in realtime
+//But I think only on DESKTOP
+#if defined (SIL) || (HIL)
+#if defined (DESKTOP)
+#define REALTIME
+#endif
+#endif
+
+//Main Loop Functions
+void renderloop(char* root_folder_name,int argc,char** argv);
+void loop();
 
 int main(int argc,char* argv[]) {
   printf("FASTKit Software version 42.0 \n");
@@ -67,11 +78,22 @@ int main(int argc,char* argv[]) {
 
   //Initialize Model if it's on
   #ifdef MODELING
-  model.init(root_folder_name,hw.in_simulation_matrix,hw.in_configuration_matrix);
+  model.init(root_folder_name,hw.in_simulation_matrix,hw.in_configuration_matrix,argc,argv);
   #endif
 
-  //Begin main loop but run as a separate function in anticipation of threading
+  ////KICK OFF MAIN LOOP THREAD IF OPENGL IS ON
+  #ifdef OPENGL_H 
+  printf("Kicking off Main Loop as a thread \n");
+  //When you have opengl running you need to kick this off as a thread
+  boost::thread run(loop); 
+  //Now there is a problem here. When you kick off the rendering environment and the Mainloop
+  //above the code actually has 3 threads now. The MainLoop, the rendering environment and this main.cpp
+  //In otherwords you need to create an infinite loop here
+  while(1){cross_sleep(1);}; 
+  #else
+  //If you aren't rendering you just need to kick off the mainloop without a thread
   loop();
+  #endif
 }
 
 //Main Loop
@@ -89,7 +111,7 @@ void loop() {
   while (system_check()) {
 
     ///////////TIMING UPDATE/////////////////
-    #ifdef MODELING
+    #ifndef REALTIME
     //The system clock is updated by integrating the timestep by 1 timestep
     watch.incrementTime(model.TIMESTEP);
     #else

@@ -12,6 +12,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   ////////EXTRACT SIMULATION MATRIX VARIABLES
   TFINAL=in_simulation_matrix.get(1,1);
   TIMESTEP=in_simulation_matrix.get(2,1);
+  integrationTime=0;
 
   //Initialize Matrices
   NUMVARS = 30; //Make sure this is the same as the sense states
@@ -139,6 +140,14 @@ void renderloop(char* root_folder_name,int argc,char** argv) {
 
 ///Loop
 void modeling::loop(double currentTime,int pwm_array[]) {
+
+  //Check to see if we're integrating too fast
+  if (currentTime < integrationTime) {
+    //if this loop is true we need to break prematurely because if not we will 
+    //integrate faster than the real time clock
+    return;
+  }
+
   //printf("Modeling Loop \n");
   if (currentTime > TFINAL) {
     //Simulation is over.
@@ -183,6 +192,8 @@ void modeling::loop(double currentTime,int pwm_array[]) {
     nextLOGtime=currentTime+LOGRATE;
   }
 
+  //increment integration time
+  integrationTime+=TIMESTEP;
 }
 
 void modeling::rk4step(double currentTime,int pwm_array[]) {
@@ -270,17 +281,21 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   }
   
   //Add Up Forces and Moments
-  FTOTALI.overwrite(env.FGRAVI); //add gravity 
+  //env.FGRAVI.disp();
+  FTOTALI.overwrite(env.FGRAVI); //add gravity force
+  //FTOTALI.disp();
 
   //Rotate Forces to body frame
   ine2bod321.rotateInertial2Body(FGNDB,env.FGNDI);
   ine2bod321.rotateInertial2Body(FTOTALB,FTOTALI);
+  //FTOTALB.disp();
 
   //Add External Forces and Moments
   //FTOTALB.disp();
   //env.FGRAVI.disp();
-  FTOTALB.plus_eq(extforces.FB);
   FTOTALB.plus_eq(FGNDB);
+  //FTOTALB.disp();
+  FTOTALB.plus_eq(extforces.FB);
   //extforces.FB.disp();
   //FGNDB.disp();
   //FTOTALB.disp();  

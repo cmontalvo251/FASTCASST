@@ -23,7 +23,6 @@ using namespace GeographicLib; //Necessary for Grav and Magnet models
 class environment {
  private:
   char COEFFFILENAME[256];
-  int GRAVITY_FLAG;
   double mass;
   GravityModel* egm2008;
   MagneticModel* emm2015;

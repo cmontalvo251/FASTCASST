@@ -120,16 +120,18 @@ void environment::groundcontactmodel(MATLAB State,MATLAB k) {
 
   //Check to see if we're inside Earth
   bool insideEarth = 0;
+  //!Gravity Flag (-1=off,0=point mass, 1=egm2008,2=point mass + sun,3=flat earth)
   //Flat Earth Model. Z is down so anything positive is under the surface
-  if ((GRAVITY_FLAG == 1) & (z>0)) {
+  //printf("GRAVITY_FLAG = %d z = %lf \n",GRAVITY_FLAG,z);
+  if ((Gravity_Flag == 3) & (z>0)) {
     insideEarth = 1;
   }
   //Globe Model
-  if ((GRAVITY_FLAG == 2) & (norm<REARTH)) {
+  if ((Gravity_Flag == 1) & (norm<REARTH)) {
     insideEarth = 1;
   }
   if (insideEarth) {
-    printf("INSIDE EARTH! \n");
+    //printf("INSIDE EARTH! \n");
     FGNDI.set(1,1,-N*GNDCOEFF*sat(xdot,0.1,1.0));
     FGNDI.set(2,1,-N*GNDCOEFF*sat(ydot,0.1,1.0));
     FGNDI.set(3,1,-z*GNDSTIFF-zdot*GNDDAMP);

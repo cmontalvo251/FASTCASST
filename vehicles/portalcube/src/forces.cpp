@@ -33,12 +33,13 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   //Convert throttle signals to thruster value
   double TMAX = 1000;
   double TORQUEMAX = 10.0;
-  double max_slope = (STICK_MAX-STICK_MIN);
-  double mid_slope = (STICK_MAX-STICK_MID);
-  double Zthrust = -(throttleUS - STICK_MIN)/max_slope*TMAX;
-  double Lthrust = (aileronUS - STICK_MID)/mid_slope*TORQUEMAX;
-  double Mthrust = (elevatorUS - STICK_MID)/mid_slope*TORQUEMAX;
-  double Nthrust = (rudderUS - STICK_MID)/mid_slope*TORQUEMAX;
+  double max_slope = (OUTMAX-OUTMIN);
+  double mid_slope = (OUTMAX-OUTMID);
+  double Zthrust = -(throttleUS - OUTMIN)/max_slope*TMAX;
+  //printf("Thrust = %lf STICK_MIN = %lf \n",Zthrust,STICK_MIN);
+  double Lthrust = (aileronUS - OUTMID)/mid_slope*TORQUEMAX;
+  double Mthrust = (elevatorUS - OUTMID)/mid_slope*TORQUEMAX;
+  double Nthrust = (rudderUS - OUTMID)/mid_slope*TORQUEMAX;
 	
   // Parameters
   double S = 0.1; //m^2

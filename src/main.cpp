@@ -104,9 +104,11 @@ void loop() {
   printf("Main Loop Begin \n");
 
   //Initialize the Timer if we're running in Software mode
+  double initTime = 0;
   #ifdef MODELING
-  watch.init(-model.TIMESTEP);
+  initTime = -model.TIMESTEP;
   #endif
+  watch.init(initTime);
   
   while (system_check()) {
 
@@ -142,7 +144,7 @@ void loop() {
     /////////////////////////////////////////
 
     //PRINT TO STDOUT
-    if (lastPRINTtime < watch.currentTime) {
+    if (lastPRINTtime <= watch.currentTime) {
       lastPRINTtime+=hw.PRINTRATE;
       //Time
       printf("%lf ",watch.currentTime);

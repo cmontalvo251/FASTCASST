@@ -106,6 +106,7 @@ void TIMER::incrementTime(double TIMESTEP) {
 }
 
 void TIMER::init(double time) {
+  resetStartTime();
   currentTime = time;
   elapsedTime = 0;
   prevTime_ = 0;

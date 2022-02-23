@@ -1,7 +1,26 @@
 ========================2/22/2022========================
 
 Keyboard is working now and airplane dynamics are working.
-Shall we add the quad dynamics? May as well.
+Shall we add the quad dynamics? May as well. Quad dynamics have
+been added. Here's the rest of the actions in no particular order
+
+------------FOR ANTX-----------------------
+0.) AUTO mode on bench top
+1.) Telemetry with Processing Ground Station
+-----------------------------------------
+
+------------TO COMPLETE OLD FUNCTIONALITY----------
+2.) Actuator Dynamics/Errors
+3.) Satellite, X8, and Tank Dynamics
+4.) Sensor Errors
+--------------------------------------------------
+
+----------------------SPRING GOALS-----------------
+5.) Hardware in the Loop
+6.) Threading all sensors with the boost library
+7.) Higher level autopilot (heading angle and waypoint control)
+8.) Python GroundStation
+----------------------------------------------------
 
 ========================2/21/2022==========================
 

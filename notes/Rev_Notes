@@ -1,4 +1,9 @@
-========================2/22/2022==========================
+========================2/22/2022========================
+
+Keyboard is working now and airplane dynamics are working.
+Shall we add the quad dynamics? May as well.
+
+========================2/21/2022==========================
 
 Alright time to add opengl. I had a huge boost library issue
 but everything is fine now. There are a few other issues

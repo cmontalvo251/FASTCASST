@@ -441,9 +441,12 @@ void StateHistory::UpdateRender(double time,MATLAB cgin,MATLAB ptpin,int objectn
 
   //Set Keyboard state
   controlmutex.lock();
+  //printf("Key = ");
   for (int i = 0;i<NUMCONTROLS;i++) {
     keyboardOut[i] = control[i];
+    //printf("%lf ",keyboardOut[i]);
   }
+  //printf("\n");
   controlmutex.unlock();
 }
 

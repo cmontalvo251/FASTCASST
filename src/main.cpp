@@ -126,7 +126,7 @@ void loop() {
     //This runs as fast as possible
     //Need a routine that sends the model matrix to the hardware routine
     #ifdef MODELING
-    hw.send(model.model_matrix);
+    hw.send(model.model_matrix,model.keyboardVars);
     #endif
     hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
     /////////////////////////////////////////

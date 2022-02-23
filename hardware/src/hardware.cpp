@@ -52,7 +52,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
 
 //This version of the loop runs assuming you are saving data from the simulation 
 //environment
-void hardware::send(MATLAB model_matrix) {
+void hardware::send(MATLAB model_matrix,double keyboardVars[]) {
   //X,Y,Z
   sense.satellites.X = model_matrix.get(1,1);
   sense.satellites.Y = model_matrix.get(2,1);
@@ -76,6 +76,19 @@ void hardware::send(MATLAB model_matrix) {
 
   //Still need all the other sensor states but not right now
 
+
+  //Is using the keyboard you need to copy over the keyboard values
+  //to rcin
+  #ifdef KEYBOARD
+  for (int i = 0;i<4;i++) {
+    rc.in.keyboard[i] = keyboardVars[i];
+  }
+  //printf("Key = ");
+  //for (int i = 0;i<4;i++) {
+  //printf("%lf ",keyboardVars[i]);
+  //}
+  //printf("\n");
+  #endif
 }
 
 //This version of the loop runs assuming you are polling from real hardware

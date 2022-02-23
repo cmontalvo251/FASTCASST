@@ -53,10 +53,10 @@ class modeling {
   //double ACTUATOR_ERROR_PERCENT;
   void rk4step(double,int[]);
   void Derivatives(double,int[]);
-  double keyboardVars[4];
   double integrationTime=0;
   //boost::thread render;
  public:
+  double keyboardVars[4];
   //Matrices
   MATLAB model_matrix,integration_matrix,model_sense_matrix;
   //Status

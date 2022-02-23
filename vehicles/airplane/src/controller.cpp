@@ -93,5 +93,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     
     control_matrix.set(2,1,aileron);
     control_matrix.set(3,1,elevator);
+  } else {
+    //printf("Passing RX to PWM \n");
+    for (int i = 0;i<4;i++) {
+      control_matrix.set(i+1,1,rx_array[i]);
+    }
   }
 }

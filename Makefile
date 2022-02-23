@@ -96,3 +96,5 @@ clean:
 	rm $(MODELING)/*/*.o
 	echo ' ' > vehicles/portalcube/src/d.o
 	rm vehicles/portalcube/src/*.o
+	echo ' ' > vehicles/airplane/src/d.o
+	rm vehicles/airplane/src/*.o

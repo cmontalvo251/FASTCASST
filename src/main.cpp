@@ -31,11 +31,10 @@ modeling model;
 #endif
 
 //If running in SIL or HIL mode you need to run in realtime
-//But I think only on DESKTOP
-#if defined (SIL) || (HIL)
-#if defined (DESKTOP)
+//But I think only on DESKTOP. Ok nvm. You need to run in realtime
+//in auto mode as well which basically means only do this in SIMONLY
+#ifndef SIMONLY
 #define REALTIME
-#endif
 #endif
 
 //Main Loop Functions
@@ -113,12 +112,13 @@ void loop() {
   while (system_check()) {
 
     ///////////TIMING UPDATE/////////////////
-    #ifndef REALTIME
+    #ifdef REALTIME
+    //Use real time clock
+    //printf("Using Real time clock \n");
+    watch.updateTime();
+    #else
     //The system clock is updated by integrating the timestep by 1 timestep
     watch.incrementTime(model.TIMESTEP);
-    #else
-    //Use real time clock
-    watch.updateTime();
     #endif
     /////////////////////////////////////////
 

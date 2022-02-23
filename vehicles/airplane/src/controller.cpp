@@ -3,11 +3,9 @@
 
 #include "controller.h"
 
-//Constructor
 controller::controller() {
 };
 
-//Initialization
 void controller::init(MATLAB in_configuration_matrix) {
   control_matrix.zeros(NUMSIGNALS,1,"Control Signals"); //The standards must be TAERA1A2A3A4
   set_defaults();
@@ -24,7 +22,12 @@ void controller::set_defaults() {
   control_matrix.set(4,1,OUTMID);
 }
 
-//Main Control Loop
+void controller::print() {
+  for (int i = 1;i<=NUMSIGNALS;i++) {
+    printf("%d ",int(control_matrix.get(i,1)));
+  }
+}
+
 void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //The sensor matrix is a 29x1. See sensors.cpp for list of sensors
   //At a minimum you need to just feed through the rxcomms into the ctlcomms
@@ -47,7 +50,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   bool icontrol = 0;
 
   switch (CONTROLLER_FLAG) {
-    case -1:
+  case -1:
     //User decides
     if (autopilot > STICK_MID) {
       icontrol = 1;
@@ -55,56 +58,40 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       icontrol = 0;
     }
     break;
-    case 0:
+  case 0:
     //Always off
     icontrol = 0;
     break;
-    case 1:
+  case 1:
     //Always on
     icontrol = 1;
     break;
   }
-  
+
   //Then you can run any control loop you want.
   if (icontrol) {
     #ifdef SIL 
     printf("Auto ON \n");
     #endif
-    //For this portal cube we want an altitude controller
-    double z = sense_matrix.get(3,1);
-    //Compute zdot
-    double zdot = 0;
-    if (zprev == -99) {
-      zprev = z;
-    } else {
-      zdot = (z-zprev)/elapsedTime;
-    }
-    double zcommand = -50;
-    double kpz = 100;
-    double kdz = 50;
-    double thrust_comm = kpz*(z-zcommand) + kdz*(zdot) + STICK_MIN;
-    control_matrix.set(1,1,thrust_comm);
-    //We are then going to code a roll and pitch contoller
-    double roll = sense_matrix.get(4,1)*PI/180.0;
-    double pitch = sense_matrix.get(5,1)*PI/180.0;  //convert to radians
-    double yaw = sense_matrix.get(6,1)*PI/180.0;
-    double p = sense_matrix.get(10,1);
-    double q = sense_matrix.get(11,1);
-    double r = sense_matrix.get(12,1)*PI/180.0;
-    double kpE = -100;
-    double kdE = -1000;
-    double rollcommand = 0;
-    double pitchcommand = 0;
-    double yawcommand = 0;
-    double roll_comm = kpE*(roll-rollcommand) + kdE*p + OUTMID;
-    double pitch_comm = kpE*(pitch-pitchcommand) + kdE*q + OUTMID;
-    double yaw_comm = kpE*(yaw-yawcommand) + kdE*r + OUTMID;
-    control_matrix.set(2,1,roll_comm);
-    control_matrix.set(3,1,pitch_comm);
-    control_matrix.set(4,1,yaw_comm);
-    //printf("Yaw Comm = %lf \n",ctlcomms.get(4,1));
+
+    //For now just pitch and roll commands
+    double roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+    double pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+    
+    //Get States
+    double roll = sense_matrix.get(4,1);
+    double pitch = sense_matrix.get(5,1);
+    double roll_rate = sense_matrix.get(10,1); //For SIL/SIMONLY see Sensors.cpp
+    double pitch_rate = sense_matrix.get(11,1); //These are already in deg/s
+    //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
+    double kp = 10.0;
+    double kd = 2.0;
+    double aileron = kp*(roll-roll_command) + kd*(roll_rate);
+    aileron = -CONSTRAIN(aileron,-500,500) + OUTMID;
+    double elevator = kp*(pitch-pitch_command) + kd*(pitch_rate);
+    elevator = CONSTRAIN(elevator,-500,500) + OUTMID;
+    
+    control_matrix.set(2,1,aileron);
+    control_matrix.set(3,1,elevator);
   }
-  //ctlcomms.disp();
-
 }
-

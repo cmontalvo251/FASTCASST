@@ -1,0 +1,21 @@
+0               !Save Each Frame to a File 1 = on,0 = off
+3  		     	!Number of objects in window 
+10				!Camera Offset Z axis
+3				!Default camera (see directions below)
+vehicles/quadcopter/objects/quadcopter.obj 	!First Object file - No spaces allowed!!
+5.0000  	    !Scale Factor of Object
+1.000000		!Scale Factor of Position
+vehicles/static_objects/sky/sky.obj 	!Second Object file - This is the skydome
+100.000000  	        !Scale Factor of Object
+1.000000  	        !Scale Factor of Position
+vehicles/static_objects/ground/ground.obj !Third Object File - This is the ground plane
+2000.000000			!Scale factor of object
+1.000000			!Scale factor of position
+
+//default camera
+//This is where you set the default camera
+//#camera 0-objects-1 = follow cameras
+//#objects-objects*2 - origin cameras
+//so a 0 will follow the first object
+//if there are 3 objects (cube, sky, ground) then defcam = 3 would
+//be an origin camera following the cube

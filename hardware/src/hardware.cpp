@@ -143,5 +143,9 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
 
   //And then send the pwm_array to the servos and ESCs as quickly as possible
   //The write function has a built in saturation block no need to worry there
+  //Right now we have to shut this off when using the satellite because
+  //Satellites don't use servos
+  #ifndef satellite
   rc.out.write();
+  #endif
 }

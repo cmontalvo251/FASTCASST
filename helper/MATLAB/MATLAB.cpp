@@ -335,11 +335,11 @@ void MATLAB::quat2euler(MATLAB q0123) {
   double val = 2*(q0*q2-q3*q1);
   if (abs(val) > 1.0) {
     set(2,1,SIGN(1.0,val)*PI/2.0);
-    printf("NORM = %lf \n",norm);
-    q0123.disp();
-    printf("val = %lf asin(val) = %lf \n",val,asin(val));
-    printf("INVALID QUATERNION CONVERSION IN QUAT2EULER in MATLAB.cpp \n");
-    printf("MOST LIKELY PITCH ANGLE IS 90 deg \n");
+    //printf("NORM = %lf \n",norm);
+    //q0123.disp();
+    //printf("val = %lf asin(val) = %lf \n",val,asin(val));
+    //printf("INVALID QUATERNION CONVERSION IN QUAT2EULER in MATLAB.cpp \n");
+    //printf("MOST LIKELY PITCH ANGLE IS 90 deg \n");
     //exit(1);
   } else {
    set(2,1,asin(val));

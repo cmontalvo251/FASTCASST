@@ -3,7 +3,35 @@
 AUTO mode was tested right before spring break. Telemetry
 has been coded and just needs to be tested. If all that works
 ANTX will be done. After that it's time to start working 
-on Spring goals. 
+on Spring goals. Ok actually old functionality really needs
+to be completed first. I just found a pretty big issue
+In order to test the issue try switching into autopilot
+The problem is that the Sense Matrix report Q0123 rather 
+than RPY
+
+Added X8, Satellite and Tank Dynamics. Gonna update the list from
+2/22 because I found a pretty major issue.
+
+------------FOR ANTX-----------------------
+0.) Test AUTO and TELEMETRY on Bench test with 
+Processing Ground Station including autopilot.
+Might need to fix item 3 below as well
+----------------------------------------------
+
+------------TO COMPLETE OLD FUNCTIONALITY----------
+2.) Actuator Dynamics/Errors
+3.) Sense Matrix needs to be 29x1 with RPY and quaternions
+from model matrix needs to be converted to RPY. This 
+has the potential for breaking quite a bit of stuff.
+4.) Sensor Errors
+--------------------------------------------------
+
+----------------------SPRING GOALS-----------------
+5.) Hardware in the Loop
+6.) Threading all sensors with the boost library
+7.) Higher level autopilot (heading angle and waypoint control)
+8.) Python GroundStation
+----------------------------------------------------
 
 ========================2/24/2022========================
 

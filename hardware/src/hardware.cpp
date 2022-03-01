@@ -32,6 +32,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   PRINTRATE = in_configuration_matrix.get(1,1);
   LOGRATE = in_configuration_matrix.get(2,1);
   RCRATE = in_configuration_matrix.get(3,1);
+  TELEMRATE = in_configuration_matrix.get(4,1);
 
   //Pick the IMU you want to use
   //0 = MPU9250
@@ -48,6 +49,12 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   logger.appendheader("Time (sec)");
   logger.appendheaders(sense.headernames,sense.getNumVars());
   logger.printheaders();
+
+  //Initialize the Telemetry or HIL
+  //(I think right now we can only do HIL or telemetry. We can't do both)
+  NUMTELEMETRY = 6; //Set the actual values in the loop function
+  telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix HW");
+  ser.init(sense.sense_matrix,NUMSIGNALS,NUMTELEMETRY);
 }
 
 //This version of the loop runs assuming you are saving data from the simulation 
@@ -107,11 +114,32 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     rc.out.pwm_array[i] = control_matrix.get(i+1,1);
   }
 
+  //Check to see if it's time to log
   if (currentTime > nextLOGtime) {
     logger.printvar(currentTime);
     logger.println(sense.sense_matrix);
     nextLOGtime=currentTime+LOGRATE;
   }
+
+  //Send telemetry data. Always running to make sure
+  //it works in SIL mode and SIMONLY.
+  //Unfortunately I have to turn off telemetry in HIL mode
+  //Because we are using the radios for HIL right now
+  //If I find another way to send data from a computer
+  //to an RPI I will change this.
+  #ifndef HIL
+  if (currentTime > nextTELEMtime) {
+    //For right now let's send RPY and GPS coordinates
+    telemetry_matrix.set(1,1,currentTime);
+    telemetry_matrix.set(2,1,sense.orientation.roll);
+    telemetry_matrix.set(3,1,sense.orientation.pitch);
+    telemetry_matrix.set(4,1,sense.orientation.yaw);
+    telemetry_matrix.set(5,1,sense.satellites.latitude);
+    telemetry_matrix.set(6,1,sense.satellites.longitude);
+    ser.sendTelemetry(telemetry_matrix);
+    nextTELEMtime=currentTime+TELEMRATE;
+  }
+  #endif
 
   //And then send the pwm_array to the servos and ESCs as quickly as possible
   //The write function has a built in saturation block no need to worry there

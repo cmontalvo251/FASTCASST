@@ -18,6 +18,9 @@
 //Time for pause function
 #include <Timer/timer.h>
 
+//UART for HIL and Telemetry
+#include <UART/uart.h>
+
 ///////////Inputs to Hardware Class///////////////
 // 1 - Root Folder name (char*)
 // 2 - Control Matrix (MATLAB)
@@ -37,7 +40,14 @@ class hardware {
  private:
   double nextLOGtime = 0;
   double nextRCtime = 0;
+  double nextTELEMtime = 0;
+  MATLAB telemetry_matrix;
   Datalogger logger;
+  UART ser;
+  //Unfortunately telemetry values are going to be hardcoded
+  //Rather than use input files you'll have to edit the code
+  //in the init() and loop() functions
+  int NUMTELEMETRY;
  public:
   //RCIO Class
   RCIO rc;
@@ -46,7 +56,7 @@ class hardware {
   //Status
   int ok = 1;
   //Rates
-  double PRINTRATE=1.0,RCRATE=1.0,LOGRATE=1.0;
+  double PRINTRATE=1.0,RCRATE=1.0,LOGRATE=1.0,TELEMRATE=1.0;
   //Outputs
   MATLAB in_simulation_matrix,in_configuration_matrix;
   //Initialization routine needs the root folder name

@@ -120,6 +120,7 @@ class MATLAB {
   void dmatrixprint(double**,int,char*);
   int getRow();
   int getCol();
+  int len();
   char* getName();
 
   void vecfprintf(FILE*);

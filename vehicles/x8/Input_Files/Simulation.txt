@@ -12,7 +12,7 @@
 0.0	!Initial Zbody Velocity (m/s)
 0.0	!Initial Roll Rate (rad/s)
 0.0	!Initial Pitch Rate (rad/s)
-1.0	!Initial Yaw Rate (rad/s)
+0.0	!Initial Yaw Rate (rad/s)
 1	!External Force Model (0=off,1=on) - 16
 3	!Gravity Flag (-1=off,0=point mass, 1=egm2008,2=point mass + sun,3=flat earth)
 0	!Magnetic Field Model (0=off, 1=emm2015)
@@ -30,11 +30,19 @@
 0.0	!Noise of Magnetometer (Tesla)
 0	!Actuator Dynamics and Errors (0=off,1=on)
 0.0 	!Actuator Error Percent (ACTUATOR_FLAG must be set above)
-4	!Number of Actuators to Simulate (Must be the same as control signals)
+8	!Number of Actuators to Simulate (Must be the same as control signals)
 0.1	!Settling Time (sec) of first actuator
 0.1	!Settling Time (sec) of 2 actuator
 0.1	!Settling Time (sec) of 3 actuator
 0.1	!Settling Time (sec) of 4 actuator
+0.1	!Settling Time (sec) of first actuator
+0.1	!Settling Time (sec) of 2 actuator
+0.1	!Settling Time (sec) of 3 actuator
+0.1	!Settling Time (sec) of 4 actuator
+1100.0  !Initial Condition of Actuator 1 (Throttle)
+1100.0  !Initial Condition of Actuator 2 (Aileron)
+1100.0  !Initial Condition of Actuator 3 (Elevator)
+1100.0  !Initial Condition of Actuator 4 (Rudder)
 1100.0  !Initial Condition of Actuator 1 (Throttle)
 1100.0  !Initial Condition of Actuator 2 (Aileron)
 1100.0  !Initial Condition of Actuator 3 (Elevator)

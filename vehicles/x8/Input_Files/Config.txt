@@ -1,0 +1,11 @@
+0.1 	 !Standard Out Print Rate // seconds (set to negative)
+0.5  	 !Data logging rate // seconds (numbers if you want)
+0.01	 !RC Rate // seconds (to run as fast as possible)
+1.0      !Telemetry Rate (seconds)
+0        !IMUTYPE (0=MPU,1=LSM)
+0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
+0	 	 !Control System (-1=controlled by PIC,0=off all the time,1=on all the time)
+0.735 !mass  (kg)
+0.0146 !Ixx    (kg-m^2)
+0.0146 !Iyy    (kg-m^2)
+0.0285 !Izz     (kg-m^2)

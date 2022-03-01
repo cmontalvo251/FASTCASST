@@ -325,6 +325,10 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   MTOTALB.overwrite(extforces.MB);
   MTOTALB.plus_eq(MGNDB);
 
+  //MTOTALB.disp();
+  //pqr.disp();
+  //PAUSE();
+
   ///Rotational Dynamics
   //pqrskew = [0 -r q;r 0 -p;-q p 0];  
   //pqrdot = Iinv*(LMN-pqrskew*I*pqr);
@@ -338,7 +342,7 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //LMN.disp();
   //Iinv.disp();
   pqrdot.mult(Iinv,MTOTALB);
-  
+
   //Save pqrdot
   integrator.k.vecset(11,13,pqrdot,1);
 

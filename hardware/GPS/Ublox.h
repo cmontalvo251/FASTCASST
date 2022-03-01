@@ -42,7 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <stdint.h>
 #include <vector>
-#include <Serial/SPIdev.h>
+#include <UART/SPIdev.h>
 
 #define PACKED __attribute__((__packed__))
 

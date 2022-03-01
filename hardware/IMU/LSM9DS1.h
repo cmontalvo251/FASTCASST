@@ -6,7 +6,7 @@
 #define _LSM9DS1_H
 
 #include <stdint.h>
-#include <Serial/SPIdev.h>
+#include <UART/SPIdev.h>
 #include <IMU/InertialSensor.h>
 
 class LSM9DS1 : public InertialSensor

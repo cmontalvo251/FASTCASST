@@ -506,6 +506,19 @@ int MATLAB::getCol() {
   return col_;
 }
 
+int MATLAB::len() {
+  int row = getRow();
+  int col = getCol();
+  int out = 0;
+  if (row > 1) {
+    out += row;
+  }
+  if (col > 1) {
+    out += col;
+  }
+  return out;
+}
+
 char* MATLAB::getName() {
   if (init_) {
     return name_;

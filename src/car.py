@@ -1,3 +1,16 @@
+#############################################
+#
+#  FASTPy - Facility for Aerial Systems and Technology
+#  Kit in Python
+#
+#  Front Wheel Drive Car Manual Control Software
+#  Created: Spring 2022
+#  Primary Author: Julia Nelson
+#  Secondary Author: Maxwell Cobar
+#
+################################################
+
+
 #Add in all needed libraries and modules
 import sys, time
 

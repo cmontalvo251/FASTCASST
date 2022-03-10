@@ -42,6 +42,7 @@ class hardware {
   double nextRCtime = 0;
   double nextTELEMtime = 0;
   MATLAB telemetry_matrix;
+  MATLAB q0123,ptp;
   Datalogger logger;
   UART ser;
   //Unfortunately telemetry values are going to be hardcoded

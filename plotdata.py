@@ -15,8 +15,8 @@ except:
 
 #Run code
 os.system('./clean_logs')
-os.system('make simonly MODEL="x8"')
-os.system('./simonly.exe x8/')
+os.system('make simonly MODEL="airplane"')
+os.system('./simonly.exe airplane/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File

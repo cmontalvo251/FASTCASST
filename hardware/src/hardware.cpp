@@ -42,6 +42,10 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
 
   //Set the Filter Constant
   sense.orientation.FilterConstant = in_configuration_matrix.get(6,1);
+
+  //Initialize q0123 and ptp
+  q0123.zeros(4,1,"Sense Quaternions");
+  ptp.zeros(3,1,"Sense Roll Pitch Yaw");
   
   //Initialize Logger
   logger.init("data/",sense.getNumVars()+1);
@@ -75,6 +79,13 @@ void hardware::send(MATLAB model_matrix,double keyboardVars[]) {
   sense.orientation.ahrs.q1 = model_matrix.get(5,1);
   sense.orientation.ahrs.q2 = model_matrix.get(6,1);
   sense.orientation.ahrs.q3 = model_matrix.get(7,1);
+
+  //Convert the quaternions to Euler Angles
+  q0123.vecset(1,4,model_matrix,4);
+  ptp.quat2euler(q0123);
+  sense.orientation.roll = ptp.get(1,1)*180/PI;
+  sense.orientation.pitch = ptp.get(2,1)*180/PI;
+  sense.orientation.yaw = ptp.get(3,1)*180/PI;
 
   //Set gx,gy,gz from sense_matrix for filtering (notice the wierd ordering)
   sense.orientation.gy = model_matrix.get(11,1);

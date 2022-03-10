@@ -68,6 +68,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     break;
   }
 
+  //sense_matrix.disp();
+  //while(1){};
+
   //Then you can run any control loop you want.
   if (icontrol) {
     #ifdef SIL 

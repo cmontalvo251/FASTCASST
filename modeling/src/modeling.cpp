@@ -15,8 +15,9 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   integrationTime=0;
 
   //Initialize Matrices
-  NUMVARS = 30; //Make sure this is the same as the sense states
+  NUMVARS = 30; //Make sure this is the same as the sense states+1
   model_matrix.zeros(NUMVARS,1,"Model Matrix"); 
+  output_matrix.zeros(NUMVARS-1,1,"OUTPUT Matrix"); //-1 for quaternions
   NUMINTEGRATIONSTATES=13; //Only integrating 13 states for a 6DOF system
   integration_matrix.zeros(NUMINTEGRATIONSTATES,1,"Integration Matrix");
 
@@ -28,37 +29,36 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //Get log rate
   LOGRATE = in_configuration_matrix.get(2,1);
   //Set names of headers
-  headernames = (char**)malloc(NUMVARS*sizeof(char*));
+  headernames = (char**)malloc((NUMVARS-1)*sizeof(char*)); //-1 because of quaternions
   headernames[0] = "X(m)";
   headernames[1] = "Y(m)";
   headernames[2] = "Z(m)";
-  headernames[3] = "Q0";
-  headernames[4] = "Q1";
-  headernames[5] = "Q2";
-  headernames[6] = "Q3";
-  headernames[7] = "U(m/s)";
-  headernames[8] = "V(m/s)";
-  headernames[9] = "W(m/s)";
-  headernames[10] = "P(deg/s)";
-  headernames[11] = "Q(deg/s)";
-  headernames[12] = "R(deg/s)";
-  headernames[13] = "Mx(Gauss)";
-  headernames[14] = "My(Gauss)";
-  headernames[15] = "Mz(Gauss)";
-  headernames[16] = "GPS Latitude (deg)";
-  headernames[17] = "GPS Longitude (deg)";
-  headernames[18] = "GPS Altitude (m)";
-  headernames[19] = "GPS Heading (deg)";
-  headernames[20] = "IMU Heading (deg)";
-  headernames[21] = "Analog 1 (V)";
-  headernames[22] = "Analog 2 (V)";
-  headernames[23] = "Analog 3 (V)";
-  headernames[24] = "Analog 4 (V)";
-  headernames[25] = "Analog 5 (V)";
-  headernames[26] = "Analog 6 (V)";
-  headernames[27] = "Pressure (Pa)";
-  headernames[28] = "Pressure Altitude (m)";
-  headernames[29] = "Temperature (C)";
+  headernames[3] = "Roll (deg)";
+  headernames[4] = "Pitch (deg)";
+  headernames[5] = "Yaw (deg)";
+  headernames[6] = "U(m/s)";
+  headernames[7] = "V(m/s)";
+  headernames[8] = "W(m/s)";
+  headernames[9] = "P(deg/s)";
+  headernames[10] = "Q(deg/s)";
+  headernames[11] = "R(deg/s)";
+  headernames[12] = "Mx(Gauss)";
+  headernames[13] = "My(Gauss)";
+  headernames[14] = "Mz(Gauss)";
+  headernames[15] = "GPS Latitude (deg)";
+  headernames[16] = "GPS Longitude (deg)";
+  headernames[17] = "GPS Altitude (m)";
+  headernames[18] = "GPS Heading (deg)";
+  headernames[19] = "IMU Heading (deg)";
+  headernames[20] = "Analog 1 (V)";
+  headernames[21] = "Analog 2 (V)";
+  headernames[22] = "Analog 3 (V)";
+  headernames[23] = "Analog 4 (V)";
+  headernames[24] = "Analog 5 (V)";
+  headernames[25] = "Analog 6 (V)";
+  headernames[26] = "Pressure (Pa)";
+  headernames[27] = "Pressure Altitude (m)";
+  headernames[28] = "Temperature (C)";
   //Initialize Logger
   logger.init("logs/",NUMVARS);
   //Set and log headers
@@ -193,7 +193,14 @@ void modeling::loop(double currentTime,int pwm_array[]) {
   //Log data if needed
   if (currentTime > nextLOGtime) {
     logger.printvar(currentTime);
-    logger.println(model_matrix);
+    //Need to move model matrix over to output matrix
+    //First grab x,y,z
+    output_matrix.vecset(1,3,model_matrix,1);
+    //Then copy ptp
+    output_matrix.vecset(4,6,ptp,1);
+    //Then the rest of the matrix
+    output_matrix.vecset(7,NUMVARS-1,model_matrix,8);
+    logger.println(output_matrix);
     nextLOGtime=currentTime+LOGRATE;
   }
 

@@ -39,9 +39,9 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[6] = "U(m/s)";
   headernames[7] = "V(m/s)";
   headernames[8] = "W(m/s)";
-  headernames[9] = "P(deg/s)";
-  headernames[10] = "Q(deg/s)";
-  headernames[11] = "R(deg/s)";
+  headernames[9] = "P(rad/s)";
+  headernames[10] = "Q(rad/s)";
+  headernames[11] = "R(rad/s)";
   headernames[12] = "Mx(Gauss)";
   headernames[13] = "My(Gauss)";
   headernames[14] = "Mz(Gauss)";
@@ -197,9 +197,14 @@ void modeling::loop(double currentTime,int pwm_array[]) {
     //First grab x,y,z
     output_matrix.vecset(1,3,model_matrix,1);
     //Then copy ptp
-    output_matrix.vecset(4,6,ptp,1);
+    //ptp.disp();
+    for (int i = 1;i<4;i++) {
+      output_matrix.set(i+3,1,ptp.get(i,1)*180/PI);
+    }
+    //output_matrix.vecset(4,6,ptp,1);
     //Then the rest of the matrix
     output_matrix.vecset(7,NUMVARS-1,model_matrix,8);
+    //output_matrix.disp();
     logger.println(output_matrix);
     nextLOGtime=currentTime+LOGRATE;
   }
@@ -262,6 +267,9 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   double q3 = q0123.get(4,1);
   double p = pqr.get(1,1);
   double q = pqr.get(2,1);
+  //if (q*180/PI > 100){ 
+  //  pqr.disp();
+  //}
   double r = pqr.get(3,1);
   integrator.k.set(4,1,(-p*q1-q*q2-r*q3)/2.0);
   integrator.k.set(5,1,(p*q0+r*q2-q*q3)/2.0);

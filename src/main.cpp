@@ -127,8 +127,10 @@ void loop() {
     //Need a routine that sends the model matrix to the hardware routine
     #ifdef MODELING
     hw.send(model.model_matrix,model.keyboardVars);
+    //printf("hw.send %lf %lf %lf \n",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
     #endif
     hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
+    //printf("hw.loop %lf %lf %lf \n",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
     /////////////////////////////////////////
 
     //////////CONTROL LOOP///////////////////
@@ -151,9 +153,9 @@ void loop() {
       //First 4 RX signals
       hw.rc.in.printRCstate(-4);
       //Roll Pitch Yaw
-      printf("%lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
+      printf(" %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
       //PQR
-      printf("%lf %lf %lf ",hw.sense.orientation.roll_rate,hw.sense.orientation.pitch_rate,hw.sense.orientation.yaw_rate);
+      printf(" %lf %lf %lf ",hw.sense.orientation.roll_rate,hw.sense.orientation.pitch_rate,hw.sense.orientation.yaw_rate);
       //PWM Array
       hw.rc.out.print();
       //Newline

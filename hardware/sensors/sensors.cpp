@@ -17,9 +17,9 @@ sensors::sensors() {
   headernames[6] = "Sense U(m/s)";
   headernames[7] = "Sense V(m/s)";
   headernames[8] = "Sense W(m/s)";
-  headernames[9] = "Sense P(deg/s)";
-  headernames[10] = "Sense Q(deg/s)";
-  headernames[11] = "Sense R(deg/s)";
+  headernames[9] = "Sense P(rad/s)";
+  headernames[10] = "Sense Q(rad/s)";
+  headernames[11] = "Sense R(rad/s)";
   headernames[12] = "Sense Mx(Gauss)";
   headernames[13] = "Sense My(Gauss)";
   headernames[14] = "Sense Mz(Gauss)";

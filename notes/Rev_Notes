@@ -1,3 +1,14 @@
+========================3/11/2022=======================
+
+Alright I fixed the Sense matrix issue. Also Maxwell fixed the 
+telemetry radios so I need to test the TELEMETRY on Monday.
+Here's what I can work on this weekend.
+
+------------TO COMPLETE OLD FUNCTIONALITY----------
+2.) Actuator Dynamics/Errors
+4.) Sensor Errors
+--------------------------------------------------
+
 ========================3/9/2022============================
 
 I tried fixing the sense matrix and model matrix issue and 

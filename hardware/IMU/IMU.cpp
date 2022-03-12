@@ -86,7 +86,11 @@ void IMU::loop(double elapsedTime){
   #endif
 
   //Convert Quaternions to Euler Angles
+  #ifdef DESKTOP
+  ahrs.getEuler(&roll,&pitch,&yaw); //For some reason the angles are swapped
+  #else
   ahrs.getEuler(&pitch,&roll,&yaw);
+  #endif
 
   //printf("(PTP) = %lf %lf %lf \n",pitch,roll,yaw);
   getTrueHeading();
@@ -111,12 +115,12 @@ void IMU::filterGyro() {
   //Note that s = 0 is totally unfiltered and s = 1 is overfiltering
   //printf(" gx,gy,gz A = %lf %lf %lf ",gx,gy,gz);
   double s = FilterConstant; //This is set externally or initialized to zero
-  gx_filtered = gx_filtered*s + (1-s)*gy*RAD2DEG;
-  gy_filtered = gy_filtered*s + (1-s)*gx*RAD2DEG;
-  gz_filtered = gz_filtered*s + (1-s)*(-gz)*RAD2DEG;
-  roll_rate = gx_filtered; //NOTICE THAT I PUT RAD2DEG UP THERE
-  pitch_rate = gy_filtered; //THIS IS SO RPY IS IN DEG AND PQR
-  yaw_rate = gz_filtered; //IS IN DEG/S
+  gx_filtered = gx_filtered*s + (1-s)*gy;
+  gy_filtered = gy_filtered*s + (1-s)*gx;
+  gz_filtered = gz_filtered*s + (1-s)*(-gz);
+  roll_rate = gx_filtered; //I got rid of RAD2DEG
+  pitch_rate = gy_filtered; //roll, pitch yaw is in degrees
+  yaw_rate = gz_filtered; //p q r is in rad/s
 }
 
 void IMU::printALL() {

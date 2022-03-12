@@ -81,19 +81,23 @@ void hardware::send(MATLAB model_matrix,double keyboardVars[]) {
   sense.orientation.ahrs.q3 = model_matrix.get(7,1);
 
   //Convert the quaternions to Euler Angles
-  q0123.vecset(1,4,model_matrix,4);
-  ptp.quat2euler(q0123);
-  sense.orientation.roll = ptp.get(1,1)*180/PI;
-  sense.orientation.pitch = ptp.get(2,1)*180/PI;
-  sense.orientation.yaw = ptp.get(3,1)*180/PI;
+  //There's no need to do this. 
+  //The hardware loop routine will convert to Euler Angles
+  //q0123.vecset(1,4,model_matrix,4);
+  //q0123.disp();
+  //ptp.quat2euler(q0123);
+  //ptp.disp();
+  //sense.orientation.roll = ptp.get(1,1)*180/PI;
+  //sense.orientation.pitch = ptp.get(2,1)*180/PI;
+  //sense.orientation.yaw = ptp.get(3,1)*180/PI;
+  //printf("send() %lf %lf %lf \n",sense.orientation.roll,sense.orientation.pitch,sense.orientation.yaw);
 
-  //Set gx,gy,gz from sense_matrix for filtering (notice the wierd ordering)
+  //Set gx,gy,gz from sense_matrix for filtering 
   sense.orientation.gy = model_matrix.get(11,1);
   sense.orientation.gx = model_matrix.get(12,1);
   sense.orientation.gz = -model_matrix.get(13,1);
 
   //Still need all the other sensor states but not right now
-
 
   //Is using the keyboard you need to copy over the keyboard values
   //to rcin

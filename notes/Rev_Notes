@@ -1,3 +1,22 @@
+========================3/14/2022=========================
+
+AUTO mode is now working and telemetry also works. However
+there is a ridiculous amount of lag that I've never encountered
+before and I'm not sure what needs to be done to make it better. So
+here are the current action items
+
+------------TO COMPLETE OLD FUNCTIONALITY----------
+2.) Actuator Dynamics/Errors
+4.) Sensor Errors
+--------------------------------------------------
+
+----------------------SPRING GOALS-----------------
+5.) Hardware in the Loop
+6.) Threading all sensors with the boost library - (NEED TO FIX THE LAG!!!)
+7.) Higher level autopilot (heading angle and waypoint control)
+8.) Python GroundStation
+----------------------------------------------------
+
 ========================3/11/2022=======================
 
 Alright I fixed the Sense matrix issue. Also Maxwell fixed the 

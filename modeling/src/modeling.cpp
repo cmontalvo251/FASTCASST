@@ -67,11 +67,11 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   logger.printheaders();
 
   //Get Mass and Inertia parameters
-  mass = in_configuration_matrix.get(8,1);
+  mass = in_configuration_matrix.get(12,1);
   I.zeros(3,3,"Inertia");
-  I.set(1,1,in_configuration_matrix.get(9,1));
-  I.set(2,2,in_configuration_matrix.get(10,1));
-  I.set(3,3,in_configuration_matrix.get(11,1));
+  I.set(1,1,in_configuration_matrix.get(13,1));
+  I.set(2,2,in_configuration_matrix.get(14,1));
+  I.set(3,3,in_configuration_matrix.get(15,1));
   Iinv.zeros(3,3,"Inverse Inertia");
   Iinv.overwrite(I);
   Iinv.inverse();

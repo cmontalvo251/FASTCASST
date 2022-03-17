@@ -11,7 +11,7 @@ void controller::init(MATLAB in_configuration_matrix) {
   set_defaults();
   printf("Controller Received Configuration Matrix \n");
   //in_configuration_matrix.disp();
-  CONTROLLER_FLAG = in_configuration_matrix.get(7,1);
+  CONTROLLER_FLAG = in_configuration_matrix.get(11,1);
   printf("Controller Setup \n");
   pqr.zeros(3,1,"PQR");
   mxyz.zeros(3,1,"MXYZ");

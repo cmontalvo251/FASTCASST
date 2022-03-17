@@ -59,11 +59,11 @@ void sensors::init(MATLAB in_configuration_matrix,MATLAB in_simulation_matrix) {
   //Pick the IMU you want to use
   //0 = MPU9250
   //1 = LSM9DS1
-  int IMUTYPE = in_configuration_matrix.get(5,1);
+  int IMUTYPE = in_configuration_matrix.get(9,1);
   initIMU(IMUTYPE);
 
   //Set the Filter Constant
-  orientation.FilterConstant = in_configuration_matrix.get(6,1);
+  orientation.FilterConstant = in_configuration_matrix.get(10,1);
 
   //Initialize q0123 and ptp
   q0123.zeros(4,1,"Sense Quaternions");

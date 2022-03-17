@@ -44,11 +44,142 @@ int sensors::getNumVars() {
   return NUMVARS;
 }
 
+void sensors::setBias(MATLAB bias_matrix,double bias,double std) {
+  for (int i = 1;i<4;i++) {
+    double val = bias + randnum(-std,std);
+    bias_matrix.set(i,1,val);
+  }
+}
+
+double sensors::pollute(double bias,double noise) {
+  return bias + randnum(-noise,noise);
+}
+
+void sensors::init(MATLAB in_configuration_matrix,MATLAB in_simulation_matrix) {
+  //Pick the IMU you want to use
+  //0 = MPU9250
+  //1 = LSM9DS1
+  int IMUTYPE = in_configuration_matrix.get(5,1);
+  initIMU(IMUTYPE);
+
+  //Set the Filter Constant
+  orientation.FilterConstant = in_configuration_matrix.get(6,1);
+
+  //Initialize q0123 and ptp
+  q0123.zeros(4,1,"Sense Quaternions");
+  ptp.zeros(3,1,"Sense Roll Pitch Yaw");
+
+  //Sensor Errors
+  IERROR = in_simulation_matrix.get(21,1);
+  //POSITION
+  bias_pos = in_simulation_matrix.get(22,1);
+  std_pos = in_simulation_matrix.get(23,1);
+  noise_pos = in_simulation_matrix.get(24,1);
+  bias_pos_matrix.zeros(3,1,"Bias Position");
+  setBias(bias_pos_matrix,bias_pos,std_pos);
+  //ANGLE
+  bias_angle = in_simulation_matrix.get(25,1);
+  std_angle = in_simulation_matrix.get(26,1);
+  noise_angle = in_simulation_matrix.get(27,1);
+  bias_angle_matrix.zeros(3,1,"Bias Angle");
+  setBias(bias_angle_matrix,bias_angle,std_angle);
+  //VELOCITY
+  bias_velocity = in_simulation_matrix.get(28,1);
+  std_velocity = in_simulation_matrix.get(29,1);
+  noise_velocity = in_simulation_matrix.get(30,1);
+  bias_velocity_matrix.zeros(3,1,"Bias Velocity");
+  setBias(bias_velocity_matrix,bias_velocity,std_velocity);
+  //GYRO
+  bias_gyro = in_simulation_matrix.get(31,1);
+  std_gyro = in_simulation_matrix.get(32,1);
+  noise_gyro = in_simulation_matrix.get(33,1);
+  bias_gyro_matrix.zeros(3,1,"Bias Gyro");
+  setBias(bias_gyro_matrix,bias_gyro,std_gyro);  
+  //MAG
+  bias_mag = in_simulation_matrix.get(34,1);
+  std_mag = in_simulation_matrix.get(35,1);
+  noise_mag = in_simulation_matrix.get(36,1);
+  bias_mag_matrix.zeros(3,1,"Bias Mag");
+  setBias(bias_mag_matrix,bias_mag,std_mag);
+}
+
 ///Initialize the IMU
 void sensors::initIMU(int sensor_type) {
   //sensor_type == 0 -> MPU9250
   //sensor_type == 1 -> LSM9DS1
   orientation.init(sensor_type);
+}
+
+void sensors::send(MATLAB model_matrix) {
+  //X,Y,Z
+  double X = model_matrix.get(1,1);
+  double Y = model_matrix.get(2,1);
+  double Z = model_matrix.get(3,1);
+  //Add Errors if present
+  if (IERROR) {
+    X += pollute(bias_pos_matrix.get(1,1),noise_pos);
+    Y += pollute(bias_pos_matrix.get(2,1),noise_pos);
+    Z += pollute(bias_pos_matrix.get(3,1),noise_pos);
+  }
+  satellites.X = X;
+  satellites.Y = Y;
+  satellites.Z = Z;
+  //We need to reset the GPS values if we haven't gotten a valid coorinate yet
+  satellites.reset();
+  //printf("%lf %lf %lf \n",sense.satellites.X,sense.satellites.Y,sense.satellites.Z);
+  //PAUSE();
+
+  //Quaternions
+  //Convert the quaternions to Euler Angles if ERRORS present
+  double q0,q1,q2,q3;
+  if (IERROR) {
+    q0123.vecset(1,4,model_matrix,4);
+    //q0123.disp();
+    ptp.quat2euler(q0123);
+    //ptp.disp();
+    double roll = ptp.get(1,1)*180.0/PI;
+    double pitch = ptp.get(2,1)*180.0/PI;
+    double yaw = ptp.get(3,1)*180.0/PI;
+    roll += pollute(bias_angle_matrix.get(1,1),noise_angle);
+    pitch += pollute(bias_angle_matrix.get(2,1),noise_angle);
+    yaw += pollute(bias_angle_matrix.get(3,1),noise_angle);
+    ptp.set(1,1,roll*PI/180.0);
+    ptp.set(2,1,pitch*PI/180.0);
+    ptp.set(3,1,yaw*PI/180.0);
+    q0123.euler2quat(ptp);
+    q0 = q0123.get(1,1);
+    q1 = q0123.get(2,1);
+    q2 = q0123.get(3,1);
+    q3 = q0123.get(4,1);
+  } else {
+      //model_matrix.disp();
+    q0 = model_matrix.get(4,1);
+    q1 = model_matrix.get(5,1);
+    q2 = model_matrix.get(6,1);
+    q3 = model_matrix.get(7,1);
+  }
+  orientation.ahrs.q0 = q0;
+  orientation.ahrs.q1 = q1;
+  orientation.ahrs.q2 = q2;
+  orientation.ahrs.q3 = q3;
+  //printf("send() %lf %lf %lf \n",sense.orientation.roll,sense.orientation.pitch,sense.orientation.yaw);
+
+  //Set gx,gy,gz from sense_matrix for filtering 
+  double gy = model_matrix.get(11,1);
+  double gx = model_matrix.get(12,1);
+  double gz = -model_matrix.get(13,1);
+  if (IERROR) {
+    printf("GXYZ Before = %lf %lf %lf \n",gx,gy,gz);
+    gx += pollute(bias_gyro_matrix.get(1,1),noise_gyro);
+    gy += pollute(bias_gyro_matrix.get(2,1),noise_gyro);
+    gz += pollute(bias_gyro_matrix.get(3,1),noise_gyro);
+    printf("GXYZ After = %lf %lf %lf \n",gx,gy,gz);
+  }
+  orientation.gx = gx;
+  orientation.gy = gy;
+  orientation.gz = gz;
+
+  //Still need all the other sensor states but not right now
 }
 
 //Polling routine to read all sensors

@@ -1,3 +1,19 @@
+=========================3/16/2022==========================
+
+Sensor errors is done. Only thing left for old functionality
+is Actuator Dynamics/Errors
+
+------------TO COMPLETE OLD FUNCTIONALITY----------
+2.) Actuator Dynamics/Errors
+--------------------------------------------------
+
+----------------------SPRING GOALS-----------------
+5.) Hardware in the Loop
+6.) Threading all sensors with the boost library - (NEED TO FIX THE LAG!!!)
+7.) Higher level autopilot (heading angle and waypoint control)
+8.) Python GroundStation
+----------------------------------------------------
+
 ========================3/14/2022=========================
 
 AUTO mode is now working and telemetry also works. However

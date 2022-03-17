@@ -27,6 +27,15 @@ class sensors {
   ADC analog;
   BaroTemp atm;
   int NUMVARS;
+  //Errors
+  int IERROR;
+  MATLAB q0123,ptp;
+  MATLAB bias_pos_matrix,bias_gyro_matrix,bias_mag_matrix,bias_angle_matrix,bias_velocity_matrix;
+  double bias_angle,bias_gyro,bias_mag,bias_pos,bias_velocity;
+  double std_angle,std_gyro,std_mag,std_pos,std_velocity;
+  double noise_angle,noise_gyro,noise_mag,noise_pos,noise_velocity;
+  void setBias(MATLAB,double,double);
+  double pollute(double,double);
  public:
   //Public variables and classes
   IMU orientation;
@@ -35,6 +44,10 @@ class sensors {
   char** headernames,headernames_dot;
   //constructor
   sensors();
+  //Send model matrix
+  void send(MATLAB);
+  //Initialize
+  void init(MATLAB,MATLAB);
   //Initialize the IMU
   void initIMU(int);
   //Polling routine

@@ -1,5 +1,5 @@
 0.1 	 !Standard Out Print Rate // seconds (set to negative)
-0.5  	 !Data logging rate // seconds (numbers if you want)
+0.01  	 !Data logging rate // seconds (numbers if you want)
 0.01	 !RC Rate // seconds (to run as fast as possible)
 1.0      !Telemetry Rate (seconds)
 0        !IMUTYPE (0=MPU,1=LSM)

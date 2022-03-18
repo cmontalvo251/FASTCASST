@@ -75,6 +75,7 @@ void hardware::send(MATLAB model_matrix,double keyboardVars[]) {
 void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix) {
   //Here we poll the receiver
   if (currentTime >= nextRCtime) {
+    printf("Read RX %lf \n",currentTime);
     rc.read();
     nextRCtime=currentTime+RCRATE;
   }
@@ -89,6 +90,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
 
   //Check to see if it's time to log
   if (currentTime >= nextLOGtime) {
+    printf("Hardware Logging %lf \n",currentTime);
     logger.printvar(currentTime);
     logger.println(sense.sense_matrix);
     nextLOGtime=currentTime+LOGRATE;
@@ -102,6 +104,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   //to an RPI I will change this.
   #ifndef HIL
   if (currentTime >= nextTELEMtime) {
+    printf("Sending Telemetry %lf \n",currentTime);
     //For right now let's send RPY and GPS coordinates
     telemetry_matrix.set(1,1,currentTime);
     telemetry_matrix.set(2,1,sense.orientation.roll);

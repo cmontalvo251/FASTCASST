@@ -56,6 +56,12 @@ double sensors::pollute(double bias,double noise) {
 }
 
 void sensors::init(MATLAB in_configuration_matrix,MATLAB in_simulation_matrix) {
+  //Get Rates of All Sensors
+  GPS_RATE = in_configuration_matrix.get(5,1);
+  IMU_RATE = in_configuration_matrix.get(6,1);
+  ANALOG_RATE = in_configuration_matrix.get(7,1);
+  IBARO = in_configuration_matrix.get(8,1);
+
   //Pick the IMU you want to use
   //0 = MPU9250
   //1 = LSM9DS1
@@ -185,17 +191,30 @@ void sensors::send(MATLAB model_matrix) {
 //Polling routine to read all sensors
 void sensors::poll(double currentTime,double elapsedTime) {
   //First Analog to Digital Converter
-  analog.get_results();
+  if (currentTime >= nextANALOGtime) {
+    printf("Reading Analog %lf \n",currentTime);
+    analog.get_results();
+    nextANALOGtime=currentTime+ANALOG_RATE;
+  }
   
   //Then we poll the barometer and temperature sensor (needs current time)
-  atm.poll(currentTime);
+  if (IBARO) {
+    printf("Polling Barometer %lf \n",currentTime);
+    atm.poll(currentTime);
+  }
 
   ///Read the IMU (ptp,pqr)
+  //IMU must be read as fast as possible due to the elapsedTime
+  //and the integrator on board
   orientation.loop(elapsedTime); 
 
   //Read the GPS
-  satellites.poll(currentTime); //This will compute XYZ as well. For now we are using 
-  //hardcoded GPS coordinates
+  if (currentTime >= nextGPStime) {
+    printf("Polling GPS %lf \n");
+    satellites.poll(currentTime); //This will compute XYZ as well. For now we are using 
+    //hardcoded GPS coordinates
+    nextGPStime = currentTime + GPS_RATE;
+  }
 
   ///////////////////??THEN POPULATE STATE VECTOR////////////////////
 

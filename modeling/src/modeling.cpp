@@ -191,7 +191,8 @@ void modeling::loop(double currentTime,int pwm_array[]) {
   //states. GPS LLH is an example. 
 
   //Log data if needed
-  if (currentTime > nextLOGtime) {
+  if (currentTime >= nextLOGtime) {
+    printf("Model Logging %lf \n",currentTime);
     logger.printvar(currentTime);
     //Need to move model matrix over to output matrix
     //First grab x,y,z

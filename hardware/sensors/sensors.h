@@ -27,6 +27,10 @@ class sensors {
   ADC analog;
   BaroTemp atm;
   int NUMVARS;
+  //Rates and baro flag
+  double GPS_RATE,IMU_RATE,ANALOG_RATE;
+  double nextGPStime=0,nextIMUtime=0,nextANALOGtime=0;
+  int IBARO;
   //Errors
   int IERROR;
   MATLAB q0123,ptp;

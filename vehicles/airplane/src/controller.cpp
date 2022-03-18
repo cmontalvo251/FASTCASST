@@ -73,9 +73,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
   //Then you can run any control loop you want.
   if (icontrol) {
-    #ifdef SIL 
-    printf("Auto ON \n");
-    #endif
+    //#ifdef SIL 
+    //printf("Auto ON \n");
+    //#endif
 
     //For now just pitch and roll commands
     double roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);

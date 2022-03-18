@@ -149,7 +149,7 @@ void loop() {
     if (lastPRINTtime <= watch.currentTime) {
       lastPRINTtime+=hw.PRINTRATE;
       //Time
-      printf("%lf ",watch.currentTime);
+      printf("%lf %lf ",watch.currentTime,watch.elapsedTime);
       //First 4 RX signals
       hw.rc.in.printRCstate(-4);
       //Roll Pitch Yaw

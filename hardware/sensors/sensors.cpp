@@ -192,14 +192,14 @@ void sensors::send(MATLAB model_matrix) {
 void sensors::poll(double currentTime,double elapsedTime) {
   //First Analog to Digital Converter
   if (currentTime >= nextANALOGtime) {
-    printf("Reading Analog %lf \n",currentTime);
+    //printf("Reading Analog %lf \n",currentTime);
     analog.get_results();
     nextANALOGtime=currentTime+ANALOG_RATE;
   }
   
   //Then we poll the barometer and temperature sensor (needs current time)
   if (IBARO) {
-    printf("Polling Barometer %lf \n",currentTime);
+    //printf("Polling Barometer %lf \n",currentTime);
     atm.poll(currentTime);
   }
 
@@ -210,7 +210,7 @@ void sensors::poll(double currentTime,double elapsedTime) {
 
   //Read the GPS
   if (currentTime >= nextGPStime) {
-    printf("Polling GPS %lf \n");
+    //printf("Polling GPS %lf \n",currentTime);
     satellites.poll(currentTime); //This will compute XYZ as well. For now we are using 
     //hardcoded GPS coordinates
     nextGPStime = currentTime + GPS_RATE;

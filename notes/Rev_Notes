@@ -4,6 +4,55 @@ Currently working on number 6. I just added rates to everything
 to see what is causing such a huge delay. Will need to run software 
 in auto mode to see what's going on
 
+PRINT RATE=1.0
+BARO=ON
+RC,ANALOG,LOGGIN=0.1
+GPS,TELEMETRY=100.0
+elapsedTime = 0.0015ish
+
+PRINT,TELEMETRY=1.0
+BARO=ON
+RC,ANALOG,LOGGING=0.1
+GPS=100.0
+elapsedTime = 0.0018-0.0022 (Still no noticeable lag)
+
+PRINT,TELEMETRY=1.0
+BARO=ON
+RC,ANALOG,LOGGING=0.1
+GPS=0.1
+elapsedTime = 0.1 (Lag is noticeable)
+
+In reality we don't want to update GPS over 1 second anyway maybe even 2 seconds
+
+PRINT,TELEMETRY=1.0
+BARO=ON
+RC,ANALOG,LOGGING=0.1
+GPS=1.0
+elapsedTime = 0.0018-0.0022 (Not noticeable lag)
+
+If you want to increase rates from there you will have to thread.
+Note that IMU, Control Loop and PWM out are running as fast as possible
+
+While we are here let's go ahead and test the autopilot. Ok the autopilot works
+which means the code now runs as fast as we need it to and for the time
+being we don't need to speed up the code. I'm going to pause on the threading
+for now since I fixed the lag issue. I can thread the IMU and GPS and maybe
+even the PWM loop if needed but for now the loop timer is good.
+
+So here is the current to do list. My goal is to do number 2 over
+the weekend and then start working on HIL next week....wait.
+I need to discuss the HIL stuff with Maxwell first.
+
+------------TO COMPLETE OLD FUNCTIONALITY----------
+2.) Actuator Dynamics/Errors
+--------------------------------------------------
+
+----------------------SPRING GOALS-----------------
+5.) Hardware in the Loop
+7.) Higher level autopilot (heading angle and waypoint control)
+8.) Python GroundStation
+----------------------------------------------------
+
 =========================3/16/2022==========================
 
 Sensor errors is done. Only thing left for old functionality

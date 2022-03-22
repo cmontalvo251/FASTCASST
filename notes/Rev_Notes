@@ -4,6 +4,20 @@ Forgot to work on actuator errors. Let's add errors first because
 that's easy. ok not so easy. I first need to output the model actuator
 value and the signal sent to the motors.
 
+Actuator errors are there and I think adding the dynamics will
+just require adding it to the Derivatives routine and the model_matrix
+I hope anyway. So here's the to do list
+
+------------TO COMPLETE OLD FUNCTIONALITY----------
+2.) Actuator Dynamics
+--------------------------------------------------
+
+----------------------SPRING GOALS-----------------
+5.) Hardware in the Loop
+7.) Higher level autopilot (heading angle and waypoint control)
+8.) Python GroundStation
+----------------------------------------------------
+
 =========================3/18/2022=========================
 
 Currently working on number 6. I just added rates to everything

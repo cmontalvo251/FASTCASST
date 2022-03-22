@@ -39,6 +39,9 @@ class modeling {
   double LOGRATE = 0.1;
   double nextLOGtime = 0;
   int NUMACTUATORS;
+  int IACTUATORERROR;
+  double ACTUATORPERCENTERROR;
+  MATLAB pwm_error;
   char** headernames;
   char** pwmnames;
   Datalogger logger;

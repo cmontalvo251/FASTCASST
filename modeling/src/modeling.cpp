@@ -63,8 +63,8 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   NUMACTUATORS = in_simulation_matrix.get(39,1);
   pwmnames = (char**)malloc((NUMACTUATORS)*sizeof(char*));
   for (int i = 1;i<=NUMACTUATORS;i++) {
-    pwmnames[i-1] = (char*)malloc((9)*sizeof(char));
-    sprintf(pwmnames[i-1],"PWM Out %d",i);
+    pwmnames[i-1] = (char*)malloc((12)*sizeof(char));
+    sprintf(pwmnames[i-1],"PWM Signal %d",i);
   }
   //Initialize Logger
   logger.init("logs/",NUMVARS+NUMACTUATORS); //Not minus 1 because you add time
@@ -73,6 +73,22 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   logger.appendheaders(headernames,NUMVARS-1); //-1 because of quaternions
   logger.appendheaders(pwmnames,NUMACTUATORS);
   logger.printheaders();
+
+  //Compute the bias in the actuators
+  IACTUATORERROR = in_simulation_matrix.get(37,1);
+  ACTUATORPERCENTERROR = in_simulation_matrix.get(38,1);
+  pwm_error.zeros(NUMACTUATORS,1,"pwm percent error");
+  for (int i = 1;i<=NUMACTUATORS;i++) {
+    double sign = rand() % 100 + 1;
+    if (sign > 50) { 
+      sign = 1;
+    } else {
+      sign = -1;
+    }
+    pwm_error.set(i,1,ACTUATORPERCENTERROR*sign);
+  }
+  //pwm_error.disp();
+  //PAUSE();
 
   //Get Mass and Inertia parameters
   mass = in_configuration_matrix.get(12,1);
@@ -165,6 +181,13 @@ void modeling::loop(double currentTime,int pwm_array[]) {
   }
   //integration_matrix.disp();
 
+  //Before we send the pwm_array to the integrator we need to add some bias
+  if (IACTUATORERROR) {
+    for (int i = 0;i<NUMACTUATORS;i++){
+      pwm_array[i]=pwm_array[i]*(100+pwm_error.get(i+1,1))/100;
+    }
+  }
+
   //Run RK4 Loop
   rk4step(currentTime,pwm_array);
 
@@ -215,11 +238,7 @@ void modeling::loop(double currentTime,int pwm_array[]) {
     output_matrix.vecset(7,NUMVARS-1,model_matrix,8);
     //output_matrix.disp();
     logger.print(output_matrix);
-    //Then output the control_matrix
-    //for(int i = 0;i<4;i++)  {
-    //  printf("%d ",pwm_array[i]);
-    //}
-    //printf("\n");
+    //Then output the pwm array
     logger.printarrayln(pwm_array,NUMACTUATORS);
     nextLOGtime=currentTime+LOGRATE;
   }

@@ -49,6 +49,7 @@ class hardware {
   //Rather than use input files you'll have to edit the code
   //in the init() and loop() functions
   int NUMTELEMETRY;
+  char** pwmnames;
  public:
   //RCIO Class
   RCIO rc;

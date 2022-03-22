@@ -87,7 +87,8 @@ void IMU::loop(double elapsedTime){
 
   //Convert Quaternions to Euler Angles
   #ifdef DESKTOP
-  ahrs.getEuler(&roll,&pitch,&yaw); //For some reason the angles are swapped
+  ahrs.getEuler(&roll,&pitch,&yaw); //For some reason the angles are swapped and yaw is negative
+  yaw=-yaw;
   #else
   ahrs.getEuler(&pitch,&roll,&yaw);
   #endif

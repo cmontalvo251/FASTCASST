@@ -27,7 +27,7 @@ sensors::sensors() {
   headernames[16] = "Sense GPS Longitude (deg)";
   headernames[17] = "Sense GPS Altitude (m)";
   headernames[18] = "Sense GPS Heading (deg)";
-  headernames[19] = "IMU Heading (deg)";
+  headernames[19] = "Sense IMU Heading (deg)";
   headernames[20] = "Sense Analog 1 (V)";
   headernames[21] = "Sense Analog 2 (V)";
   headernames[22] = "Sense Analog 3 (V)";

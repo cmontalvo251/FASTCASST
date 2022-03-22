@@ -36,11 +36,19 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
 
   sense.init(in_configuration_matrix,in_simulation_matrix);
 
+  //Extract Number of SIGNALS and set headers
+  pwmnames = (char**)malloc((NUMSIGNALS)*sizeof(char*));
+  for (int i = 1;i<=NUMSIGNALS;i++) {
+    pwmnames[i-1] = (char*)malloc((9)*sizeof(char));
+    sprintf(pwmnames[i-1],"PWM Out %d",i);
+  }
+
   //Initialize Logger
-  logger.init("data/",sense.getNumVars()+1);
+  logger.init("data/",sense.getNumVars()+1+NUMSIGNALS); //+1 for time
   //Set and log headers
   logger.appendheader("Time (sec)");
   logger.appendheaders(sense.headernames,sense.getNumVars());
+  logger.appendheaders(pwmnames,NUMSIGNALS);
   logger.printheaders();
 
   //Initialize the Telemetry or HIL
@@ -77,6 +85,8 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   if (currentTime >= nextRCtime) {
     //printf("Read RX %lf \n",currentTime);
     rc.read();
+    //rc.in.printRCstate(-4);
+    //printf("\n");
     nextRCtime=currentTime+RCRATE;
   }
 
@@ -86,13 +96,21 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   //I then need to populate the pwm_array with the control signals as quickly as possible
   for (int i = 0;i<rc.out.NUMSIGNALS;i++) {
     rc.out.pwm_array[i] = control_matrix.get(i+1,1);
+    //However, the control routine is created by the user and doesn't necessarily have a
+    //saturation filter built in so we need to do that here
+    if (rc.out.pwm_array[i] > OUTMAX) {
+      rc.out.pwm_array[i] = OUTMAX;
+    } else if (rc.out.pwm_array[i] < OUTMIN) {
+      rc.out.pwm_array[i] = OUTMIN;
+    }
   }
 
   //Check to see if it's time to log
   if (currentTime >= nextLOGtime) {
     //printf("Hardware Logging %lf \n",currentTime);
     logger.printvar(currentTime);
-    logger.println(sense.sense_matrix);
+    logger.print(sense.sense_matrix);
+    logger.printarrayln(rc.out.pwm_array,rc.out.NUMSIGNALS);
     nextLOGtime=currentTime+LOGRATE;
   }
 

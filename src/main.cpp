@@ -42,6 +42,11 @@ void renderloop(char* root_folder_name,int argc,char** argv);
 void loop();
 
 int main(int argc,char* argv[]) {
+
+  //Initialize Random
+  srand(time(NULL));
+
+  //Print name of software
   printf("FASTKit Software version 42.0 \n");
 
   ////////////////////??CHECK FOR SUDO IF RUNNING IN AUTO MODE/////////

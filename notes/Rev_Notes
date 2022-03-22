@@ -1,3 +1,9 @@
+=========================3/21/2022=========================
+
+Forgot to work on actuator errors. Let's add errors first because
+that's easy. ok not so easy. I first need to output the model actuator
+value and the signal sent to the motors.
+
 =========================3/18/2022=========================
 
 Currently working on number 6. I just added rates to everything
@@ -28,7 +34,8 @@ PRINT,TELEMETRY=1.0
 BARO=ON
 RC,ANALOG,LOGGING=0.1
 GPS=1.0
-elapsedTime = 0.0018-0.0022 (Not noticeable lag)
+elapsedTime = 0.0018-0.0022 (No noticeable lag)
+IMU,Control,PWM = 1/inf
 
 If you want to increase rates from there you will have to thread.
 Note that IMU, Control Loop and PWM out are running as fast as possible

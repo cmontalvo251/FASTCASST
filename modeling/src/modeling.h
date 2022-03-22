@@ -38,7 +38,9 @@ class modeling {
  private:
   double LOGRATE = 0.1;
   double nextLOGtime = 0;
+  int NUMACTUATORS;
   char** headernames;
+  char** pwmnames;
   Datalogger logger;
   RK4 integrator;
   int NUMVARS,NUMINTEGRATIONSTATES,FORCES_FLAG;

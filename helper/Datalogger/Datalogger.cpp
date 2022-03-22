@@ -51,16 +51,19 @@ void Datalogger::init(char* directory,int num) {
 void Datalogger::setLogVars(int num) {
   logvars.zeros(num,1,"Vars to Log");
   logheader = (char**)malloc(num*sizeof(char*));
-  length = num;
+  total_length = num;
 }
 
 void Datalogger::appendheader(char* header) {
+  printf("Appending Header = %s \n",header);
   logheader[headerctr] = header;
   headerctr++;
 }
 
 void Datalogger::appendheaders(char **headers,int length){
+  printf("Appending Headers \n");
   for (int i = 0;i<length;i++) {
+    printf("%s \n",headers[i]);
     logheader[headerctr] = headers[i];
     headerctr++;
   }
@@ -68,10 +71,10 @@ void Datalogger::appendheaders(char **headers,int length){
 
 void Datalogger::printheaders() {
   headerctr = 0;
-  for (int i = 0;i<length;i++) {
+  for (int i = 0;i<total_length;i++) {
     fprintf(outfile,"%s ",logheader[i]);
     //printf("%s ",logheader[i]);
-    if (i < length - 1) {
+    if (i < total_length - 1) {
       fprintf(outfile,"%s",",");
     }
   }
@@ -96,12 +99,14 @@ void Datalogger::printvar(double var) {
 void Datalogger::print(MATLAB out) {
   logctr = 1;
   out.vecfprintf(outfile);
+  fprintf(outfile,",");
   flush();
 }
 
 void Datalogger::print() {
   logctr = 1;
   logvars.vecfprintf(outfile);
+  fprintf(outfile,",");
   flush();
 }
 
@@ -114,6 +119,22 @@ void Datalogger::println(MATLAB out) {
 void Datalogger::println() {
   logctr = 1;
   logvars.vecfprintfln(outfile);
+  flush();
+}
+
+void Datalogger::printarray(int array[],int num) {
+  for (int i = 0;i<num;i++) {
+    fprintf(outfile,"%d",array[i]);
+    if (i != num-1) {
+      fprintf(outfile,",");
+    }
+  }
+  flush();
+}
+
+void Datalogger::printarrayln(int array[],int num) {
+  printarray(array,num);
+  fprintf(outfile,"\n");
   flush();
 }
 

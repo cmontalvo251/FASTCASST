@@ -59,11 +59,19 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[26] = "Pressure (Pa)";
   headernames[27] = "Pressure Altitude (m)";
   headernames[28] = "Temperature (C)";
+  //Get number of actuators
+  NUMACTUATORS = in_simulation_matrix.get(39,1);
+  pwmnames = (char**)malloc((NUMACTUATORS)*sizeof(char*));
+  for (int i = 1;i<=NUMACTUATORS;i++) {
+    pwmnames[i-1] = (char*)malloc((9)*sizeof(char));
+    sprintf(pwmnames[i-1],"PWM Out %d",i);
+  }
   //Initialize Logger
-  logger.init("logs/",NUMVARS);
+  logger.init("logs/",NUMVARS+NUMACTUATORS); //Not minus 1 because you add time
   //Set and log headers
   logger.appendheader("Time (sec)");
-  logger.appendheaders(headernames,NUMVARS);
+  logger.appendheaders(headernames,NUMVARS-1); //-1 because of quaternions
+  logger.appendheaders(pwmnames,NUMACTUATORS);
   logger.printheaders();
 
   //Get Mass and Inertia parameters
@@ -192,7 +200,7 @@ void modeling::loop(double currentTime,int pwm_array[]) {
 
   //Log data if needed
   if (currentTime >= nextLOGtime) {
-    printf("Model Logging %lf \n",currentTime);
+    //printf("Model Logging %lf \n",currentTime);
     logger.printvar(currentTime);
     //Need to move model matrix over to output matrix
     //First grab x,y,z
@@ -206,7 +214,13 @@ void modeling::loop(double currentTime,int pwm_array[]) {
     //Then the rest of the matrix
     output_matrix.vecset(7,NUMVARS-1,model_matrix,8);
     //output_matrix.disp();
-    logger.println(output_matrix);
+    logger.print(output_matrix);
+    //Then output the control_matrix
+    //for(int i = 0;i<4;i++)  {
+    //  printf("%d ",pwm_array[i]);
+    //}
+    //printf("\n");
+    logger.printarrayln(pwm_array,NUMACTUATORS);
     nextLOGtime=currentTime+LOGRATE;
   }
 

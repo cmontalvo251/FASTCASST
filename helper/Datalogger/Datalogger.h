@@ -8,7 +8,7 @@ class Datalogger {
  private:
   FILE* outfile;
   int number = 0;
-  int length = 0;
+  int total_length = 0;
   char filename[256];
   int headerctr = 0;
   int logctr = 1;
@@ -20,6 +20,8 @@ class Datalogger {
   void print();
   void println(MATLAB);
   void println();
+  void printarray(int[],int);
+  void printarrayln(int[],int);
   void printchar(char*);
   void close();
   void flush();

@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define OUTMIN 1100
+#define OUTMIN 992
 #define OUTMID 1500
 #define OUTMAX 2000
 

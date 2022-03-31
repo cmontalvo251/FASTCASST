@@ -23,7 +23,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   NUMACTUATORS = in_simulation_matrix.get(39,1);
   pwmnames = (char**)malloc((NUMACTUATORS)*sizeof(char*));
   for (int i = 1;i<=NUMACTUATORS;i++) {
-    pwmnames[i-1] = (char*)malloc((12)*sizeof(char));
+    pwmnames[i-1] = (char*)malloc((11)*sizeof(char));
     sprintf(pwmnames[i-1],"PWM Model %d",i);
   }
   pwm_dynamics_array = (int *) calloc(NUMACTUATORS,sizeof(int));

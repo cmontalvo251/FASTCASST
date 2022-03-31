@@ -39,7 +39,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //Extract Number of SIGNALS and set headers
   pwmnames = (char**)malloc((NUMSIGNALS)*sizeof(char*));
   for (int i = 1;i<=NUMSIGNALS;i++) {
-    pwmnames[i-1] = (char*)malloc((9)*sizeof(char));
+    pwmnames[i-1] = (char*)malloc((18)*sizeof(char));
     sprintf(pwmnames[i-1],"PWM Hardware Out %d",i);
   }
 

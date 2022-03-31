@@ -76,7 +76,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //#ifdef SIL 
     //printf("Auto ON \n");
     //#endif
-
+    
     //For now just pitch and roll commands
     double roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
     double pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
@@ -84,18 +84,28 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //Get States
     double roll = sense_matrix.get(4,1);
     double pitch = sense_matrix.get(5,1);
+    //printf("PITCH = %lf \n",pitch);
     double roll_rate = sense_matrix.get(10,1); //For SIL/SIMONLY see Sensors.cpp
     double pitch_rate = sense_matrix.get(11,1); //These are already in deg/s
     //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
     double kp = 10.0;
     double kd = 2.0;
-    double aileron = kp*(roll-roll_command) + kd*(roll_rate);
-    aileron = -CONSTRAIN(aileron,-500,500) + OUTMID;
-    double elevator = kp*(pitch-pitch_command) + kd*(pitch_rate);
-    elevator = CONSTRAIN(elevator,-500,500) + OUTMID;
+    aileron = kp*(roll-roll_command) + kd*(roll_rate);
     
+    //Rudder signal will be proportional to aileron
+    double kr = 0.1;
+    rudder = kr*aileron;
+    rudder = CONSTRAIN(rudder,-500,500) + OUTMID;
+    aileron = -CONSTRAIN(aileron,-500,500) + OUTMID;
+    elevator = kp*(pitch-pitch_command) + kd*(pitch_rate);
+    elevator = CONSTRAIN(elevator,-500,500) + OUTMID;
+    //printf("ELEVATOR = %lf \n",elevator);
+    
+    control_matrix.set(1,1,throttle);
     control_matrix.set(2,1,aileron);
     control_matrix.set(3,1,elevator);
+    control_matrix.set(4,1,rudder);
+    //control_matrix.disp();
   } else {
     //printf("Passing RX to PWM \n");
     for (int i = 0;i<4;i++) {

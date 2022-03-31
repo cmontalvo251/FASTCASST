@@ -40,7 +40,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   pwmnames = (char**)malloc((NUMSIGNALS)*sizeof(char*));
   for (int i = 1;i<=NUMSIGNALS;i++) {
     pwmnames[i-1] = (char*)malloc((9)*sizeof(char));
-    sprintf(pwmnames[i-1],"PWM Out %d",i);
+    sprintf(pwmnames[i-1],"PWM Hardware Out %d",i);
   }
 
   //Initialize Logger
@@ -104,6 +104,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
       rc.out.pwm_array[i] = OUTMIN;
     }
   }
+  //printf("ELEVATOR ARRAY = %d \n",rc.out.pwm_array[2]);
 
   //Check to see if it's time to log
   if (currentTime >= nextLOGtime) {

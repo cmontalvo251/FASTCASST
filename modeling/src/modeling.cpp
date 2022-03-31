@@ -18,12 +18,31 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   NUMVARS = 30; //Make sure this is the same as the sense states+1
   model_matrix.zeros(NUMVARS,1,"Model Matrix"); 
   output_matrix.zeros(NUMVARS-1,1,"OUTPUT Matrix"); //-1 for quaternions
-  NUMINTEGRATIONSTATES=13; //Only integrating 13 states for a 6DOF system
-  integration_matrix.zeros(NUMINTEGRATIONSTATES,1,"Integration Matrix");
 
+  //Get number of actuators
+  NUMACTUATORS = in_simulation_matrix.get(39,1);
+  pwmnames = (char**)malloc((NUMACTUATORS)*sizeof(char*));
+  for (int i = 1;i<=NUMACTUATORS;i++) {
+    pwmnames[i-1] = (char*)malloc((12)*sizeof(char));
+    sprintf(pwmnames[i-1],"PWM Model %d",i);
+  }
+  pwm_dynamics_array = (int *) calloc(NUMACTUATORS,sizeof(int));
+
+  NUMINTEGRATIONSTATES=13+NUMACTUATORS; //Only integrating 13 states for a 6DOF system + actuators
+  integration_matrix.zeros(NUMINTEGRATIONSTATES,1,"Integration Matrix");
+  settling_time_matrix.zeros(NUMACTUATORS,1,"settling time matrix");
+  actuatorStates.zeros(NUMACTUATORS,1,"actuatorStates");
   //Set initial conditions of integration matrix
-  for (int i = 1;i<NUMINTEGRATIONSTATES;i++) {
+  for (int i = 1;i<=NUMINTEGRATIONSTATES-NUMACTUATORS;i++) {
     integration_matrix.set(i,1,in_simulation_matrix.get(i+2,1));
+  }
+  //Initial conditions of actuators are in a different spot
+  int counter = 39 + NUMACTUATORS + 1;
+  for (int i = 14;i<=NUMINTEGRATIONSTATES;i++) {
+    integration_matrix.set(i,1,in_simulation_matrix.get(counter,1));
+    actuatorStates.set(i-13,1,in_simulation_matrix.get(counter,1));
+    settling_time_matrix.set(i-13,1,in_simulation_matrix.get(counter-NUMACTUATORS,1));
+    counter = counter + 1;
   }
 
   //Get log rate
@@ -59,13 +78,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[26] = "Pressure (Pa)";
   headernames[27] = "Pressure Altitude (m)";
   headernames[28] = "Temperature (C)";
-  //Get number of actuators
-  NUMACTUATORS = in_simulation_matrix.get(39,1);
-  pwmnames = (char**)malloc((NUMACTUATORS)*sizeof(char*));
-  for (int i = 1;i<=NUMACTUATORS;i++) {
-    pwmnames[i-1] = (char*)malloc((12)*sizeof(char));
-    sprintf(pwmnames[i-1],"PWM Signal %d",i);
-  }
+
   //Initialize Logger
   logger.init("logs/",NUMVARS+NUMACTUATORS); //Not minus 1 because you add time
   //Set and log headers
@@ -111,7 +124,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //PAUSE();
 
   //Copy the states over to the model matrix for opengl and hardware loops
-  model_matrix.vecset(1,NUMINTEGRATIONSTATES,integration_matrix,1);
+  model_matrix.vecset(1,NUMINTEGRATIONSTATES-NUMACTUATORS,integration_matrix,1);
 
   //Initialize Integrator
   integrator.init(NUMINTEGRATIONSTATES,TIMESTEP);
@@ -193,9 +206,11 @@ void modeling::loop(double currentTime,int pwm_array[]) {
 
   //Reset the Integration matrix
   integration_matrix.overwrite(integrator.State);
+  //Copy over actuators
+  actuatorStates.vecset(1,NUMACTUATORS,integrator.State,14);
 
   //Copy the states over to the model matrix for opengl and hardware loops
-  model_matrix.vecset(1,NUMINTEGRATIONSTATES,integration_matrix,1);
+  model_matrix.vecset(1,NUMINTEGRATIONSTATES-NUMACTUATORS,integration_matrix,1);
 
   //Send the model matrix to opengl
   #ifdef OPENGL_H
@@ -216,11 +231,6 @@ void modeling::loop(double currentTime,int pwm_array[]) {
   GLmutex.unlock();
   #endif
 
-  //Add sensor noise if needed
-
-  //Note we have a bunch more variables that aren't included in the integration
-  //states. GPS LLH is an example. 
-
   //Log data if needed
   if (currentTime >= nextLOGtime) {
     //printf("Model Logging %lf \n",currentTime);
@@ -239,7 +249,8 @@ void modeling::loop(double currentTime,int pwm_array[]) {
     //output_matrix.disp();
     logger.print(output_matrix);
     //Then output the pwm array
-    logger.printarrayln(pwm_array,NUMACTUATORS);
+    //logger.printarrayln(pwm_array,NUMACTUATORS);
+    logger.println(actuatorStates);
     nextLOGtime=currentTime+LOGRATE;
   }
 
@@ -257,27 +268,30 @@ void modeling::rk4step(double currentTime,int pwm_array[]) {
 
 
 void modeling::Derivatives(double currentTime,int pwm_array[]) {
+
+  //Actuator Dynamics
+  double time_constant = 0;
+  double settling_time = 0;
+  double actuatorDot = 0;
+  for (int i = 0;i<NUMACTUATORS;i++) {  
+    settling_time = settling_time_matrix.get(i+1,1);
+    if (settling_time == 0) {
+      //Pass through
+      actuatorStates.set(i+1,1,pwm_array[i]);
+    } else {
+      //Integrate
+      time_constant = 4.0/settling_time;
+      actuatorDot = time_constant*(pwm_array[i] - actuatorStates.get(i+1,1));
+      //printf("i = %d, actuatorDot = %lf \n",actuatorDot);
+      integrator.k.set(13+i+1,1,actuatorDot);
+    }
+    pwm_dynamics_array[i] = actuatorStates.get(i+1,1);
+  }
+  //printf("pwm_array Derivatives = %d \n",pwm_array[2]);
+  //printf("actuatorStates = %lf \n",actuatorStates.get(3,1));
+
   //The Derivatives are vehicle independent except for the 
   //forces and moments
-
-  //Actuator Error Model is a simple first order filter
-  /*if (NUMACTUATORS > 0) {
-    ///Get the error actuator state
-    double val = 0;
-    for (int i = 0;i<NUMACTUATORS;i++) {  
-      val = actuatorState.get(i+1,1)*actuatorErrorPercentage.get(i+1,1);
-      actuatorError.set(i+1,1,val);  
-    }
-    //Integrate Actuator Dynamics
-    //input will be ctlcomms and the output will be actuator_state
-    for (int i = 0;i<NUMACTUATORS;i++) {
-      k.set(i+NUMSTATES+1,1,actuatorTimeConstants.get(i+1,1)*(rcout.pwmcomms[i] - actuatorState.get(i+1,1)));
-    }
-  } else {
-    //Otherwise just pass through the ctlcomms
-    actuatorError.overwrite(ctl.ctlcomms);
-    }*/
-
   ////////////////////KINEMATICS///////////////
 
   //Extract individual States from State Vector
@@ -328,7 +342,7 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //External Forces Model
   //Send the external forces model the actuator_state instead of the ctlcomms
   if (FORCES_FLAG) {
-    extforces.ForceMoment(currentTime,integrator.StateDel,integrator.k,pwm_array,env);
+    extforces.ForceMoment(currentTime,integrator.StateDel,integrator.k,pwm_dynamics_array,env);
   } else {
     extforces.FB.mult_eq(0); //Zero these out just to make sure something is in here
     extforces.MB.mult_eq(0);
@@ -395,5 +409,6 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //Save pqrdot
   integrator.k.vecset(11,13,pqrdot,1);
 
+  //integrator.k.disp();
   ////////////////////////////////////////////////////////////////
 }

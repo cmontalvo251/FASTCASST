@@ -207,7 +207,9 @@ void modeling::loop(double currentTime,int pwm_array[]) {
   //Reset the Integration matrix
   integration_matrix.overwrite(integrator.State);
   //Copy over actuators
-  actuatorStates.vecset(1,NUMACTUATORS,integrator.State,14);
+  if (IACTUATORERROR) {
+    actuatorStates.vecset(1,NUMACTUATORS,integrator.State,14);
+  }
 
   //Copy the states over to the model matrix for opengl and hardware loops
   model_matrix.vecset(1,NUMINTEGRATIONSTATES-NUMACTUATORS,integration_matrix,1);
@@ -275,7 +277,7 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   double actuatorDot = 0;
   for (int i = 0;i<NUMACTUATORS;i++) {  
     settling_time = settling_time_matrix.get(i+1,1);
-    if (settling_time == 0) {
+    if ((settling_time == 0) || (IACTUATORERROR == 0)) {
       //Pass through
       actuatorStates.set(i+1,1,pwm_array[i]);
     } else {

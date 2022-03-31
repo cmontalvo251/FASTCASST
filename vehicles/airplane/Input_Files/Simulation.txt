@@ -41,7 +41,7 @@
 0.1	!Settling Time (sec) of 2 actuator
 0.1	!Settling Time (sec) of 3 actuator
 0.1	!Settling Time (sec) of 4 actuator
-1000.0  !Initial Condition of Actuator 1 (Throttle)
+992.0  !Initial Condition of Actuator 1 (Throttle)
 1500.0  !Initial Condition of Actuator 2 (Aileron)
 1500.0  !Initial Condition of Actuator 3 (Elevator)
 1500.0  !Initial Condition of Actuator 4 (Rudder)

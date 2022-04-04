@@ -1,4 +1,11 @@
                                      WORK TASKS:
+AVIATION:
+
+ ☐ Update Quadcopter and Airplane dynamics
+ ☐ Run SIMONLY simulations with quadcopter and airplane models
+ ☐ Run SIL simulations with quadcopter and airplane models
+ ☐ Plot all data
+
 HIL:
 
  ☐ For telemetry think about writing a groundstation in python using a GUI. That might a lot easier to plot given the fact that you can use matplotlib (take a look at LISA simulation for help on GUIs and plots)

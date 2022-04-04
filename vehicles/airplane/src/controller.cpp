@@ -93,7 +93,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     aileron = kp*(roll-roll_command) + kd*(roll_rate);
     
     //Rudder signal will be proportional to aileron
-    double kr = 0.1;
+    double kr = 0.5;
     rudder = kr*aileron;
     rudder = CONSTRAIN(rudder,-500,500) + OUTMID;
     aileron = -CONSTRAIN(aileron,-500,500) + OUTMID;

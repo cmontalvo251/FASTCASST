@@ -1,6 +1,7 @@
 #ifndef BAROTEMP_H
 #define BAROTEMP_H
 
+#include <Mathp/mathp.h>
 #include <BaroTemp/MS5611.h>
 #include <Util/Util.h>
 #include <unistd.h>
@@ -16,7 +17,6 @@ class BaroTemp {
   double updatetime=-99;
   double Z=0;
   int PHASE=0;
-  void ConvertZ2Pressure();
   void ConvertPressure2Altitude();
  public:
   BaroTemp(); //constructor

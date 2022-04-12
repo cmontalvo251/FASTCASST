@@ -38,7 +38,7 @@ void BaroTemp::poll(double currentTime) {
   }
   #else
   //Using fictitious pressure and temperature
-  ConvertZ2Pressure();
+  pressure = ConvertZ2Pressure(Z);
   temperature = 25.5; // just gonna have to hard code this
   #endif
   //Convert Pressure to Altitude but only if we have a valid measurement
@@ -60,16 +60,4 @@ void BaroTemp::ConvertPressure2Altitude() {
   //printf("Altitude = %lf ",altitude);
   //printf("Pascals = %lf \n",pascals);
   Z = -altitude;
-}
-
-void BaroTemp::ConvertZ2Pressure() {
-  //printf("Z = %lf \n",Z);
-  altitude = -Z;
-  //printf("Altitude = %lf \n",altitude);
-  if (pressure0 == -99) {
-    pressure0 = pressure;
-  }
-  double pascals = 101325.0*pow((1.0-2.25577*pow(10,(-5.0))*altitude),5.25588);
-  //printf("Pascals = %lf \n",pascals);
-  pressure = pascals*0.01;
 }

@@ -64,7 +64,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[12] = "Mx(Gauss)";
   headernames[13] = "My(Gauss)";
   headernames[14] = "Mz(Gauss)";
-  headernames[15] = "GPS Latitude (deg)"; //set(16,1);
+  headernames[15] = "GPS Latitude (deg)"; //set(17,1); +2 (+1 for C++ and then +1 for quaternions)
   headernames[16] = "GPS Longitude (deg)";
   headernames[17] = "GPS Altitude (m)";
   headernames[18] = "GPS Heading (deg)";
@@ -75,8 +75,8 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[23] = "Analog 4 (V)";
   headernames[24] = "Analog 5 (V)";
   headernames[25] = "Analog 6 (V)";
-  headernames[26] = "Pressure (Pa)";
-  headernames[27] = "Pressure Altitude (m)";
+  headernames[26] = "Pressure (Pa)";  //set(28,1);
+  headernames[27] = "Pressure Altitude (m)"; //set(29,1);
   headernames[28] = "Temperature (C)";
 
   //Initialize Logger
@@ -241,6 +241,12 @@ void modeling::loop(double currentTime,int pwm_array[]) {
 
   //Convert XYZ to latitude longitude altitude and put into model_matrix.
   SetGPS();
+
+  //Set pressure
+  double pressure = ConvertZ2Pressure(model_matrix.get(3,1));
+  model_matrix.set(28,1,pressure);
+  //Just set pressure altitude to the actual Z coordinate
+  model_matrix.set(29,1,-model_matrix.get(3,1)); 
 
   //Send the model matrix to opengl
   #ifdef OPENGL_H

@@ -8,6 +8,16 @@ void ClearHome() {
  #endif
 }
 
+double ConvertZ2Pressure(double Z) {
+  //printf("Z = %lf \n",Z);
+  double altitude = -Z;
+  //printf("Altitude = %lf \n",altitude);
+  double pascals = 101325.0*pow((1.0-2.25577*pow(10,(-5.0))*altitude),5.25588);
+  //printf("Pascals = %lf \n",pascals);
+  double pressure = pascals*0.01;
+  return pressure;
+}
+
 void ConvertXYZ2LLH(double XYZ[],double LLH[],double X_origin,double Y_origin) {
   double X = XYZ[0];
   double Y = XYZ[1];

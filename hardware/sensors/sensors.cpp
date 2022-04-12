@@ -185,7 +185,11 @@ void sensors::send(MATLAB model_matrix) {
   orientation.gy = gy;
   orientation.gz = gz;
 
+  //Pass Z coordinate to barotemp
+  atm.SendZ(Z);
+
   //Still need all the other sensor states but not right now
+
 }
 
 //Polling routine to read all sensors

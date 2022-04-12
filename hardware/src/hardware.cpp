@@ -64,6 +64,10 @@ void hardware::send(MATLAB model_matrix,double keyboardVars[]) {
 
   //Send Model Matrix to sensor class
   sense.send(model_matrix);
+
+  //We also need to set the temperature in the modeling matrix
+  //I don't think we really need this in the model but whatever
+  model_matrix.set(30,1,sense.getTemperature());
   
   //Is using the keyboard you need to copy over the keyboard values
   //to rcin

@@ -9,6 +9,7 @@
 
 #define SLEEP_TIME 0.01 //seconds
 #define LOOP_TIME 1.0 //seconds
+#define NOMINALTEMP 25.5
 
 class BaroTemp {
  private:
@@ -21,7 +22,7 @@ class BaroTemp {
  public:
   BaroTemp(); //constructor
   void poll(double currentTime);
-  double temperature=-99;
+  double temperature=NOMINALTEMP;
   double pressure=-99;
   double altitude=-99;
   void SendZ(double);

@@ -60,6 +60,7 @@ class sensors {
   void print();
   //Get number of variabls routine
   int getNumVars();
+  double getTemperature();
 };
 
 #endif

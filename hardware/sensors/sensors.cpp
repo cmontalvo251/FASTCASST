@@ -177,7 +177,7 @@ void sensors::send(MATLAB model_matrix) {
   if (IERROR) {
     printf("GXYZ Before = %lf %lf %lf \n",gx,gy,gz);
     gx += pollute(bias_gyro_matrix.get(1,1),noise_gyro);
-    gy += pollute(bias_gyro_matrix.get(2,1),noise_gyro);
+    gy+= pollute(bias_gyro_matrix.get(2,1),noise_gyro);
     gz += pollute(bias_gyro_matrix.get(3,1),noise_gyro);
     printf("GXYZ After = %lf %lf %lf \n",gx,gy,gz);
   }
@@ -190,6 +190,10 @@ void sensors::send(MATLAB model_matrix) {
 
   //Still need all the other sensor states but not right now
 
+}
+
+double sensors::getTemperature() {
+  return atm.temperature;
 }
 
 //Polling routine to read all sensors

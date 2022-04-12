@@ -39,7 +39,7 @@ void BaroTemp::poll(double currentTime) {
   #else
   //Using fictitious pressure and temperature
   pressure = ConvertZ2Pressure(Z);
-  temperature = 25.5; // just gonna have to hard code this
+  temperature = NOMINALTEMP; // just gonna have to hard code this
   #endif
   //Convert Pressure to Altitude but only if we have a valid measurement
   if (pressure != -99) {

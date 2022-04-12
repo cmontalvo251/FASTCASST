@@ -111,6 +111,7 @@ void loop() {
   double initTime = 0;
   #ifdef MODELING
   initTime = -model.TIMESTEP;
+  hw.send(model.model_matrix,model.keyboardVars);
   #endif
   watch.init(initTime);
   

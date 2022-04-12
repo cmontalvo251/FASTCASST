@@ -27,6 +27,8 @@
 #define NM2FT 6076.115485560000
 #define FT2M 0.3048
 #define GPSVAL (60.0*NM2FT*FT2M)
+#define MOBX 30.69
+#define MOBY -88.17
 #define GRAVITYENG 32.2
 #define GRAVITYSI 9.81
 #define RHOSLSI 1.225
@@ -45,6 +47,7 @@ double randnum(double,double);
 void printdouble(double,char*);
 double delpsi(double,double);
 double sat(double,double,double);
+void ConvertXYZ2LLH(double XYZ[],double LLH[],double X_origin,double Y_origin);
 
 #endif
 

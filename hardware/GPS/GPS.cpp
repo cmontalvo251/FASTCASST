@@ -9,7 +9,6 @@ GPS::GPS() {
     headingFilterConstant = 1.0;
   }
 
-
   #ifndef DESKTOP
   if(sensor.testConnection()){
     printf("Ublox test OK\n");
@@ -37,7 +36,13 @@ void GPS::poll(float currentTime) {
   if (currentTime > GPSnextTime) {
     GPSnextTime = currentTime + GPSupdateRate;
     //Assume that X,Y,Z coordinates are already set by some external function
-    ConvertXYZ2LLH();
+    XYZ[0] = X;
+    XYZ[1] = Y;
+    XYZ[2] = Z;
+    ConvertXYZ2LLH(XYZ,LLH,X_origin,Y_origin);
+    latitude = LLH[0];
+    longitude = LLH[1];
+    altitude = LLH[2];
     //Then populate pos_data so that the routine below still works
     pos_data.resize(5,1);
     pos_data[0] = 0.0; //not really sure what this is
@@ -116,15 +121,6 @@ int GPS::status() {
     ok = (int(nav_data[0]) == 0x00);
   }
   return ok;
-}
-
-void GPS::ConvertXYZ2LLH() {
-  double dlat = X/GPSVAL;
-  latitude = dlat + X_origin;
-  //printf("dlat = %lf latitude = %lf X = %lf origin = %lf \n",dlat,latitude,X,X_origin);
-  longitude = Y/(GPSVAL*cos(X_origin*PI/180.0)) + Y_origin;
-  altitude = -Z;
-  //printf("LLH = %lf %lf %lf \n",latitude,longitude,altitude);
 }
 
 void GPS::ConvertGPS2XY(){

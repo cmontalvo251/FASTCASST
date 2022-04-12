@@ -49,7 +49,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   LOGRATE = in_configuration_matrix.get(2,1);
   //Set names of headers
   headernames = (char**)malloc((NUMVARS-1)*sizeof(char*)); //-1 because of quaternions
-  headernames[0] = "X(m)";
+  headernames[0] = "X(m)"; /// set(1,1);
   headernames[1] = "Y(m)";
   headernames[2] = "Z(m)";
   headernames[3] = "Roll (deg)";
@@ -64,7 +64,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[12] = "Mx(Gauss)";
   headernames[13] = "My(Gauss)";
   headernames[14] = "Mz(Gauss)";
-  headernames[15] = "GPS Latitude (deg)";
+  headernames[15] = "GPS Latitude (deg)"; //set(16,1);
   headernames[16] = "GPS Longitude (deg)";
   headernames[17] = "GPS Altitude (m)";
   headernames[18] = "GPS Heading (deg)";
@@ -126,6 +126,12 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //Copy the states over to the model matrix for opengl and hardware loops
   model_matrix.vecset(1,NUMINTEGRATIONSTATES-NUMACTUATORS,integration_matrix,1);
 
+  //Initialize X and Y Origin of GPS
+  X_origin = MOBX;
+  Y_origin = MOBY;
+  //And then set GPS coordinates
+  SetGPS();
+
   //Initialize Integrator
   integrator.init(NUMINTEGRATIONSTATES,TIMESTEP);
   //Then initialize the Initial conditions
@@ -175,6 +181,24 @@ void renderloop(char* root_folder_name,int argc,char** argv) {
 }
 #endif
 
+void modeling::SetGPS() {
+  X = model_matrix.get(1,1);
+  Y = model_matrix.get(2,1);
+  Z = model_matrix.get(3,1);
+  //printf("X Y Z = %lf %lf %lf \n",model_matrix.get(1,1),model_matrix.get(2,1),model_matrix.get(3,1));  
+  XYZ[0] = X;
+  XYZ[1] = Y;
+  XYZ[2] = Z;
+  ConvertXYZ2LLH(XYZ,LLH,X_origin,Y_origin);
+  latitude = LLH[0];
+  longitude = LLH[1];
+  altitude = LLH[2];
+  //printf("LLH = %lf %lf %lf \n",latitude,longitude,altitude);
+  model_matrix.set(17,1,latitude); //17 because model_matrix has quaternions
+  model_matrix.set(18,1,longitude);
+  model_matrix.set(19,1,altitude);
+}
+
 ///Loop
 void modeling::loop(double currentTime,int pwm_array[]) {
 
@@ -195,6 +219,7 @@ void modeling::loop(double currentTime,int pwm_array[]) {
   //integration_matrix.disp();
 
   //Before we send the pwm_array to the integrator we need to add some bias
+  //If IACTUATORERROR IS ON
   if (IACTUATORERROR) {
     for (int i = 0;i<NUMACTUATORS;i++){
       pwm_array[i]=pwm_array[i]*(100+pwm_error.get(i+1,1))/100;
@@ -213,6 +238,9 @@ void modeling::loop(double currentTime,int pwm_array[]) {
 
   //Copy the states over to the model matrix for opengl and hardware loops
   model_matrix.vecset(1,NUMINTEGRATIONSTATES-NUMACTUATORS,integration_matrix,1);
+
+  //Convert XYZ to latitude longitude altitude and put into model_matrix.
+  SetGPS();
 
   //Send the model matrix to opengl
   #ifdef OPENGL_H

@@ -61,6 +61,11 @@ class modeling {
   void Derivatives(double,int[]);
   double integrationTime=0;
   MATLAB output_matrix;
+  //GPS
+  double X_origin=MOBX,Y_origin=MOBY;
+  double latitude,longitude,altitude,X,Y,Z;
+  double XYZ[3],LLH[3];
+  void SetGPS();
   //boost::thread render;
  public:
   double keyboardVars[4];

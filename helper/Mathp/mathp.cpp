@@ -8,6 +8,21 @@ void ClearHome() {
  #endif
 }
 
+void ConvertXYZ2LLH(double XYZ[],double LLH[],double X_origin,double Y_origin) {
+  double X = XYZ[0];
+  double Y = XYZ[1];
+  double Z = XYZ[2];
+  double dlat = X/GPSVAL;
+  double latitude = (dlat + X_origin);
+  //printf("dlat = %lf latitude = %lf X = %lf origin = %lf \n",dlat,latitude,X,X_origin);
+  double longitude = Y/(GPSVAL*cos(X_origin*PI/180.0)) + Y_origin;
+  double altitude = -Z;
+  LLH[0] = latitude;
+  LLH[1] = longitude;
+  LLH[2] = altitude;
+  //printf("LLH = %lf %lf %lf \n",latitude,longitude,altitude);
+}
+
 double sat(double input,double epsilon,double scalefactor)
 {
   if (input > epsilon) {

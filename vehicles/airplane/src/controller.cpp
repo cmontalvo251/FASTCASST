@@ -42,45 +42,70 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   lastTime = currentTime;
 
   //First extract the relavent commands from the receiver.
-  double throttle = rx_array[0];
-  double aileron = rx_array[1];
-  double elevator = rx_array[2];
-  double rudder = rx_array[3];
-  double autopilot = rx_array[4];
-  bool icontrol = 0;
+  throttle = rx_array[0];
+  aileron = rx_array[1];
+  elevator = rx_array[2];
+  rudder = rx_array[3];
+  autopilot = rx_array[4];
+  int icontrol = 0;
 
-  switch (CONTROLLER_FLAG) {
-  case -1:
-    //User decides
+
+  //Check for user controlled
+  if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {
       icontrol = 1;
     } else {
       icontrol = 0;
     }
-    break;
-  case 0:
-    //Always off
-    icontrol = 0;
-    break;
-  case 1:
-    //Always on
-    icontrol = 1;
-    break;
+  } else {
+    icontrol = CONTROLLER_FLAG;
   }
 
-  //sense_matrix.disp();
-  //while(1){};
+  //Aircraft Control cases
+  // 0 = fully manual
+  // 1 = roll (rudder mixing) and pitch control
+  // 2 = roll (rudder mixing), pitch, and velocity control
+  // 3 = roll (rudder), velocity and altitude control
+  // 4 = velocity, altitude and heading control
+  // 5 = velocity, altitude and waypoint control
 
-  //Then you can run any control loop you want.
-  if (icontrol) {
-    //#ifdef SIL 
+  switch (icontrol) {
+    case 5:
+      //velocity, altitude and waypoint control
+      printf("Waypoint + ");
+    case 4:
+      //velocity, altitude and heading control
+      printf("Heading + ");
+    case 3:
+      //roll (rudder mixing), velocity and altitude control
+      printf("Altitude + ");
+    case 2:
+      //roll (rudder mixing), pitch and velocity control
+      printf("Velocity + ");
+    case 1:
+      //roll (rudder mixing) and pitch control
+      //Run the Innerloop
+      //with inner loop guidance 
+      printf("INNER LOOP CONTROL \n");
+      roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+      pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+      InnerLoop(sense_matrix);
+      break;
+    case 0:
+      //Always off - fully manual
+      //Pass the receiver signals to the control_matrix and then break
+      printf("FULLY MANUAL \n");
+      for (int i = 0;i<4;i++) {
+        control_matrix.set(i+1,1,rx_array[i]);
+      }
+      break;
+  }
+}
+void controller::InnerLoop(MATLAB sense_matrix) {
+      //#ifdef SIL 
     //printf("Auto ON \n");
     //#endif
-    
-    //For now just pitch and roll commands
-    double roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
-    double pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
-    
+      
     //Get States
     double roll = sense_matrix.get(4,1);
     double pitch = sense_matrix.get(5,1);
@@ -106,10 +131,4 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     control_matrix.set(3,1,elevator);
     control_matrix.set(4,1,rudder);
     //control_matrix.disp();
-  } else {
-    //printf("Passing RX to PWM \n");
-    for (int i = 0;i<4;i++) {
-      control_matrix.set(i+1,1,rx_array[i]);
-    }
-  }
 }

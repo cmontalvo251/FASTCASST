@@ -12,6 +12,8 @@ private:
   double elapsedTime = 0,lastTime=0; //These are used to keep track of time elapsed.
   int CONTROLLER_FLAG = -99;
   void set_defaults();
+  double throttle,aileron,elevator,rudder,autopilot,pitch_command,roll_command;
+  void InnerLoop(MATLAB);
 public:
   int NUMSIGNALS=4; //TAER
   MATLAB control_matrix; //This is a vector of TAERA1A2 in PWM signals

@@ -1,3 +1,8 @@
+========================4/12/2022========================
+
+Finished adding in GPS, Barometer and Thermistor into modeling.cpp
+Need to run SIMONLY Quad and Airplane and SIL Quad and Airplane
+
 =========================3/30/2022========================
 
 Ok adding Actuator dynamics or at least attempting to. Ok

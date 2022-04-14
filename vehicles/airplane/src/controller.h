@@ -13,7 +13,9 @@ private:
   int CONTROLLER_FLAG = -99;
   void set_defaults();
   double throttle,aileron,elevator,rudder,autopilot,pitch_command,roll_command;
+  double velocity_command,velocityint = 0;
   void InnerLoop(MATLAB);
+  void VelocityLoop(MATLAB);
 public:
   int NUMSIGNALS=4; //TAER
   MATLAB control_matrix; //This is a vector of TAERA1A2 in PWM signals

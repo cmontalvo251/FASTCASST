@@ -68,6 +68,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   // 3 = roll (rudder), velocity and altitude control
   // 4 = velocity, altitude and heading control
   // 5 = velocity, altitude and waypoint control
+  //Initialize commands
+  roll_command = -99;
+  pitch_command = -99;
+  velocity_command = 20; //Hardcode to 20?
 
   switch (icontrol) {
     case 5:
@@ -78,34 +82,54 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       printf("Heading + ");
     case 3:
       //roll (rudder mixing), velocity and altitude control
-      printf("Altitude + ");
+      //printf("Altitude + ");
     case 2:
       //roll (rudder mixing), pitch and velocity control
-      printf("Velocity + ");
+      //printf("Velocity + ");
+      VelocityLoop(sense_matrix);
     case 1:
       //roll (rudder mixing) and pitch control
       //Run the Innerloop
       //with inner loop guidance 
-      printf("INNER LOOP CONTROL \n");
-      roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
-      pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
-      InnerLoop(sense_matrix);
-      break;
-    case 0:
-      //Always off - fully manual
-      //Pass the receiver signals to the control_matrix and then break
-      printf("FULLY MANUAL \n");
-      for (int i = 0;i<4;i++) {
-        control_matrix.set(i+1,1,rx_array[i]);
+      //printf("INNER LOOP CONTROL -- ");
+      //Check for inner loop only guidance
+      if (roll_command == -99) {
+        roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
       }
+      if (pitch_command == -99) {
+        pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+      }
+      InnerLoop(sense_matrix);
+    case 0:
+      //printf("Passing signals \n");
+      //Pass the receiver signals to the control_matrix and then break
+      control_matrix.set(1,1,throttle);
+      control_matrix.set(2,1,aileron);
+      control_matrix.set(3,1,elevator);
+      control_matrix.set(4,1,rudder);
+      //control_matrix.disp();
       break;
   }
 }
+
+void controller::VelocityLoop(MATLAB sense_matrix) {
+  //printf("------\n");
+  //sense_matrix.disp();
+  double u = sense_matrix.get(7,1);
+  double velocityerror = velocity_command - u;
+  //printf("Sense U = %lf \n",u);
+  //printf("Velocity Error = %lf \n",velocityerror);
+  double kp = 40.0;
+  double ki = 3.0;
+  throttle = OUTMIN + kp*velocityerror + ki*velocityint;
+  throttle = CONSTRAIN(throttle,OUTMIN,OUTMAX);
+  //Integrate but prevent integral windup
+  if ((throttle > OUTMIN) && (throttle < OUTMAX)) {
+    velocityint += elapsedTime*velocityerror;
+  }
+}
+
 void controller::InnerLoop(MATLAB sense_matrix) {
-      //#ifdef SIL 
-    //printf("Auto ON \n");
-    //#endif
-      
     //Get States
     double roll = sense_matrix.get(4,1);
     double pitch = sense_matrix.get(5,1);
@@ -125,10 +149,4 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     elevator = kp*(pitch-pitch_command) + kd*(pitch_rate);
     elevator = CONSTRAIN(elevator,-500,500) + OUTMID;
     //printf("ELEVATOR = %lf \n",elevator);
-    
-    control_matrix.set(1,1,throttle);
-    control_matrix.set(2,1,aileron);
-    control_matrix.set(3,1,elevator);
-    control_matrix.set(4,1,rudder);
-    //control_matrix.disp();
 }

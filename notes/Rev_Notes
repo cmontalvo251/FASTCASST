@@ -1,3 +1,8 @@
+========================4/14/2022==========================
+
+Finished coding altitude loop for airplane in simonly. Need to move to
+on to simonly autopilot for quadcopter.
+
 ========================4/12/2022========================
 
 Finished adding in GPS, Barometer and Thermistor into modeling.cpp

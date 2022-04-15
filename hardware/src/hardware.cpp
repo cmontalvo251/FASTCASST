@@ -60,10 +60,10 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
 
 //This version of the loop runs assuming you are saving data from the simulation 
 //environment
-void hardware::send(MATLAB model_matrix,double keyboardVars[]) {
+void hardware::send(double currentTime,MATLAB model_matrix,double keyboardVars[]) {
 
   //Send Model Matrix to sensor class
-  sense.send(model_matrix);
+  sense.send(currentTime,model_matrix);
 
   //We also need to set the temperature in the modeling matrix
   //I don't think we really need this in the model but whatever

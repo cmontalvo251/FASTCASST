@@ -72,6 +72,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   roll_command = -99;
   pitch_command = -99;
   velocity_command = 20; //Hardcode to 20?
+  altitude_command = 100; //Hardcode to 100?
 
   switch (icontrol) {
     case 5:
@@ -83,6 +84,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     case 3:
       //roll (rudder mixing), velocity and altitude control
       //printf("Altitude + ");
+      AltitudeLoop(sense_matrix);
     case 2:
       //roll (rudder mixing), pitch and velocity control
       //printf("Velocity + ");
@@ -110,6 +112,28 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //control_matrix.disp();
       break;
   }
+}
+
+void controller::AltitudeLoop(MATLAB sense_matrix) {
+  //Probably a good idea to use pressure altitude but might need to use 
+  //GPS altitude if the barometer isn't good or perhaps even a KF approach
+  //Who knows. Just simulating this now.
+  double altitude = sense_matrix.get(28,1);  
+  //Initialize altitude_dot to zero
+  double altitude_dot = 0;
+  //If altitude_prev has been set compute a first order derivative
+  if (altitude_prev != -999) {
+    altitude_dot = (altitude - altitude_prev) / elapsedTime;
+  }
+  //Then set the previous value
+  altitude_prev = altitude;
+
+  //Compute Pitch Command in Degrees
+  double kp = 0.2;
+  double kd = 0.1;
+  pitch_command = kp*(altitude_command - altitude) + kd*(0-altitude_dot);
+
+  //printf("T, ALT, ALT DOT = %lf %lf %lf \n",lastTime,altitude,altitude_dot);  
 }
 
 void controller::VelocityLoop(MATLAB sense_matrix) {
@@ -140,13 +164,14 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     double kp = 10.0;
     double kd = 2.0;
     aileron = kp*(roll-roll_command) + kd*(roll_rate);
-    
+    elevator = kp*(pitch-pitch_command) + kd*(pitch_rate);
+
     //Rudder signal will be proportional to aileron
     double kr = 0.5;
     rudder = kr*aileron;
+
+    //CONSTRAIN
     rudder = CONSTRAIN(rudder,-500,500) + OUTMID;
     aileron = -CONSTRAIN(aileron,-500,500) + OUTMID;
-    elevator = kp*(pitch-pitch_command) + kd*(pitch_rate);
     elevator = CONSTRAIN(elevator,-500,500) + OUTMID;
-    //printf("ELEVATOR = %lf \n",elevator);
 }

@@ -42,64 +42,137 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   lastTime = currentTime;
 
   //First extract the relavent commands from the receiver.
-  double throttle = rx_array[0];
-  double aileron = rx_array[1];
-  double elevator = rx_array[2];
-  double rudder = rx_array[3];
-  double autopilot = rx_array[4];
-  bool icontrol = 0;
+  throttle = rx_array[0];
+  aileron = rx_array[1];
+  elevator = rx_array[2];
+  rudder = rx_array[3];
+  autopilot = rx_array[4];
+  int icontrol = 0;
 
-  switch (CONTROLLER_FLAG) {
-  case -1:
-    //User decides
+
+  //Check for user controlled
+  if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {
       icontrol = 1;
     } else {
       icontrol = 0;
     }
-    break;
-  case 0:
-    //Always off
-    icontrol = 0;
-    break;
-  case 1:
-    //Always on
-    icontrol = 1;
-    break;
+  } else {
+    icontrol = CONTROLLER_FLAG;
   }
 
+  //Aircraft Control cases
+  // 0 = fully manual
+  // 1 = roll (rudder mixing) and pitch control
+  // 2 = roll (rudder mixing), pitch, and velocity control
+  // 3 = roll (rudder), velocity and altitude control
+  // 4 = velocity, altitude and heading control
+  // 5 = velocity, altitude and waypoint control
+  //Initialize commands
+  roll_command = -99;
+  pitch_command = -99;
+  velocity_command = 20; //Hardcode to 20?
+  altitude_command = 100; //Hardcode to 100?
+
+  switch (icontrol) {
+    case 5:
+      //velocity, altitude and waypoint control
+      printf("Waypoint + ");
+    case 4:
+      //velocity, altitude and heading control
+      printf("Heading + ");
+    case 3:
+      //roll (rudder mixing), velocity and altitude control
+      //printf("Altitude + ");
+      AltitudeLoop(sense_matrix);
+    case 2:
+      //roll (rudder mixing), pitch and velocity control
+      //printf("Velocity + ");
+      VelocityLoop(sense_matrix);
+    case 1:
+      //roll (rudder mixing) and pitch control
+      //Run the Innerloop
+      //with inner loop guidance 
+      //printf("INNER LOOP CONTROL -- ");
+      //Check for inner loop only guidance
+      if (roll_command == -99) {
+        roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+      }
+      if (pitch_command == -99) {
+        pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+      }
+      InnerLoop(sense_matrix);
+    case 0:
+      //printf("Passing signals \n");
+      //Pass the receiver signals to the control_matrix and then break
+      control_matrix.set(1,1,throttle);
+      control_matrix.set(2,1,aileron);
+      control_matrix.set(3,1,elevator);
+      control_matrix.set(4,1,rudder);
+      //control_matrix.disp();
+      break;
+  }
+}
+
+void controller::AltitudeLoop(MATLAB sense_matrix) {
+  //Probably a good idea to use pressure altitude but might need to use 
+  //GPS altitude if the barometer isn't good or perhaps even a KF approach
+  //Who knows. Just simulating this now.
+  double altitude = sense_matrix.get(28,1);  
+  //Initialize altitude_dot to zero
+  double altitude_dot = 0;
+  //If altitude_prev has been set compute a first order derivative
+  if (altitude_prev != -999) {
+    altitude_dot = (altitude - altitude_prev) / elapsedTime;
+  }
+  //Then set the previous value
+  altitude_prev = altitude;
+
+  //Compute Pitch Command in Degrees
+  double kp = 0.2;
+  double kd = 0.1;
+  pitch_command = kp*(altitude_command - altitude) + kd*(0-altitude_dot);
+  pitch_command = CONSTRAIN(-45,45,pitch_command);
+
+  //printf("T, ALT, ALT DOT = %lf %lf %lf \n",lastTime,altitude,altitude_dot);  
+}
+
+void controller::VelocityLoop(MATLAB sense_matrix) {
+  //printf("------\n");
   //sense_matrix.disp();
-  //while(1){};
+  double u = sense_matrix.get(7,1);
+  double velocityerror = velocity_command - u;
+  //printf("Sense U = %lf \n",u);
+  //printf("Velocity Error = %lf \n",velocityerror);
+  double kp = 40.0;
+  double ki = 3.0;
+  throttle = OUTMIN + kp*velocityerror + ki*velocityint;
+  throttle = CONSTRAIN(throttle,OUTMIN,OUTMAX);
+  //Integrate but prevent integral windup
+  if ((throttle > OUTMIN) && (throttle < OUTMAX)) {
+    velocityint += elapsedTime*velocityerror;
+  }
+}
 
-  //Then you can run any control loop you want.
-  if (icontrol) {
-    //#ifdef SIL 
-    //printf("Auto ON \n");
-    //#endif
-
-    //For now just pitch and roll commands
-    double roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
-    double pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
-    
+void controller::InnerLoop(MATLAB sense_matrix) {
     //Get States
     double roll = sense_matrix.get(4,1);
     double pitch = sense_matrix.get(5,1);
+    //printf("PITCH = %lf \n",pitch);
     double roll_rate = sense_matrix.get(10,1); //For SIL/SIMONLY see Sensors.cpp
     double pitch_rate = sense_matrix.get(11,1); //These are already in deg/s
     //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
     double kp = 10.0;
     double kd = 2.0;
-    double aileron = kp*(roll-roll_command) + kd*(roll_rate);
+    aileron = kp*(roll-roll_command) + kd*(roll_rate);
+    elevator = kp*(pitch-pitch_command) + kd*(pitch_rate);
+
+    //Rudder signal will be proportional to aileron
+    double kr = 0.5;
+    rudder = kr*aileron;
+
+    //CONSTRAIN
+    rudder = CONSTRAIN(rudder,-500,500) + OUTMID;
     aileron = -CONSTRAIN(aileron,-500,500) + OUTMID;
-    double elevator = kp*(pitch-pitch_command) + kd*(pitch_rate);
     elevator = CONSTRAIN(elevator,-500,500) + OUTMID;
-    
-    control_matrix.set(2,1,aileron);
-    control_matrix.set(3,1,elevator);
-  } else {
-    //printf("Passing RX to PWM \n");
-    for (int i = 0;i<4;i++) {
-      control_matrix.set(i+1,1,rx_array[i]);
-    }
-  }
 }

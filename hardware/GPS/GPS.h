@@ -7,14 +7,13 @@
 
 #define GPSPERIOD 0.5
 #define NGPS 25
-#define MOBX 30.69
-#define MOBY -88.17
 
 class GPS {
  private:
     double GPSnextTime = 0; //Assume you always start at zero
     double GPSupdateRate = 4.0; //every 4 seconds
     int VALIDGPS = 0;
+    double XYZ[3],LLH[3];
  public:
   std::vector<double> pos_data,nav_data;
   //X AND Y are Hardcoded to be zero initially and the origin point
@@ -37,7 +36,7 @@ class GPS {
   void computeSpeed(double);
   void computeGroundTrack(double);
   void ConvertGPS2XY();
-  void ConvertXYZ2LLH();
+  //void ConvertXYZ2LLH(); -- This has been moved to mathp.h as a helper function
   void setXYZ(double,double,double);
   void setOrigin(double,double);
 };

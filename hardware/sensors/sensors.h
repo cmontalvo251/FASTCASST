@@ -40,6 +40,7 @@ class sensors {
   double noise_angle,noise_gyro,noise_mag,noise_pos,noise_velocity;
   void setBias(MATLAB,double,double);
   double pollute(double,double);
+  void sendXYZ2GPS(double t,double x,double y,double z);
  public:
   //Public variables and classes
   IMU orientation;
@@ -49,7 +50,7 @@ class sensors {
   //constructor
   sensors();
   //Send model matrix
-  void send(MATLAB);
+  void send(double,MATLAB);
   //Initialize
   void init(MATLAB,MATLAB);
   //Initialize the IMU
@@ -60,6 +61,7 @@ class sensors {
   void print();
   //Get number of variabls routine
   int getNumVars();
+  double getTemperature();
 };
 
 #endif

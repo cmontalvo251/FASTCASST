@@ -18,19 +18,38 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   NUMVARS = 30; //Make sure this is the same as the sense states+1
   model_matrix.zeros(NUMVARS,1,"Model Matrix"); 
   output_matrix.zeros(NUMVARS-1,1,"OUTPUT Matrix"); //-1 for quaternions
-  NUMINTEGRATIONSTATES=13; //Only integrating 13 states for a 6DOF system
-  integration_matrix.zeros(NUMINTEGRATIONSTATES,1,"Integration Matrix");
 
+  //Get number of actuators
+  NUMACTUATORS = in_simulation_matrix.get(39,1);
+  pwmnames = (char**)malloc((NUMACTUATORS)*sizeof(char*));
+  for (int i = 1;i<=NUMACTUATORS;i++) {
+    pwmnames[i-1] = (char*)malloc((11)*sizeof(char));
+    sprintf(pwmnames[i-1],"PWM Model %d",i);
+  }
+  pwm_dynamics_array = (int *) calloc(NUMACTUATORS,sizeof(int));
+
+  NUMINTEGRATIONSTATES=13+NUMACTUATORS; //Only integrating 13 states for a 6DOF system + actuators
+  integration_matrix.zeros(NUMINTEGRATIONSTATES,1,"Integration Matrix");
+  settling_time_matrix.zeros(NUMACTUATORS,1,"settling time matrix");
+  actuatorStates.zeros(NUMACTUATORS,1,"actuatorStates");
   //Set initial conditions of integration matrix
-  for (int i = 1;i<NUMINTEGRATIONSTATES;i++) {
+  for (int i = 1;i<=NUMINTEGRATIONSTATES-NUMACTUATORS;i++) {
     integration_matrix.set(i,1,in_simulation_matrix.get(i+2,1));
+  }
+  //Initial conditions of actuators are in a different spot
+  int counter = 39 + NUMACTUATORS + 1;
+  for (int i = 14;i<=NUMINTEGRATIONSTATES;i++) {
+    integration_matrix.set(i,1,in_simulation_matrix.get(counter,1));
+    actuatorStates.set(i-13,1,in_simulation_matrix.get(counter,1));
+    settling_time_matrix.set(i-13,1,in_simulation_matrix.get(counter-NUMACTUATORS,1));
+    counter = counter + 1;
   }
 
   //Get log rate
   LOGRATE = in_configuration_matrix.get(2,1);
   //Set names of headers
   headernames = (char**)malloc((NUMVARS-1)*sizeof(char*)); //-1 because of quaternions
-  headernames[0] = "X(m)";
+  headernames[0] = "X(m)"; /// set(1,1);
   headernames[1] = "Y(m)";
   headernames[2] = "Z(m)";
   headernames[3] = "Roll (deg)";
@@ -45,7 +64,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[12] = "Mx(Gauss)";
   headernames[13] = "My(Gauss)";
   headernames[14] = "Mz(Gauss)";
-  headernames[15] = "GPS Latitude (deg)";
+  headernames[15] = "GPS Latitude (deg)"; //set(17,1); +2 (+1 for C++ and then +1 for quaternions)
   headernames[16] = "GPS Longitude (deg)";
   headernames[17] = "GPS Altitude (m)";
   headernames[18] = "GPS Heading (deg)";
@@ -56,16 +75,10 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[23] = "Analog 4 (V)";
   headernames[24] = "Analog 5 (V)";
   headernames[25] = "Analog 6 (V)";
-  headernames[26] = "Pressure (Pa)";
-  headernames[27] = "Pressure Altitude (m)";
+  headernames[26] = "Pressure (Pa)";  //set(28,1);
+  headernames[27] = "Pressure Altitude (m)"; //set(29,1);
   headernames[28] = "Temperature (C)";
-  //Get number of actuators
-  NUMACTUATORS = in_simulation_matrix.get(39,1);
-  pwmnames = (char**)malloc((NUMACTUATORS)*sizeof(char*));
-  for (int i = 1;i<=NUMACTUATORS;i++) {
-    pwmnames[i-1] = (char*)malloc((12)*sizeof(char));
-    sprintf(pwmnames[i-1],"PWM Signal %d",i);
-  }
+
   //Initialize Logger
   logger.init("logs/",NUMVARS+NUMACTUATORS); //Not minus 1 because you add time
   //Set and log headers
@@ -111,7 +124,13 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //PAUSE();
 
   //Copy the states over to the model matrix for opengl and hardware loops
-  model_matrix.vecset(1,NUMINTEGRATIONSTATES,integration_matrix,1);
+  model_matrix.vecset(1,NUMINTEGRATIONSTATES-NUMACTUATORS,integration_matrix,1);
+
+  //Initialize X and Y Origin of GPS
+  X_origin = MOBX;
+  Y_origin = MOBY;
+  //And then set GPS coordinates
+  SetGPS();
 
   //Initialize Integrator
   integrator.init(NUMINTEGRATIONSTATES,TIMESTEP);
@@ -162,6 +181,24 @@ void renderloop(char* root_folder_name,int argc,char** argv) {
 }
 #endif
 
+void modeling::SetGPS() {
+  X = model_matrix.get(1,1);
+  Y = model_matrix.get(2,1);
+  Z = model_matrix.get(3,1);
+  //printf("X Y Z = %lf %lf %lf \n",model_matrix.get(1,1),model_matrix.get(2,1),model_matrix.get(3,1));  
+  XYZ[0] = X;
+  XYZ[1] = Y;
+  XYZ[2] = Z;
+  ConvertXYZ2LLH(XYZ,LLH,X_origin,Y_origin);
+  latitude = LLH[0];
+  longitude = LLH[1];
+  altitude = LLH[2];
+  //printf("LLH = %lf %lf %lf \n",latitude,longitude,altitude);
+  model_matrix.set(17,1,latitude); //17 because model_matrix has quaternions
+  model_matrix.set(18,1,longitude);
+  model_matrix.set(19,1,altitude);
+}
+
 ///Loop
 void modeling::loop(double currentTime,int pwm_array[]) {
 
@@ -182,6 +219,7 @@ void modeling::loop(double currentTime,int pwm_array[]) {
   //integration_matrix.disp();
 
   //Before we send the pwm_array to the integrator we need to add some bias
+  //If IACTUATORERROR IS ON
   if (IACTUATORERROR) {
     for (int i = 0;i<NUMACTUATORS;i++){
       pwm_array[i]=pwm_array[i]*(100+pwm_error.get(i+1,1))/100;
@@ -193,9 +231,22 @@ void modeling::loop(double currentTime,int pwm_array[]) {
 
   //Reset the Integration matrix
   integration_matrix.overwrite(integrator.State);
+  //Copy over actuators
+  if (IACTUATORERROR) {
+    actuatorStates.vecset(1,NUMACTUATORS,integrator.State,14);
+  }
 
   //Copy the states over to the model matrix for opengl and hardware loops
-  model_matrix.vecset(1,NUMINTEGRATIONSTATES,integration_matrix,1);
+  model_matrix.vecset(1,NUMINTEGRATIONSTATES-NUMACTUATORS,integration_matrix,1);
+
+  //Convert XYZ to latitude longitude altitude and put into model_matrix.
+  SetGPS();
+
+  //Set pressure
+  double pressure = ConvertZ2Pressure(model_matrix.get(3,1));
+  model_matrix.set(28,1,pressure);
+  //Just set pressure altitude to the actual Z coordinate
+  model_matrix.set(29,1,-model_matrix.get(3,1)); 
 
   //Send the model matrix to opengl
   #ifdef OPENGL_H
@@ -216,11 +267,6 @@ void modeling::loop(double currentTime,int pwm_array[]) {
   GLmutex.unlock();
   #endif
 
-  //Add sensor noise if needed
-
-  //Note we have a bunch more variables that aren't included in the integration
-  //states. GPS LLH is an example. 
-
   //Log data if needed
   if (currentTime >= nextLOGtime) {
     //printf("Model Logging %lf \n",currentTime);
@@ -239,7 +285,8 @@ void modeling::loop(double currentTime,int pwm_array[]) {
     //output_matrix.disp();
     logger.print(output_matrix);
     //Then output the pwm array
-    logger.printarrayln(pwm_array,NUMACTUATORS);
+    //logger.printarrayln(pwm_array,NUMACTUATORS);
+    logger.println(actuatorStates);
     nextLOGtime=currentTime+LOGRATE;
   }
 
@@ -257,27 +304,30 @@ void modeling::rk4step(double currentTime,int pwm_array[]) {
 
 
 void modeling::Derivatives(double currentTime,int pwm_array[]) {
+
+  //Actuator Dynamics
+  double time_constant = 0;
+  double settling_time = 0;
+  double actuatorDot = 0;
+  for (int i = 0;i<NUMACTUATORS;i++) {  
+    settling_time = settling_time_matrix.get(i+1,1);
+    if ((settling_time == 0) || (IACTUATORERROR == 0)) {
+      //Pass through
+      actuatorStates.set(i+1,1,pwm_array[i]);
+    } else {
+      //Integrate
+      time_constant = 4.0/settling_time;
+      actuatorDot = time_constant*(pwm_array[i] - actuatorStates.get(i+1,1));
+      //printf("i = %d, actuatorDot = %lf \n",actuatorDot);
+      integrator.k.set(13+i+1,1,actuatorDot);
+    }
+    pwm_dynamics_array[i] = actuatorStates.get(i+1,1);
+  }
+  //printf("pwm_array Derivatives = %d \n",pwm_array[2]);
+  //printf("actuatorStates = %lf \n",actuatorStates.get(3,1));
+
   //The Derivatives are vehicle independent except for the 
   //forces and moments
-
-  //Actuator Error Model is a simple first order filter
-  /*if (NUMACTUATORS > 0) {
-    ///Get the error actuator state
-    double val = 0;
-    for (int i = 0;i<NUMACTUATORS;i++) {  
-      val = actuatorState.get(i+1,1)*actuatorErrorPercentage.get(i+1,1);
-      actuatorError.set(i+1,1,val);  
-    }
-    //Integrate Actuator Dynamics
-    //input will be ctlcomms and the output will be actuator_state
-    for (int i = 0;i<NUMACTUATORS;i++) {
-      k.set(i+NUMSTATES+1,1,actuatorTimeConstants.get(i+1,1)*(rcout.pwmcomms[i] - actuatorState.get(i+1,1)));
-    }
-  } else {
-    //Otherwise just pass through the ctlcomms
-    actuatorError.overwrite(ctl.ctlcomms);
-    }*/
-
   ////////////////////KINEMATICS///////////////
 
   //Extract individual States from State Vector
@@ -328,7 +378,7 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //External Forces Model
   //Send the external forces model the actuator_state instead of the ctlcomms
   if (FORCES_FLAG) {
-    extforces.ForceMoment(currentTime,integrator.StateDel,integrator.k,pwm_array,env);
+    extforces.ForceMoment(currentTime,integrator.StateDel,integrator.k,pwm_dynamics_array,env);
   } else {
     extforces.FB.mult_eq(0); //Zero these out just to make sure something is in here
     extforces.MB.mult_eq(0);
@@ -395,5 +445,6 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //Save pqrdot
   integrator.k.vecset(11,13,pqrdot,1);
 
+  //integrator.k.disp();
   ////////////////////////////////////////////////////////////////
 }

@@ -64,7 +64,7 @@ class hardware {
   //Initialization routine needs the root folder name
   void init(char root_folder_name[],int NUMSIGNALS);
   //Send routine that sends model matrix to hardware to emulate sensors
-  void send(MATLAB model_matrix,double keyboardVars[]);
+  void send(double time,MATLAB model_matrix,double keyboardVars[]);
   //Main hardware loop
   void loop(double currentTime,double elapsedTime,MATLAB control_matrix);
   //Constructor

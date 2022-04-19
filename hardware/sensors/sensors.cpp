@@ -115,12 +115,13 @@ void sensors::initIMU(int sensor_type) {
   //sensor_type == 1 -> LSM9DS1
   orientation.init(sensor_type);
 }
+void sensors::sendXYZ2GPS(double currentTime,double X,double Y,double Z) {
+  //If it's not time to update GPS
+  if (currentTime < nextGPStime) {
+    //return prematurely
+    return;
+  }
 
-void sensors::send(MATLAB model_matrix) {
-  //X,Y,Z
-  double X = model_matrix.get(1,1);
-  double Y = model_matrix.get(2,1);
-  double Z = model_matrix.get(3,1);
   //Add Errors if present
   if (IERROR) {
     X += pollute(bias_pos_matrix.get(1,1),noise_pos);
@@ -134,6 +135,14 @@ void sensors::send(MATLAB model_matrix) {
   satellites.reset();
   //printf("%lf %lf %lf \n",sense.satellites.X,sense.satellites.Y,sense.satellites.Z);
   //PAUSE();
+}
+
+void sensors::send(double currentTime,MATLAB model_matrix) {
+  //X,Y,Z
+  double X = model_matrix.get(1,1);
+  double Y = model_matrix.get(2,1);
+  double Z = model_matrix.get(3,1);
+  sendXYZ2GPS(currentTime,X,Y,Z);
 
   //Quaternions
   //Convert the quaternions to Euler Angles if ERRORS present
@@ -158,7 +167,7 @@ void sensors::send(MATLAB model_matrix) {
     q2 = q0123.get(3,1);
     q3 = q0123.get(4,1);
   } else {
-      //model_matrix.disp();
+    //model_matrix.disp();
     q0 = model_matrix.get(4,1);
     q1 = model_matrix.get(5,1);
     q2 = model_matrix.get(6,1);
@@ -177,7 +186,7 @@ void sensors::send(MATLAB model_matrix) {
   if (IERROR) {
     printf("GXYZ Before = %lf %lf %lf \n",gx,gy,gz);
     gx += pollute(bias_gyro_matrix.get(1,1),noise_gyro);
-    gy += pollute(bias_gyro_matrix.get(2,1),noise_gyro);
+    gy+= pollute(bias_gyro_matrix.get(2,1),noise_gyro);
     gz += pollute(bias_gyro_matrix.get(3,1),noise_gyro);
     printf("GXYZ After = %lf %lf %lf \n",gx,gy,gz);
   }
@@ -185,7 +194,15 @@ void sensors::send(MATLAB model_matrix) {
   orientation.gy = gy;
   orientation.gz = gz;
 
+  //Pass Z coordinate to barotemp
+  atm.SendZ(Z);
+
   //Still need all the other sensor states but not right now
+
+}
+
+double sensors::getTemperature() {
+  return atm.temperature;
 }
 
 //Polling routine to read all sensors
@@ -227,7 +244,8 @@ void sensors::poll(double currentTime,double elapsedTime) {
   ///XYZ
   sense_matrix.set(1,1,satellites.X);
   sense_matrix.set(2,1,satellites.Y);
-  sense_matrix.set(3,1,satellites.Z);
+  sense_matrix.set(3,1,(satellites.Z-atm.altitude)/2.0);  //Average GPS and BARO?
+  //sense_matrix.set(3,1,-atm.altitude);
 
   //Quaternions
   sense_matrix.set(4,1,orientation.roll);

@@ -1,42 +1,10 @@
                                      WORK TASKS:
+AVIATION:
 
-FASTSim SysML:
-
-   ✔ I think to make sure you have a simple transition you need to move all the C++ and HIL repos into MultiSAT as well. The reason being because HIL the simulation does not work right now in FASTSim. I think eventually you can deprecate the HIL simulation but just to make sure things still work properly you need to put a running copy into MultiSAT so it still works during the transition @done (21-12-28 22:19)
-   ✔ Move HIL into C++ directory and delete HIL (call folder Hardware or something) @done (21-12-28 22:33)
-   ✔ Rename all the aerodynamics.cpp routines to forces.cpp @done (21-12-30 08:01)
-   ✔ Move all vehicles to a Model Folder @done (21-12-28 22:34)
-   ✔ Re-org all folders in C++.git (Make C++ routines called Basic or something like that maybe Util? or COmmon? yea Common) @done (21-12-28 22:34)
-   ✔ Code Orbit++ and add a sphere for Earth scaled by REARTH. Try to reuse as many routines as possible from MultiSat++. @done (21-12-30 16:47)
-   ✔ deprecate Orbit++ from Aerospace folder @done (21-12-30 17:46)
-   ✔ SysML diagrams for everything below to make sure everything works as intended @done (21-12-31 20:37)
-   ✔ I think the HIL send should be in Dynamics (that’s the only place you need to send) @done (21-12-31 20:37)
-   ✔ The HIL receive should be in Sensors (only place you need to receive) @done (21-12-31 20:37)
-    ✔ Create a logical architecture that works for all vehicles in the structure that looks like the form: @done (21-12-31 20:37)
-    ✔ Inner Loop @done (21-12-31 20:37)
-      ✔ Inputs: Roll, pitch, yaw commands @done (21-12-31 20:37)
-      ✔ Outputs: ctlcomms - us signals to RCIO class @done (21-12-31 20:37)
-    ✔ Outerloop @done (21-12-31 20:37)
-      ✔ Inputs: waypoint commands (x,y,altitude) @done (21-12-31 20:37)
-      ✔ Outputs: roll pitch and yaw commands @done (21-12-31 20:37)
-    ✔ GraveDigger - The Remote control car in the lab @done (21-12-31 20:37)
-    ✔ BattleBot - the tank @done (21-12-31 20:37)
-    ✔ FASTIris @done (21-12-31 20:37)
-    ✔ Bumblebee @done (21-12-31 20:37)
-    ✔ Meta 1 and 2 @done (21-12-31 20:38)
-    ✔ Batwing @done (21-12-31 20:38)
-   ✔ First Video is your struggle with something new @done (22-01-02 09:39)
-   ✔ Second Video is on SysML diagrams @done (22-01-02 09:39)
-   ✔ Rename C++.git to FAST.git @done (22-01-20 23:30)
-   ☐ Make the software look like the SysML diagram. This will probably break everything
-   ✔ Put the Makefile in FAST that way you can do - make Demo or make Logger find a way to do this @done (21-12-29 17:27)
-   ✔ I want the main.cpp for all the below routines to never have to be edited. @done (21-12-29 17:27)
-      ✔ LOGGER - move from FASTSensors to here @done (21-12-29 17:27)
-      ✔ DEMO - this is SimPilot @done (21-12-29 17:27)
-      ✔ SIM  - This is FASTsim @done (21-12-29 17:27)
-   ✔ Save FASTPilot.git on Gitlab for proprietary software @done (22-01-20 23:35)
-   ✔ Merge all changes above @done (22-01-20 23:31)
-   ✔ Delete HIL on Github. @done (22-01-20 23:35) I archived this instead
+ ✔ Update Quadcopter and Airplane dynamics @done (22-04-12 20:38)
+ ☐ Run SIMONLY simulations with quadcopter and airplane models
+ ☐ Run SIL simulations with quadcopter and airplane models
+ ☐ Plot all data and email to team
 
 HIL:
 
@@ -270,6 +238,44 @@ You can also use mavlink to send and receive parameters (such as controller gain
 Most of this work was guided by this blog post (https://discuss.ardupilot.org/t/mavlink-and-arduino-step-by-step/25566) so I suggest at least a quick read of that will help the students out in understanding how everything fits together.  The parameter stuff was an internal development which I hope to get written up properly one day and into a blog post to more-widely share the technique.
 Hopefully that all helps and let me know if you have any other questions.  Good luck!
 matt
+
+FASTSim SysML:
+
+   ✔ I think to make sure you have a simple transition you need to move all the C++ and HIL repos into MultiSAT as well. The reason being because HIL the simulation does not work right now in FASTSim. I think eventually you can deprecate the HIL simulation but just to make sure things still work properly you need to put a running copy into MultiSAT so it still works during the transition @done (21-12-28 22:19)
+   ✔ Move HIL into C++ directory and delete HIL (call folder Hardware or something) @done (21-12-28 22:33)
+   ✔ Rename all the aerodynamics.cpp routines to forces.cpp @done (21-12-30 08:01)
+   ✔ Move all vehicles to a Model Folder @done (21-12-28 22:34)
+   ✔ Re-org all folders in C++.git (Make C++ routines called Basic or something like that maybe Util? or COmmon? yea Common) @done (21-12-28 22:34)
+   ✔ Code Orbit++ and add a sphere for Earth scaled by REARTH. Try to reuse as many routines as possible from MultiSat++. @done (21-12-30 16:47)
+   ✔ deprecate Orbit++ from Aerospace folder @done (21-12-30 17:46)
+   ✔ SysML diagrams for everything below to make sure everything works as intended @done (21-12-31 20:37)
+   ✔ I think the HIL send should be in Dynamics (that’s the only place you need to send) @done (21-12-31 20:37)
+   ✔ The HIL receive should be in Sensors (only place you need to receive) @done (21-12-31 20:37)
+    ✔ Create a logical architecture that works for all vehicles in the structure that looks like the form: @done (21-12-31 20:37)
+    ✔ Inner Loop @done (21-12-31 20:37)
+      ✔ Inputs: Roll, pitch, yaw commands @done (21-12-31 20:37)
+      ✔ Outputs: ctlcomms - us signals to RCIO class @done (21-12-31 20:37)
+    ✔ Outerloop @done (21-12-31 20:37)
+      ✔ Inputs: waypoint commands (x,y,altitude) @done (21-12-31 20:37)
+      ✔ Outputs: roll pitch and yaw commands @done (21-12-31 20:37)
+    ✔ GraveDigger - The Remote control car in the lab @done (21-12-31 20:37)
+    ✔ BattleBot - the tank @done (21-12-31 20:37)
+    ✔ FASTIris @done (21-12-31 20:37)
+    ✔ Bumblebee @done (21-12-31 20:37)
+    ✔ Meta 1 and 2 @done (21-12-31 20:38)
+    ✔ Batwing @done (21-12-31 20:38)
+   ✔ First Video is your struggle with something new @done (22-01-02 09:39)
+   ✔ Second Video is on SysML diagrams @done (22-01-02 09:39)
+   ✔ Rename C++.git to FAST.git @done (22-01-20 23:30)
+   ✔ Make the software look like the SysML diagram. This will probably break everything @done (22-03-30 20:29)
+   ✔ Put the Makefile in FAST that way you can do - make Demo or make Logger find a way to do this @done (21-12-29 17:27)
+   ✔ I want the main.cpp for all the below routines to never have to be edited. @done (21-12-29 17:27)
+      ✔ LOGGER - move from FASTSensors to here @done (21-12-29 17:27)
+      ✔ DEMO - this is SimPilot @done (21-12-29 17:27)
+      ✔ SIM  - This is FASTsim @done (21-12-29 17:27)
+   ✔ Save FASTPilot.git on Gitlab for proprietary software @done (22-01-20 23:35)
+   ✔ Merge all changes above @done (22-01-20 23:31)
+   ✔ Delete HIL on Github. @done (22-01-20 23:35) I archived this instead
 
 FASTSim:
 

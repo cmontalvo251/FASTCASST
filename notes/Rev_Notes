@@ -1,3 +1,19 @@
+========================4/14/2022==========================
+
+Finished coding altitude loop for airplane in simonly. Need to move to
+on to simonly autopilot for quadcopter.
+
+========================4/12/2022========================
+
+Finished adding in GPS, Barometer and Thermistor into modeling.cpp
+Need to run SIMONLY Quad and Airplane and SIL Quad and Airplane
+
+=========================3/30/2022========================
+
+Ok adding Actuator dynamics or at least attempting to. Ok
+finally done. Time to move on to spring goals which means I can 
+go back to putting my to do list items in the Work_Tasks file
+
 =========================3/21/2022=========================
 
 Forgot to work on actuator errors. Let's add errors first because

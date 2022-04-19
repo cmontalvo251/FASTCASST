@@ -43,14 +43,15 @@ class modeling {
   double ACTUATORPERCENTERROR;
   MATLAB pwm_error;
   char** headernames;
+  int *pwm_dynamics_array=NULL;
   char** pwmnames;
   Datalogger logger;
   RK4 integrator;
   int NUMVARS,NUMINTEGRATIONSTATES,FORCES_FLAG;
   MATLAB State,k,I,pqr,cgdotI,cgdotB,ptpdot,FTOTALI,FTOTALB,FGNDB,MGNDB,MTOTALI,MTOTALB;
   MATLAB pqrdot,Iinv,q0123,I_pqr,uvwdot,pqrskew_I_pqr,Kuvw_pqr,state,statedot;
-  MATLAB actuatorState,actuatorStatedot,actuatorErrorPercentage,cg,ptp,BVECB;
-  MATLAB actuatorTimeConstants,BVECB_Tesla;
+  MATLAB cg,ptp,BVECB,settling_time_matrix;
+  MATLAB BVECB_Tesla,actuatorStates;
   double mass,tlastRCread=-99,tlastCTL=-99,tRC,tCTL;
   Rotation3 ine2bod321;
   environment env;
@@ -60,6 +61,11 @@ class modeling {
   void Derivatives(double,int[]);
   double integrationTime=0;
   MATLAB output_matrix;
+  //GPS
+  double X_origin=MOBX,Y_origin=MOBY;
+  double latitude,longitude,altitude,X,Y,Z;
+  double XYZ[3],LLH[3];
+  void SetGPS();
   //boost::thread render;
  public:
   double keyboardVars[4];

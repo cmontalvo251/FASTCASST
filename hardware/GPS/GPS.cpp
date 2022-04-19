@@ -9,7 +9,6 @@ GPS::GPS() {
     headingFilterConstant = 1.0;
   }
 
-
   #ifndef DESKTOP
   if(sensor.testConnection()){
     printf("Ublox test OK\n");
@@ -32,23 +31,21 @@ void GPS::poll(float currentTime) {
   sensor.decodeSingleMessage(Ublox::NAV_POSLLH, pos_data);
   #else
   //USE SOFTWARE TO CREATE GPS COORDINATES
-  //Need to restrict the GPS update rate here because in real life the GPS
-  //doesn't update every time step
-  if (currentTime > GPSnextTime) {
-    GPSnextTime = currentTime + GPSupdateRate;
-    //Assume that X,Y,Z coordinates are already set by some external function
-    ConvertXYZ2LLH();
-    //Then populate pos_data so that the routine below still works
-    pos_data.resize(5,1);
-    pos_data[0] = 0.0; //not really sure what this is
-    pos_data[1] = longitude*10000000.0;
-    pos_data[2] = latitude*10000000.0;
-    pos_data[3] = altitude*1000.0;
-    pos_data[4] = 0.0; //not sure what this is either
-  } else {
-    //By resizing the position data to 1,1 the if statement below will fail
-    pos_data.resize(1,1);
-  }
+  //Assume that X,Y,Z coordinates are already set by some external function
+  XYZ[0] = X;
+  XYZ[1] = Y;
+  XYZ[2] = Z;
+  ConvertXYZ2LLH(XYZ,LLH,X_origin,Y_origin);
+  latitude = LLH[0];
+  longitude = LLH[1];
+  altitude = LLH[2];
+  //Then populate pos_data so that the routine below still works
+  pos_data.resize(5,1);
+  pos_data[0] = 0.0; //not really sure what this is
+  pos_data[1] = longitude*10000000.0;
+  pos_data[2] = latitude*10000000.0;
+  pos_data[3] = altitude*1000.0;
+  pos_data[4] = 0.0; //not sure what this is either
   #endif
   if (pos_data.size() > 4) {
     latitude = pos_data[2]/10000000.0; //lon - Maxwell says it may be lon lat
@@ -69,15 +66,6 @@ void GPS::poll(float currentTime) {
       yprev = Y;
     }
   }
-  //else {
-  //latitude = -99;
-  //longitude = -99;
-  //altitude = -99;
-  //}
-  //printf("%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf \n",latitude,longitude,X_origin,Y_origin,X,Y,xprev,yprev,dist,speed);
-  //dist_vec.disp();
-  //time_vec.disp();
-    
 }
 
 void GPS::reset() {
@@ -116,15 +104,6 @@ int GPS::status() {
     ok = (int(nav_data[0]) == 0x00);
   }
   return ok;
-}
-
-void GPS::ConvertXYZ2LLH() {
-  double dlat = X/GPSVAL;
-  latitude = dlat + X_origin;
-  //printf("dlat = %lf latitude = %lf X = %lf origin = %lf \n",dlat,latitude,X,X_origin);
-  longitude = Y/(GPSVAL*cos(X_origin*PI/180.0)) + Y_origin;
-  altitude = -Z;
-  //printf("LLH = %lf %lf %lf \n",latitude,longitude,altitude);
 }
 
 void GPS::ConvertGPS2XY(){
@@ -182,8 +161,11 @@ void GPS::computeGroundTrack(double current_time) {
   double del_time = time_vec.get(end_pt,1) - time_vec.get(start_pt,1);
 
   //printf("%lf %lf %lf %lf %lf %lf \n",dist_vec.get(end_pt,1),dist_vec.get(start_pt,1),time_vec.get(end_pt,1),time_vec.get(start_pt,1),del_dist,del_time);
-  
-  speed = del_dist/del_time;
+  if (del_time == 0) {
+    speed = 0;
+  } else {
+    speed = del_dist/del_time;
+  }
   //printf("Speed = %lf \n",speed);
   
   end_pt += 1;

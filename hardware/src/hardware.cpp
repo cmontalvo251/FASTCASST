@@ -39,8 +39,8 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //Extract Number of SIGNALS and set headers
   pwmnames = (char**)malloc((NUMSIGNALS)*sizeof(char*));
   for (int i = 1;i<=NUMSIGNALS;i++) {
-    pwmnames[i-1] = (char*)malloc((9)*sizeof(char));
-    sprintf(pwmnames[i-1],"PWM Out %d",i);
+    pwmnames[i-1] = (char*)malloc((18)*sizeof(char));
+    sprintf(pwmnames[i-1],"PWM Hardware Out %d",i);
   }
 
   //Initialize Logger
@@ -60,10 +60,14 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
 
 //This version of the loop runs assuming you are saving data from the simulation 
 //environment
-void hardware::send(MATLAB model_matrix,double keyboardVars[]) {
+void hardware::send(double currentTime,MATLAB model_matrix,double keyboardVars[]) {
 
   //Send Model Matrix to sensor class
-  sense.send(model_matrix);
+  sense.send(currentTime,model_matrix);
+
+  //We also need to set the temperature in the modeling matrix
+  //I don't think we really need this in the model but whatever
+  model_matrix.set(30,1,sense.getTemperature());
   
   //Is using the keyboard you need to copy over the keyboard values
   //to rcin
@@ -104,6 +108,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
       rc.out.pwm_array[i] = OUTMIN;
     }
   }
+  //printf("ELEVATOR ARRAY = %d \n",rc.out.pwm_array[2]);
 
   //Check to see if it's time to log
   if (currentTime >= nextLOGtime) {

@@ -111,6 +111,7 @@ void loop() {
   double initTime = 0;
   #ifdef MODELING
   initTime = -model.TIMESTEP;
+  hw.send(-model.TIMESTEP,model.model_matrix,model.keyboardVars);
   #endif
   watch.init(initTime);
   
@@ -131,7 +132,7 @@ void loop() {
     //This runs as fast as possible
     //Need a routine that sends the model matrix to the hardware routine
     #ifdef MODELING
-    hw.send(model.model_matrix,model.keyboardVars);
+    hw.send(watch.currentTime,model.model_matrix,model.keyboardVars);
     //printf("hw.send %lf %lf %lf \n",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
     #endif
     hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);

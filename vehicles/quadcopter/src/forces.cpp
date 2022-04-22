@@ -19,7 +19,7 @@ forces::forces() {
   torque_motors.zeros(4,1,"Torque Motors");
   
   //Quadcopter Aerodynamic Parameters
-  double thrust_max = 0.4*GEARTH; //kilograms * gravity
+  double thrust_max = 0.7*GEARTH; //kilograms * gravity
   //Rotor Size
   Rrotor = (9.5/12.0)/(2*3.28); //9.5 inch props to meters
   //Area

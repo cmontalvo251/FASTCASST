@@ -2,8 +2,9 @@
 AVIATION:
 
  ✔ Update Quadcopter and Airplane dynamics @done (22-04-12 20:38)
- ☐ Run SIMONLY simulations with quadcopter and airplane models
- ☐ Run SIL simulations with quadcopter and airplane models
+ ✔ Run SIMONLY simulations with quadcopter and airplane models @done (22-04-22 16:21)
+ ☐ Run SIL simulations with quadcopter
+ ☐ Run SIL airplane models
  ☐ Plot all data and email to team
 
 HIL:

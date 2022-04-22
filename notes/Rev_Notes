@@ -1,3 +1,14 @@
+========================4/22/2022==========================
+
+Finished coding the autopilot for the quadcopter. There were a bunch
+of issues that I've never encountered before. When the PWM signal
+goes to the minimum value you can adequately control roll.
+I think some more work needs to be done on this controller
+but it's not necessary right now because the goal is to get a conference
+paper out the door and a plane in the air. Eventually
+though we will need to re investigate this issue. For now
+it's time to move on to SIL
+
 ========================4/14/2022==========================
 
 Finished coding altitude loop for airplane in simonly. Need to move to

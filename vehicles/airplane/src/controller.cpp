@@ -49,7 +49,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   autopilot = rx_array[4];
   int icontrol = 0;
 
-
   //Check for user controlled
   if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {

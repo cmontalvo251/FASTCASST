@@ -131,7 +131,7 @@ void controller::AltitudeLoop(MATLAB sense_matrix) {
   double kp = 0.2;
   double kd = 0.1;
   pitch_command = kp*(altitude_command - altitude) + kd*(0-altitude_dot);
-  pitch_command = CONSTRAIN(-45,45,pitch_command);
+  pitch_command = CONSTRAIN(pitch_command,-45,45);
 
   //printf("T, ALT, ALT DOT = %lf %lf %lf \n",lastTime,altitude,altitude_dot);  
 }

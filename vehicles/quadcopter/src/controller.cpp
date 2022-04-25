@@ -52,7 +52,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Check for user controlled
   if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {
-      icontrol = 1;
+      icontrol = 2;
     } else {
       icontrol = 0; 
     }
@@ -71,7 +71,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   roll_command = -99;
   pitch_command = -99;
   yaw_rate_command = -99;
-  altitude_command = 1000; //Hardcode to 100?
+  altitude_command = 100; //Hardcode to 100?
   //And controls
   droll = 0;
   dpitch = 0;
@@ -96,10 +96,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //Run the Innerloop
     //Check to see if you need inner loop guidance or not
     if (roll_command == -99) {
-      roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+      roll_command = (aileron-STICK_MID)*30.0/((STICK_MAX-STICK_MIN)/2.0);
     }
     if (pitch_command == -99) {
-      pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+      pitch_command = -(elevator-STICK_MID)*30.0/((STICK_MAX-STICK_MIN)/2.0);
     }
     InnerLoop(sense_matrix);
   case 0:
@@ -115,9 +115,11 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       dyaw = (rudder-STICK_MID);
     }
     //This means control is off but we need a bit of thrust to stay in the air
+    #ifndef SIL
     if (dthrottle == 0) {
       dthrottle = 1480-992;
     }
+    #endif
     motor_upper_left = throttle + dthrottle - droll - dpitch - dyaw;
     motor_upper_right = throttle + dthrottle + droll - dpitch + dyaw;
     motor_lower_left = throttle + dthrottle - droll + dpitch + dyaw;
@@ -134,7 +136,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
 void controller::YawRateLoop(MATLAB sense_matrix) {
   double yaw_rate = sense_matrix.get(12,1); //Check IMU.cpp to see for HIL
-  double kyaw = 10.0;
+  double kyaw = 5.0;
   dyaw = kyaw*(yaw_rate-yaw_rate_command);
   dyaw = CONSTRAIN(dyaw,-500,500);
 }

@@ -15,8 +15,8 @@ except:
 
 #Run code
 os.system('./clean_logs')
-os.system('make simonly MODEL="quadcopter"')
-os.system('./simonly.exe quadcopter/')
+os.system('make sil MODEL="quadcopter RX="XBOX"')
+os.system('./sil.exe quadcopter/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File

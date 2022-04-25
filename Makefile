@@ -70,6 +70,15 @@ hil:
 ##Target to make all depends on the MAIN, OBJECTS and the EXECUTABLE
 all: $(OBJECTS) $(MAIN) $(EXECUTABLE)
 
+###What or who
+what:
+	make who
+who:
+	# make (simonly, sil, hil, auto)
+	# PLATFORM -> DESKTOP, RPI
+	# RX -> RCTECH, KEYBOARD, FLYSKY, XBOX
+	# MODEL -> airplane, portalcube, quadcopter, satellite, tank, x8
+
 ##Rule for executable depends on the OBJECTS and MAIN
 $(EXECUTABLE): $(OBJECTS) $(MAIN)
 	$(CC) $(OBJECTS) $(MAIN) -o $(EXECUTABLE) $(LIB) $(INCLUDE) $(RENDER) $(THREAD) $(WIRINGPI)

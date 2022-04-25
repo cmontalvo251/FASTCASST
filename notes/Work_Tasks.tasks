@@ -1,12 +1,4 @@
                                      WORK TASKS:
-AVIATION:
-
- ✔ Update Quadcopter and Airplane dynamics @done (22-04-12 20:38)
- ✔ Run SIMONLY simulations with quadcopter and airplane models @done (22-04-22 16:21)
- ☐ Run SIL simulations with quadcopter
- ☐ Run SIL airplane models
- ☐ Plot all data and email to team
-
 HIL:
 
  ☐ For telemetry think about writing a groundstation in python using a GUI. That might a lot easier to plot given the fact that you can use matplotlib (take a look at LISA simulation for help on GUIs and plots)
@@ -100,18 +92,6 @@ WOODEN DRONE:
  ☐ Plot data from this flight test - GPS, IMU, etc - REV 7
 
  ☐ Using a scale and the pass through Arduino routine get the thrust of the motor as a function of microsend pulse and add that to the aerodynamics routine for the quadcopter. While you're doing this experiment figure out how long it takes to go from full throttle on your control stick to full throttle on the drone. That is the amount of delay we need to introduce into our actuators.
-
-ANTX:
-
- ☐ Make sure that the Batwing is working properly in Demo mode using SIMPILOT
- 
- ☐ Make sure telemetry is working properly using Processing
- 
- ☐ Upgrade Processing Software with whatever signals are being sent from Drone - Current iteration of software is in Processing.git/Serial/ReceiveHexDump.pde Original software used during NOAA campaign is in GROUND_STATION also in Serial folder. Be sure to check Archive folder. I'd like the ground station software to be versatile enough that it can handle any number of sensors from telemetry you just simply need to specify what sensors are being read in and in what order
- 
- ☐ Market our entire setup as an independent contractor if needed
-
- ☐ Publish another paper?
 
 BDE DJI Flights:
 
@@ -239,6 +219,26 @@ You can also use mavlink to send and receive parameters (such as controller gain
 Most of this work was guided by this blog post (https://discuss.ardupilot.org/t/mavlink-and-arduino-step-by-step/25566) so I suggest at least a quick read of that will help the students out in understanding how everything fits together.  The parameter stuff was an internal development which I hope to get written up properly one day and into a blog post to more-widely share the technique.
 Hopefully that all helps and let me know if you have any other questions.  Good luck!
 matt
+
+AVIATION:
+
+ ✔ Update Quadcopter and Airplane dynamics @done (22-04-12 20:38)
+ ✔ Run SIMONLY simulations with quadcopter and airplane models @done (22-04-22 16:21)
+ ✔ Run SIL simulations with quadcopter @done (22-04-24 20:43)
+ ✔ Run SIL airplane models @done (22-04-24 20:43)
+ ✔ Plot all data and email to team @done (22-04-24 20:43)
+
+ ANTX(DID NOT COMPLETE THESE TASKS):
+
+ ✔ Make sure that the Batwing is working properly in Demo mode using SIMPILOT @done (22-04-24 20:43)
+ 
+ ✔ Make sure telemetry is working properly using Processing @done (22-04-24 20:43)
+ 
+ ✔ Upgrade Processing Software with whatever signals are being sent from Drone - Current iteration of software is in Processing.git/Serial/ReceiveHexDump.pde Original software used during NOAA campaign is in GROUND_STATION also in Serial folder. Be sure to check Archive folder. I'd like the ground station software to be versatile enough that it can handle any number of sensors from telemetry you just simply need to specify what sensors are being read in and in what order @done (22-04-24 20:43)
+ 
+ ✔ Market our entire setup as an independent contractor if needed @done (22-04-24 20:44)
+
+ ✔ Publish another paper? @done (22-04-24 20:44)
 
 FASTSim SysML:
 

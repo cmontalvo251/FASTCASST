@@ -15,8 +15,8 @@ except:
 
 #Run code
 os.system('./clean_logs')
-os.system('make sil MODEL="quadcopter RX="XBOX"')
-os.system('./sil.exe quadcopter/')
+os.system('make sil MODEL="airplane" RX="XBOX"')
+os.system('./sil.exe airplane/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File

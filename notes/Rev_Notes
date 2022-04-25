@@ -1,3 +1,10 @@
+========================4/24/2022==========================
+
+SIL on quadcopter and airplane work. Dynamics are poorly tuned
+but the simulation itself is working. I'm sure there's a few
+bugs but the plots look ok and we just need to move on and get this
+paper out. Next step is HIL 
+
 ========================4/22/2022==========================
 
 Finished coding the autopilot for the quadcopter. There were a bunch

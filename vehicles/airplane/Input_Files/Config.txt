@@ -9,10 +9,10 @@
 0        !IMUTYPE (0=MPU,1=LSM)
 0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
 -1 	 !Control System (-1=controlled by PIC,0=off all the time,1=on all the time)
-1.2364	!Mass (kg)
-0.23083252176875 !Ixx(kg-m^2)
-0.12326181467115 !Iyy(kg-m^2)
-0.261842767316082 !Izz(kg-m^2)
+2.834	!Mass (kg)
+0.327807 !Ixx(kg-m^2)
+0.330618 !Iyy(kg-m^2)
+0.655615 !Izz(kg-m^2)
 
 !Note that the IMU, PWM out and control loop run as fast as possible
 !in my opinion those are the most crucial items

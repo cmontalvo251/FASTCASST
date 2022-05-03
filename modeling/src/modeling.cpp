@@ -399,7 +399,10 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //env.FGRAVI.disp();
   FTOTALB.plus_eq(FGNDB);
   //FTOTALB.disp();
-  FTOTALB.plus_eq(extforces.FB);
+  //Only add external forces if FGNDB.norm is zero
+  if (FGNDB.norm() == 0) {
+    FTOTALB.plus_eq(extforces.FB);
+  }
   //extforces.FB.disp();
   //FGNDB.disp();
   //FTOTALB.disp();  
@@ -421,9 +424,10 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
 
   //Moments vector
   MTOTALB.mult_eq(0);
-  MTOTALB.overwrite(extforces.MB);
-  MTOTALB.plus_eq(MGNDB);
-
+  MTOTALB.overwrite(MGNDB);
+  if (FGNDB.norm() == 0) {
+    MTOTALB.plus_eq(extforces.MB);
+  }
   //MTOTALB.disp();
   //pqr.disp();
   //PAUSE();

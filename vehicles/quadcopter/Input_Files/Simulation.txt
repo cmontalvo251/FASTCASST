@@ -1,4 +1,4 @@
-20.0	!Final Integration time 
+50.0	!Final Integration time 
 0.01 	!Integration rate // seconds
 20.0	!Initial X Position (m) ///Sixdof Model with quaternions
 0.0	!Initial Y Position (m)
@@ -12,7 +12,7 @@
 0.0	!Initial Zbody Velocity (m/s)
 0.0	!Initial Roll Rate (rad/s)
 0.0	!Initial Pitch Rate (rad/s)
-1.0	!Initial Yaw Rate (rad/s)
+0.0	!Initial Yaw Rate (rad/s)
 1	!External Force Model (0=off,1=on) - 16
 3	!Gravity Flag (-1=off,0=point mass, 1=egm2008,2=point mass + sun,3=flat earth)
 0	!Magnetic Field Model (0=off, 1=emm2015)

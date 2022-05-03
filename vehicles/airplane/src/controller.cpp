@@ -49,7 +49,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   autopilot = rx_array[4];
   int icontrol = 0;
 
-
   //Check for user controlled
   if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {
@@ -99,7 +98,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
         roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
       }
       if (pitch_command == -99) {
-        pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+        pitch_command = -(elevator-STICK_MID)*15.0/((STICK_MAX-STICK_MIN)/2.0);
       }
       InnerLoop(sense_matrix);
     case 0:
@@ -132,7 +131,7 @@ void controller::AltitudeLoop(MATLAB sense_matrix) {
   double kp = 0.2;
   double kd = 0.1;
   pitch_command = kp*(altitude_command - altitude) + kd*(0-altitude_dot);
-  pitch_command = CONSTRAIN(-45,45,pitch_command);
+  pitch_command = CONSTRAIN(pitch_command,-45,45);
 
   //printf("T, ALT, ALT DOT = %lf %lf %lf \n",lastTime,altitude,altitude_dot);  
 }
@@ -162,13 +161,15 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     double roll_rate = sense_matrix.get(10,1); //For SIL/SIMONLY see Sensors.cpp
     double pitch_rate = sense_matrix.get(11,1); //These are already in deg/s
     //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
-    double kp = 10.0;
-    double kd = 2.0;
-    aileron = kp*(roll-roll_command) + kd*(roll_rate);
-    elevator = kp*(pitch-pitch_command) + kd*(pitch_rate);
+    double kpa = 10.0;
+    double kda = 2.0;
+    aileron = kpa*(roll-roll_command) + kda*(roll_rate);
+    double kpe = 25.0;
+    double kde = 1.0;
+    elevator = kpe*(pitch-pitch_command) + kde*(pitch_rate);
 
     //Rudder signal will be proportional to aileron
-    double kr = 0.5;
+    double kr = 0.2;
     rudder = kr*aileron;
 
     //CONSTRAIN

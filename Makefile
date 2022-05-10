@@ -107,3 +107,5 @@ clean:
 	rm vehicles/portalcube/src/*.o
 	echo ' ' > vehicles/airplane/src/d.o
 	rm vehicles/airplane/src/*.o
+	echo ' ' > vehicles/meta/src/d.o
+	rm vehicles/meta/src/*.o

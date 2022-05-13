@@ -205,6 +205,21 @@ double sensors::getTemperature() {
   return atm.temperature;
 }
 
+double sensors::mag_heading(double roll,double pitch,double mx,double my,double mz) {
+  x_tilt = mx*cos(pitch) - my*sin(roll)*sin(pitch) + mz*cos(roll)*sin(pitch);
+  y_tilt = my*cos(roll) + mz*sin(roll);
+  if(my > 0.0){
+    Hm = 90. - atan(x_tilt/y_tilt)*(180./3.14);
+  } else if (my < 0.0){
+    Hm = 270. - atan(x_tilt/y_tilt)*(180./3.14);
+  } else if (my == 0.0 && mx < 0.0) {
+    Hm = 180.0;
+  } else if (my == 0.0 && mx > 0.0) {
+    Hm = 0.0;
+  }
+  return Hm;
+}
+
 //Polling routine to read all sensors
 void sensors::poll(double currentTime,double elapsedTime) {
   //First Analog to Digital Converter
@@ -223,7 +238,9 @@ void sensors::poll(double currentTime,double elapsedTime) {
   ///Read the IMU (ptp,pqr)
   //IMU must be read as fast as possible due to the elapsedTime
   //and the integrator on board
-  orientation.loop(elapsedTime); 
+  orientation.loop(elapsedTime);
+
+  Heading_Mag = mag_heading(orientation.roll,orientation.pitch,orientation.mx,orientation.my,orientation.mz);
 
   //Read the GPS
   if (currentTime >= nextGPStime) {
@@ -267,6 +284,7 @@ void sensors::poll(double currentTime,double elapsedTime) {
   sense_matrix.set(13,1,orientation.mx);
   sense_matrix.set(14,1,orientation.my);
   sense_matrix.set(15,1,orientation.mz);
+  //sense_matrix.set(16,1,Heading_Mag);
 
   //GPS
   sense_matrix.set(16,1,satellites.latitude);
@@ -311,7 +329,9 @@ void sensors::print() {
   //Q0123
   //printf("Q0123 = %lf %lf %lf %lf ",orientation.ahrs.q0,orientation.ahrs.q1,orientation.ahrs.q2,orientation.ahrs.q3);
   //Euler
-  printf("PTP = %lf %lf %lf ",orientation.roll,orientation.pitch,orientation.yaw);  
+  printf("PTP = %lf %lf %lf ",orientation.roll,orientation.pitch,orientation.yaw);
+  //Heading
+  printf("Heading (Mag and GPS) = %lf %lf ",Heading_Mag,satellites.heading);
   //UVW
   //PQR
   printf("PQR = %lf %lf %lf ",orientation.roll_rate,orientation.pitch_rate,orientation.yaw_rate);

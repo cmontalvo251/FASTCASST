@@ -38,6 +38,7 @@ class sensors {
   double bias_angle,bias_gyro,bias_mag,bias_pos,bias_velocity;
   double std_angle,std_gyro,std_mag,std_pos,std_velocity;
   double noise_angle,noise_gyro,noise_mag,noise_pos,noise_velocity;
+  double Heading_Mag,x_tilt,y_tilt,Hm;
   void setBias(MATLAB,double,double);
   double pollute(double,double);
   void sendXYZ2GPS(double t,double x,double y,double z);
@@ -57,6 +58,8 @@ class sensors {
   void initIMU(int);
   //Polling routine
   void poll(double currentTime,double elapsedTime);
+  //Magnetometer Heading
+  double mag_heading(double,double,double,double,double);
   //Printing routine
   void print();
   //Get number of variabls routine

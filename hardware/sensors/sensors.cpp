@@ -217,6 +217,7 @@ double sensors::mag_heading(double roll,double pitch,double mx,double my,double 
   } else if (my == 0.0 && mx > 0.0) {
     Hm = 0.0;
   }
+  //printf("IMU Heading: %lf",Hm);
   return Hm;
 }
 
@@ -331,7 +332,7 @@ void sensors::print() {
   //Euler
   printf("PTP = %lf %lf %lf ",orientation.roll,orientation.pitch,orientation.yaw);
   //Heading
-  printf("Heading (Mag and GPS) = %lf %lf ",Heading_Mag,satellites.heading);
+  //printf("Heading (Mag and GPS) = %lf %lf ",Heading_Mag,satellites.heading);
   //UVW
   //PQR
   printf("PQR = %lf %lf %lf ",orientation.roll_rate,orientation.pitch_rate,orientation.yaw_rate);

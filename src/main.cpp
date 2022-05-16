@@ -159,7 +159,7 @@ void loop() {
       //First 4 RX signals
       hw.rc.in.printRCstate(-4);
       //Roll Pitch Yaw
-      printf(" %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
+      printf(" %lf %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw,hw.sense.Heading_Mag);
       //PQR
       printf(" %lf %lf %lf ",hw.sense.orientation.roll_rate,hw.sense.orientation.pitch_rate,hw.sense.orientation.yaw_rate);
       //PWM Array

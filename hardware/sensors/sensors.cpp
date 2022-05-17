@@ -206,18 +206,22 @@ double sensors::getTemperature() {
 }
 
 double sensors::mag_heading(double roll,double pitch,double mx,double my,double mz) {
-  x_tilt = mx*cos(pitch) - my*sin(roll)*sin(pitch) + mz*cos(roll)*sin(pitch);
-  y_tilt = my*cos(roll) + mz*sin(roll);
-  if(my > 0.0){
-    Hm = 90. - atan(x_tilt/y_tilt)*(180./3.14);
-  } else if (my < 0.0){
-    Hm = 270. - atan(x_tilt/y_tilt)*(180./3.14);
-  } else if (my == 0.0 && mx < 0.0) {
-    Hm = 180.0;
-  } else if (my == 0.0 && mx > 0.0) {
-    Hm = 0.0;
+  printf("RP and Mag: %lf %lf %lf %lf %lf ",roll,pitch,mx,my,mz);
+  x_tilt = my*sin(roll*DEG2RAD)*sin(pitch*DEG2RAD) + mx*cos(roll*DEG2RAD) + mz*cos(pitch*DEG2RAD)*sin(roll*DEG2RAD);
+  y_tilt = my*cos(pitch*DEG2RAD) - mz*sin(pitch*DEG2RAD);
+  printf("Tilt Comp: %lf %lf ",x_tilt,y_tilt);
+  if(x_tilt > 0.0){
+    Hm = 180. - atan(y_tilt/x_tilt)*RAD2DEG;
+  } else if (x_tilt > 0.0 && y_tilt < 0.0){
+    Hm = -atan(y_tilt/x_tilt)*RAD2DEG;
+  } else if (x_tilt > 0.0 && y_tilt > 0.0) {
+    Hm = 360. - atan(y_tilt/x_tilt)*RAD2DEG;
+  } else if (x_tilt == 0.0 && y_tilt < 0.0) {
+    Hm = 90.;
+  } else if (x_tilt == 0.0 && y_tilt > 0.0) {
+    Hm = 270.;
   }
-  //printf("IMU Heading: %lf",Hm);
+  printf("IMU Heading: %lf \n",Hm);
   return Hm;
 }
 

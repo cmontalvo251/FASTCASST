@@ -11,6 +11,7 @@
 
 //Helper Modules
 #include <MATLAB/MATLAB.h>
+#include <Mathp/mathp.h>
 
 //Hardware
 //Analog Signals
@@ -21,6 +22,7 @@
 #include <IMU/IMU.h>
 //GPS
 #include <GPS/GPS.h>
+
 
 class sensors {
  private:
@@ -38,7 +40,6 @@ class sensors {
   double bias_angle,bias_gyro,bias_mag,bias_pos,bias_velocity;
   double std_angle,std_gyro,std_mag,std_pos,std_velocity;
   double noise_angle,noise_gyro,noise_mag,noise_pos,noise_velocity;
-  double Heading_Mag,x_tilt,y_tilt,Hm;
   void setBias(MATLAB,double,double);
   double pollute(double,double);
   void sendXYZ2GPS(double t,double x,double y,double z);
@@ -48,6 +49,7 @@ class sensors {
   GPS satellites;
   MATLAB sense_matrix,sense_matrix_dot;
   char** headernames,headernames_dot;
+  double Heading_Mag,x_tilt,y_tilt,Hm;
   //constructor
   sensors();
   //Send model matrix

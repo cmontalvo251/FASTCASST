@@ -152,7 +152,7 @@ void loop() {
     /////////////////////////////////////////
 
     //PRINT TO STDOUT
-    if (lastPRINTtime <= watch.currentTime) {
+    /*    if (lastPRINTtime <= watch.currentTime) {
       lastPRINTtime+=hw.PRINTRATE;
       //Time
       printf("%lf %lf ",watch.currentTime,watch.elapsedTime);
@@ -166,7 +166,7 @@ void loop() {
       hw.rc.out.print();
       //Newline
       printf("\n");
-    }
+      }*/
   }
 
   printf("Main Loop End \n");

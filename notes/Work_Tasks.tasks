@@ -24,10 +24,9 @@ SPEEDING UP FASTSim ON PI:
 COMPLEX AUTOPILOT LOOP:
     
   ☐ Test autopilot control laws in SIMONLY mode
-    ☐ Program heading angle estimation
-    ☐ Program Station keeping controller and see if drone can maintain a certain space
-    ☐ Program waypoint controller and see if drone can point to a waypoint by just commanding heading
-    ☐ See if drone can fly to a waypoint
+    ☐ Program heading angle estimation and simulate
+    ☐ Program velocity controller and simulate
+    ☐ Program waypoint controller and have airplane fly a square pattern
 
   ☐ Test autopilot control laws in SIMONLY mode with Sensor errors
 
@@ -37,24 +36,12 @@ COMPLEX AUTOPILOT LOOP:
 
   ☐ Test autopilot controls laws in HIL mode
 
-  ☐ Test autopilot controls laws in HIL mode with SEs
+  ☐ Test autopilot controls laws in HIL mode with Sensor Errors
 
   ☐ Test autopilot on real systems - RCIO needs to be able to handle where to send ESC signals depending on #define in Makefile
-    ☐ GraveDigger - The Remote control car in the lab
-    ☐ Wooden Drone - Can focus on outerloop control laws (Make sure to update blog for this one)
-      ☐ Attempt to code altitude hold for drone using deltaP and Az - REV 6 
-      ☐ Station keeping
-      ☐ Point to a desired attitude
-      ☐ Waypoint controller
-    ☐ FASTIris
-    ☐ Bumblebee
-    ☐ Meta 1 and 2
-    ☐ Batwing
-    ☐ BDE
-
-  ☐ When debugging the waypoint and heading controller it would be good to set up
-
-  ☐ some telemetry debugging scripts to make things are working right 
+    ☐ Heading Angle Estimation and make sure we are adequately estimating heading in real life
+    ☐ Test velocity controller in real life
+    ☐ Test waypoint contorller in real life
 
   FASTPILOT:
 
@@ -64,11 +51,17 @@ COMPLEX AUTOPILOT LOOP:
 
 META:
 
+  ☐ SysID of airplane (Flights + simulation)
+
+  ☐ Simulation of waypoint flights of single airplane
+
+  ☐ Waypoint flights of single airplane
+
+  ☐ Simulation of Meta waypoint controller
+
   ☐ Meta flying waypoints to compare efficiency - Maxwell Cobar
 
   ☐ Disconnecting and reconnecting - this would be insane.
-
-  ☐ Way point control and run performance metrics on it.
 
 WOODEN DRONE:
 
@@ -92,6 +85,12 @@ WOODEN DRONE:
  ☐ Plot data from this flight test - GPS, IMU, etc - REV 7
 
  ☐ Using a scale and the pass through Arduino routine get the thrust of the motor as a function of microsend pulse and add that to the aerodynamics routine for the quadcopter. While you're doing this experiment figure out how long it takes to go from full throttle on your control stick to full throttle on the drone. That is the amount of delay we need to introduce into our actuators.
+
+ ☐ Wooden Drone waypoint flights - Can focus on outerloop control laws (Make sure to update blog for this one)
+    ☐ Attempt to code altitude hold for drone using deltaP and Az - REV 6 
+    ☐ Station keeping
+    ☐ Point to a desired attitude
+    ☐ Waypoint controller
 
 BDE DJI Flights:
 
@@ -148,6 +147,10 @@ BDE FASTSim:
   ☐ Perform a robustness trade study and see how much variation in inertia the control system can handle. 
 
   ☐ Perform another robustness trade study on motor effectiveness by adding in 10% variation in motor thrust
+
+  ☐ Program Station keeping controller and see if drone can maintain a certain space
+
+  ☐ Program waypoint controller and see if drone can point to a waypoint by just commanding heading
 
   ☐ Create sig1-8 which are all unknown such that T1 = sig1*T1desired
 

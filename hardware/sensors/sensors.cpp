@@ -247,7 +247,7 @@ void sensors::poll(double currentTime,double elapsedTime) {
   sense_matrix.set(3,1,(satellites.Z-atm.altitude)/2.0);  //Average GPS and BARO?
   //sense_matrix.set(3,1,-atm.altitude);
 
-  //Quaternions
+  //Roll pitch Yaw
   sense_matrix.set(4,1,orientation.roll);
   sense_matrix.set(5,1,orientation.pitch);
   sense_matrix.set(6,1,orientation.yaw);

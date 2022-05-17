@@ -1,7 +1,7 @@
                                      WORK TASKS:
 HIL:
 
- ☐ For telemetry think about writing a groundstation in python using a GUI. That might a lot easier to plot given the fact that you can use matplotlib (take a look at LISA simulation for help on GUIs and plots)
+ ☐ For telemetry think about writing a groundstation in python using a GUI. That might a lot easier to plot given the fact that you can use matplotlib (take a look at LISA simulation for help on GUIs and plots) Would be cool to have GUI run in SIL mode. According to the docs online you can have C++ create a text file and then Python read the file. How do we prevent both programs reading the same file? Have C++ increment [NUM].txt and then have Python read the latest. That should work
 
   ☐ For HIL - use the HIL code from MultiSAT++ for FASTsim
 

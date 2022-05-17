@@ -8,6 +8,7 @@ RCOutput::RCOutput() {
 void RCOutput::initialize(int num) {
 	NUMSIGNALS = num;
 	pwm_array = (int *) calloc(NUMSIGNALS,sizeof(int));
+	saturation_block(); //Set the pwm_array to minimum vals
 
 	////////I REALIZE THERE ARE 3 LOOPS AND YOU COULD DO THIS WITH
 	// 1 loop. BUT IT WILL NOT WORK. JUST TRUST ME. Dr. C 9/27/2021

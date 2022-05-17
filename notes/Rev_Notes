@@ -1,3 +1,15 @@
+========================5/16/2022========================
+
+Welcome back from Finals. Whew that was a doozy. Working on HIL
+mode right now and it's a mind trip. Right now 
+
+make hil_desktop MODEL="airplane"
+
+compiles and runs but the airplane is spinning like crazy and
+there are a ton of stdout prints which I thought I turned off.
+
+Anyway. Made a ton of progress today
+
 ========================4/24/2022==========================
 
 SIL on quadcopter and airplane work. Dynamics are poorly tuned

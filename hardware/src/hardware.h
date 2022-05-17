@@ -18,8 +18,26 @@
 //Time for pause function
 #include <Timer/timer.h>
 
-//UART for HIL and Telemetry
+//UART for HIL and Telemetry (Telemetry is always on so this is always include)
+//Eventually I'm going to get Telemetry working in SIL and SIMONLY modes
 #include <UART/uart.h>
+
+//Need some logic here to determine any hardware in the loop
+//modes
+#ifdef HIL
+//Running in HIL mode
+#ifdef DESKTOP
+//Running in desktop mode HIL so CONTROLLOOP is off
+#define CONTROLLOOP 0
+#endif
+#ifdef RPI
+//Running HIL on RPI so CONTROLLOOP is on but MAIN LOOP IS OFF
+#define CONTROLLOOP 1
+#endif
+#else
+//Hardware in the loop is off so run everything
+#define CONTROLLOOP 1
+#endif
 
 ///////////Inputs to Hardware Class///////////////
 // 1 - Root Folder name (char*)
@@ -38,17 +56,19 @@
 
 class hardware {
  private:
+  bool sendOK = 1;
+  bool recOK = 1;
   double nextLOGtime = 0;
   double nextRCtime = 0;
   double nextTELEMtime = 0;
-  MATLAB telemetry_matrix;
+  MATLAB telemetry_matrix,uart_sense_matrix,uart_ctl_matrix;
   MATLAB q0123,ptp;
   Datalogger logger;
   UART ser;
   //Unfortunately telemetry values are going to be hardcoded
   //Rather than use input files you'll have to edit the code
   //in the init() and loop() functions
-  int NUMTELEMETRY;
+  int NUMTELEMETRY,NUMSENSE,NUMCTL;
   char** pwmnames;
  public:
   //RCIO Class
@@ -67,6 +87,8 @@ class hardware {
   void send(double time,MATLAB model_matrix,double keyboardVars[]);
   //Main hardware loop
   void loop(double currentTime,double elapsedTime,MATLAB control_matrix);
+  //HIL function
+  void hil();
   //Constructor
   hardware();
 };

@@ -255,7 +255,7 @@ void modeling::loop(double currentTime,int pwm_array[]) {
     glhandle_g.state.UpdateRender(currentTime,cg,ptp,1,keyboardVars);
     //printf("Key = ");
     //for (int i = 0;i<4;i++) {
-      //printf("%lf ",keyboardVars[i]);
+    //printf("%lf ",keyboardVars[i]);
     //}
     //printf("\n");
   } else {

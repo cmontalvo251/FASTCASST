@@ -64,8 +64,11 @@ sil:
 auto:
 	make all TYPE="AUTO" EXECUTABLE="auto.exe" PLATFORM="RPI" RX="FLYSKY" WIRINGPI="-lwiringPi"
 
-hil:
-	echo 'WIP'
+hil_desktop:
+	make all TYPE="HIL" EXECUTABLE="hil.exe" PLATFORM="DESKTOP" RENDER="-lGL -lGLU -lglut" OPENGLSOURCES="opengl/opengl.cpp" THREAD="-lpthread -lboost_system -lboost_thread -lboost_date_time"
+
+hil_rpi:
+	make all TYPE="HIL" EXECUTABLE="hil.exe" PLATFORM="RPI" RX="FLYSKY" WIRINGPI="-lwiringPi"
 
 ##Target to make all depends on the MAIN, OBJECTS and the EXECUTABLE
 all: $(OBJECTS) $(MAIN) $(EXECUTABLE)

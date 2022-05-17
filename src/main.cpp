@@ -37,6 +37,14 @@ modeling model;
 #define REALTIME
 #endif
 
+//Check for HIL Mode and UART class
+#ifdef HIL
+#include <UART/uart.h> //both RPI and desktop need this header
+MATLAB uart_send_matrix; //Both rpi and desktop need this matrix
+MATLAB uart_receive_matrix; //Both rpi and desktop need this matrix
+UART ser; //both rpi and desktop need this matrix
+#endif
+
 //Main Loop Functions
 void renderloop(char* root_folder_name,int argc,char** argv);
 void loop();
@@ -114,7 +122,9 @@ void loop() {
   hw.send(-model.TIMESTEP,model.model_matrix,model.keyboardVars);
   #endif
   watch.init(initTime);
-  
+  //Run the hardware loop once just to initialize everything
+  hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
+
   while (system_check()) {
 
     ///////////TIMING UPDATE/////////////////
@@ -135,15 +145,27 @@ void loop() {
     hw.send(watch.currentTime,model.model_matrix,model.keyboardVars);
     //printf("hw.send %lf %lf %lf \n",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
     #endif
-    hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
-    //printf("hw.loop %lf %lf %lf \n",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
-    /////////////////////////////////////////
 
-    //////////CONTROL LOOP///////////////////
-    //Runs as quickly as possible since the sensor states change 
-    //as quickly as possible
-    control.loop(watch.currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
-    /////////////////////////////////////////
+    //If We're running in HIL we need to run the HIL comms function    
+    #ifdef HIL
+    hw.hil();
+    #endif
+    
+    //We only run the hardware / control loop if we're in SIMONLY, SIL, AUTO or HIL RPI
+    //The control and hardware loops runs on the RPI 
+    if (CONTROLLOOP) {
+      hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
+      //printf("hw.loop %lf %lf %lf \n",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
+      /////////////////////////////////////////
+      
+      //////////CONTROL LOOP///////////////////
+      //Runs as quickly as possible since the sensor states change 
+      //as quickly as possible
+      //Here's where things get weird though. If we're running in HIL mode
+      //and we're on the desktop we don't run control.loop()
+      control.loop(watch.currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
+      /////////////////////////////////////////
+    } 
 
     ///////////MODELING LOOP/////////////////
     #ifdef MODELING

@@ -69,14 +69,14 @@ META:
 
 WOODEN DRONE:
 
- ☐ From here I'd like to start editing the sensor routines to include Arduino hooks. The sensor.h file should work at the moment on both desktop and Rpi so it's time to get it to work on Arduino hooks. Edit the Sensor routine to use the newly formed folders. Think a bit more on how you want to have this sensor block. I'm assuming you'll just be importing all the sensors? Pitot, IMU, GPS, etc??? What if those sensors are not connected? Is there a way for the controller to ignore erroneous data? Or maybe just turn them on and off in the controller?
+  ☐ From here I'd like to start editing the sensor routines to include Arduino hooks. The sensor.h file should work at the moment on both desktop and Rpi so it's time to get it to work on Arduino hooks. Edit the Sensor routine to use the newly formed folders. Think a bit more on how you want to have this sensor block. I'm assuming you'll just be importing all the sensors? Pitot, IMU, GPS, etc??? What if those sensors are not connected? Is there a way for the controller to ignore erroneous data? Or maybe just turn them on and off in the controller?
 
- ☐ I then would like you to make an INO routine that logs all sensor data IMU, MPL, GPS (I think those are all the sensors). I'd like there to be a SIMONLY version of this as well where the computer just fakes the sensors. Might need to call this DESKTOP since that's what all the hooks are. Make all of the sensor specific items happen inside the sensor class. In order for this to work, the datlogger routine is going to need to get updated to work for an SD breakout board. Using this log routine I want you to log like an hour of data to disk and then save it for later processing of noise and bias. This routine needs to be general enough to work on Navio as well. 
+  ☐ I then would like you to make an INO routine that logs all sensor data IMU, MPL, GPS (I think those are all the sensors). I'd like there to be a SIMONLY version of this as well where the computer just fakes the sensors. Might need to call this DESKTOP since that's what all the hooks are. Make all of the sensor specific items happen inside the sensor class. In order for this to work, the datlogger routine is going to need to get updated to work for an SD breakout board. Using this log routine I want you to log like an hour of data to disk and then save it for later processing of noise and bias. This routine needs to be general enough to work on Navio as well. 
   ☐ Add code for MPL115
   ☐ Add BNO055 to Arduino and read/send those signals
   ☐ Datalogger routine will need to be augmented to hangle RPi, DESKTOP and ARDUINO
- 
- ☐ Start analyzing the data you obtained in from the hour of logging. See if you can get bias, std dev, noise, etc and then add that to the Sensors routine when you're using DESKTOP and POLLUTED sensor mode.
+
+  ☐ Start analyzing the data you obtained in from the hour of logging. See if you can get bias, std dev, noise, etc and then add that to the Sensors routine when you're using DESKTOP and POLLUTED sensor mode.
 
  ☐ Once the Arduino hooks are in I would like one more Arduino Routine that reads the RCInput and then feeds them (pass through) to RCOutput. This will require you to use the RCInput and RCOutput routines which hopefully got combined between Navio and Arduino at which point you'll also need hooks in there for the JOYSTICK as well. Again these need to be general enough that just changing the Makefile will compile the routine onto different architectures
 
@@ -93,7 +93,7 @@ WOODEN DRONE:
  ☐ Wooden Drone waypoint flights - Can focus on outerloop control laws (Make sure to update blog for this one)
     ☐ Attempt to code altitude hold for drone using deltaP and Az - REV 6 
     ☐ Station keeping
-    ☐ Point to a desired attitude
+    ☐ Point to a desired heading
     ☐ Waypoint controller
 
 BDE DJI Flights:

@@ -8,6 +8,7 @@ board_notes
 *.pyc
 EGM_EMM
 *.blend*
+libraries
 
 # Prerequisites
 *.d

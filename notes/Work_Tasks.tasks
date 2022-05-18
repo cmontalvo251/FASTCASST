@@ -15,6 +15,10 @@ HIL:
 
 SPEEDING UP FASTSim ON PI:
 
+  ✔ Create a scheduler for all sensors. @done (22-05-17 20:21)
+
+  ☐ Thread the IMU and GPS
+
   ☐ We can try systemd which is apparently what Arducopter uses
 
   ☐ Another option is we write our own embedded software for the Pi

@@ -1,14 +1,9 @@
-
-
 //These #defines would normally go in the makefile
 //but I don't want to learn Makefiles so they will go in here 
 //instead
 #define ARDUINO
 #define AUTO
 
-#include <Rotation3.h>
-#include <mathp.h>
-#include <Datalogger.h>
 #include <timer.h>
 
 void setup() {

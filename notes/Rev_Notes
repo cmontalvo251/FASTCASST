@@ -1,3 +1,12 @@
+=========================5/18/2022===========================
+
+I have begun my journey into getting Arduino to Run FASTKit
+for the wooden drone. The "hooks" are all in place. It's now just
+time to get the cpp files to accommodate ARDUINO specific code.
+
+I am currently trying to get the timer.cpp library added but
+obviously I'm having growing pains. I'm also there though.
+
 ========================4/24/2022==========================
 
 SIL on quadcopter and airplane work. Dynamics are poorly tuned

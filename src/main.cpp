@@ -13,7 +13,7 @@ int system_check();
 TIMER watch;
 
 //The Hardware environment is always running
-#include <hardware/src/hardware.h>
+#include <hardware/hardware.h>
 hardware hw;
 
 //Controller is always running
@@ -25,7 +25,7 @@ controller control;
 #if defined (SIL) || (SIMONLY) || (HIL)
 #if defined (DESKTOP)
 #define MODELING
-#include <modeling/src/modeling.h>
+#include <modeling/modeling.h>
 modeling model;
 #endif
 #endif

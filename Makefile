@@ -12,22 +12,31 @@ WIRINGPI=
 
 ###COMPILER AND OTHER FLAGS
 CC=g++
-HELPER=helper
-HARDWARE=hardware
-MODELING=modeling
 COMPILE=-c -w -std=c++11 -Wno-psabi
 FLAGS=-DDEBUG
 LIB=-L/usr/local/lib -L./
 #FAST is using boost for threading #sudo apt-get install libboost-all-dev
 THREAD=-lpthread -lboost_system -lboost_thread -lboost_date_time 
 MODELPATH=vehicles/$(MODEL)/src
-INCLUDE=-I${HELPER} -I${HARDWARE} -I${MODELPATH} -I${MODELING} -I./
+INCLUDE=-Ilibraries/ -I${MODELPATH} -I./
 ###HELPER
-HELPERSOURCES=$(wildcard $(HELPER)/*/*.cpp)
+HELPERSOURCES=libraries/Datalogger/Datalogger.cpp libraries/MATLAB/MATLAB.cpp libraries/Mathp/mathp.cpp libraries/Timer/timer.cpp
 ###HARDWARE
-HARDWARESOURCES=$(wildcard $(HARDWARE)/*/*.cpp)
-##MOELING
-MODELINGSOURCES=$(wildcard $(MODELING)/*/*.cpp)
+IMUSOURCES=$(wildcard libraries/IMU/*.cpp)
+GPSSOURCES=$(wildcard libraries/GPS/*.cpp)
+BAROTEMPSOURCES=$(wildcard libraries/BaroTemp/*.cpp)
+RCIOSOURCES=$(wildcard libraries/RCIO/*.cpp)
+UARTSOURCES=$(wildcard libraries/UART/*.cpp)
+ADCSOURCES=$(wildcard libraries/ADC/*.cpp)
+UTILSOURCES=$(wildcard libraries/Util/*.cpp)
+HWSOURCES=libraries/sensors/sensors.cpp libraries/hardware/hardware.cpp
+HARDWARESOURCES=$(IMUSOURCES) $(GPSSOURCES) $(BAROTEMPSOURCES) $(RCIOSOURCES) $(UARTSOURCES) $(ADCSOURCES) $(HWSOURCES) $(UTILSOURCES)
+##MODELING
+ENVSOURCES=$(wildcard libraries/Environment/*.cpp)
+GEOSOURCES=$(wildcard libraries/GeographicLib/*.cpp)
+RK4SOURCES=$(wildcard libraries/RK4/*.cpp)
+ROTSOURCES=$(wildcard libraries/Rotation/*.cpp)
+MODELINGSOURCES=$(ENVSOURCES) $(GEOSOURCES) $(RK4SOURCES) $(ROTSOURCES) libraries/modeling/modeling.cpp
 ###MODEL
 MODELSOURCES=$(wildcard vehicles/$(MODEL)/src/*.cpp)
 
@@ -58,7 +67,7 @@ simonly:
 #SIL runs the main routine with openGL 
 #sudo apt-get install freeglut3-dev
 sil:
-	make all TYPE="SIL" EXECUTABLE="sil.exe" RENDER="-lGL -lGLU -lglut" OPENGLSOURCES="opengl/opengl.cpp" THREAD="-lpthread -lboost_system -lboost_thread -lboost_date_time"
+	make all TYPE="SIL" EXECUTABLE="sil.exe" RENDER="-lGL -lGLU -lglut" OPENGLSOURCES="libraries/opengl/opengl.cpp" THREAD="-lpthread -lboost_system -lboost_thread -lboost_date_time"
 
 #Auto mode. Fully deployed on platform. Modeling routine is off
 auto:
@@ -97,13 +106,7 @@ clean:
 	rm *.exe
 	echo ' ' > src/d.o
 	rm src/*.o
-	echo ' ' > $(HELPER)/MATLAB/d.o
-	rm $(HELPER)/*/*.o
-	echo ' ' > $(HARDWARE)/ADC/d.o
-	rm $(HARDWARE)/*/*.o
-	echo ' ' > $(MODELING)/RK4/d.o
-	rm $(MODELING)/*/*.o
+	echo ' ' > libraries/MATLAB/d.o
+	rm libraries/*/*.o
 	echo ' ' > vehicles/portalcube/src/d.o
-	rm vehicles/portalcube/src/*.o
-	echo ' ' > vehicles/airplane/src/d.o
-	rm vehicles/airplane/src/*.o
+	rm vehicles/*/src/*.o

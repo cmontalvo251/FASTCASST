@@ -6,7 +6,9 @@
 #define ARDUINO
 #define AUTO
 
-//Timer
+#include <Rotation3.h>
+#include <mathp.h>
+#include <Datalogger.h>
 #include <timer.h>
 
 void setup() {

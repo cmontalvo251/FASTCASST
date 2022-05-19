@@ -8,6 +8,7 @@ board_notes
 *.pyc
 EGM_EMM
 *.blend*
+SysML_Diagrams/Archive
 
 # Prerequisites
 *.d

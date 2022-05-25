@@ -304,7 +304,6 @@ void modeling::rk4step(double currentTime,int pwm_array[]) {
 
 
 void modeling::Derivatives(double currentTime,int pwm_array[]) {
-
   //Actuator Dynamics
   double time_constant = 0;
   double settling_time = 0;

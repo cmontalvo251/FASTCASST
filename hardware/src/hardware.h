@@ -22,23 +22,6 @@
 //Eventually I'm going to get Telemetry working in SIL and SIMONLY modes
 #include <UART/uart.h>
 
-//Need some logic here to determine any hardware in the loop
-//modes
-#ifdef HIL
-//Running in HIL mode
-#ifdef DESKTOP
-//Running in desktop mode HIL so CONTROLLOOP is off
-#define CONTROLLOOP 0
-#endif
-#ifdef RPI
-//Running HIL on RPI so CONTROLLOOP is on but MAIN LOOP IS OFF
-#define CONTROLLOOP 1
-#endif
-#else
-//Hardware in the loop is off so run everything
-#define CONTROLLOOP 1
-#endif
-
 ///////////Inputs to Hardware Class///////////////
 // 1 - Root Folder name (char*)
 // 2 - Control Matrix (MATLAB)

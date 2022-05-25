@@ -134,14 +134,10 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   //I then need to populate the pwm_array with the control signals as quickly as possible
   for (int i = 0;i<rc.out.NUMSIGNALS;i++) {
     rc.out.pwm_array[i] = round(control_matrix.get(i+1,1));
-    //However, the control routine is created by the user and doesn't necessarily have a
-    //saturation filter built in so we need to do that here
-    if (rc.out.pwm_array[i] > OUTMAX) {
-      rc.out.pwm_array[i] = OUTMAX;
-    } else if (rc.out.pwm_array[i] < OUTMIN) {
-      rc.out.pwm_array[i] = OUTMIN;
-    }
   }
+  //However, the control routine is created by the user and doesn't necessarily have a
+  //saturation filter built in so we need to do that here
+  rc.out.saturation_block();
   //printf("ELEVATOR ARRAY = %d \n",rc.out.pwm_array[2]);
 
   //Check to see if it's time to log
@@ -209,6 +205,7 @@ void hardware::hil() {
       ser.sendSense(uart_sense_matrix);
       sendOK = 0;
     } else {
+      //printf("READING CONTROL MATRIX FROM SERIAL \n");
       ser.readControl(uart_ctl_matrix);
       sendOK = 1;
       //We then need to populate this into the appropriate vectors
@@ -220,6 +217,11 @@ void hardware::hil() {
       rc.out.pwm_array[1] = uart_ctl_matrix.get(6,1);
       rc.out.pwm_array[2] = uart_ctl_matrix.get(7,1);
       rc.out.pwm_array[3] = uart_ctl_matrix.get(8,1);
+      //Again the control matrix is coming from the control routine on the pi
+      //The control routine is written by the user. since we can't expect the user
+      //to worry about saturation we need to put in that block here
+      rc.in.saturation_block();
+      rc.out.RangeCheck(); //This is a bit more robust to Serial errors than just the saturation block
     }
     #endif
     

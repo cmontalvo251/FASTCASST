@@ -28,11 +28,13 @@ void UART::init(int numtelem,int numsens,int numc) {
 
   #ifdef DESKTOP
   //This means we are on the desktop.
-  //Telemetry on the desktop goes to a file
-  comms.SerialInit("./telemtry.txt",baudRate);
   //Hardware in the loop communication happens via USB0
   #ifdef HIL
   hilcomms.SerialInit("/dev/ttyUSB0",baudRate);
+  #else
+  //Telemetry on the desktop goes to a file but only when
+  //running in SIMONLY or SIL mode
+  comms.SerialInit("./telemtry.txt",baudRate);
   #endif
   #endif
   
@@ -45,7 +47,7 @@ void UART::sendSense(MATLAB uart_sense_matrix) {
     uart_sense_array[i-1] = uart_sense_matrix.get(i,1);
   }
   //Then send it over UART
-  hilcomms.SerialSendArray(uart_sense_array,uart_sense_matrix.len(),1);
+  hilcomms.SerialSendArray(uart_sense_array,uart_sense_matrix.len(),0);
 }
 
 
@@ -64,12 +66,14 @@ void UART::sendControl(MATLAB uart_ctl_matrix) {
     uart_ctl_array[i-1] = uart_ctl_matrix.get(i,1);
   }
   //Then send it over UART
-  hilcomms.SerialSendArray(uart_ctl_array,uart_ctl_matrix.len(),1);
+  hilcomms.SerialSendArray(uart_ctl_array,uart_ctl_matrix.len(),0);
 }
 
 void UART::readControl(MATLAB uart_ctl_matrix) {
   //This function will read the ctl array over UART
-  //hilcomms.SerialReadArray();
+  hilcomms.SerialGetArray(uart_ctl_array,uart_ctl_matrix.len(),0);
+  //uart_ctl_matrix.disp();
+  //PAUSE();
   //It will then overwrite the ctl matrix for use elsewhere
   for (int i = 1;i<=uart_ctl_matrix.len();i++) {
     uart_ctl_matrix.set(i,1,uart_ctl_array[i-1]);
@@ -85,5 +89,5 @@ void UART::sendTelemetry(MATLAB uart_telemetry_matrix) {
     uart_telemetry_array[i-1] = uart_telemetry_matrix.get(i,1);
   }
   //Then send it over UART
-  comms.SerialSendArray(uart_telemetry_array,uart_telemetry_matrix.len(),0);
+  comms.SerialSendArray(uart_telemetry_array,uart_telemetry_matrix.len(),1);
 }

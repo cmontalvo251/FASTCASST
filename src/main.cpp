@@ -37,12 +37,23 @@ modeling model;
 #define REALTIME
 #endif
 
-//Check for HIL Mode and UART class
+//Need some logic here to determine any hardware in the loop
+//modes
 #ifdef HIL
-#include <UART/uart.h> //both RPI and desktop need this header
-MATLAB uart_send_matrix; //Both rpi and desktop need this matrix
-MATLAB uart_receive_matrix; //Both rpi and desktop need this matrix
-UART ser; //both rpi and desktop need this matrix
+//Running in HIL mode
+#ifdef DESKTOP
+//Running in desktop mode HIL so CONTROLLOOP is off
+#define CONTROLLOOP 0
+#endif
+
+#ifdef RPI
+//Running HIL on RPI so CONTROLLOOP is on but MAIN LOOP IS OFF
+#define CONTROLLOOP 1
+#endif
+
+#else //HIL
+//Hardware in the loop is off so run everything
+#define CONTROLLOOP 1
 #endif
 
 //Main Loop Functions
@@ -153,6 +164,7 @@ void loop() {
     
     //We only run the hardware / control loop if we're in SIMONLY, SIL, AUTO or HIL RPI
     //The control and hardware loops runs on the RPI 
+    //The CONTROLLOOP variable is set in the preamble of this cpp file
     if (CONTROLLOOP) {
       hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
       //printf("hw.loop %lf %lf %lf \n",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);

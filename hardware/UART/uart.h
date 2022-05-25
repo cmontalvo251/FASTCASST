@@ -21,6 +21,9 @@
 //Serial Module
 #include "Serial.h"
 
+//Timer for Pause
+#include <Timer/timer.h>
+
 class UART {
  private:
   float *uart_ctl_array=NULL,*uart_sense_array=NULL,*uart_telemetry_array=NULL;

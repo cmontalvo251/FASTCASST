@@ -249,6 +249,7 @@ void Serial::SerialGetArray(float number_array[],int num) {
 
 void Serial::SerialGetArray(float number_array[],int num,int echo) {
   union inparser inputvar;
+  int j = 0;
   for (int d = 0;d<num;d++) {
     int i = 0;
     char inLine[MAXLINE];
@@ -259,7 +260,9 @@ void Serial::SerialGetArray(float number_array[],int num,int echo) {
     do {
       do {
         inchar = SerialGetc();
-      } while (inchar == '\0');
+        //printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
+        j++;
+      } while ((inchar == '\0') && (j < 1000));
       if (echo) {
       printf("Receiving: i = %d char = %c chartoint = %d \n",i,inchar,int(inchar));
       }

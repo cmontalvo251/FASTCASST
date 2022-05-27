@@ -1,3 +1,32 @@
+=======================5/27/2022========================
+
+Made a new branch for the Ground Station
+What do I want the ground station to do
+
+3 x 3 grid
+
+ Lat/Lon/Alt       |
+ Baro Alt          |  MAP (LAT/LON in Cartesion) | Altitude Bars 
+ -------------------------------------------------------------------------
+ RPY               |   3D Cube                    | Time
+ -------------------------------------------------------------------------
+ Pitot Speed       |                              
+ GPS Speed         |  Bar graphs of RX signals    (both cells)
+
+ Data needed to be sent
+
+ 1 - lat -> convert to X
+ 2 - lon -> convert to Y
+ 3 - gps alt
+ 4 - baro pressure -> Convert to altitude
+ 5 - roll
+ 6 - pitch
+ 7 - yaw
+ 8 - Time
+ 9  - ADC signal (x2?)
+ 10 - GPS speed - compute myself? 
+ 11 - 14/15 - RX signals (4 or 5 signals)
+
 ========================5/24/2022========================
 
 Working on HIL again. 

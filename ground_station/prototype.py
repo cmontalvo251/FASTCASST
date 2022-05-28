@@ -46,7 +46,7 @@ def CubeDraw(phi,theta,psi):
 		pc = Poly3DCollection([list(zip(xv[jj],yv[jj],zv[jj]))])
 		pc.set_facecolor('r')
 		pc.set_edgecolor('k')
-		ax.add_collection(pc)
+		ax.add_collection(pc,alpha=0.5)
 
 # Lat/Lon/Alt       |
 # Baro Alt          |  MAP (LAT/LON in Cartesion) | Altitude Bars 

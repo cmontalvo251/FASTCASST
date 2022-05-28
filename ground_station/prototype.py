@@ -43,10 +43,10 @@ def CubeDraw(phi,theta,psi):
 			xv[jj][ii] = xyz_trans[0]
 			yv[jj][ii] = xyz_trans[1]
 			zv[jj][ii] = xyz_trans[2]
-		pc = Poly3DCollection([list(zip(xv[jj],yv[jj],zv[jj]))])
+		pc = Poly3DCollection([list(zip(xv[jj],yv[jj],zv[jj]))],alpha=0.5)
 		pc.set_facecolor('r')
 		pc.set_edgecolor('k')
-		ax.add_collection(pc,alpha=0.5)
+		ax.add_collection(pc)
 
 # Lat/Lon/Alt       |
 # Baro Alt          |  MAP (LAT/LON in Cartesion) | Altitude Bars 

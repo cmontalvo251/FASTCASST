@@ -1,3 +1,16 @@
+=======================5/28/2022=======================
+
+Prototype function for Ground station is done. Next step
+is to create subplots and plot everything on one window 
+then I want to animate everything using a SIL for loop
+Then finally I want to make a GUI
+
+Alright I made one big window and called the routine 
+single_window.py
+
+Tomorrow the goal will be to make the GUI run in realtime
+with fake synthetic data 
+
 =======================5/27/2022========================
 
 Made a new branch for the Ground Station

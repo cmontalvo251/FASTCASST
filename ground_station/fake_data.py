@@ -193,7 +193,7 @@ telemetry_packet = np.zeros(14)
 GND = WINDOW()
 i = -1
 timeStart = -10.0
-while i < len(t):
+while i < len(t)-1:
 	time.sleep(0.001)
 	if (time.monotonic() - timeStart) > 1.0:
 		print('Received New Data',t[i])

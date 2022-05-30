@@ -1,7 +1,22 @@
 =======================5/29/2022=======================
 
 Alright time to make the GUI run in realtime with fake
-synthetic data
+synthetic data. Alright that is done. So yesterday I said
+the next step was to make a GUI but I feel like this is good.
+To kill the code you need to hit CTRL+C twice which is
+not very good programming so I might need to add a q key
+stroke but for now I'm going to leave it. I would say the 
+next step is to get FASTKit to create a text file when
+running in SIL for telemetry. Then have the Ground station
+read the latest text file. Once I get back to Mobile
+I can create a SerialRead routine to read the live
+telemetry data using the Serial module in Python. Unfortuntately
+I can't test that here. Actually. If I have the SIL write hex data 
+to the text file I can test everything except the serial module
+
+1.) Add text file telemetry writing when running SIL
+2.) Have GUI read data from text file
+3.) Have GUI create text file everytime it receives new data
 
 =======================5/28/2022=======================
 

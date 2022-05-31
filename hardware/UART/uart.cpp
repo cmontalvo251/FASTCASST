@@ -34,7 +34,8 @@ void UART::init(int numtelem,int numsens,int numc) {
   #else
   //Telemetry on the desktop goes to a file but only when
   //running in SIMONLY or SIL mode
-  comms.SerialInit("./telemtry.txt",baudRate);
+  //Run default init function which has the txt file bindings
+  comms.InitSerialPort(); 
   #endif
   #endif
   
@@ -80,7 +81,7 @@ void UART::readControl(MATLAB uart_ctl_matrix) {
   }
 }
 
-void UART::sendTelemetry(MATLAB uart_telemetry_matrix) {
+void UART::sendTelemetry(MATLAB uart_telemetry_matrix,int echo) {
   //It's assumed that whomever is calling this function
   //Also called the init function with the proper matrix
   //size thus we first copy the uart_send_matrix over to uart_send_array
@@ -89,5 +90,5 @@ void UART::sendTelemetry(MATLAB uart_telemetry_matrix) {
     uart_telemetry_array[i-1] = uart_telemetry_matrix.get(i,1);
   }
   //Then send it over UART
-  comms.SerialSendArray(uart_telemetry_array,uart_telemetry_matrix.len(),1);
+  comms.SerialSendArray(uart_telemetry_array,uart_telemetry_matrix.len(),echo);
 }

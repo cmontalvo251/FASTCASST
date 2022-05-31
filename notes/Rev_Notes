@@ -1,3 +1,23 @@
+=======================5/30/2022======================
+
+Alright. Adding text file writing in SIL mode. That is done
+it worked pretty slickly if I do say so myself.
+Bascially what happens is I used a datalogger class.
+During the telemetry write it opens a file. Dumps the 
+telemetry contents and then closes it. The next time 
+telemetry comes around it just opens a new file. So 
+Python just needs to keep a counter and grab either
+the latest or the one right before. I'll need to figure out
+how to run that logic but we shall see.
+
+I have an idea. It will check to see when x.csv exists.
+When it does it will wil open x-1.csv so long as x-1 >= 0
+
+Done. Sweet. Ok so tasks for tomorrow.
+
+2.) Have GUI read data from csv telemetry file (probably do this one at a time first. There are 6 csv files with data in them to test)
+3.) Have GUI create text file everytime it receives new data
+
 =======================5/29/2022=======================
 
 Alright time to make the GUI run in realtime with fake

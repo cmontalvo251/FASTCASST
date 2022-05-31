@@ -202,9 +202,7 @@ void loop() {
       printf("\n");
     }
   }
-
   printf("Main Loop End \n");
-
 }
 
 int system_check() {

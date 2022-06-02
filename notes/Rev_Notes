@@ -1,3 +1,14 @@
+=======================6/2/2022=======================
+
+Alright Python Ground Station is done ish but it needs a few tweaks
+
+1.) I need the GUI to create a text file when it opens and log all the data
+it receives
+2.) I need to test the GUI with the XBOX controller and see if I can actually fly
+the plane in real time. I also think I need a bigger monitor or just an external monitor. So I might just need to test this at work or use my TV in the living room.
+Keep in mind once you get back to work you need to add the Serial component to 
+the ground station.
+
 =======================5/30/2022======================
 
 Alright. Adding text file writing in SIL mode. That is done

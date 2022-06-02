@@ -6,6 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import time
 import struct
+import datetime
 
 #######FUNCTIONS######################
 def bitsToFloat(b):
@@ -139,6 +140,20 @@ class WINDOW():
 		self.t = []
 		self.longitude = []
 		self.latitude = []
+		#Create logging file
+		outfilename = 'logs/Ground_Station_'+datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")+'.csv'
+		self.outfile = open(outfilename,'w')
+
+	def logData(self,telemetry_packet):
+		ctr = 0
+		for o in telemetry_packet:
+			s = str(o)
+			if ctr != len(telemetry_packet)-1:
+				s+=","
+			ctr+=1
+			self.outfile.write(s)
+		self.outfile.write("\n")
+		self.outfile.flush()
 
 	def sendNewData(self,telemetry_packet):
 		time = telemetry_packet[0]
@@ -159,6 +174,8 @@ class WINDOW():
 		self.aileron = telemetry_packet[11]
 		self.elevator = telemetry_packet[12]
 		self.rudder = telemetry_packet[13]
+		##Then log data
+		self.logData(telemetry_packet)
 
 	def clearwindow(self):
 		self.ax11.clear()

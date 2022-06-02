@@ -9,6 +9,12 @@ the plane in real time. I also think I need a bigger monitor or just an external
 Keep in mind once you get back to work you need to add the Serial component to 
 the ground station.
 
+-----A few hours later-----
+
+Alright well I've done all can until I have actual hardware.
+The XBOX controller to test SIL speed and the telemetry radios to test
+reading from USB. I'd say this is ready to merge into the main branch
+
 =======================5/30/2022======================
 
 Alright. Adding text file writing in SIL mode. That is done

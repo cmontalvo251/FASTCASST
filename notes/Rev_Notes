@@ -1,3 +1,8 @@
+=======================6/4/2022=======================
+
+Ok the GUI creates a text file and it works in real time with the Python
+ground station. This branch is ready to merge.
+
 =======================6/2/2022=======================
 
 Alright Python Ground Station is done ish but it needs a few tweaks

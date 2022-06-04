@@ -10,6 +10,7 @@
 #include <errno.h> // Error integer and strerror() function
 #include <termios.h> // Contains POSIX terminal control definitions
 #include <unistd.h> // write(), read(), close()
+#include <Datalogger/Datalogger.h>
 
 #ifdef RPI
 //sudo apt-get install wiringpi
@@ -34,6 +35,7 @@ union inparser {
 class Serial {
     private:
     	int hComm;
+    	Datalogger tlogger;
 	public:
 		float lastTime = 0.0;
 		float period = 1.0; //Default is second

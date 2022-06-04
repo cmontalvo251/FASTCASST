@@ -11,9 +11,15 @@ void Serial::InitSerialPort(void)
   #if defined __linux__ || __APPLE__ || RPI
     char *port = "/dev/ttyUSB0";
   #endif
+  #if defined (DESKTOP) && (SIL) 
+  printf("Running in SIL Mode: Telemetry writing to a text file \n");
+  system("rm *.csv");
+  tlogger.init("./",1); //The one is erroneous in this case
+  tlogger.echo = 0; //turn off echo statements
+  #else
   SerialInit(port,BaudRate);
+  #endif
 }
-
 
 //Call this for higher level control
 void Serial::SerialInit(char *ComPortName, int BaudRate) 
@@ -119,9 +125,15 @@ void Serial::SerialPutc(char txchar)
   return;
   #endif
   #if defined __linux__ || __APPLE__
+  #if defined (DESKTOP) && (SIL)
+  //Write to a text file
+  //printf("Writing data to text file = %c \n",txchar);
+  tlogger.printc(txchar);
+  #else
   // Write to serial port
   write(hComm,&txchar,sizeof(txchar));
   return;
+  #endif
   #endif
 }
 
@@ -182,6 +194,9 @@ void Serial::SerialSendArray(float number_array[],int num,int echo) {
   if (echo) {
     printf("Numbers Sent \n");
   }
+  #if defined (SIL) && (DESKTOP)
+  tlogger.reopen("./");
+  #endif
 }
 
 ///////////This is really annoying but when this Serial library was first written, the desktop
@@ -249,6 +264,7 @@ void Serial::SerialGetArray(float number_array[],int num) {
 
 void Serial::SerialGetArray(float number_array[],int num,int echo) {
   union inparser inputvar;
+  int j = 0;
   for (int d = 0;d<num;d++) {
     int i = 0;
     char inLine[MAXLINE];
@@ -259,7 +275,9 @@ void Serial::SerialGetArray(float number_array[],int num,int echo) {
     do {
       do {
         inchar = SerialGetc();
-      } while (inchar == '\0');
+        //printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
+        j++;
+      } while ((inchar == '\0') && (j < 1000));
       if (echo) {
       printf("Receiving: i = %d char = %c chartoint = %d \n",i,inchar,int(inchar));
       }

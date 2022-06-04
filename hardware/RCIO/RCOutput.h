@@ -15,6 +15,8 @@ class RCOutput {
 public:
     RCOutput(); //constructor
     void initialize(int);
+    void RangeCheck();
+    void setOutputNeutral();
     void saturation_block();
     void write();
     int *pwm_array=NULL;

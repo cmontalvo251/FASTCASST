@@ -1,3 +1,128 @@
+=======================6/4/2022=======================
+
+Ok the GUI creates a text file and it works in real time with the Python
+ground station. This branch is ready to merge.
+
+=======================6/2/2022=======================
+
+Alright Python Ground Station is done ish but it needs a few tweaks
+
+1.) I need the GUI to create a text file when it opens and log all the data
+it receives
+2.) I need to test the GUI with the XBOX controller and see if I can actually fly
+the plane in real time. I also think I need a bigger monitor or just an external monitor. So I might just need to test this at work or use my TV in the living room.
+Keep in mind once you get back to work you need to add the Serial component to 
+the ground station.
+
+-----A few hours later-----
+
+Alright well I've done all can until I have actual hardware.
+The XBOX controller to test SIL speed and the telemetry radios to test
+reading from USB. I'd say this is ready to merge into the main branch
+
+=======================5/30/2022======================
+
+Alright. Adding text file writing in SIL mode. That is done
+it worked pretty slickly if I do say so myself.
+Bascially what happens is I used a datalogger class.
+During the telemetry write it opens a file. Dumps the 
+telemetry contents and then closes it. The next time 
+telemetry comes around it just opens a new file. So 
+Python just needs to keep a counter and grab either
+the latest or the one right before. I'll need to figure out
+how to run that logic but we shall see.
+
+I have an idea. It will check to see when x.csv exists.
+When it does it will wil open x-1.csv so long as x-1 >= 0
+
+Done. Sweet. Ok so tasks for tomorrow.
+
+2.) Have GUI read data from csv telemetry file (probably do this one at a time first. There are 6 csv files with data in them to test)
+3.) Have GUI create text file everytime it receives new data
+
+=======================5/29/2022=======================
+
+Alright time to make the GUI run in realtime with fake
+synthetic data. Alright that is done. So yesterday I said
+the next step was to make a GUI but I feel like this is good.
+To kill the code you need to hit CTRL+C twice which is
+not very good programming so I might need to add a q key
+stroke but for now I'm going to leave it. I would say the 
+next step is to get FASTKit to create a text file when
+running in SIL for telemetry. Then have the Ground station
+read the latest text file. Once I get back to Mobile
+I can create a SerialRead routine to read the live
+telemetry data using the Serial module in Python. Unfortuntately
+I can't test that here. Actually. If I have the SIL write hex data 
+to the text file I can test everything except the serial module
+
+1.) Add text file telemetry writing when running SIL
+2.) Have GUI read data from text file
+3.) Have GUI create text file everytime it receives new data
+
+=======================5/28/2022=======================
+
+Prototype function for Ground station is done. Next step
+is to create subplots and plot everything on one window 
+then I want to animate everything using a SIL for loop
+Then finally I want to make a GUI
+
+Alright I made one big window and called the routine 
+single_window.py
+
+Tomorrow the goal will be to make the GUI run in realtime
+with fake synthetic data 
+
+=======================5/27/2022========================
+
+Made a new branch for the Ground Station
+What do I want the ground station to do
+
+3 x 3 grid
+
+ Lat/Lon/Alt       |
+ Baro Alt          |  MAP (LAT/LON in Cartesion) | Altitude Bars 
+ -------------------------------------------------------------------------
+ RPY               |   3D Cube                    | Time
+ -------------------------------------------------------------------------
+ Pitot Speed       |                              
+ GPS Speed         |  Bar graphs of RX signals    (both cells)
+
+ Data needed to be sent
+
+ 1 - lat -> convert to X
+ 2 - lon -> convert to Y
+ 3 - gps alt
+ 4 - baro pressure -> Convert to altitude
+ 5 - roll
+ 6 - pitch
+ 7 - yaw
+ 8 - Time
+ 9  - ADC signal (x2?)
+ 10 - GPS speed - compute myself? 
+ 11 - 14/15 - RX signals (4 or 5 signals)
+
+========================5/24/2022========================
+
+Working on HIL again. 
+Alright I got the print statements to turn off.
+I fixed everything I can fix without using hardware so the next
+step is to just test hardware in the loop back and forth
+
+I also edited the rev notes heavily
+
+========================5/16/2022========================
+
+Welcome back from Finals. Whew that was a doozy. Working on HIL
+mode right now and it's a mind trip. Right now 
+
+make hil_desktop MODEL="airplane"
+
+compiles and runs but the airplane is spinning like crazy and
+there are a ton of stdout prints which I thought I turned off.
+
+Anyway. Made a ton of progress today
+
 ========================4/24/2022==========================
 
 SIL on quadcopter and airplane work. Dynamics are poorly tuned

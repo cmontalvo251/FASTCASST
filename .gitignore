@@ -1,3 +1,5 @@
+*.csv
+SysML_Diagrams/Archive
 logs/*
 *.pdf
 data/*

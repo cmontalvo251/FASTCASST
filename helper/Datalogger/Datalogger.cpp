@@ -14,28 +14,38 @@ void Datalogger::findfile(char* directory) {
     } else {
       sprintf(filename,"%s%d%s",directory,number,".csv");
     }
-    printf("%s%s \n","Attempting to check for file: ",filename);
+    if (echo) {
+      printf("%s%s \n","Attempting to check for file: ",filename);
+    }
     fileout = fopen(filename,"r");
     if (!fileout) {
       found = 1;
     } else {
       fclose(fileout);
-      printf("File exists. Skipping \n");
+      if (echo) {
+        printf("File exists. Skipping \n");
+      }
     }
     number+=1; //Number is global in header file
   }
-  printf("File found for writing = %s \n",filename);
+  if (echo) {
+    printf("File found for writing = %s \n",filename);
+  }
   //return number
 }
 
 void Datalogger::open() {
-  printf("Attempting to open: %s \n",filename);
+  if (echo) {
+    printf("Attempting to open: %s \n",filename);
+  }
   outfile = fopen(filename,"wb");
   //printf("Attempting to open %s \n",filename);
+  if (echo) {
   if (!outfile) {
      printf("File not opened properly = %s \n",filename);
    } else {
      printf("File %s opened successfully \n",filename);
+   }
    }
 }
 
@@ -46,6 +56,15 @@ void Datalogger::init(char* directory,int num) {
   open();
   //Set size of variables
   setLogVars(num);  
+}
+
+void Datalogger::reopen(char* directory) {
+  //close currently open file
+  close();
+  //find a new file
+  findfile(directory);
+  //Open file
+  open();
 }
 
 void Datalogger::setLogVars(int num) {
@@ -144,12 +163,22 @@ void Datalogger::printchar(char* msg) {
   flush();
 }
 
+//Print a single character
+void Datalogger::printc(char c) {
+  fprintf(outfile,"%c",c);
+  flush();
+}
+
 //Close function
 void Datalogger::close() {
   flush();
-  printf("Closing File \n");
+  if (echo) {
+    printf("Closing File \n");
+  }
   fclose(outfile);
-  printf("File closed \n");
+  if (echo) {
+    printf("File closed \n");
+  }
 }
 
 //Flush function

@@ -3,6 +3,18 @@
 Ok the GUI creates a text file and it works in real time with the Python
 ground station. This branch is ready to merge.
 
+Alright branch merged. Turns out HIL and Ground_Station branch
+were from the same trunk so when I merged Ground_station it merged
+both brances. So I deleted Ground_Station and HIL and am operating
+dangerously in the main branch. Things to do next time you work on software 
+with hardware
+
+1.) Test main in SIMONLY, SIL, AUTO (on hardware)
+2.) Test ground station with telemetry radios
+3.) Commit changes
+4.) Push changes
+5.) Branch HIL again
+
 =======================6/2/2022=======================
 
 Alright Python Ground Station is done ish but it needs a few tweaks

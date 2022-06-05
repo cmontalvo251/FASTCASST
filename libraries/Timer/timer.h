@@ -33,7 +33,11 @@ class TIMER {
   void resetStartTime(); //use this function to reset the start timer
   ///////////////////////////////////////////////////////////////////////
   struct tm* ptm_;
+  #ifndef ARDUINO
   struct timespec ts;
+  #else
+  float ts;
+  #endif
  public:
   double currentTime,elapsedTime;
   void updateTime();

@@ -9,6 +9,10 @@
 #include "windows.h"
 #endif
 
+#ifdef ARDUINO
+#include <Arduino.h>
+#endif
+
 void error(char *output)
 {
   printf("Error -> %s \n",output);
@@ -28,7 +32,11 @@ void cross_sleep(double length) {
   #ifdef _WIN32
   Sleep(length*1000);
   #else
+  #ifdef ARDUINO
+  delay(length);
+  #else
   usleep(length*1000000);
+  #endif
   #endif
 }
 

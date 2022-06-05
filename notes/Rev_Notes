@@ -15,6 +15,9 @@ with hardware
 4.) Push changes
 5.) Branch HIL again
 
+Btw. I also merged in the Wood_Drone branch to not deal with
+it for now or this summer and work on it another time
+
 =======================6/2/2022=======================
 
 Alright Python Ground Station is done ish but it needs a few tweaks
@@ -123,6 +126,15 @@ step is to just test hardware in the loop back and forth
 
 I also edited the rev notes heavily
 
+=========================5/18/2022===========================
+
+I have begun my journey into getting Arduino to Run FASTKit
+for the wooden drone. The "hooks" are all in place. It's now just
+time to get the cpp files to accommodate ARDUINO specific code.
+
+I am currently trying to get the timer.cpp library added but
+obviously I'm having growing pains. 
+
 ========================5/16/2022========================
 
 Welcome back from Finals. Whew that was a doozy. Working on HIL
@@ -134,6 +146,7 @@ compiles and runs but the airplane is spinning like crazy and
 there are a ton of stdout prints which I thought I turned off.
 
 Anyway. Made a ton of progress today
+>>>>>>> main
 
 ========================4/24/2022==========================
 

@@ -70,6 +70,25 @@ void RCInput::LostCommCheck() {
   }
 }
 
+void RCInput::RangeCheck() {
+  int badconn = 0;
+  for (int idx = 0;idx<4;idx++) {
+    if (rx_array[idx] < 0 || rx_array[idx] > 2500) {
+      badconn = 1;
+    }
+  }
+  if (badconn == 1) {
+    setStickNeutral();
+  }
+}
+
+void RCInput::saturation_block() {
+  //First run a lost comms check
+  LostCommCheck();
+  //Then run a range check
+  RangeCheck();
+}
+
 void RCInput::setStickNeutral() {
   setStick(STICK_MIN); //First set all sticks to min
   //but then set the Aileron, Elevator and Rudder to mid

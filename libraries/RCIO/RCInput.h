@@ -68,6 +68,8 @@ public:
     void setStickNeutral();
     int bit2PWM(int val);
     void mapjoy2rx();
+    void saturation_block();
+    void RangeCheck();
     int invert(int);
     //Constructor
     RCInput();

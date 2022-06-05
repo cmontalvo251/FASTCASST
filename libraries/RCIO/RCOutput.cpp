@@ -8,6 +8,7 @@ RCOutput::RCOutput() {
 void RCOutput::initialize(int num) {
 	NUMSIGNALS = num;
 	pwm_array = (int *) calloc(NUMSIGNALS,sizeof(int));
+	saturation_block(); //Set the pwm_array to minimum vals
 
 	////////I REALIZE THERE ARE 3 LOOPS AND YOU COULD DO THIS WITH
 	// 1 loop. BUT IT WILL NOT WORK. JUST TRUST ME. Dr. C 9/27/2021
@@ -51,6 +52,37 @@ void RCOutput::write() {
     pwm.set_duty_cycle(i,us/1000.0);
     #endif
   } 
+}
+
+void RCOutput::RangeCheck() {
+	int badsignals = 0; //This is used in the event the controller is spitting out
+	//such horribly bogus data that you probably just want to set everything to neutral 
+	//I'm a little concerned because if this happens in flight it could be terrible
+	//but right now this only runs in HIL mode
+	for (int idx = 0;idx<NUMSIGNALS;idx++){
+		float val = pwm_array[idx];
+		if ((val < 0) || (val > 32168)) { 
+			badsignals = 1;
+		}
+	}
+	//printf("Running alg \n");
+	if (badsignals == 1) {
+		//printf("Setting to Neutral \n");
+		setOutputNeutral();
+	}
+	//Then we run a saturation check
+	saturation_block();
+}
+
+void RCOutput::setOutputNeutral() {
+	for (int idx = 0;idx<NUMSIGNALS;idx++) {
+		pwm_array[idx] = OUTMIN;
+	}
+	#ifdef airplane
+	pwm_array[1] = OUTMID;
+	pwm_array[2] = OUTMID;
+	pwm_array[3] = OUTMID;
+	#endif
 }
 
 void RCOutput::saturation_block() {

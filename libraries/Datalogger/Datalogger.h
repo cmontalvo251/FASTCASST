@@ -26,6 +26,8 @@ class Datalogger {
   void close();
   void flush();
   void open();
+  void reopen(char*);
+  void printc(char);
   void printheaders();
   void appendheader(char*);
   void appendheaders(char** headers,int length);
@@ -35,6 +37,7 @@ class Datalogger {
   Datalogger();
   int IsHeader = 0;
   int filetype = 1;
+  int echo = 1;
   MATLAB logvars;
   char** logheader;
   void setLogVars(int);

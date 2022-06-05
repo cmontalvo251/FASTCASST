@@ -21,23 +21,24 @@
 //Serial Module
 #include "Serial.h"
 
+//Timer for Pause
+#include <Timer/timer.h>
+
 class UART {
  private:
-  float *uart_ctl_array=NULL,*uart_sense_array=NULL,*telemetry_array=NULL;
-  int NUMTELEMETRY;
+  float *uart_ctl_array=NULL,*uart_sense_array=NULL,*uart_telemetry_array=NULL;
+  int NUMTELEMETRY,NUMCTL,NUMSENSE;
   Serial comms;
+  Serial hilcomms;
   int baudRate = 57600; //Hardcode. I don't think we ever need to change
  public:
   UART();
-  void init(MATLAB sense_matrix,int NUMSIGNALS,int num);
+  void init(int,int,int);
   void readSense(MATLAB);
   void sendSense(MATLAB);
   void readControl(MATLAB);
   void sendControl(MATLAB);
-  void sendTelemetry(MATLAB);
+  void sendTelemetry(MATLAB,int);
 };
-
-
-
 
 #endif

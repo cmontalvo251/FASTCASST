@@ -1,17 +1,22 @@
-                                     WORK TASKS:
 HIL:
 
- ☐ For telemetry think about writing a groundstation in python using a GUI. That might a lot easier to plot given the fact that you can use matplotlib (take a look at LISA simulation for help on GUIs and plots)
+  ✔ For HIL - use the HIL code from MultiSAT++ for FASTsim @done (22-05-24 18:50)
 
-  ☐ For HIL - use the HIL code from MultiSAT++ for FASTsim
+  ✔ Once HIL mode works for SIM you can deprecate the HIL simulation in MultiSAT++ (See note below. Definitely not going to deprecate. I definitely want a copy. I think the point more is to try and get FASTKit to work like MultiSAT++ does for embedded Sims.) @done (22-05-24 18:54)
+  
+  ✔ MultiSAT++ simulation will still need copies of the C++ repo but as you make the Model=SAT mode more like MultiSAT++ you can deprecate this simulation. Still I would like to make sure I still have a running version of MultiSAT++ to work with in the event I do E-Sail simulations. @done (22-05-24 18:52)
+  
+  ☐ Create a script that sends data back and forth and test in hardware
+  
+  ✔ Add hooks to FASTSim that compile DESKTOP + HIL and RPI/Arduino HIL that sends sensor data and control commands back and forth. The RPI/HIL version will accept a polluted state vector from the computer and run that through the control algorithm and then pass back the control commands to the integrator. So serialListens and SerialResponds etc will need to be written to send data back and forth @done (22-05-24 18:50)
 
-  ☐ Once HIL mode works for SIM Model=SAT you can deprecate the HIL simulation in MultiSAT++
-  
-  ☐ MultiSAT++ simulation will still need copies of the C++ repo but as you make the Model=SAT mode more like MultiSAT++ you can deprecate this simulation. Still I would like to make sure I still have a running version of MultiSAT++ to work with in the event I do E-Sail simulations.
-  
-  ☐ Create a script that sends data back and forth
-  
-  ☐ Add hooks to FASTSim that compile DESKTOP + HIL and RPI/Arduino HIL that sends sensor data and control commands back and forth. The RPI/HIL version will accept a polluted state vector from the computer and run that through the control algorithm and then pass back the control commands to the integrator. So serialListens and SerialResponds etc will need to be written to send data back and forth
+GROUND STATION:
+
+  ☐ Create a ground station in Python for AUTO Mode (right now this is in Processing) (This will work for HIL mode as well since the Pi will be sending telemetry data)
+
+  ✔ Create a ground station in Python that works in SIL mode (no need for SIMONLY mode) @done (22-06-04 17:59)
+
+  ✔ For telemetry think about writing a groundstation in python using a GUI. That might a lot easier to plot given the fact that you can use matplotlib (take a look at LISA simulation for help on GUIs and plots) Would be cool to have GUI run in SIL mode. According to the docs online you can have C++ create a text file and then Python read the file. How do we prevent both programs reading the same file? Have C++ increment [NUM].txt and then have Python read the latest. That should work @done (22-06-04 17:59)
 
 SPEEDING UP FASTSim ON PI:
 
@@ -201,6 +206,14 @@ BDE FASTPilot:
   ☐ Write a paper
 
   ☐ Add Fault tolerant control?
+
+SATELLITE:
+
+  ☐ Double check that the simulation runs with OpenGL around a Planet
+  ☐ Make sure the magnetorquer code is working
+  ☐ Make sure the reaction wheel code is working for Satellite
+  ☐ Run the MultiSAT++ SIL code and make sure you have the control system set up properly for CubeSats.
+  ☐ Run the MultiSAT++ HIL sim with an Arduino and make sure that FASTKit has the same functionality so you don't have to use MultiSAT++ anymore for CubeSat stuff
 
 RENDERING:
 

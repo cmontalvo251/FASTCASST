@@ -1,3 +1,11 @@
+=======================6/6/2022======================
+
+At work. 
+
+1.) Test SIMONLY - pass
+SIL - SIL - pass
+No need to test HIL because that's sill a work in progress
+
 =======================6/4/2022=======================
 
 Ok the GUI creates a text file and it works in real time with the Python

@@ -1,5 +1,6 @@
 import sys
 sys.path.append('Util')
+sys.path.append('../Util')
 import util
 import ublox as UBLX
 import numpy as np
@@ -8,6 +9,11 @@ class GPS():
     def __init__(self):
         self.latitude = -99
         self.longitude = -99
+        self.latitude_vec = []
+        self.longitude_vec = []
+        self.time_vec = []
+        self.x_vec = []
+        self.y_vec = [] 
         self.altitude = -99
         self.NM2FT=6076.115485560000
         self.FT2M=0.3048
@@ -102,3 +108,35 @@ class GPS():
         self.lon = y/(self.GPSVAL*np.cos(self.latO*np.pi/180)) + self.lonO
         self.alt = -z
         return self.lat,self.lon,self.alt
+
+    def convertLATLONVEC2XY(self,*argv):
+        if len(argv) == 2:
+            self.latitude_vec = argv[0]
+            self.longitude_vec = argv[1]
+        self.x_vec = (self.latitude_vec - self.latO)*60*self.NM2FT*self.FT2M; #%%//North direction - Xf , meters
+        self.y_vec = (self.longitude_vec - self.lonO)*60*self.NM2FT*self.FT2M*np.cos(self.latO*np.pi/180); #%%//East direction - Yf, meters
+
+    def plot(self,plt):
+        if len(self.latitude_vec) > 0:
+            fig = plt.figure()
+            plti = fig.add_subplot(1,1,1)
+            plti.grid()
+            plti.set_xlabel('Longitude (deg)')
+            plti.set_ylabel('Latitude (deg)')
+            plti.get_yaxis().get_major_formatter().set_useOffset(False)
+            plti.get_xaxis().get_major_formatter().set_useOffset(False)
+            plt.gcf().subplots_adjust(left=0.18)
+            plti.plot(self.longitude_vec,self.latitude_vec)
+        if len(self.x_vec) > 0:
+            fig = plt.figure()
+            plti = fig.add_subplot(1,1,1)
+            plti.grid()
+            plti.set_xlabel('Y (m) E-W')
+            plti.set_ylabel('X (m) N-S')
+            plti.get_yaxis().get_major_formatter().set_useOffset(False)
+            plti.get_xaxis().get_major_formatter().set_useOffset(False)
+            plt.gcf().subplots_adjust(left=0.18)
+            plti.plot(self.y_vec,self.x_vec)
+        
+
+

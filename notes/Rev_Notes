@@ -1,3 +1,13 @@
+=======================6/6/2022======================
+
+At work. 
+
+1.) Test SIMONLY - pass
+SIL - SIL - pass
+No need to test HIL because that's sill a work in progress
+AUTO on hardware works - PASS
+2.) Alright need to get Python to read serial
+
 =======================6/4/2022=======================
 
 Ok the GUI creates a text file and it works in real time with the Python

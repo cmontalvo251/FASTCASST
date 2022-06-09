@@ -15,6 +15,7 @@ class GPS():
         self.x_vec = []
         self.y_vec = [] 
         self.altitude = -99
+        self.filterConstant = 0.2
         self.NM2FT=6076.115485560000
         self.FT2M=0.3048
         self.GPSVAL = 60.0*self.NM2FT*self.FT2M
@@ -116,6 +117,27 @@ class GPS():
         self.x_vec = (self.latitude_vec - self.latO)*60*self.NM2FT*self.FT2M; #%%//North direction - Xf , meters
         self.y_vec = (self.longitude_vec - self.lonO)*60*self.NM2FT*self.FT2M*np.cos(self.latO*np.pi/180); #%%//East direction - Yf, meters
 
+    def setFilterConstant(self,s):
+        self.filterConstant = s
+
+    def computeVelocityVec(self):
+        self.vx_raw_vec = np.zeros(len(self.x_vec)-1)
+        self.vy_raw_vec = np.zeros(len(self.y_vec)-1)
+        self.vx_vec = 0*self.vx_raw_vec
+        self.vy_vec = 0*self.vy_raw_vec
+        for i in range(0,len(self.time_vec)-2):
+            dt = self.time_vec[i+1]-self.time_vec[i]
+            self.vx_raw_vec[i] = (self.x_vec[i+1] - self.x_vec[i])/dt
+            self.vy_raw_vec[i] = (self.y_vec[i+1] - self.y_vec[i])/dt
+            if i > 0:
+                self.vx_vec[i] = self.vx_vec[i-1]*self.filterConstant + self.vx_raw_vec[i]*(1-self.filterConstant)
+                self.vy_vec[i] = self.vy_vec[i-1]*self.filterConstant + self.vy_raw_vec[i]*(1-self.filterConstant)
+            else:
+                self.vx_vec[i] = self.vx_raw_vec[i]
+                self.vy_vec[i] = self.vy_raw_vec[i]
+        self.v_raw_vec = np.sqrt(self.vx_raw_vec**2 + self.vy_raw_vec**2)
+        self.v_vec = np.sqrt(self.vx_vec**2 + self.vy_vec**2)
+
     def plot(self,plt):
         if len(self.latitude_vec) > 0:
             fig = plt.figure()
@@ -137,6 +159,21 @@ class GPS():
             plti.get_xaxis().get_major_formatter().set_useOffset(False)
             plt.gcf().subplots_adjust(left=0.18)
             plti.plot(self.y_vec,self.x_vec)
+        if len(self.vx_raw_vec) > 0:
+            fig = plt.figure()
+            plti = fig.add_subplot(1,1,1)
+            plti.grid()
+            plti.set_xlabel('Time (sec)')
+            plti.set_ylabel('Velocity (m/s)')
+            plti.plot(self.time_vec[0:-1],self.vx_raw_vec,label='Raw X')
+            plti.plot(self.time_vec[0:-1],self.vy_raw_vec,label='Raw Y')
+            #plti.plot(self.time_vec[0:-1],self.v_raw_vec,label='Raw Total')
+            plti.plot(self.time_vec[0:-1],self.vx_vec,label='X')
+            plti.plot(self.time_vec[0:-1],self.vy_vec,label='Y')
+            #plti.plot(self.time_vec[0:-1],self.v_vec,label='Total')
         
+            plti.legend()
+
+
 
 

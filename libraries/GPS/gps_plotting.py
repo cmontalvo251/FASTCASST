@@ -19,8 +19,10 @@ myGPS.setOrigin(myGPS.latitude_vec[0],myGPS.longitude_vec[0])
 ###Convert to XY
 myGPS.convertLATLONVEC2XY()
 
+###Compute Velocity
+myGPS.setFilterConstant(0.8)
+myGPS.computeVelocityVec()
+
 ##Create PLots
 myGPS.plot(plt)
-
-
 plt.show()

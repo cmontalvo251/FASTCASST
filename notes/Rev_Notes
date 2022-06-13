@@ -1,3 +1,9 @@
+=======================6/13/2022===============
+
+2.) Python ground station reading serial is a check and works. Lags by 2 seconds. I think that's fine.
+If I want to fix it. I added it to the future work section
+3.) Commit changes - 
+
 =======================6/6/2022======================
 
 At work. 

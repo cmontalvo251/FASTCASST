@@ -1,16 +1,20 @@
 import serial as S ##python3 -m pip install pyserial
 import struct
+import time
 import random
+import numpy as np
 
 class UART():
   def __init__(self,BaudRate=57600,port="/dev/ttyAMA0",period=1.0):
     self.lastTime = 0.0
     self.period = period #in seconds
     self.MAXLINE = 120
+    print('Creating Serial Port = ',port,' BaudRate = ',BaudRate)
     self.SerialInit(port,BaudRate);
+    self.hComm.flush()
     #//Call this for higher level control
 
-  def bitsToFloat(b):
+  def bitsToFloat(self,b):
     if (b > 2147483647):
       b = -2147483648 + (b - 2147483647)
     s = struct.pack('>l', b)
@@ -18,12 +22,26 @@ class UART():
 
   def SerialInit(self,ComPortName,BaudRate):
     try:
+      print('Trying to open serial port.....')
       self.hComm = S.Serial(ComPortName,BaudRate);
+      print('Success!!!!')
     except:
+      print('Failed')
       self.hComm = None
 
-  def SerialGetc(self):
-    rxchar = '\0' #does nothing right now
+  def SerialGetLine(self):
+    print('ser.readline()....')
+    rxline = self.hComm.readline()
+    print('...Read')
+    return rxline
+
+  def SerialGetc(self,num=-1):
+    #print('ser.read()...')
+    if num == -1:
+      rxchar = self.hComm.read()
+    else:
+      rxchar = self.hComm.read(num)
+    #print('Read')
     return rxchar;
 
   def SerialPutc(self,txchar):
@@ -36,6 +54,35 @@ class UART():
       self.SerialPutc(s)
 
   def SerialGetNumber(self,echo=1):
+    bytestring = ''
+    rxchar = ''
+    ##Read Until \r
+    while rxchar != b'\x00\r':
+      try:
+        bytestring += str(rxchar.decode())
+      except:
+        pass
+      rxchar = self.SerialGetc(2)
+    #print('ByteString = ',bytestring)
+    
+    position = -1
+    number = np.nan
+    if len(bytestring) > 9:
+      if bytestring[1] == ':':
+        ##GET POSITION
+        position = int(bytestring[0])
+        ##CONVERT TO FLOATS
+        hexdata = bytestring[2:10]
+        #print('Hexdata = ',hexdata)
+        integer = int(hexdata,16)
+        number = self.bitsToFloat(integer)
+    return number,position,bytestring
+
+  def SerialGetLine_DEPRECATED(self,echo=1):
+    rxline = self.SerialGetLine()
+    return rxline,0
+
+  def SerialGetNumber_DEPRECATED(self,echo=1):
     i = 0;
     j = 0;
     inchar = '\0';
@@ -47,15 +94,16 @@ class UART():
         inchar = self.SerialGetc();
         #printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
         j+=1
-        if (echo):
-          if inchar == '\0':
-            iinchar = 'null'
-          else:
-            iinchar = int(inchar)
-          print('Receing char = ',i,inchar,iinchar)
+        if 1:#(echo):
+          #if inchar == '\0':
+          #  iinchar = 'null'
+          #else:
+          #  iinchar = int(inchar)
+          print('Receving char = ',i,inchar)#,iinchar)
           #print("Receiving: i = %d char = %c chartoint = %d \n",i,inchar,int(inchar));
-        self.line += inchar
+        #self.line += inchar
         i+=1
+        print(i,j,time.monotonic())
     if (echo):
       print("Response received",self.line);
     #Convert to float 

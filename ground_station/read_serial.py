@@ -11,6 +11,6 @@ fastkit_packet = np.zeros(6)
 
 while True:
     time.sleep(0.1)
-    print('Checking for new data',time.monotonic())
-    value,position = ser.SerialGetNumber(0)
-    print('Value Received, Position = ',value,position)
+    #print('Checking for new data',time.monotonic())
+    value,position,bytestring = ser.SerialGetNumber(0)
+    print('Value Received, Position, Bytes = ',value,position,bytestring)

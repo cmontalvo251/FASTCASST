@@ -2,7 +2,9 @@
 
 2.) Python ground station reading serial is a check and works. Lags by 2 seconds. I think that's fine.
 If I want to fix it. I added it to the future work section
-3.) Commit changes - 
+3.) Commit changes - done
+4.) Push and make a new branch (5)
+5.) See above. Alright donesies
 
 =======================6/6/2022======================
 

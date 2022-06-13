@@ -10,19 +10,13 @@ HIL:
   
   ✔ Add hooks to FASTSim that compile DESKTOP + HIL and RPI/Arduino HIL that sends sensor data and control commands back and forth. The RPI/HIL version will accept a polluted state vector from the computer and run that through the control algorithm and then pass back the control commands to the integrator. So serialListens and SerialResponds etc will need to be written to send data back and forth @done (22-05-24 18:50)
 
-GROUND STATION:
-
-  ☐ Create a ground station in Python for AUTO Mode (right now this is in Processing) (This will work for HIL mode as well since the Pi will be sending telemetry data)
-
-  ✔ Create a ground station in Python that works in SIL mode (no need for SIMONLY mode) @done (22-06-04 17:59)
-
-  ✔ For telemetry think about writing a groundstation in python using a GUI. That might a lot easier to plot given the fact that you can use matplotlib (take a look at LISA simulation for help on GUIs and plots) Would be cool to have GUI run in SIL mode. According to the docs online you can have C++ create a text file and then Python read the file. How do we prevent both programs reading the same file? Have C++ increment [NUM].txt and then have Python read the latest. That should work @done (22-06-04 17:59)
-
-SPEEDING UP FASTSim ON PI:
+SPEEDING UP FASTkit ON PI:
 
   ✔ Create a scheduler for all sensors. @done (22-05-17 20:21)
 
   ☐ Thread the IMU and GPS
+
+  ☐ See why Ground station lags by two seconds. Possible source is updating the window (Turn some off and see what happens)
 
   ☐ We can try systemd which is apparently what Arducopter uses
 
@@ -239,6 +233,14 @@ You can also use mavlink to send and receive parameters (such as controller gain
 Most of this work was guided by this blog post (https://discuss.ardupilot.org/t/mavlink-and-arduino-step-by-step/25566) so I suggest at least a quick read of that will help the students out in understanding how everything fits together.  The parameter stuff was an internal development which I hope to get written up properly one day and into a blog post to more-widely share the technique.
 Hopefully that all helps and let me know if you have any other questions.  Good luck!
 matt
+
+GROUND STATION:
+
+  ✔ Create a ground station in Python for AUTO Mode (right now this is in Processing) (This will work for HIL mode as well since the Pi will be sending telemetry data) @done (22-06-13 15:38)
+
+  ✔ Create a ground station in Python that works in SIL mode (no need for SIMONLY mode) @done (22-06-04 17:59)
+
+  ✔ For telemetry think about writing a groundstation in python using a GUI. That might a lot easier to plot given the fact that you can use matplotlib (take a look at LISA simulation for help on GUIs and plots) Would be cool to have GUI run in SIL mode. According to the docs online you can have C++ create a text file and then Python read the file. How do we prevent both programs reading the same file? Have C++ increment [NUM].txt and then have Python read the latest. That should work @done (22-06-04 17:59)
 
 AVIATION:
 

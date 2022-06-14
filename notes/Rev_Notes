@@ -1,3 +1,9 @@
+=======================6/14/2022===============
+
+Working on HIL. The wired serial USB connector that
+Maxwell made works so it's time to start running
+HIL on both simulator and hardware
+
 =======================6/13/2022===============
 
 2.) Python ground station reading serial is a check and works. Lags by 2 seconds. I think that's fine.

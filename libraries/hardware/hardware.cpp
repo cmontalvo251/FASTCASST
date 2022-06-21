@@ -230,27 +230,28 @@ void hardware::hil() {
     //printf("Receive Data from Desktop \n");
     if (recOK) {
       ser.readSense(uart_sense_matrix);
+      uart_sense_matrix.disp();
       //Again we need to populate this into the appropriate vectors
       //Roll
-      sense_matrix.set(4,1,uart_sense_matrix(1,1));
+      sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
       //Pitch
-      sense_matrix.set(5,1,uart_sense_matrix(2,1));
+      sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
       //Yaw
-      sense_matrix.set(6,1,uart_sense_matrix(3,1));
+      sense.sense_matrix.set(6,1,uart_sense_matrix.get(3,1));
       //Lat
-      sense_matrix.set(16,1,uart_sense_matrix(4,1));
+      sense.sense_matrix.set(16,1,uart_sense_matrix.get(4,1));
       //Lon
-      sense_matrix.set(17,1,uart_sense_matrix(5,1));
+      sense.sense_matrix.set(17,1,uart_sense_matrix.get(5,1));
       //Alt
-      sense_matrix.set(18,1,uart_sense_matrix(6,1));
+      sense.sense_matrix.set(18,1,uart_sense_matrix.get(6,1));
       //gx
-      sense_matrix.set(10,1,uart_sense_matrix(7,1));
+      sense.sense_matrix.set(10,1,uart_sense_matrix.get(7,1));
       //gy
-      sense_matrix.set(11,1,uart_sense_matrix(8,1));
+      sense.sense_matrix.set(11,1,uart_sense_matrix.get(8,1));
       //gz
-      sense_matrix.set(12,1,uart_sense_matrix(9,1));
+      sense.sense_matrix.set(12,1,uart_sense_matrix.get(9,1));
       //pressure
-      sense_matrix.set(27,1,uart_sense_matrix(10,1));
+      sense.sense_matrix.set(27,1,uart_sense_matrix.get(10,1));
       recOK = 0;
     } else {
       //Then send data to desktop
@@ -274,7 +275,7 @@ void hardware::hil() {
       uart_ctl_matrix.set(8,1,rc.out.pwm_array[2]);
       //9 - control matrix 4
       uart_ctl_matrix.set(9,1,rc.out.pwm_array[3]);
-      ser.sendControl(uart_ctl_matrix);
+      //ser.sendControl(uart_ctl_matrix);
       recOK = 1;
     }
     #endif

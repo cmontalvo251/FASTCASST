@@ -33,6 +33,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   LOGRATE = in_configuration_matrix.get(2,1);
   RCRATE = in_configuration_matrix.get(3,1);
   TELEMRATE = in_configuration_matrix.get(4,1);
+  HILRATE = in_configuration_matrix.get(4,1);
 
   sense.init(in_configuration_matrix,in_simulation_matrix);
 
@@ -177,10 +178,20 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   #endif
 }
 
-void hardware::hil() {
+void hardware::hil(double currentTime,double elapsedTime) {
+    if (currentTime < nextHILtime) {
+      return;
+    } else {
+      nextHILtime = currentTime + HILRATE;
+    }
+
     #if defined (HIL) && (DESKTOP)
+    //Normally this line of code would run in the hardware::loop routine but since that's running on the
+    //pi we need to run it here. The poll just simply puts everything in the sense_matrix from the model
+    //matrix
+    sense.poll(currentTime,elapsedTime);
     if (sendOK) {
-      //printf("Send Data to RPI \n");
+      printf("Send Data to RPI \n");
       //What data do I want sent to RPI???
       //1 - roll
       uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
@@ -202,11 +213,12 @@ void hardware::hil() {
       uart_sense_matrix.set(9,1,sense.sense_matrix.get(12,1));
       //10 - pressure
       uart_sense_matrix.set(10,1,sense.sense_matrix.get(27,1));
+      uart_sense_matrix.disp();
       ser.sendSense(uart_sense_matrix);
       sendOK = 0;
     } else {
       //printf("READING CONTROL MATRIX FROM SERIAL \n");
-      ser.readControl(uart_ctl_matrix);
+      //ser.readControl(uart_ctl_matrix);
       sendOK = 1;
       //We then need to populate this into the appropriate vectors
       rc.in.rx_array[0] = uart_ctl_matrix.get(1,1);

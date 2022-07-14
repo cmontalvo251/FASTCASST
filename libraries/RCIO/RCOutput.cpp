@@ -61,7 +61,7 @@ void RCOutput::RangeCheck() {
 	//but right now this only runs in HIL mode
 	for (int idx = 0;idx<NUMSIGNALS;idx++){
 		float val = pwm_array[idx];
-		if ((val < 0) || (val > 32168)) { 
+		if ((val <= 0) || (val >= 32168)) { 
 			badsignals = 1;
 		}
 	}

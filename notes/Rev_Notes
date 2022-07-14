@@ -1,3 +1,12 @@
+=======================7/14/2022===============
+
+Yeesh. One month hiatus on HIL. If I recall the issue into was that fact that when no hardware is 
+connected the controls default to OUTMIN which is not correct for an airplane. They should default 
+to throtte (OUTMIN) and everything else OUTMID. So I need to investigate that issue.
+
+Alright fixed it. Just an issue with reading from serial and my range checks when receiving 
+zeros.
+
 =======================6/14/2022===============
 
 Working on HIL. The wired serial USB connector that

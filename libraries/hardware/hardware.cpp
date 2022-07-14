@@ -88,8 +88,8 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   NUMSENSE = 10;
   NUMCTL = 9;
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix HW");
-  uart_sense_matrix.zeros(NUMSENSE,1,"Sense Matrix HIL");
-  uart_ctl_matrix.zeros(NUMCTL,1,"Control Matrix HIL");
+  uart_sense_matrix.zeros(NUMSENSE,1,"Sense Matrix Sent to other computer");
+  uart_ctl_matrix.zeros(NUMCTL,1,"Control Matrix received from other computer");
   ser.init(NUMTELEMETRY,NUMSENSE,NUMCTL);
 }
 
@@ -217,15 +217,17 @@ void hardware::hil(double currentTime,double elapsedTime) {
       ser.sendSense(uart_sense_matrix);
       sendOK = 0;
     } else {
-      //printf("READING CONTROL MATRIX FROM SERIAL \n");
-      //ser.readControl(uart_ctl_matrix);
+      printf("READING CONTROL MATRIX FROM SERIAL \n");
+      //rec error code not operational at the moment
+      //int rec = ser.readControl(uart_ctl_matrix);
+      uart_ctl_matrix.disp();
       sendOK = 1;
       //We then need to populate this into the appropriate vectors
-      rc.in.rx_array[0] = uart_ctl_matrix.get(1,1);
+      rc.in.rx_array[0] = uart_ctl_matrix.get(1,1); //wait. Why do we need these rcinputs?
       rc.in.rx_array[1] = uart_ctl_matrix.get(2,1);
       rc.in.rx_array[2] = uart_ctl_matrix.get(3,1);
       rc.in.rx_array[3] = uart_ctl_matrix.get(4,1);
-      rc.out.pwm_array[0] = uart_ctl_matrix.get(5,1);
+      rc.out.pwm_array[0] = uart_ctl_matrix.get(5,1); //don't we just need the rcoutputs?
       rc.out.pwm_array[1] = uart_ctl_matrix.get(6,1);
       rc.out.pwm_array[2] = uart_ctl_matrix.get(7,1);
       rc.out.pwm_array[3] = uart_ctl_matrix.get(8,1);
@@ -234,6 +236,11 @@ void hardware::hil(double currentTime,double elapsedTime) {
       //to worry about saturation we need to put in that block here
       rc.in.saturation_block();
       rc.out.RangeCheck(); //This is a bit more robust to Serial errors than just the saturation block
+      //printf("RCINPUT \n");
+      //rc.in.printRCstate(-4);
+      //printf("\n RCOUTPUT \n");
+      //rc.out.print();
+      //printf("\n ---- \n");
     }
     #endif
     

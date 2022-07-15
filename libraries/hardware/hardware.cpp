@@ -219,7 +219,7 @@ void hardware::hil(double currentTime,double elapsedTime) {
     } else {
       printf("READING CONTROL MATRIX FROM SERIAL \n");
       //rec error code not operational at the moment
-      //int rec = ser.readControl(uart_ctl_matrix);
+      int rec = ser.readControl(uart_ctl_matrix);
       uart_ctl_matrix.disp();
       sendOK = 1;
       //We then need to populate this into the appropriate vectors
@@ -227,20 +227,44 @@ void hardware::hil(double currentTime,double elapsedTime) {
       rc.in.rx_array[1] = uart_ctl_matrix.get(2,1);
       rc.in.rx_array[2] = uart_ctl_matrix.get(3,1);
       rc.in.rx_array[3] = uart_ctl_matrix.get(4,1);
+      //Before we copy uart_ctl_matrix over to pwm_array we need to create a backup
+      //printf("\n RCOUTPUT before uart update \n");
+      //rc.out.print();
+      //printf("\n ----- \n");
+      rc.out.backup();
+
       rc.out.pwm_array[0] = uart_ctl_matrix.get(5,1); //don't we just need the rcoutputs?
       rc.out.pwm_array[1] = uart_ctl_matrix.get(6,1);
       rc.out.pwm_array[2] = uart_ctl_matrix.get(7,1);
       rc.out.pwm_array[3] = uart_ctl_matrix.get(8,1);
+      
+      //printf("\n RCOUTPUT after uart update \n");
+      //rc.out.print();
+      //printf("\n ----- \n");
+
       //Again the control matrix is coming from the control routine on the pi
       //The control routine is written by the user. since we can't expect the user
       //to worry about saturation we need to put in that block here
       rc.in.saturation_block();
-      rc.out.RangeCheck(); //This is a bit more robust to Serial errors than just the saturation block
       //printf("RCINPUT \n");
       //rc.in.printRCstate(-4);
-      //printf("\n RCOUTPUT \n");
+
+      //We then will run the RangeCheck and it will return an error code
+      int err = rc.out.RangeCheck(); //This is a bit more robust to Serial errors than just the saturation block
+      //printf("\n RCOUTPUT after range check \n");
       //rc.out.print();
       //printf("\n ---- \n");
+
+      if (err) {
+        //This means that the rangecheck through an error which means the values received from
+        //uart were invalid and we need to revert back to our previous values
+        rc.out.revert();
+      }
+
+      //printf("\n RCOUTPUT after potential revert \n");
+      //rc.out.print();
+      //printf("\n ---- \n");
+
     }
     #endif
     

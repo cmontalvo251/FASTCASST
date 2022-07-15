@@ -8,7 +8,8 @@ RCOutput::RCOutput() {
 void RCOutput::initialize(int num) {
 	NUMSIGNALS = num;
 	pwm_array = (int *) calloc(NUMSIGNALS,sizeof(int));
-	saturation_block(); //Set the pwm_array to minimum vals
+	pwm_array_prev = (int *) calloc(NUMSIGNALS,sizeof(int));
+	saturation_block(); //Set the pwm_array to minimum vals (no need to do this on pwm_array_prev)
 
 	////////I REALIZE THERE ARE 3 LOOPS AND YOU COULD DO THIS WITH
 	// 1 loop. BUT IT WILL NOT WORK. JUST TRUST ME. Dr. C 9/27/2021
@@ -54,7 +55,20 @@ void RCOutput::write() {
   } 
 }
 
-void RCOutput::RangeCheck() {
+void RCOutput::backup() {
+	for (int i = 0;i<NUMSIGNALS;i++) {
+		pwm_array_prev[i] = pwm_array[i];
+	}
+}
+
+void RCOutput::revert() {
+	//printf("Reverting \n");
+	for (int i = 0;i<NUMSIGNALS;i++) {
+		pwm_array[i] = pwm_array_prev[i];
+	}	
+}
+
+int RCOutput::RangeCheck() {
 	int badsignals = 0; //This is used in the event the controller is spitting out
 	//such horribly bogus data that you probably just want to set everything to neutral 
 	//I'm a little concerned because if this happens in flight it could be terrible
@@ -72,6 +86,8 @@ void RCOutput::RangeCheck() {
 	}
 	//Then we run a saturation check
 	saturation_block();
+
+	return badsignals;
 }
 
 void RCOutput::setOutputNeutral() {

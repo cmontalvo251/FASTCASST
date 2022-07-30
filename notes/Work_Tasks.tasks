@@ -43,6 +43,7 @@ COMPLEX AUTOPILOT LOOP:
 
   ☐ Test autopilot on real systems - RCIO needs to be able to handle where to send ESC signals depending on #define in Makefile
     ☐ Heading Angle Estimation and make sure we are adequately estimating heading in real life
+    ☐ (phi from accel only, theta from accel only, heading from mag only, Euler from gyro only, filtered roll and pitch from gyro and accel, heading from gps, filtered heading from mag, gyro, gps, Euler from AHRS, heading from AHRS and GPS)
     ☐ Test velocity controller in real life
     ☐ Test waypoint contorller in real life
 

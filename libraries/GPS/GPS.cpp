@@ -132,16 +132,28 @@ void GPS::computeGroundTrack(double current_time) {
   //Then proceed with the speed measurement
   double dx = X - xprev;
   double dy = Y - yprev;
+  double dt = current_time - prev_time;
   dist = sqrt((pow(dx,2)) + (pow(dy,2)));
   ///Also get heading
   //printf("X = %lf, Y = %lf \n",X,Y);
   //printf("dx = %lf dy = %lf \n",dx,dy);
   double heading_new = atan2(dy,dx)*180.0/M_PI;
-  //printf("heading = %lf \n",heading_new);
+  printf("heading = %lf \n",heading_new);
 
   //Filter heading
   heading = (1-headingFilterConstant)*heading_new + heading*headingFilterConstant;
 
+  ///////////??COMPUTE RAW SPEED AND HEAVILY FILTERED SPEED
+  if (dt > 0) {
+    double vx = dx/dt;
+    double vy = dy/dt;
+    speed_raw = sqrt((vx*vx + vy*vy));
+  } else {
+    speed_raw = 0;
+  } 
+  printf("speed_raw = %lf \n",speed_raw);
+
+  ////////////FILTERED SPEED
   int em1;
   //Get previous value
   em1 = end_pt - 1;
@@ -166,6 +178,10 @@ void GPS::computeGroundTrack(double current_time) {
   } else {
     speed = del_dist/del_time;
   }
+
+  //////////////HARDCODED BYPASS TO GPS SPEED///////////////
+  speed = speed_raw;
+
   //printf("Speed = %lf \n",speed);
   
   end_pt += 1;
@@ -182,6 +198,7 @@ void GPS::computeGroundTrack(double current_time) {
   xprev = X;
   yprev = Y;
   zprev = Z;
+  prev_time = current_time;
 }
 
 

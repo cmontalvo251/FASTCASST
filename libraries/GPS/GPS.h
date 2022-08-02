@@ -18,7 +18,8 @@ class GPS {
   std::vector<double> pos_data,nav_data;
   //X AND Y are Hardcoded to be zero initially and the origin point
   //is roughly set to Mobile
-  double latitude=MOBX,longitude=MOBY,altitude=0.0,X=0,Y=0,Z=0,xprev=0,yprev=0,zprev=0,X_origin=MOBX,Y_origin=MOBY;
+  double latitude=MOBX,longitude=MOBY,altitude=0.0,X=0,Y=0,Z=0,X_origin=MOBX,Y_origin=MOBY;
+  double xprev=0,yprev=0,zprev=0,prev_time=0;
   double headingFilterConstant = 0.5;
   double heading;
   Ublox sensor;
@@ -27,7 +28,7 @@ class GPS {
   int start_pt = 1;
   MATLAB dist_vec;
   MATLAB time_vec;
-  double speed=0,dist=0;
+  double speed=0,dist=0,speed_raw=0;
   unsigned long lastTime = 0;
   GPS(); //constructor
   void poll(float);

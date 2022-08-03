@@ -138,7 +138,7 @@ void GPS::computeGroundTrack(double current_time) {
   //printf("X = %lf, Y = %lf \n",X,Y);
   //printf("dx = %lf dy = %lf \n",dx,dy);
   double heading_new = atan2(dy,dx)*180.0/M_PI;
-  printf("heading = %lf \n",heading_new);
+  //printf("heading = %lf \n",heading_new);
 
   //Filter heading
   heading = (1-headingFilterConstant)*heading_new + heading*headingFilterConstant;
@@ -151,7 +151,7 @@ void GPS::computeGroundTrack(double current_time) {
   } else {
     speed_raw = 0;
   } 
-  printf("speed_raw = %lf \n",speed_raw);
+  //printf("speed_raw = %lf \n",speed_raw);
 
   ////////////FILTERED SPEED
   int em1;
@@ -179,8 +179,9 @@ void GPS::computeGroundTrack(double current_time) {
     speed = del_dist/del_time;
   }
 
-  //////////////HARDCODED BYPASS TO GPS SPEED///////////////
+  //////////////HARDCODED BYPASS FILTER///////////////
   speed = speed_raw;
+  heading = heading_new;
 
   //printf("Speed = %lf \n",speed);
   

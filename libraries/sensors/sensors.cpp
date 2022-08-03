@@ -201,6 +201,12 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
 
 }
 
+void sensors::getCompassHeading() {
+  //printf("IMU Yaw = %lf, MAG Yaw = %lf, GPS Heading = %lf \n",orientation.yaw,orientation.magyaw,satellites.heading);
+  //For now just pass IMU yaw through to yaw angle
+  compass = orientation.yaw;
+}
+
 double sensors::getTemperature() {
   return atm.temperature;
 }
@@ -250,7 +256,10 @@ void sensors::poll(double currentTime,double elapsedTime) {
   //Roll pitch Yaw
   sense_matrix.set(4,1,orientation.roll);
   sense_matrix.set(5,1,orientation.pitch);
-  sense_matrix.set(6,1,orientation.yaw);
+
+  ///Yaw Angle IS A COMBINATION OF IMU AND GPS
+  getCompassHeading();
+  sense_matrix.set(6,1,compass);
 
   //UWV
   //Assume that the vehicle is traveling straight so V and W are zero
@@ -272,10 +281,10 @@ void sensors::poll(double currentTime,double elapsedTime) {
   sense_matrix.set(16,1,satellites.latitude);
   sense_matrix.set(17,1,satellites.longitude);
   sense_matrix.set(18,1,satellites.altitude);
-  sense_matrix.set(19,1,satellites.heading);
+  sense_matrix.set(19,1,satellites.heading); //THe GPS Heading
 
   //IMU
-  sense_matrix.set(20,1,orientation.yaw);
+  sense_matrix.set(20,1,orientation.yaw); //IMU Heading
 
   //Analog
   sense_matrix.vecset(21,26,analog.results,1);

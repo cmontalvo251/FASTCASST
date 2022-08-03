@@ -1,3 +1,11 @@
+=======================8/2/2022==============
+
+I'm at home from surgery and can't work on HIL right now so I'm adding GPS speed, heading and 
+IMU yaw straight from the magnetometer
+
+Done. Not tested on hardware but it's at least possible to put every thing in debug mode with
+telemetry and test what's going on 
+
 =======================6/13/2022===============
 
 2.) Python ground station reading serial is a check and works. Lags by 2 seconds. I think that's fine.

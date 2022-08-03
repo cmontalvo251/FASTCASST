@@ -64,9 +64,13 @@ void IMU::setTemperature(double tempin) {
 
 void IMU::loop(double elapsedTime){
   #ifndef DESKTOP
+  //This routine reads the accelerometer, magnetometer and rate_gyro
   mpulsm->update();
+  //These functions here just put them into local memory. Really they should be name get_accelerometer
+  //And the update routine above should be read();
   mpulsm->read_accelerometer(&ax, &ay, &az);
   mpulsm->read_gyroscope(&gx, &gy, &gz);
+  mpulsm->read_magnetometer(&mx,&my,&mz);
   //Comment out temperature to save time.
   //temperature = mpulsm->read_temperature()/TEMP_SCALE;
 
@@ -94,11 +98,28 @@ void IMU::loop(double elapsedTime){
   #endif
 
   //printf("(PTP) = %lf %lf %lf \n",pitch,roll,yaw);
-  getTrueHeading();
+
+  //Now get Heading just from the magnetometer
+  getMagHeading();
 
 }
 
-void IMU::getTrueHeading() {
+void IMU::getMagHeading() {
+  #ifndef DESKTOP
+  ///THIS MAY THROW AN ERROR THE FIRST TIME YOU COMPILE ON RPI. JUST COMMENT IT OUT IF YOU NEED TO
+  double sphi = sin(roll*PI/180.0);
+  double cphi = cos(roll*PI/180.0);
+  double stheta = sin(pitch*PI/180.0);
+  double mnorm = sqrt(mx*mx + my*my + mz*mz);
+  double mxbar = mx/mnorm;
+  double mybar = my/mnorm;
+  double mzbar = mz/mnorm;
+  double top = mzbar*sphi - mybar*cphi;
+  double bottom = mxbar*cphi + mybar*stheta*sphi + mzbar*cphi*stheta;
+  magyaw = atan2(top,bottom);
+  #else
+  magyaw = yaw;
+  #endif
 }
 
 void IMU::filterGyro() {

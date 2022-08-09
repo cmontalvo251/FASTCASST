@@ -71,15 +71,24 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   roll_command = -99;
   pitch_command = -99;
   velocity_command = 20; //Hardcode to 20?
-  altitude_command = 100; //Hardcode to 100?
+  altitude_command = 20; //Hardcode to 100?
+  heading_command = -99;
 
   switch (icontrol) {
     case 5:
       //velocity, altitude and waypoint control
       printf("Waypoint + ");
+      WaypointLoop(sense_matrix);
     case 4:
+      if (heading_command == -99) {
+        heading_command = 0;
+        if (currentTime > 100) {
+          heading_command = 45; //degrees
+        }
+      }
       //velocity, altitude and heading control
-      printf("Heading + ");
+      //printf("Heading + ");
+      HeadingLoop(sense_matrix);
     case 3:
       //roll (rudder mixing), velocity and altitude control
       //printf("Altitude + ");
@@ -113,11 +122,23 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   }
 }
 
+void controller::WaypointLoop(MATLAB sense_matrix) {
+
+}
+
+void controller::HeadingLoop(MATLAB sense_matrix) {
+  double kp = 1.0;
+  double heading = sense_matrix.get(6,1);
+  roll_command = kp*(heading_command - heading);
+  roll_command = CONSTRAIN(roll_command,-45,45);
+  //printf("T, HEADING = %lf %lf \n",lastTime,heading,roll_command);
+}
+
 void controller::AltitudeLoop(MATLAB sense_matrix) {
   //Probably a good idea to use pressure altitude but might need to use 
   //GPS altitude if the barometer isn't good or perhaps even a KF approach
   //Who knows. Just simulating this now.
-  double altitude = sense_matrix.get(28,1);  
+  double altitude = sense_matrix.get(28,1);
   //Initialize altitude_dot to zero
   double altitude_dot = 0;
   //If altitude_prev has been set compute a first order derivative

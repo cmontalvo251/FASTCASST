@@ -205,6 +205,7 @@ void sensors::getCompassHeading() {
   //printf("IMU Yaw = %lf, MAG Yaw = %lf, GPS Heading = %lf \n",orientation.yaw,orientation.magyaw,satellites.heading);
   //For now just pass IMU yaw through to yaw angle
   compass = orientation.yaw;
+  //compass = 400;
 }
 
 double sensors::getTemperature() {

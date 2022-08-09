@@ -51,13 +51,29 @@ for x in range(1,numVars):
     plti.plot(model_time,model_data[:,x],label=logheaders[x])
     plti.set_xlabel('Time (sec)')
     plti.set_ylabel(logheaders[x])
-    print(logheaders[x])
+    print(logheaders[x],x)
     plti.grid()
     plti.legend()
     plti.get_yaxis().get_major_formatter().set_useOffset(False)
     plt.gcf().subplots_adjust(left=0.18)
     pp.savefig()
-    
+
+fig = plt.figure()    
+plti = fig.add_subplot(1,1,1)
+plti.plot(sense_data[:,1],sense_data[:,2],label='Sense')
+plti.plot(model_data[:,1],model_data[:,2],label='Model')
+plti.set_xlabel('X (m)')
+plti.set_ylabel('Y (m)')
+#plti.plot(sense_data[:,17],sense_data[:,16],label='Sense')
+#plti.plot(model_data[:,17],model_data[:,16],label='Model')
+#plti.set_xlabel('Longitude (deg)')
+#plti.set_ylabel('Latitude (deg)')
+plti.grid()
+plti.legend()
+plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plt.gcf().subplots_adjust(left=0.18)
+pp.savefig()
+
 #Close file
 datafile.close()
 #Close PDF

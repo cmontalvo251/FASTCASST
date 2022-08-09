@@ -73,11 +73,22 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   velocity_command = 20; //Hardcode to 20?
   altitude_command = 20; //Hardcode to 100?
   heading_command = -99;
+  
+  WAYPOINTS_X[0] = 1000;
+  WAYPOINTS_Y[0] = 0;
+
+  WAYPOINTS_X[1] = 1000;
+  WAYPOINTS_Y[1] = 1000;
+
+  WAYPOINTS_X[2] = 0;
+  WAYPOINTS_Y[2] = 1000;
+
+  WAYPOINTS_X[3] = 0;
+  WAYPOINTS_Y[3] = 0;
 
   switch (icontrol) {
     case 5:
       //velocity, altitude and waypoint control
-      printf("Waypoint + ");
       WaypointLoop(sense_matrix);
     case 4:
       if (heading_command == -99) {
@@ -123,7 +134,20 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 }
 
 void controller::WaypointLoop(MATLAB sense_matrix) {
-
+  double X = sense_matrix.get(1,1);
+  double Y = sense_matrix.get(2,1);
+  double DY = WAYPOINTS_Y[WAYINDEX]-Y;
+  double DX = WAYPOINTS_X[WAYINDEX]-X;
+  heading_command = atan2(DY,DX)*180.0/PI;
+  double distance = sqrt(DY*DY + DX*DX);
+  //PAUSE();
+  if (distance < 150) {
+    printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,heading_command,distance);
+    WAYINDEX += 1;
+    if (WAYINDEX > NUMWAYPOINTS-1) {
+      WAYINDEX = 0;
+    }    
+  }
 }
 
 void controller::HeadingLoop(MATLAB sense_matrix) {

@@ -6,6 +6,7 @@
 
 #include <MATLAB/MATLAB.h>
 #include <RCIO/RCIO.h> //this is for STICK values
+#include <Timer/timer.h>
 
 class controller {
 private:
@@ -15,6 +16,10 @@ private:
   double throttle,aileron,elevator,rudder,autopilot,pitch_command,roll_command;
   double altitude_prev=-999,altitude_command,heading_command = 0;
   double velocity_command,velocityint = 0;
+  int NUMWAYPOINTS = 4; 
+  int WAYINDEX = 0;
+  double WAYPOINTS_X[4];
+  double WAYPOINTS_Y[4];
   void InnerLoop(MATLAB);
   void VelocityLoop(MATLAB);
   void AltitudeLoop(MATLAB);

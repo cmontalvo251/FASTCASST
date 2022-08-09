@@ -26,10 +26,10 @@ SPEEDING UP FASTkit ON PI:
 
 COMPLEX AUTOPILOT LOOP:
     
-  ☐ Test autopilot control laws in SIMONLY mode
+  ✔ Test autopilot control laws in SIMONLY mode @done (22-08-09 17:24)
     ✔ Program heading angle estimation and simulate @done (22-08-09 15:47)
     ✔ Program velocity controller and simulate @done (22-08-09 15:47)
-    ☐ Program waypoint controller and have airplane fly a square pattern
+    ✔ Program waypoint controller and have airplane fly a square pattern @done (22-08-09 17:24)
 
   ☐ Test autopilot control laws in SIMONLY mode with Sensor errors
 

@@ -153,7 +153,17 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
 void controller::HeadingLoop(MATLAB sense_matrix) {
   double kp = 1.0;
   double heading = sense_matrix.get(6,1);
-  roll_command = kp*(heading_command - heading);
+  //I think the wrap issue is here
+  double dheading = heading_command - heading;
+  if (dheading > 180) {
+    dheading -= 180;
+    dheading *= -1;
+  }
+  if (dheading < -180) {
+    dheading += 180;
+    dheading *= -1;
+  }
+  roll_command = kp*dheading;
   roll_command = CONSTRAIN(roll_command,-45,45);
   //printf("T, HEADING = %lf %lf \n",lastTime,heading,roll_command);
 }

@@ -4,6 +4,9 @@ Alright. I don't have access to HIL since I'm still at home so I'm working on th
 
 I've got a heading angle loop coded for the airplane and it works just fine.
 
+The heading angle controller had a wrapping issue and it's working now.
+
+So now the airplane flies a square pattern
 
 =======================8/2/2022==============
 

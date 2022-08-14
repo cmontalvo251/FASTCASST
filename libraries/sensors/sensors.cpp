@@ -89,12 +89,11 @@ void sensors::init(MATLAB in_configuration_matrix,MATLAB in_simulation_matrix) {
   noise_angle = in_simulation_matrix.get(27,1);
   bias_angle_matrix.zeros(3,1,"Bias Angle");
   setBias(bias_angle_matrix,bias_angle,std_angle);
-  //VELOCITY
-  bias_velocity = in_simulation_matrix.get(28,1);
-  std_velocity = in_simulation_matrix.get(29,1);
-  noise_velocity = in_simulation_matrix.get(30,1);
-  bias_velocity_matrix.zeros(3,1,"Bias Velocity");
-  setBias(bias_velocity_matrix,bias_velocity,std_velocity);
+  //PRESSURE
+  bias_pressure = in_simulation_matrix.get(28,1);
+  std_pressure = in_simulation_matrix.get(29,1);
+  noise_pressure = in_simulation_matrix.get(30,1);
+  bias_pressure_val = bias_pressure + randnum(-std_pressure,std_pressure);
   //GYRO
   bias_gyro = in_simulation_matrix.get(31,1);
   std_gyro = in_simulation_matrix.get(32,1);
@@ -142,6 +141,10 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
   double X = model_matrix.get(1,1);
   double Y = model_matrix.get(2,1);
   double Z = model_matrix.get(3,1);
+  //Grab Zpressure before Z is polluted
+  double Zpressure = Z;
+
+  //The pollution of XYZ is inside this routine
   sendXYZ2GPS(currentTime,X,Y,Z);
 
   //Quaternions
@@ -184,18 +187,21 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
   double gx = model_matrix.get(12,1);
   double gz = -model_matrix.get(13,1);
   if (IERROR) {
-    printf("GXYZ Before = %lf %lf %lf \n",gx,gy,gz);
+    //printf("GXYZ Before = %lf %lf %lf \n",gx,gy,gz);
     gx += pollute(bias_gyro_matrix.get(1,1),noise_gyro);
     gy+= pollute(bias_gyro_matrix.get(2,1),noise_gyro);
     gz += pollute(bias_gyro_matrix.get(3,1),noise_gyro);
-    printf("GXYZ After = %lf %lf %lf \n",gx,gy,gz);
+    //printf("GXYZ After = %lf %lf %lf \n",gx,gy,gz);
   }
   orientation.gx = gx;
   orientation.gy = gy;
   orientation.gz = gz;
 
   //Pass Z coordinate to barotemp
-  atm.SendZ(Z);
+  if (IERROR) {
+    Zpressure += pollute(bias_pressure_val,noise_pressure);
+  }
+  atm.SendZ(Zpressure);
 
   //Still need all the other sensor states but not right now
 
@@ -204,7 +210,9 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
 void sensors::getCompassHeading() {
   //printf("IMU Yaw = %lf, MAG Yaw = %lf, GPS Heading = %lf \n",orientation.yaw,orientation.magyaw,satellites.heading);
   //For now just pass IMU yaw through to yaw angle
-  compass = orientation.yaw;
+  //compass = orientation.yaw;
+  //Or if you want use GPS heading
+  compass = satellites.heading;
   //compass = 400;
 }
 
@@ -251,7 +259,8 @@ void sensors::poll(double currentTime,double elapsedTime) {
   ///XYZ
   sense_matrix.set(1,1,satellites.X);
   sense_matrix.set(2,1,satellites.Y);
-  sense_matrix.set(3,1,(satellites.Z-atm.altitude)/2.0);  //Average GPS and BARO?
+  //sense_matrix.set(3,1,(satellites.Z-atm.altitude)/2.0);  //Average GPS and BARO?
+  sense_matrix.set(3,1,-atm.altitude); //Let's use Barometer as altitude sensor
   //sense_matrix.set(3,1,-atm.altitude);
 
   //Roll pitch Yaw

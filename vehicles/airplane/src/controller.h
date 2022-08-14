@@ -5,6 +5,7 @@
 //must adhere to specific standards
 
 #include <MATLAB/MATLAB.h>
+#include <Mathp/mathp.h>
 #include <RCIO/RCIO.h> //this is for STICK values
 #include <Timer/timer.h>
 

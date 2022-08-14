@@ -31,7 +31,7 @@ COMPLEX AUTOPILOT LOOP:
     ✔ Program velocity controller and simulate @done (22-08-09 15:47)
     ✔ Program waypoint controller and have airplane fly a square pattern @done (22-08-09 17:24)
 
-  ☐ Test autopilot control laws in SIMONLY mode with Sensor errors
+  ✔ Test autopilot control laws in SIMONLY mode with Sensor errors @done (22-08-14 17:01)
 
   ☐ Test autopilot control laws in SIL mode
 
@@ -40,6 +40,8 @@ COMPLEX AUTOPILOT LOOP:
   ☐ Test autopilot controls laws in HIL mode
 
   ☐ Test autopilot controls laws in HIL mode with Sensor Errors
+
+  ☐ Need to actually measure the values of bias, noise and std otherwise all the simulations above are kind of pointless
 
   ☐ Test autopilot on real systems - RCIO needs to be able to handle where to send ESC signals depending on #define in Makefile
     ☐ Heading Angle Estimation and make sure we are adequately estimating heading in real life

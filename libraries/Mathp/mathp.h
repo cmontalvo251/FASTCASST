@@ -43,6 +43,7 @@
 using namespace std;
 
 void ClearHome();
+double delpsi(double,double);
 double randnum(double,double);
 void printdouble(double,char*);
 double delpsi(double,double);

@@ -154,7 +154,7 @@ void controller::HeadingLoop(MATLAB sense_matrix) {
   double kp = 1.0;
   double heading = sense_matrix.get(6,1);
   //I think the wrap issue is here
-  double dheading = heading_command - heading;
+  double dheading = -delpsi(heading*PI/180.0,heading_command*PI/180.0)*180.0/PI;
   if (dheading > 180) {
     dheading -= 180;
     dheading *= -1;

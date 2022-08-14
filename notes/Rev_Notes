@@ -1,3 +1,25 @@
+=======================8/14/2022=============
+
+Alright now it's time to work on SIMONLY control with sensor errors
+
+So an interesting issue with the whole sensor errors issue
+
+Need to actually measure the values of bias, noise and std otherwise all the simulations above are kind of pointless. I'm just randomly putting in values for sensor
+errors just to make sure that the code actually works but in order to make sure 
+the controller can handle the amount of sensor erorrs that exist in real life we need to actually
+put in realistic values which would only come from experimentation.
+
+So it kind of works. The airplane flies waypoints but when the value of heading 
+is close to 180 we are still running into that issue where the value of heading
+goes from +- to -180. I think I need to rederive that angle compute for dspi. 
+
+I probably have it in Boom somewhere. Actually it was in delpsi.m in MATLAB.git
+
+and then it turns out it was also in mathp.cpp so I just called that function delspi
+that already existed and now it works perfectly. 
+
+So freaking awesome. Check that box. haha.
+
 =======================8/9/2022==============
 
 Alright. I don't have access to HIL since I'm still at home so I'm working on the controller.

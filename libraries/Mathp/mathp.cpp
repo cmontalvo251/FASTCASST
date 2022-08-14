@@ -33,6 +33,21 @@ void ConvertXYZ2LLH(double XYZ[],double LLH[],double X_origin,double Y_origin) {
   //printf("LLH = %lf %lf %lf \n",latitude,longitude,altitude);
 }
 
+double delpsi(double psi,double psic) {
+//%%%returns delta psi from a heading and a heading command without
+//%worrying about wrapping issues
+//%%%This computes delpsi = psi-psic btw
+
+double spsi = sin(psi);
+double cpsi = cos(psi);
+double spsic = sin(psic);
+double cpsic = cos(psic);
+
+double out = atan2(spsi*cpsic-cpsi*spsic,cpsi*cpsic+spsi*spsic);
+
+return out;
+}
+
 double sat(double input,double epsilon,double scalefactor)
 {
   if (input > epsilon) {
@@ -61,15 +76,6 @@ void printdouble(double in,char name[]) {
 	printf("\n");
 	printf("%s %s %.8e \n",name," = ",in);
 	printf("\n");
-}
-
-double delpsi(double psi,double psic) {
-  double spsi = sin(psi);
-  double cpsi = cos(psi);
-  double spsic = sin(psic);
-  double cpsic = cos(psic);
-  double out = atan2(spsi*cpsic-cpsi*spsic,cpsi*cpsic+spsi*spsic);
-  return (out);
 }
 
 // Copyright - Carlos Montalvo 2015

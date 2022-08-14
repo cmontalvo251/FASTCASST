@@ -34,10 +34,11 @@ class sensors {
   //Errors
   int IERROR;
   MATLAB q0123,ptp;
-  MATLAB bias_pos_matrix,bias_gyro_matrix,bias_mag_matrix,bias_angle_matrix,bias_velocity_matrix;
-  double bias_angle,bias_gyro,bias_mag,bias_pos,bias_velocity,compass=0;
-  double std_angle,std_gyro,std_mag,std_pos,std_velocity;
-  double noise_angle,noise_gyro,noise_mag,noise_pos,noise_velocity;
+  MATLAB bias_pos_matrix,bias_gyro_matrix,bias_mag_matrix,bias_angle_matrix;
+  double bias_pressure_val;
+  double bias_angle,bias_gyro,bias_mag,bias_pos,bias_pressure,compass=0;
+  double std_angle,std_gyro,std_mag,std_pos,std_pressure;
+  double noise_angle,noise_gyro,noise_mag,noise_pos,noise_pressure;
   void setBias(MATLAB,double,double);
   double pollute(double,double);
   void sendXYZ2GPS(double t,double x,double y,double z);

@@ -11,6 +11,7 @@
 
 class controller {
 private:
+  int PRINTER = 0;
   double elapsedTime = 0,lastTime=0; //These are used to keep track of time elapsed.
   int CONTROLLER_FLAG = -99;
   void set_defaults();

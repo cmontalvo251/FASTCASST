@@ -25,7 +25,6 @@
 class sensors {
  private:
   ADC analog;
-  BaroTemp atm;
   int NUMVARS;
   //Rates and baro flag
   double GPS_RATE,IMU_RATE,ANALOG_RATE;
@@ -47,6 +46,7 @@ class sensors {
   //Public variables and classes
   IMU orientation;
   GPS satellites;
+  BaroTemp atm;
   MATLAB sense_matrix,sense_matrix_dot;
   char** headernames,headernames_dot;
   //constructor

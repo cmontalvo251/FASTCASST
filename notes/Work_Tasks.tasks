@@ -33,7 +33,7 @@ COMPLEX AUTOPILOT LOOP:
 
   ✔ Test autopilot control laws in SIMONLY mode with Sensor errors @done (22-08-14 17:01)
 
-  ☐ Test autopilot control laws in SIL mode
+  ✔ Test autopilot control laws in SIL mode @done (22-08-14 17:28)
 
   ☐ Test autopilot control laws in SIL mode with Sensor errors
 

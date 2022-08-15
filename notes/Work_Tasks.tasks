@@ -1,19 +1,22 @@
-                                     WORK TASKS:
 HIL:
 
- ☐ For telemetry think about writing a groundstation in python using a GUI. That might a lot easier to plot given the fact that you can use matplotlib (take a look at LISA simulation for help on GUIs and plots)
+  ✔ For HIL - use the HIL code from MultiSAT++ for FASTsim @done (22-05-24 18:50)
 
-  ☐ For HIL - use the HIL code from MultiSAT++ for FASTsim
+  ✔ Once HIL mode works for SIM you can deprecate the HIL simulation in MultiSAT++ (See note below. Definitely not going to deprecate. I definitely want a copy. I think the point more is to try and get FASTKit to work like MultiSAT++ does for embedded Sims.) @done (22-05-24 18:54)
+  
+  ✔ MultiSAT++ simulation will still need copies of the C++ repo but as you make the Model=SAT mode more like MultiSAT++ you can deprecate this simulation. Still I would like to make sure I still have a running version of MultiSAT++ to work with in the event I do E-Sail simulations. @done (22-05-24 18:52)
+  
+  ☐ Create a script that sends data back and forth and test in hardware
+  
+  ✔ Add hooks to FASTSim that compile DESKTOP + HIL and RPI/Arduino HIL that sends sensor data and control commands back and forth. The RPI/HIL version will accept a polluted state vector from the computer and run that through the control algorithm and then pass back the control commands to the integrator. So serialListens and SerialResponds etc will need to be written to send data back and forth @done (22-05-24 18:50)
 
-  ☐ Once HIL mode works for SIM Model=SAT you can deprecate the HIL simulation in MultiSAT++
-  
-  ☐ MultiSAT++ simulation will still need copies of the C++ repo but as you make the Model=SAT mode more like MultiSAT++ you can deprecate this simulation. Still I would like to make sure I still have a running version of MultiSAT++ to work with in the event I do E-Sail simulations.
-  
-  ☐ Create a script that sends data back and forth
-  
-  ☐ Add hooks to FASTSim that compile DESKTOP + HIL and RPI/Arduino HIL that sends sensor data and control commands back and forth. The RPI/HIL version will accept a polluted state vector from the computer and run that through the control algorithm and then pass back the control commands to the integrator. So serialListens and SerialResponds etc will need to be written to send data back and forth
+SPEEDING UP FASTkit ON PI:
 
-SPEEDING UP FASTSim ON PI:
+  ✔ Create a scheduler for all sensors. @done (22-05-17 20:21)
+
+  ☐ Thread the IMU and GPS
+
+  ☐ See why Ground station lags by two seconds. Possible source is updating the window (Turn some off and see what happens)
 
   ☐ We can try systemd which is apparently what Arducopter uses
 
@@ -23,38 +26,28 @@ SPEEDING UP FASTSim ON PI:
 
 COMPLEX AUTOPILOT LOOP:
     
-  ☐ Test autopilot control laws in SIMONLY mode
-    ☐ Program heading angle estimation
-    ☐ Program Station keeping controller and see if drone can maintain a certain space
-    ☐ Program waypoint controller and see if drone can point to a waypoint by just commanding heading
-    ☐ See if drone can fly to a waypoint
+  ✔ Test autopilot control laws in SIMONLY mode @done (22-08-09 17:24)
+    ✔ Program heading angle estimation and simulate @done (22-08-09 15:47)
+    ✔ Program velocity controller and simulate @done (22-08-09 15:47)
+    ✔ Program waypoint controller and have airplane fly a square pattern @done (22-08-09 17:24)
 
-  ☐ Test autopilot control laws in SIMONLY mode with Sensor errors
+  ✔ Test autopilot control laws in SIMONLY mode with Sensor errors @done (22-08-14 17:01)
 
-  ☐ Test autopilot control laws in SIL mode
+  ✔ Test autopilot control laws in SIL mode @done (22-08-14 17:28)
 
   ☐ Test autopilot control laws in SIL mode with Sensor errors
 
   ☐ Test autopilot controls laws in HIL mode
 
-  ☐ Test autopilot controls laws in HIL mode with SEs
+  ☐ Test autopilot controls laws in HIL mode with Sensor Errors
+
+  ☐ Need to actually measure the values of bias, noise and std otherwise all the simulations above are kind of pointless
 
   ☐ Test autopilot on real systems - RCIO needs to be able to handle where to send ESC signals depending on #define in Makefile
-    ☐ GraveDigger - The Remote control car in the lab
-    ☐ Wooden Drone - Can focus on outerloop control laws (Make sure to update blog for this one)
-      ☐ Attempt to code altitude hold for drone using deltaP and Az - REV 6 
-      ☐ Station keeping
-      ☐ Point to a desired attitude
-      ☐ Waypoint controller
-    ☐ FASTIris
-    ☐ Bumblebee
-    ☐ Meta 1 and 2
-    ☐ Batwing
-    ☐ BDE
-
-  ☐ When debugging the waypoint and heading controller it would be good to set up
-
-  ☐ some telemetry debugging scripts to make things are working right 
+    ☐ Heading Angle Estimation and make sure we are adequately estimating heading in real life
+    ☐ (phi from accel only, theta from accel only, heading from mag only, Euler from gyro only, filtered roll and pitch from gyro and accel, heading from gps, filtered heading from mag, gyro, gps, Euler from AHRS, heading from AHRS and GPS)
+    ☐ Test velocity controller in real life
+    ☐ Test waypoint contorller in real life
 
   FASTPILOT:
 
@@ -64,22 +57,28 @@ COMPLEX AUTOPILOT LOOP:
 
 META:
 
+  ☐ SysID of airplane (Flights + simulation)
+
+  ☐ Simulation of waypoint flights of single airplane
+
+  ☐ Waypoint flights of single airplane
+
+  ☐ Simulation of Meta waypoint controller
+
   ☐ Meta flying waypoints to compare efficiency - Maxwell Cobar
 
   ☐ Disconnecting and reconnecting - this would be insane.
 
-  ☐ Way point control and run performance metrics on it.
-
 WOODEN DRONE:
 
- ☐ From here I'd like to start editing the sensor routines to include Arduino hooks. The sensor.h file should work at the moment on both desktop and Rpi so it's time to get it to work on Arduino hooks. Edit the Sensor routine to use the newly formed folders. Think a bit more on how you want to have this sensor block. I'm assuming you'll just be importing all the sensors? Pitot, IMU, GPS, etc??? What if those sensors are not connected? Is there a way for the controller to ignore erroneous data? Or maybe just turn them on and off in the controller?
+  ✔ From here I'd like to start editing the sensor routines to include Arduino hooks. The sensor.h file should work at the moment on both desktop and Rpi so it's time to get it to work on Arduino hooks. Edit the Sensor routine to use the newly formed folders. Think a bit more on how you want to have this sensor block. I'm assuming you'll just be importing all the sensors? Pitot, IMU, GPS, etc??? What if those sensors are not connected? Is there a way for the controller to ignore erroneous data? Or maybe just turn them on and off in the controller? @done (22-05-18 06:55)
 
- ☐ I then would like you to make an INO routine that logs all sensor data IMU, MPL, GPS (I think those are all the sensors). I'd like there to be a SIMONLY version of this as well where the computer just fakes the sensors. Might need to call this DESKTOP since that's what all the hooks are. Make all of the sensor specific items happen inside the sensor class. In order for this to work, the datlogger routine is going to need to get updated to work for an SD breakout board. Using this log routine I want you to log like an hour of data to disk and then save it for later processing of noise and bias. This routine needs to be general enough to work on Navio as well. 
+  ☐ I then would like you to make an INO routine that logs all sensor data IMU, MPL, GPS (I think those are all the sensors). I'd like there to be a SIMONLY version of this as well where the computer just fakes the sensors. Might need to call this DESKTOP since that's what all the hooks are. Make all of the sensor specific items happen inside the sensor class. In order for this to work, the datlogger routine is going to need to get updated to work for an SD breakout board. Using this log routine I want you to log like an hour of data to disk and then save it for later processing of noise and bias. This routine needs to be general enough to work on Navio as well. 
   ☐ Add code for MPL115
   ☐ Add BNO055 to Arduino and read/send those signals
   ☐ Datalogger routine will need to be augmented to hangle RPi, DESKTOP and ARDUINO
- 
- ☐ Start analyzing the data you obtained in from the hour of logging. See if you can get bias, std dev, noise, etc and then add that to the Sensors routine when you're using DESKTOP and POLLUTED sensor mode.
+
+  ☐ Start analyzing the data you obtained in from the hour of logging. See if you can get bias, std dev, noise, etc and then add that to the Sensors routine when you're using DESKTOP and POLLUTED sensor mode.
 
  ☐ Once the Arduino hooks are in I would like one more Arduino Routine that reads the RCInput and then feeds them (pass through) to RCOutput. This will require you to use the RCInput and RCOutput routines which hopefully got combined between Navio and Arduino at which point you'll also need hooks in there for the JOYSTICK as well. Again these need to be general enough that just changing the Makefile will compile the routine onto different architectures
 
@@ -92,6 +91,12 @@ WOODEN DRONE:
  ☐ Plot data from this flight test - GPS, IMU, etc - REV 7
 
  ☐ Using a scale and the pass through Arduino routine get the thrust of the motor as a function of microsend pulse and add that to the aerodynamics routine for the quadcopter. While you're doing this experiment figure out how long it takes to go from full throttle on your control stick to full throttle on the drone. That is the amount of delay we need to introduce into our actuators.
+
+ ☐ Wooden Drone waypoint flights - Can focus on outerloop control laws (Make sure to update blog for this one)
+    ☐ Attempt to code altitude hold for drone using deltaP and Az - REV 6 
+    ☐ Station keeping
+    ☐ Point to a desired heading
+    ☐ Waypoint controller
 
 BDE DJI Flights:
 
@@ -149,6 +154,10 @@ BDE FASTSim:
 
   ☐ Perform another robustness trade study on motor effectiveness by adding in 10% variation in motor thrust
 
+  ☐ Program Station keeping controller and see if drone can maintain a certain space
+
+  ☐ Program waypoint controller and see if drone can point to a waypoint by just commanding heading
+
   ☐ Create sig1-8 which are all unknown such that T1 = sig1*T1desired
 
   ☐ Create an online parameter estimation block using a self tuning controller to estimate sig1-8.
@@ -195,6 +204,14 @@ BDE FASTPilot:
 
   ☐ Add Fault tolerant control?
 
+SATELLITE:
+
+  ☐ Double check that the simulation runs with OpenGL around a Planet
+  ☐ Make sure the magnetorquer code is working
+  ☐ Make sure the reaction wheel code is working for Satellite
+  ☐ Run the MultiSAT++ SIL code and make sure you have the control system set up properly for CubeSats.
+  ☐ Run the MultiSAT++ HIL sim with an Arduino and make sure that FASTKit has the same functionality so you don't have to use MultiSAT++ anymore for CubeSat stuff
+
 RENDERING:
 
   ✔ Create CAD for all vehicles you are using @done (21-11-06 11:30)
@@ -219,6 +236,14 @@ You can also use mavlink to send and receive parameters (such as controller gain
 Most of this work was guided by this blog post (https://discuss.ardupilot.org/t/mavlink-and-arduino-step-by-step/25566) so I suggest at least a quick read of that will help the students out in understanding how everything fits together.  The parameter stuff was an internal development which I hope to get written up properly one day and into a blog post to more-widely share the technique.
 Hopefully that all helps and let me know if you have any other questions.  Good luck!
 matt
+
+GROUND STATION:
+
+  ✔ Create a ground station in Python for AUTO Mode (right now this is in Processing) (This will work for HIL mode as well since the Pi will be sending telemetry data) @done (22-06-13 15:38)
+
+  ✔ Create a ground station in Python that works in SIL mode (no need for SIMONLY mode) @done (22-06-04 17:59)
+
+  ✔ For telemetry think about writing a groundstation in python using a GUI. That might a lot easier to plot given the fact that you can use matplotlib (take a look at LISA simulation for help on GUIs and plots) Would be cool to have GUI run in SIL mode. According to the docs online you can have C++ create a text file and then Python read the file. How do we prevent both programs reading the same file? Have C++ increment [NUM].txt and then have Python read the latest. That should work @done (22-06-04 17:59)
 
 AVIATION:
 

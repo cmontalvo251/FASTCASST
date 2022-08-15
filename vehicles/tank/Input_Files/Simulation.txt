@@ -8,7 +8,7 @@
 0.0	!Quaternion 2
 0.0	!Quaternion 3
 0.0	!Initial Xbody Velocity (m/s)
-0.0	!Initial Ybody Velocity (m/s)
+10.0	!Initial Ybody Velocity (m/s)
 0.0	!Initial Zbody Velocity (m/s)
 0.0	!Initial Roll Rate (rad/s)
 0.0	!Initial Pitch Rate (rad/s)

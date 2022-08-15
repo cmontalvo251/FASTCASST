@@ -11,7 +11,7 @@ TIMER watch;
 double lastPRINTtime = 0;
 
 //Need Sensors class to read all sensors
-#include <hardware/sensors/sensors.h>
+#include <sensors/sensors.h>
 sensors sense;
 
 //Need datalogger to log data to disk

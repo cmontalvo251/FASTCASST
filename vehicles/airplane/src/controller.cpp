@@ -71,15 +71,36 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   roll_command = -99;
   pitch_command = -99;
   velocity_command = 20; //Hardcode to 20?
-  altitude_command = 100; //Hardcode to 100?
+  altitude_command = 20; //Hardcode to 100?
+  heading_command = -99;
+  
+  WAYPOINTS_X[0] = 1000;
+  WAYPOINTS_Y[0] = 0;
+
+  WAYPOINTS_X[1] = 1000;
+  WAYPOINTS_Y[1] = 1000;
+
+  WAYPOINTS_X[2] = 0;
+  WAYPOINTS_Y[2] = 1000;
+
+  WAYPOINTS_X[3] = 0;
+  WAYPOINTS_Y[3] = 0;
 
   switch (icontrol) {
     case 5:
       //velocity, altitude and waypoint control
-      printf("Waypoint + ");
+      //printf("Waypoint Loop + ");
+      WaypointLoop(sense_matrix);
     case 4:
+      if (heading_command == -99) {
+        heading_command = 0;
+        if (currentTime > 100) {
+          heading_command = 45; //degrees
+        }
+      }
       //velocity, altitude and heading control
-      printf("Heading + ");
+      //printf("Heading + ");
+      HeadingLoop(sense_matrix);
     case 3:
       //roll (rudder mixing), velocity and altitude control
       //printf("Altitude + ");
@@ -113,11 +134,51 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   }
 }
 
+void controller::WaypointLoop(MATLAB sense_matrix) {
+  double X = sense_matrix.get(1,1);
+  double Y = sense_matrix.get(2,1);
+  double DY = WAYPOINTS_Y[WAYINDEX]-Y;
+  double DX = WAYPOINTS_X[WAYINDEX]-X;
+  heading_command = atan2(DY,DX)*180.0/PI;
+  double distance = sqrt(DY*DY + DX*DX);
+  //PAUSE();
+  if (PRINTER == 4*100000) {
+    printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,heading_command,distance);
+    PRINTER = 0;
+  }
+  PRINTER+=1;
+  if (distance < 150) {
+    printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,heading_command,distance);
+    WAYINDEX += 1;
+    if (WAYINDEX > NUMWAYPOINTS-1) {
+      WAYINDEX = 0;
+    }    
+  }
+}
+
+void controller::HeadingLoop(MATLAB sense_matrix) {
+  double kp = 1.0;
+  double heading = sense_matrix.get(6,1);
+  //I think the wrap issue is here
+  double dheading = -delpsi(heading*PI/180.0,heading_command*PI/180.0)*180.0/PI;
+  if (dheading > 180) {
+    dheading -= 180;
+    dheading *= -1;
+  }
+  if (dheading < -180) {
+    dheading += 180;
+    dheading *= -1;
+  }
+  roll_command = kp*dheading;
+  roll_command = CONSTRAIN(roll_command,-45,45);
+  //printf("T, HEADING = %lf %lf \n",lastTime,heading,roll_command);
+}
+
 void controller::AltitudeLoop(MATLAB sense_matrix) {
   //Probably a good idea to use pressure altitude but might need to use 
   //GPS altitude if the barometer isn't good or perhaps even a KF approach
   //Who knows. Just simulating this now.
-  double altitude = sense_matrix.get(28,1);  
+  double altitude = sense_matrix.get(28,1);
   //Initialize altitude_dot to zero
   double altitude_dot = 0;
   //If altitude_prev has been set compute a first order derivative

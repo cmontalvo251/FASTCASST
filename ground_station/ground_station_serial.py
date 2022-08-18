@@ -5,6 +5,7 @@ import matplotlib.patches as pt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import time
+import os
 import struct
 import datetime
 import sys
@@ -217,6 +218,8 @@ print('Creating Window')
 GND = WINDOW()
 ##Open Serial Window
 print('Opening Serial port')
+print('All available serial ports...')
+os.system('ls /dev/ttyUSB*')
 ser = U(57600,"/dev/ttyUSB0",period=1.0) #Set the baudrate, port and period in seconds
 ##Initialize Filenumber at zero
 i = 0

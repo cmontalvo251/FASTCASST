@@ -11,12 +11,17 @@ void Serial::InitSerialPort(void)
   #if defined __linux__ || __APPLE__ || RPI
     char *port = "/dev/ttyUSB0";
   #endif
-  #if defined (DESKTOP) && (SIL) 
-  printf("Running in SIL Mode: Telemetry writing to a text file \n");
+  #if defined (SIMONLY) || (SIL)
+  //Note that in SIMONLY the functions below are initialized but 
+  //The functionality is not used since the routine doesn't run in realtime
+  printf("Running Telemetry to a text file \n");
   system("rm *.csv");
   tlogger.init("./",1); //The one is erroneous in this case
   tlogger.echo = 0; //turn off echo statements
   #else
+  //If SIMONLY or SIL are not defined you are running in HIL or AUTO mode
+  //In both instances you want to use the 915 Mhz radios which is initialized 
+  //using the function below
   SerialInit(port,BaudRate);
   #endif
 }

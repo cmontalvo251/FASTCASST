@@ -5,8 +5,8 @@ worked was on 6/14/2022 just showing that the cable that Maxwell created worked.
 Will need to compile all versions of software first and make sure everything still works.
 
 1.) SIMONLY - Waypoints + Sensor errors - check. Found an issue with the telemetry unit plugged in
-2.) SIL - Manual control with XBOX controller - 
-3.) SIL - Waypoints - 
+2.) SIL - Manual control with XBOX controller - check
+3.) SIL - Waypoints - check
 4.) AUTO on RPI - 
 
 =======================8/14/2022=============

@@ -159,7 +159,7 @@ void loop() {
 
     //If We're running in HIL we need to run the HIL comms function    
     #ifdef HIL
-    hw.hil();
+    hw.hil(watch.currentTime,watch.elapsedTime);
     #endif
     
     //We only run the hardware / control loop if we're in SIMONLY, SIL, AUTO or HIL RPI

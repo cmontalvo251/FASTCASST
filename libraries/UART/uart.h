@@ -36,7 +36,7 @@ class UART {
   void init(int,int,int);
   void readSense(MATLAB);
   void sendSense(MATLAB);
-  void readControl(MATLAB);
+  int readControl(MATLAB);
   void sendControl(MATLAB);
   void sendTelemetry(MATLAB,int);
 };

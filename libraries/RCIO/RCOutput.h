@@ -15,13 +15,16 @@ class RCOutput {
 public:
     RCOutput(); //constructor
     void initialize(int);
-    void RangeCheck();
+    int RangeCheck();
     void setOutputNeutral();
     void saturation_block();
     void write();
     int *pwm_array=NULL;
+    int *pwm_array_prev=NULL;
     int NUMSIGNALS;
     void print();
+    void backup();
+    void revert();
 private:
     PWM pwm;
 };

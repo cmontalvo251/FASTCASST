@@ -33,6 +33,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   LOGRATE = in_configuration_matrix.get(2,1);
   RCRATE = in_configuration_matrix.get(3,1);
   TELEMRATE = in_configuration_matrix.get(4,1);
+  HILRATE = in_configuration_matrix.get(4,1);
 
   sense.init(in_configuration_matrix,in_simulation_matrix);
 
@@ -87,8 +88,8 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   NUMSENSE = 10;
   NUMCTL = 9;
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix HW");
-  uart_sense_matrix.zeros(NUMSENSE,1,"Sense Matrix HIL");
-  uart_ctl_matrix.zeros(NUMCTL,1,"Control Matrix HIL");
+  uart_sense_matrix.zeros(NUMSENSE,1,"Sense Matrix Sent to other computer");
+  uart_ctl_matrix.zeros(NUMCTL,1,"Control Matrix received from other computer");
   ser.init(NUMTELEMETRY,NUMSENSE,NUMCTL);
 }
 
@@ -177,10 +178,20 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   #endif
 }
 
-void hardware::hil() {
+void hardware::hil(double currentTime,double elapsedTime) {
+    if (currentTime < nextHILtime) {
+      return;
+    } else {
+      nextHILtime = currentTime + HILRATE;
+    }
+
     #if defined (HIL) && (DESKTOP)
+    //Normally this line of code would run in the hardware::loop routine but since that's running on the
+    //pi we need to run it here. The poll just simply puts everything in the sense_matrix from the model
+    //matrix
+    sense.poll(currentTime,elapsedTime);
     if (sendOK) {
-      //printf("Send Data to RPI \n");
+      printf("Send Data to RPI \n");
       //What data do I want sent to RPI???
       //1 - roll
       uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
@@ -202,26 +213,58 @@ void hardware::hil() {
       uart_sense_matrix.set(9,1,sense.sense_matrix.get(12,1));
       //10 - pressure
       uart_sense_matrix.set(10,1,sense.sense_matrix.get(27,1));
+      uart_sense_matrix.disp();
       ser.sendSense(uart_sense_matrix);
       sendOK = 0;
     } else {
-      //printf("READING CONTROL MATRIX FROM SERIAL \n");
-      ser.readControl(uart_ctl_matrix);
+      printf("READING CONTROL MATRIX FROM SERIAL \n");
+      //rec error code not operational at the moment
+      int rec = ser.readControl(uart_ctl_matrix);
+      uart_ctl_matrix.disp();
       sendOK = 1;
       //We then need to populate this into the appropriate vectors
-      rc.in.rx_array[0] = uart_ctl_matrix.get(1,1);
+      rc.in.rx_array[0] = uart_ctl_matrix.get(1,1); //wait. Why do we need these rcinputs?
       rc.in.rx_array[1] = uart_ctl_matrix.get(2,1);
       rc.in.rx_array[2] = uart_ctl_matrix.get(3,1);
       rc.in.rx_array[3] = uart_ctl_matrix.get(4,1);
-      rc.out.pwm_array[0] = uart_ctl_matrix.get(5,1);
+      //Before we copy uart_ctl_matrix over to pwm_array we need to create a backup
+      //printf("\n RCOUTPUT before uart update \n");
+      //rc.out.print();
+      //printf("\n ----- \n");
+      rc.out.backup();
+
+      rc.out.pwm_array[0] = uart_ctl_matrix.get(5,1); //don't we just need the rcoutputs?
       rc.out.pwm_array[1] = uart_ctl_matrix.get(6,1);
       rc.out.pwm_array[2] = uart_ctl_matrix.get(7,1);
       rc.out.pwm_array[3] = uart_ctl_matrix.get(8,1);
+      
+      //printf("\n RCOUTPUT after uart update \n");
+      //rc.out.print();
+      //printf("\n ----- \n");
+
       //Again the control matrix is coming from the control routine on the pi
       //The control routine is written by the user. since we can't expect the user
       //to worry about saturation we need to put in that block here
       rc.in.saturation_block();
-      rc.out.RangeCheck(); //This is a bit more robust to Serial errors than just the saturation block
+      //printf("RCINPUT \n");
+      //rc.in.printRCstate(-4);
+
+      //We then will run the RangeCheck and it will return an error code
+      int err = rc.out.RangeCheck(); //This is a bit more robust to Serial errors than just the saturation block
+      //printf("\n RCOUTPUT after range check \n");
+      //rc.out.print();
+      //printf("\n ---- \n");
+
+      if (err) {
+        //This means that the rangecheck through an error which means the values received from
+        //uart were invalid and we need to revert back to our previous values
+        rc.out.revert();
+      }
+
+      //printf("\n RCOUTPUT after potential revert \n");
+      //rc.out.print();
+      //printf("\n ---- \n");
+
     }
     #endif
     
@@ -230,27 +273,28 @@ void hardware::hil() {
     //printf("Receive Data from Desktop \n");
     if (recOK) {
       ser.readSense(uart_sense_matrix);
+      uart_sense_matrix.disp();
       //Again we need to populate this into the appropriate vectors
       //Roll
-      sense_matrix.set(4,1,uart_sense_matrix(1,1));
+      sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
       //Pitch
-      sense_matrix.set(5,1,uart_sense_matrix(2,1));
+      sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
       //Yaw
-      sense_matrix.set(6,1,uart_sense_matrix(3,1));
+      sense.sense_matrix.set(6,1,uart_sense_matrix.get(3,1));
       //Lat
-      sense_matrix.set(16,1,uart_sense_matrix(4,1));
+      sense.sense_matrix.set(16,1,uart_sense_matrix.get(4,1));
       //Lon
-      sense_matrix.set(17,1,uart_sense_matrix(5,1));
+      sense.sense_matrix.set(17,1,uart_sense_matrix.get(5,1));
       //Alt
-      sense_matrix.set(18,1,uart_sense_matrix(6,1));
+      sense.sense_matrix.set(18,1,uart_sense_matrix.get(6,1));
       //gx
-      sense_matrix.set(10,1,uart_sense_matrix(7,1));
+      sense.sense_matrix.set(10,1,uart_sense_matrix.get(7,1));
       //gy
-      sense_matrix.set(11,1,uart_sense_matrix(8,1));
+      sense.sense_matrix.set(11,1,uart_sense_matrix.get(8,1));
       //gz
-      sense_matrix.set(12,1,uart_sense_matrix(9,1));
+      sense.sense_matrix.set(12,1,uart_sense_matrix.get(9,1));
       //pressure
-      sense_matrix.set(27,1,uart_sense_matrix(10,1));
+      sense.sense_matrix.set(27,1,uart_sense_matrix.get(10,1));
       recOK = 0;
     } else {
       //Then send data to desktop
@@ -274,7 +318,7 @@ void hardware::hil() {
       uart_ctl_matrix.set(8,1,rc.out.pwm_array[2]);
       //9 - control matrix 4
       uart_ctl_matrix.set(9,1,rc.out.pwm_array[3]);
-      ser.sendControl(uart_ctl_matrix);
+      //ser.sendControl(uart_ctl_matrix);
       recOK = 1;
     }
     #endif

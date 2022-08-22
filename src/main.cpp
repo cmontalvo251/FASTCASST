@@ -190,8 +190,8 @@ void loop() {
       lastPRINTtime+=hw.PRINTRATE;
       //Time
       printf("%lf %lf ",watch.currentTime,watch.elapsedTime);
-      //First 4 RX signals
-      hw.rc.in.printRCstate(-4);
+      //First 5 RX signals
+      hw.rc.in.printRCstate(-5);
       //Roll Pitch Yaw
       printf(" %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
       //PQR

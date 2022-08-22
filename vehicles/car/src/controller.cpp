@@ -41,13 +41,12 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   lastTime = currentTime;
 
   double motor1_us = STICK_MID; //Left Motor
-  double motor2_us = STICK_MID; //Right Motor
+  double servo = STICK_MID; //Right Motor
   double DIFFERENTIAL = 1.0;
 
   //First extract the relavent commands from the receiver.
+  double throttle = rx_array[0];
   double aileron = rx_array[1];
-  double elevator = rx_array[2];
-  //printf("Elevator = %lf \n",elevator);
   double autopilot = rx_array[4];
   bool icontrol = 0;
 
@@ -72,26 +71,28 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
   //Then you can run any control loop you want.
   if (icontrol) {
+    //Control system on
     //printf("Auto ON \n");
-    motor1_us = STICK_MID + (STICK_MID - elevator) + DIFFERENTIAL*(aileron - STICK_MID);
-    motor2_us = elevator + DIFFERENTIAL*(aileron - STICK_MID);
+    motor1 = STICK_MID;
+    servo = aileron;
   } else {
-    motor1_us = STICK_MID + (STICK_MID - elevator) - DIFFERENTIAL*(aileron - STICK_MID);
-    motor2_us = elevator - DIFFERENTIAL*(aileron - STICK_MID);
+    //Control system off
+    motor1 = throttle;
+    servo = aileron;
   }
 
   //Saturation
-  if (motor1_us < STICK_MIN) {
-    motor1_us = STICK_MIN;
+  if (motor1 < STICK_MIN) {
+    motor1 = STICK_MIN;
   }
-  if (motor1_us > STICK_MAX) {
-    motor1_us = STICK_MAX;
+  if (motor1 > STICK_MAX) {
+    motor1 = STICK_MAX;
   }
-  if (motor2_us < STICK_MIN) {
-    motor2_us = STICK_MIN;
+  if (servo < STICK_MIN) {
+    servo = STICK_MIN;
   }
-  if (motor2_us > STICK_MAX) {
-    motor2_us = STICK_MAX;
+  if (servo > STICK_MAX) {
+    servo = STICK_MAX;
   }
   
   //Set motor commands to the ctlcomms values

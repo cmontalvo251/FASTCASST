@@ -13,8 +13,8 @@ private:
   int CONTROLLER_FLAG = -99;
   void set_defaults();
 public:
-  int NUMSIGNALS=2; //motor 1,2
-  MATLAB control_matrix; //This is a vector of TAERA1A2 in PWM signals
+  int NUMSIGNALS=2; //1 motor and 1 servo
+  MATLAB control_matrix; //This is a vector of motor and servo pwm signals
   void loop(double currentTime,int rx_array[],MATLAB sense_matrix);
   void init(MATLAB in_configuration_matrix);
   void print();

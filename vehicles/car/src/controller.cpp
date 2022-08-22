@@ -40,7 +40,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   elapsedTime = currentTime - lastTime;
   lastTime = currentTime;
 
-  double motor1_us = STICK_MID; //Left Motor
+  double motor = STICK_MID; //Left Motor
   double servo = STICK_MID; //Right Motor
   double DIFFERENTIAL = 1.0;
 
@@ -73,20 +73,20 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   if (icontrol) {
     //Control system on
     //printf("Auto ON \n");
-    motor1 = STICK_MID;
+    motor = STICK_MID;
     servo = aileron;
   } else {
     //Control system off
-    motor1 = throttle;
+    motor = throttle;
     servo = aileron;
   }
 
   //Saturation
-  if (motor1 < STICK_MIN) {
-    motor1 = STICK_MIN;
+  if (motor < STICK_MIN) {
+    motor = STICK_MIN;
   }
-  if (motor1 > STICK_MAX) {
-    motor1 = STICK_MAX;
+  if (motor > STICK_MAX) {
+    motor = STICK_MAX;
   }
   if (servo < STICK_MIN) {
     servo = STICK_MIN;
@@ -96,7 +96,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   }
   
   //Set motor commands to the ctlcomms values
-  control_matrix.set(1,1,motor1_us);
-  control_matrix.set(2,1,motor2_us);
+  control_matrix.set(1,1,motor);
+  control_matrix.set(2,1,servo);
   //ctlcomms.disp();
 }

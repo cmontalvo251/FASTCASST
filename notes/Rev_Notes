@@ -7,7 +7,7 @@ Will need to compile all versions of software first and make sure everything sti
 1.) SIMONLY - Waypoints + Sensor errors - check. Found an issue with the telemetry unit plugged in
 2.) SIL - Manual control with XBOX controller - check
 3.) SIL - Waypoints - check
-4.) AUTO on RPI - 
+4.) AUTO on RPI - check
 
 =======================8/14/2022=============
 

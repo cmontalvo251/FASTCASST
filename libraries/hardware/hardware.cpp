@@ -215,6 +215,10 @@ void hardware::hil(double currentTime,double elapsedTime) {
       uart_sense_matrix.set(10,1,sense.sense_matrix.get(27,1));
       uart_sense_matrix.disp();
       ser.sendSense(uart_sense_matrix);
+
+      //If you set this to sendOk = 1 the DESKTOP will continually send
+      //data to the RPI. It'd be a good way to test one way communication from
+      //the desktop to the RPI
       sendOK = 0;
     } else {
       printf("READING CONTROL MATRIX FROM SERIAL \n");
@@ -295,6 +299,10 @@ void hardware::hil(double currentTime,double elapsedTime) {
       sense.sense_matrix.set(12,1,uart_sense_matrix.get(9,1));
       //pressure
       sense.sense_matrix.set(27,1,uart_sense_matrix.get(10,1));
+      //sense.sense_matrix.disp();
+
+      //If you set this variable recOK to 1 the RPI will continually receive data from the DESKTOP
+      //computer. It would be a good way to test 1 way communication
       recOK = 0;
     } else {
       //Then send data to desktop

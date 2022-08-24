@@ -1,3 +1,9 @@
+=======================8/23/2022==============
+
+I added a couple comments in the HIL part of the code
+to test 1 way communication. The code is pretty much all there
+it just needs to be tested
+
 =======================8/18/2022=============
 
 I merged the HIL branch that wasn't completed yet. The last update showing that HIL

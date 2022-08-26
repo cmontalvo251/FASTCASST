@@ -23,7 +23,6 @@
 //GPS
 #include <GPS/GPS.h>
 
-
 class sensors {
  private:
   ADC analog;

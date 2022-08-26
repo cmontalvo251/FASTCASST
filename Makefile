@@ -112,12 +112,4 @@ clean:
 	echo ' ' > libraries/MATLAB/d.o
 	rm libraries/*/*.o
 	echo ' ' > vehicles/portalcube/src/d.o
-<<<<<<< HEAD
-	rm vehicles/portalcube/src/*.o
-	echo ' ' > vehicles/airplane/src/d.o
-	rm vehicles/airplane/src/*.o
-	echo ' ' > vehicles/meta/src/d.o
-	rm vehicles/meta/src/*.o
-=======
 	rm vehicles/*/src/*.o
->>>>>>> 801f40747c2d191caf81c7c255d13a1f77d30515

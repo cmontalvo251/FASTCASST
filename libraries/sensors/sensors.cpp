@@ -259,8 +259,8 @@ void sensors::poll(double currentTime,double elapsedTime) {
   //IMU must be read as fast as possible due to the elapsedTime
   //and the integrator on board
   orientation.loop(elapsedTime);
-
-  Heading_Mag = mag_heading(orientation.roll,orientation.pitch,orientation.mx,orientation.my,orientation.mz);
+  //Maxwell Cobar's mag heading loop 
+  //Heading_Mag = mag_heading(orientation.roll,orientation.pitch,orientation.mx,orientation.my,orientation.mz);
 
   //Read the GPS
   if (currentTime >= nextGPStime) {
@@ -308,7 +308,7 @@ void sensors::poll(double currentTime,double elapsedTime) {
   sense_matrix.set(13,1,orientation.mx);
   sense_matrix.set(14,1,orientation.my);
   sense_matrix.set(15,1,orientation.mz);
-  //sense_matrix.set(16,1,Heading_Mag);
+  //sense_matrix.set(15,1,Heading_Mag);
 
   //GPS
   sense_matrix.set(16,1,satellites.latitude);

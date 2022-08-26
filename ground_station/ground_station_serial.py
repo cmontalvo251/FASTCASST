@@ -5,6 +5,7 @@ import matplotlib.patches as pt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import time
+import os
 import struct
 import datetime
 import sys
@@ -213,37 +214,42 @@ telemetry_packet = np.zeros(14)
 fastkit_packet = np.zeros(6)
 
 ##Create window
+print('Creating Window')
 GND = WINDOW()
 ##Open Serial Window
+print('Opening Serial port')
+print('All available serial ports...')
+os.system('ls /dev/ttyUSB*')
 ser = U(57600,"/dev/ttyUSB0",period=1.0) #Set the baudrate, port and period in seconds
 ##Initialize Filenumber at zero
 i = 0
 while True:
-	position = -1
-	value,position,bytestring = ser.SerialGetNumber(0)
-	print('Value Received, Position, Bytes = ',value,position,bytestring)
-	if position >= 0:
-		fastkit_packet[position] = value
-		telemetry_packet[0] = fastkit_packet[0]
-		telemetry_packet[1] = fastkit_packet[1]
-		telemetry_packet[2] = fastkit_packet[2]
-		telemetry_packet[3] = fastkit_packet[3]
-		telemetry_packet[4] = fastkit_packet[4]
-		telemetry_packet[5] = fastkit_packet[5]
-		telemetry_packet[6] = gps_altitude[i]
-		telemetry_packet[7] = baro_pressure[i]
-		telemetry_packet[8] = gps_speed[i]
-		telemetry_packet[9] = pitot_speed[i]
-		telemetry_packet[10] = throttle[i]
-		telemetry_packet[11] = aileron[i]
-		telemetry_packet[12] = elevator[i]
-		telemetry_packet[13] = rudder[i]
-		i+=1
-		#Clear the GUI window
-		if position == 0:
-			GND.clearwindow()
-			GND.sendNewData(telemetry_packet)
-			GND.updatewindow()
-			plt.pause(0.0000000000001)
-	#Then sleep for 0.1 seconds
-	#time.sleep(0.1)
+    position = -1
+    print('Reading Serial....')
+    value,position,bytestring = ser.SerialGetNumber(0)
+    print('Value Received, Position, Bytes = ',value,position,bytestring)
+    if position >= 0:
+        fastkit_packet[position] = value
+        telemetry_packet[0] = fastkit_packet[0]
+        telemetry_packet[1] = fastkit_packet[1]
+        telemetry_packet[2] = fastkit_packet[2]
+        telemetry_packet[3] = fastkit_packet[3]
+        telemetry_packet[4] = fastkit_packet[4]
+        telemetry_packet[5] = fastkit_packet[5]
+        telemetry_packet[6] = gps_altitude[i]
+        telemetry_packet[7] = baro_pressure[i]
+        telemetry_packet[8] = gps_speed[i]
+        telemetry_packet[9] = pitot_speed[i]
+        telemetry_packet[10] = throttle[i]
+        telemetry_packet[11] = aileron[i]
+        telemetry_packet[12] = elevator[i]
+        telemetry_packet[13] = rudder[i]
+        i+=1
+        #Clear the GUI window
+        if position == 0:
+            GND.clearwindow()
+            GND.sendNewData(telemetry_packet)
+            GND.updatewindow()
+            plt.pause(0.0000000000001)
+    #Then sleep for 0.1 seconds
+    #time.sleep(0.1)

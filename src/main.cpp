@@ -39,22 +39,31 @@ modeling model;
 
 //Need some logic here to determine any hardware in the loop
 //modes
+
+///////////////////////////////////////////////////////
 #ifdef HIL
 //Running in HIL mode
+
+////////////RUNNING HIL ON DESKTOP
 #ifdef DESKTOP
 //Running in desktop mode HIL so CONTROLLOOP is off
 #define CONTROLLOOP 0
 #endif
+///////////////////////////////////
 
+////////////RUNNING HIL ON RPI
 #ifdef RPI
 //Running HIL on RPI so CONTROLLOOP is on but MAIN LOOP IS OFF
 #define CONTROLLOOP 1
 #endif
+///////////////////////////////////
 
-#else //HIL
+/////////////NOT RUNNING HIL
+#else 
 //Hardware in the loop is off so run everything
 #define CONTROLLOOP 1
 #endif
+///////////////////////////////////////////////////
 
 //Main Loop Functions
 void renderloop(char* root_folder_name,int argc,char** argv);
@@ -136,6 +145,7 @@ void loop() {
   //Run the hardware loop once just to initialize everything
   hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
 
+  ///INFINITE WHILE LOOP
   while (system_check()) {
 
     ///////////TIMING UPDATE/////////////////
@@ -159,11 +169,12 @@ void loop() {
 
     //If We're running in HIL we need to run the HIL comms function    
     #ifdef HIL
-    hw.hil();
+    hw.hil(watch.currentTime,watch.elapsedTime);
     #endif
     
     //We only run the hardware / control loop if we're in SIMONLY, SIL, AUTO or HIL RPI
-    //The control and hardware loops runs on the RPI 
+    //In HIL mode the control and hardware loops run on the RPI but they won't run
+    //When on desktop HIL mode
     //The CONTROLLOOP variable is set in the preamble of this cpp file
     if (CONTROLLOOP) {
       hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
@@ -190,16 +201,21 @@ void loop() {
       lastPRINTtime+=hw.PRINTRATE;
       //Time
       printf("%lf %lf ",watch.currentTime,watch.elapsedTime);
-      //First 4 RX signals
-      hw.rc.in.printRCstate(-4);
+      //First 5 RX signals
+      hw.rc.in.printRCstate(-5);
       //Roll Pitch Yaw
       printf(" %lf %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw,hw.sense.Heading_Mag);
       //PQR
       printf(" %lf %lf %lf ",hw.sense.orientation.roll_rate,hw.sense.orientation.pitch_rate,hw.sense.orientation.yaw_rate);
       //PWM Array
       hw.rc.out.print();
+      //LAT LON PRESSURE ALTITUDE
+      #ifdef AUTO
+      printf(" %lf %lf %lf ",hw.sense.satellites.latitude,hw.sense.satellites.longitude,hw.sense.atm.altitude);
+      #else
       //XYZ
       printf(" %lf %lf %lf ",hw.sense.satellites.X,hw.sense.satellites.Y,hw.sense.atm.altitude);
+      #endif
       //Newline
       printf("\n");
       }*/

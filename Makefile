@@ -74,7 +74,7 @@ auto:
 	make all TYPE="AUTO" EXECUTABLE="auto.exe" PLATFORM="RPI" RX="FLYSKY" WIRINGPI="-lwiringPi"
 
 hil_desktop:
-	make all TYPE="HIL" EXECUTABLE="hil.exe" PLATFORM="DESKTOP" RENDER="-lGL -lGLU -lglut" OPENGLSOURCES="opengl/opengl.cpp" THREAD="-lpthread -lboost_system -lboost_thread -lboost_date_time"
+	make all TYPE="HIL" EXECUTABLE="hil.exe" PLATFORM="DESKTOP" RENDER="-lGL -lGLU -lglut" OPENGLSOURCES="libraries/opengl/opengl.cpp" THREAD="-lpthread -lboost_system -lboost_thread -lboost_date_time"
 
 hil_rpi:
 	make all TYPE="HIL" EXECUTABLE="hil.exe" PLATFORM="RPI" RX="FLYSKY" WIRINGPI="-lwiringPi"

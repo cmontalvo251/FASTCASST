@@ -44,6 +44,7 @@ class hardware {
   double nextLOGtime = 0;
   double nextRCtime = 0;
   double nextTELEMtime = 0;
+  double nextHILtime = 0;
   MATLAB telemetry_matrix,uart_sense_matrix,uart_ctl_matrix;
   MATLAB q0123,ptp;
   Datalogger logger;
@@ -61,7 +62,7 @@ class hardware {
   //Status
   int ok = 1;
   //Rates
-  double PRINTRATE=1.0,RCRATE=1.0,LOGRATE=1.0,TELEMRATE=1.0;
+  double PRINTRATE=1.0,RCRATE=1.0,LOGRATE=1.0,TELEMRATE=1.0,HILRATE=1.0;
   //Outputs
   MATLAB in_simulation_matrix,in_configuration_matrix;
   //Initialization routine needs the root folder name
@@ -71,7 +72,7 @@ class hardware {
   //Main hardware loop
   void loop(double currentTime,double elapsedTime,MATLAB control_matrix);
   //HIL function
-  void hil();
+  void hil(double,double);
   //Constructor
   hardware();
 };

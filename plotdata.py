@@ -14,15 +14,10 @@ except:
     sys.exit()
 
 #Run code
-#os.system('./clean_logs')
-<<<<<<< HEAD
-#os.system('make sil MODEL="airplane" RX="XBOX"')
-#os.system('./sil.exe airplane/')
-=======
-#os.system('rm simonly.exe')
-#os.system('make simonly MODEL="airplane"')
-#os.system('./simonly.exe airplane/')
->>>>>>> 801f40747c2d191caf81c7c255d13a1f77d30515
+os.system('./clean_logs')
+os.system('rm simonly.exe')
+os.system('make simonly MODEL="airplane"')
+os.system('./simonly.exe airplane/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File

@@ -70,7 +70,7 @@ void UART::sendControl(MATLAB uart_ctl_matrix) {
   hilcomms.SerialSendArray(uart_ctl_array,uart_ctl_matrix.len(),0);
 }
 
-void UART::readControl(MATLAB uart_ctl_matrix) {
+int UART::readControl(MATLAB uart_ctl_matrix) {
   //This function will read the ctl array over UART
   hilcomms.SerialGetArray(uart_ctl_array,uart_ctl_matrix.len(),0);
   //uart_ctl_matrix.disp();
@@ -79,6 +79,7 @@ void UART::readControl(MATLAB uart_ctl_matrix) {
   for (int i = 1;i<=uart_ctl_matrix.len();i++) {
     uart_ctl_matrix.set(i,1,uart_ctl_array[i-1]);
   }
+  return 0; //error code doesn't work quite yet
 }
 
 void UART::sendTelemetry(MATLAB uart_telemetry_matrix,int echo) {

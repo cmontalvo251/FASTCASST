@@ -1,3 +1,20 @@
+=======================8/23/2022==============
+
+I added a couple comments in the HIL part of the code
+to test 1 way communication. The code is pretty much all there
+it just needs to be tested
+
+=======================8/18/2022=============
+
+I merged the HIL branch that wasn't completed yet. The last update showing that HIL
+worked was on 6/14/2022 just showing that the cable that Maxwell created worked. 
+Will need to compile all versions of software first and make sure everything still works.
+
+1.) SIMONLY - Waypoints + Sensor errors - check. Found an issue with the telemetry unit plugged in
+2.) SIL - Manual control with XBOX controller - check
+3.) SIL - Waypoints - check
+4.) AUTO on RPI - check
+
 =======================8/14/2022=============
 
 Alright now it's time to work on SIMONLY control with sensor errors
@@ -41,6 +58,27 @@ IMU yaw straight from the magnetometer
 
 Done. Not tested on hardware but it's at least possible to put every thing in debug mode with
 telemetry and test what's going on 
+
+=======================7/14/2022===============
+
+Yeesh. One month hiatus on HIL. If I recall the issue into was that fact that when no hardware is 
+connected the controls default to OUTMIN which is not correct for an airplane. They should default 
+to throtte (OUTMIN) and everything else OUTMID. So I need to investigate that issue.
+
+Alright fixed it. Just an issue with reading from serial and my range checks when receiving 
+zeros.
+
+One concern I have going forward is that for whatever reason if you read from Serial and you get 
+an invalid set of data the controls will revert to defaults. What might be better is to rever to the 
+last known values. Hmmmm. Ok I added a backup and revert function. Hopefully that will be ok.
+
+It's time to start testing with hardware again.
+
+=======================6/14/2022===============
+
+Working on HIL. The wired serial USB connector that
+Maxwell made works so it's time to start running
+HIL on both simulator and hardware
 
 =======================6/13/2022===============
 
@@ -208,7 +246,6 @@ compiles and runs but the airplane is spinning like crazy and
 there are a ton of stdout prints which I thought I turned off.
 
 Anyway. Made a ton of progress today
->>>>>>> main
 
 ========================4/24/2022==========================
 

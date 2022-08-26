@@ -197,14 +197,14 @@ void loop() {
     /////////////////////////////////////////
 
     //PRINT TO STDOUT
-    if (lastPRINTtime <= watch.currentTime) {
+    /*    if (lastPRINTtime <= watch.currentTime) {
       lastPRINTtime+=hw.PRINTRATE;
       //Time
       printf("%lf %lf ",watch.currentTime,watch.elapsedTime);
       //First 5 RX signals
       hw.rc.in.printRCstate(-5);
       //Roll Pitch Yaw
-      printf(" %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
+      printf(" %lf %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw,hw.sense.Heading_Mag);
       //PQR
       printf(" %lf %lf %lf ",hw.sense.orientation.roll_rate,hw.sense.orientation.pitch_rate,hw.sense.orientation.yaw_rate);
       //PWM Array
@@ -218,7 +218,7 @@ void loop() {
       #endif
       //Newline
       printf("\n");
-    }
+      }*/
   }
   printf("Main Loop End \n");
 }

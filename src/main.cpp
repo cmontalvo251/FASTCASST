@@ -218,7 +218,7 @@ void loop() {
       #endif
       //Newline
       printf("\n");
-    }
+      }
   }
   printf("Main Loop End \n");
 }

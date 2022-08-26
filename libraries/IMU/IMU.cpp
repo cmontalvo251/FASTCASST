@@ -70,7 +70,7 @@ void IMU::loop(double elapsedTime){
   //And the update routine above should be read();
   mpulsm->read_accelerometer(&ax, &ay, &az);
   mpulsm->read_gyroscope(&gx, &gy, &gz);
-  mpulsm->read_magnetometer(&mx,&my,&mz);
+  mpulsm->read_magnetometer(&mx ,&my ,&mz);
   //Comment out temperature to save time.
   //temperature = mpulsm->read_temperature()/TEMP_SCALE;
 

@@ -11,6 +11,7 @@
 
 //Helper Modules
 #include <MATLAB/MATLAB.h>
+#include <Mathp/mathp.h>
 
 //Hardware
 //Analog Signals
@@ -49,6 +50,7 @@ class sensors {
   BaroTemp atm;
   MATLAB sense_matrix,sense_matrix_dot;
   char** headernames,headernames_dot;
+  double Heading_Mag,x_tilt,y_tilt,Hm;
   //constructor
   sensors();
   //Send model matrix
@@ -59,6 +61,8 @@ class sensors {
   void initIMU(int);
   //Polling routine
   void poll(double currentTime,double elapsedTime);
+  //Magnetometer Heading
+  double mag_heading(double,double,double,double,double);
   //Printing routine
   void print();
   //Get number of variabls routine

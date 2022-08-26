@@ -220,6 +220,26 @@ double sensors::getTemperature() {
   return atm.temperature;
 }
 
+double sensors::mag_heading(double roll,double pitch,double mx,double my,double mz) {
+  printf("RP and Mag: %lf %lf %lf %lf %lf ",roll,pitch,mx,my,mz);
+  x_tilt = my*sin(roll*DEG2RAD)*sin(pitch*DEG2RAD) + mx*cos(roll*DEG2RAD) + mz*cos(pitch*DEG2RAD)*sin(roll*DEG2RAD);
+  y_tilt = my*cos(pitch*DEG2RAD) - mz*sin(pitch*DEG2RAD);
+  printf("Tilt Comp: %lf %lf ",x_tilt,y_tilt);
+  if(x_tilt > 0.0){
+    Hm = 180. - atan(y_tilt/x_tilt)*RAD2DEG;
+  } else if (x_tilt > 0.0 && y_tilt < 0.0){
+    Hm = -atan(y_tilt/x_tilt)*RAD2DEG;
+  } else if (x_tilt > 0.0 && y_tilt > 0.0) {
+    Hm = 360. - atan(y_tilt/x_tilt)*RAD2DEG;
+  } else if (x_tilt == 0.0 && y_tilt < 0.0) {
+    Hm = 90.;
+  } else if (x_tilt == 0.0 && y_tilt > 0.0) {
+    Hm = 270.;
+  }
+  printf("IMU Heading: %lf \n",Hm);
+  return Hm;
+}
+
 //Polling routine to read all sensors
 void sensors::poll(double currentTime,double elapsedTime) {
   //First Analog to Digital Converter
@@ -238,7 +258,9 @@ void sensors::poll(double currentTime,double elapsedTime) {
   ///Read the IMU (ptp,pqr)
   //IMU must be read as fast as possible due to the elapsedTime
   //and the integrator on board
-  orientation.loop(elapsedTime); 
+  orientation.loop(elapsedTime);
+  //Maxwell Cobar's mag heading loop 
+  //Heading_Mag = mag_heading(orientation.roll,orientation.pitch,orientation.mx,orientation.my,orientation.mz);
 
   //Read the GPS
   if (currentTime >= nextGPStime) {
@@ -286,6 +308,7 @@ void sensors::poll(double currentTime,double elapsedTime) {
   sense_matrix.set(13,1,orientation.mx);
   sense_matrix.set(14,1,orientation.my);
   sense_matrix.set(15,1,orientation.mz);
+  //sense_matrix.set(15,1,Heading_Mag);
 
   //GPS
   sense_matrix.set(16,1,satellites.latitude);
@@ -330,7 +353,9 @@ void sensors::print() {
   //Q0123
   //printf("Q0123 = %lf %lf %lf %lf ",orientation.ahrs.q0,orientation.ahrs.q1,orientation.ahrs.q2,orientation.ahrs.q3);
   //Euler
-  printf("PTP = %lf %lf %lf ",orientation.roll,orientation.pitch,orientation.yaw);  
+  printf("PTP = %lf %lf %lf ",orientation.roll,orientation.pitch,orientation.yaw);
+  //Heading
+  //printf("Heading (Mag and GPS) = %lf %lf ",Heading_Mag,satellites.heading);
   //UVW
   //PQR
   printf("PQR = %lf %lf %lf ",orientation.roll_rate,orientation.pitch_rate,orientation.yaw_rate);

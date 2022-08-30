@@ -5,6 +5,9 @@ import util
 import ublox as UBLX
 import numpy as np
 
+##NOTE THAT FUNCTIONS LIKE IFOV AND computeGeocentricLATLON functions are in
+##gpscomms.py which is over in aerospace.git/satcomms/gpscomms.py
+
 class GPS():
     def __init__(self):
         self.latitude = -99

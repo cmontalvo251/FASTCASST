@@ -88,8 +88,8 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   NUMSENSE = 10;
   NUMCTL = 9;
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix HW");
-  uart_sense_matrix.zeros(NUMSENSE,1,"Sense Matrix Sent to other computer");
-  uart_ctl_matrix.zeros(NUMCTL,1,"Control Matrix received from other computer");
+  uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
+  uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
   ser.init(NUMTELEMETRY,NUMSENSE,NUMCTL);
 }
 
@@ -219,7 +219,7 @@ void hardware::hil(double currentTime,double elapsedTime) {
       //If you set this to sendOk = 1 the DESKTOP will continually send
       //data to the RPI. It'd be a good way to test one way communication from
       //the desktop to the RPI
-      sendOK = 0;
+      sendOK = 1;
     } else {
       printf("READING CONTROL MATRIX FROM SERIAL \n");
       //rec error code not operational at the moment

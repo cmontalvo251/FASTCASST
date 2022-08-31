@@ -162,7 +162,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     telemetry_matrix.set(1,1,currentTime);
     telemetry_matrix.set(2,1,sense.orientation.roll);
     telemetry_matrix.set(3,1,sense.orientation.pitch);
-    telemetry_matrix.set(4,1,sense.orientation.yaw);
+    telemetry_matrix.set(4,1,sense.compass);
     telemetry_matrix.set(5,1,sense.satellites.latitude);
     telemetry_matrix.set(6,1,sense.satellites.longitude);
     ser.sendTelemetry(telemetry_matrix,0);

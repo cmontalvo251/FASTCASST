@@ -129,11 +129,16 @@ void GPS::ConvertGPS2XY(){
 void GPS::computeGroundTrack(double current_time) {
   //First convert the current measurement to XY
   ConvertGPS2XY();
+
   //Then proceed with the speed measurement
   double dx = X - xprev;
   double dy = Y - yprev;
   double dt = current_time - prev_time;
   dist = sqrt((pow(dx,2)) + (pow(dy,2)));
+
+  if (abs(dx) + abs(dy) < 0.1) {
+    return;
+  }
   ///Also get heading
   //printf("X = %lf, Y = %lf \n",X,Y);
   //printf("dx = %lf dy = %lf \n",dx,dy);
@@ -141,7 +146,9 @@ void GPS::computeGroundTrack(double current_time) {
   //printf("heading = %lf \n",heading_new);
 
   //Filter heading
-  heading = (1-headingFilterConstant)*heading_new + heading*headingFilterConstant;
+  heading = (1-headingFilterConstant)*heading_new + (headingFilterConstant)*heading;
+
+  //printf("TIME = %lf , LATITUDE = %lf , LONGITUDE = %lf , X = %lf , Y = %lf , dx = %lf , dy = %lf , heading_new = %lf , heading = %lf \n",current_time,latitude,longitude,X,Y,dx,dy,heading_new,heading);
 
   ///////////??COMPUTE RAW SPEED AND HEAVILY FILTERED SPEED
   if (dt > 0) {

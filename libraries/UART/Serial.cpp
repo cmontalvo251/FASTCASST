@@ -53,6 +53,8 @@ void Serial::SerialInit(char *ComPortName, int BaudRate)
   // Read in existing settings, and handle any error
   if(tcgetattr(hComm, &tty) != 0) {
       printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
+      printf("QUITTING!!!! \n");
+      exit(1);
   }
   tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
   tty.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)

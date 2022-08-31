@@ -88,8 +88,8 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   NUMSENSE = 10;
   NUMCTL = 9;
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix HW");
-  uart_sense_matrix.zeros(NUMSENSE,1,"Sense Matrix Sent to other computer");
-  uart_ctl_matrix.zeros(NUMCTL,1,"Control Matrix received from other computer");
+  uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
+  uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
   ser.init(NUMTELEMETRY,NUMSENSE,NUMCTL);
 }
 
@@ -274,8 +274,8 @@ void hardware::hil(double currentTime,double elapsedTime) {
     
     //If we're running HIL on RPI we need to receive data from serial via desktop
     #if defined (HIL) && (RPI)
-    //printf("Receive Data from Desktop \n");
     if (recOK) {
+      printf("Receive Data from Desktop \n");
       ser.readSense(uart_sense_matrix);
       uart_sense_matrix.disp();
       //Again we need to populate this into the appropriate vectors
@@ -303,7 +303,7 @@ void hardware::hil(double currentTime,double elapsedTime) {
 
       //If you set this variable recOK to 1 the RPI will continually receive data from the DESKTOP
       //computer. It would be a good way to test 1 way communication
-      recOK = 0;
+      recOK = 1;
     } else {
       //Then send data to desktop
       //printf("Send data to Desktop \n");

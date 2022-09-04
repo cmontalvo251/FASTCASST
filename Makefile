@@ -86,7 +86,7 @@ all: $(OBJECTS) $(MAIN) $(EXECUTABLE)
 what:
 	make who
 who:
-	# make (simonly, sil, hil, auto)
+	# make (simonly, sil, hil_rpi, hil_desktop, auto)
 	# PLATFORM -> DESKTOP, RPI
 	# RX -> RCTECH, KEYBOARD, FLYSKY, XBOX
 	# MODEL -> airplane, portalcube, quadcopter, satellite, tank, x8

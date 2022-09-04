@@ -39,10 +39,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //and compute derivates
   elapsedTime = currentTime - lastTime;
   lastTime = currentTime;
-
-  double motor = STICK_MID; //Left Motor
-  double servo = STICK_MID; //Right Motor
-  double DIFFERENTIAL = 1.0;
+  
+  double motor = STICK_MID; //motor
+  double servo = STICK_MID; //steering
 
   //First extract the relavent commands from the receiver.
   double throttle = rx_array[0];
@@ -72,7 +71,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Then you can run any control loop you want.
   if (icontrol) {
     //Control system on
-    //printf("Auto ON \n");
+    printf("Auto ON \n");
     motor = STICK_MID;
     servo = aileron;
   } else {

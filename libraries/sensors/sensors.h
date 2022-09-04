@@ -36,7 +36,7 @@ class sensors {
   MATLAB q0123,ptp;
   MATLAB bias_pos_matrix,bias_gyro_matrix,bias_mag_matrix,bias_angle_matrix;
   double bias_pressure_val;
-  double bias_angle,bias_gyro,bias_mag,bias_pos,bias_pressure,compass=0;
+  double bias_angle,bias_gyro,bias_mag,bias_pos,bias_pressure;
   double std_angle,std_gyro,std_mag,std_pos,std_pressure;
   double noise_angle,noise_gyro,noise_mag,noise_pos,noise_pressure;
   void setBias(MATLAB,double,double);
@@ -50,7 +50,7 @@ class sensors {
   BaroTemp atm;
   MATLAB sense_matrix,sense_matrix_dot;
   char** headernames,headernames_dot;
-  double Heading_Mag,x_tilt,y_tilt,Hm;
+  double Heading_Mag,x_tilt,y_tilt,Hm,compass=0;
   //constructor
   sensors();
   //Send model matrix

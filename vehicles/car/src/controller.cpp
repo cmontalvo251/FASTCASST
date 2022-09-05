@@ -44,40 +44,69 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   double servo = STICK_MID; //steering
 
   //First extract the relavent commands from the receiver.
-  double throttle = rx_array[0];
-  double aileron = rx_array[1];
-  double autopilot = rx_array[4];
-  bool icontrol = 0;
+  throttle = rx_array[0];
+  aileron = rx_array[1];
+  autopilot = rx_array[4];
+  int icontrol = 0;
 
-  switch (CONTROLLER_FLAG) {
-  case -1:
-    //User decides
+  //Check for user controlled
+  if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {
       icontrol = 1;
     } else {
       icontrol = 0;
     }
-    break;
-  case 0:
-    //Always off
-    icontrol = 0;
-    break;
-  case 1:
-    //Always on
-    icontrol = 1;
-    break;
+  } else {
+    icontrol = CONTROLLER_FLAG;
   }
 
-  //Then you can run any control loop you want.
-  if (icontrol) {
-    //Control system on
-    //printf("Auto ON \n");
-    motor = STICK_MAX;
-    servo = STICK_MAX;
-  } else {
-    //Control system off
-    motor = throttle;
-    servo = aileron;
+  //Car Control cases
+  // 0 = fully manual
+  // 1 = Throttle manual, heading control
+  // 2 = Throttle manual, waypoint control
+  // 3 = Speed and waypoint control
+  //Initialize commands
+  velocity_command = -99;
+  heading_command = -99;
+  
+  WAYPOINTS_X[0] = 500;
+  WAYPOINTS_Y[0] = 0;
+
+  WAYPOINTS_X[1] = 500;
+  WAYPOINTS_Y[1] = 500;
+
+  WAYPOINTS_X[2] = 0;
+  WAYPOINTS_Y[2] = 500;
+
+  WAYPOINTS_X[3] = 0;
+  WAYPOINTS_Y[3] = 0;
+
+  switch (icontrol) {
+    case 3:
+      //velocity
+      VelocityLoop(sense_matrix);
+    case 2:
+      //waypoint control
+      //printf("WAYPOINT \n");
+      WaypointLoop(sense_matrix);
+    case 1:
+      if (heading_command == -99) {
+        heading_command = 45;
+      }
+      //roll (rudder mixing), velocity and altitude control
+      //printf("Altitude + ");
+      HeadingLoop(sense_matrix);
+    case 0:
+      //If the velocity controller is off we send 75% speed to the motor
+      if (velocity_command == -99) {
+        throttle = STICK_MID + 0.75*(STICK_MAX-STICK_MID); 
+      }
+      //printf("Passing signals \n");
+      //Pass the receiver signals to the control_matrix and then break
+      motor = throttle;
+      servo = aileron;
+      //control_matrix.disp();
+      break;
   }
 
   //Saturation
@@ -99,3 +128,65 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   control_matrix.set(2,1,servo);
   //ctlcomms.disp();
 }
+
+void controller::WaypointLoop(MATLAB sense_matrix) {
+  double X = sense_matrix.get(1,1);
+  double Y = sense_matrix.get(2,1);
+  double DY = WAYPOINTS_Y[WAYINDEX]-Y;
+  double DX = WAYPOINTS_X[WAYINDEX]-X;
+  heading_command = atan2(DY,DX)*180.0/PI;
+  double distance = sqrt(DY*DY + DX*DX);
+  //PAUSE();
+  if (PRINTER == 4*100000) {
+    printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,heading_command,distance);
+    PRINTER = 0;
+  }
+  PRINTER+=1;
+  if (distance < 150) {
+    printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,heading_command,distance);
+    WAYINDEX += 1;
+    if (WAYINDEX > NUMWAYPOINTS-1) {
+      WAYINDEX = 0;
+    }    
+  }
+}
+
+void controller::HeadingLoop(MATLAB sense_matrix) {
+  double kp = 0.1;
+  double heading = sense_matrix.get(6,1);
+  //I think the wrap issue is here
+  double dheading = -delpsi(heading*PI/180.0,heading_command*PI/180.0)*180.0/PI;
+  if (dheading > 180) {
+    dheading -= 180;
+    dheading *= -1;
+  }
+  if (dheading < -180) {
+    dheading += 180;
+    dheading *= -1;
+  }
+  double daileron = kp*dheading;
+  double dpwm = STICK_MAX - STICK_MID;
+  daileron = CONSTRAIN(daileron,-dpwm,dpwm);
+  aileron = STICK_MID + daileron;
+  //printf("T, HEADING = %lf %lf \n",lastTime,heading,aileron);
+  //PAUSE();
+}
+
+void controller::VelocityLoop(MATLAB sense_matrix) {
+  //printf("------\n");
+  //sense_matrix.disp();
+  double u = sense_matrix.get(7,1);
+  velocity_command = 5;
+  double velocityerror = velocity_command - u;
+  //printf("Sense U = %lf \n",u);
+  //printf("Velocity Error = %lf \n",velocityerror);
+  double kp = 40.0;
+  double ki = 3.0;
+  throttle = OUTMIN + kp*velocityerror + ki*velocityint;
+  throttle = CONSTRAIN(throttle,OUTMIN,OUTMAX);
+  //Integrate but prevent integral windup
+  if ((throttle > OUTMIN) && (throttle < OUTMAX)) {
+    velocityint += elapsedTime*velocityerror;
+  }
+}
+

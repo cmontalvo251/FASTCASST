@@ -377,6 +377,7 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //External Forces Model
   //Send the external forces model the actuator_state instead of the ctlcomms
   if (FORCES_FLAG) {
+    //printf("RUNNING FORCE MODEL \n");
     extforces.ForceMoment(currentTime,integrator.StateDel,integrator.k,pwm_dynamics_array,env);
   } else {
     extforces.FB.mult_eq(0); //Zero these out just to make sure something is in here
@@ -399,9 +400,15 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   FTOTALB.plus_eq(FGNDB);
   //FTOTALB.disp();
   //Only add external forces if FGNDB.norm is zero
+  //WAIT WHY IS THIS HERE?????
+  #if not defined (car) || (tank)
   if (FGNDB.norm() == 0) {
     FTOTALB.plus_eq(extforces.FB);
   }
+  #else
+  //Ok need to add these in no matter what if car and tank around
+  FTOTALB.plus_eq(extforces.FB);
+  #endif
   //extforces.FB.disp();
   //FGNDB.disp();
   //FTOTALB.disp();  
@@ -424,9 +431,13 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //Moments vector
   MTOTALB.mult_eq(0);
   MTOTALB.overwrite(MGNDB);
+  #if not defined (car) || (tank)
   if (FGNDB.norm() == 0) {
     MTOTALB.plus_eq(extforces.MB);
   }
+  #else
+  MTOTALB.plus_eq(extforces.MB);
+  #endif
   //MTOTALB.disp();
   //pqr.disp();
   //PAUSE();

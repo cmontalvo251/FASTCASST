@@ -71,9 +71,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Then you can run any control loop you want.
   if (icontrol) {
     //Control system on
-    printf("Auto ON \n");
-    motor = STICK_MID;
-    servo = aileron;
+    //printf("Auto ON \n");
+    motor = STICK_MAX;
+    servo = STICK_MAX;
   } else {
     //Control system off
     motor = throttle;

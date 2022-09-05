@@ -31,6 +31,7 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   //Extract Actuator Values
   //Remember that control is in PWM (us)
   double motor = pwm_array[0];
+  //printf("MOTOR = %lf \n",motor);
   double steering = pwm_array[1]; 
 
   //Extract States
@@ -43,17 +44,20 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   double r = state.get(13,1);
   
   //Calculate Forces
-  double force_max = (((1.7)/2.2)*9.81 + 4.454)/2.0;
+  double force_max = 50;
   double s = 0.007681;
   double dpwm = (motor-STICK_MID);
+  //printf("dpwm = %lf \n",dpwm);
   double dsteer = (steering - STICK_MID);
   double steer_angle = 45*PI/180.0 * dsteer / (STICK_MAX - STICK_MID);
-  force = -copysign(1.0,dpwm)*force_max*(1-exp(-s*fabs(dpwm)));
+  force = copysign(1.0,dpwm)*force_max*(1-exp(-s*fabs(dpwm)));
+  //printf("FORCE = %lf \n",force);
   double xforce = force - 7.65*u;    // Modified to reflect 'Car' requirements
-  double yforce = -0.0000001*v + 1.0*steer_angle;    // Modified to reflect 'Car' requirements
+  //printf("xforce = %lf \n",xforce);
+  double yforce = -0.1*v + 0.0*steer_angle;    // Modified to reflect 'Car' requirements
 
   //Calculate Moments
-  double Nmoment = (force)*d - 0.0000001*r + 1.0*steer_angle;  
+  double Nmoment = 75*(steer_angle-0.4*r);  
   
   //Forces
   FB.plus_eq1(1,1,xforce);
@@ -64,6 +68,10 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   MB.plus_eq1(1,1,0.0);
   MB.plus_eq1(2,1,0.0);
   MB.plus_eq1(3,1,Nmoment);
+
+  //FB.disp();
+  //MB.disp();
+  //PAUSE();
   
 }
 

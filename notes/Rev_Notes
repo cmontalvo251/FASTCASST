@@ -1,3 +1,9 @@
+=======================9/3/2022===============
+
+Just finished adding the car forces and controller. Right now
+the system works in waypoint control mode although sensor
+errors have not been tested for the car. 
+
 =======================8/23/2022==============
 
 I added a couple comments in the HIL part of the code

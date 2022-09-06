@@ -48,7 +48,7 @@ void UART::sendSense(MATLAB uart_sense_matrix) {
     uart_sense_array[i-1] = uart_sense_matrix.get(i,1);
   }
   //Then send it over UART
-  hilcomms.SerialSendArray(uart_sense_array,uart_sense_matrix.len(),0);
+  hilcomms.SerialSendArray(uart_sense_array,uart_sense_matrix.len(),1);
 }
 
 

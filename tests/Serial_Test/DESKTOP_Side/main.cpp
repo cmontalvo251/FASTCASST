@@ -21,7 +21,9 @@ int main(int argc,char* argv[]) {
   uart_telemetry_array = (float *) calloc(NUMTELEMETRY,sizeof(float));
   int baudRate = 57600; //Hardcode. I don't think we ever need to change
   Serial comms;
+  printf("Serial Init \n");
   comms.SerialInit("/dev/ttyUSB0",baudRate);
+  printf("Serial Init done...\n");
 
   //Initialize the Timer if we're running in Software mode
   double initTime = 0;
@@ -32,10 +34,12 @@ int main(int argc,char* argv[]) {
 
   ///INFINITE WHILE LOOP
   while (1) {
+    printf("CURRENT TIME = %lf \n",currentTime);
     //Send Telemetry
     if (currentTime >= nextTELEMtime) {
       //Receive UART
-      comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,0);
+      printf("RUNNING Get Array \n");
+      comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,1);
       printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
       nextTELEMtime=currentTime+TELEMRATE;
     }

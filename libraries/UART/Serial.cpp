@@ -282,7 +282,7 @@ void Serial::SerialGetArray(float number_array[],int num,int echo) {
     do {
       do {
         inchar = SerialGetc();
-        //printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
+        printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
         j++;
       } while ((inchar == '\0') && (j < 1000));
       //if (echo) {

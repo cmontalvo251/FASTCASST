@@ -276,42 +276,41 @@ void Serial::SerialGetArray(float number_array[],int num,int echo) {
     int i = 0;
     char inLine[MAXLINE];
     char inchar = '\0';
-    if (echo) {
-      printf("Waiting for characters \n");
-    }
+    //if (echo) {
+    //  printf("Waiting for characters \n");
+    //}
     do {
       do {
         inchar = SerialGetc();
         //printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
         j++;
       } while ((inchar == '\0') && (j < 1000));
-      if (echo) {
-      printf("Receiving: i = %d char = %c chartoint = %d \n",i,inchar,int(inchar));
-      }
+      //if (echo) {
+      //printf("Receiving: i = %d char = %c chartoint = %d \n",i,inchar,int(inchar));
+      //}
       inLine[i++] = inchar;
     } while ((inchar != '\r') && (i<MAXLINE));
-    if (echo) {
-      printf("Response received \n");
-    }
+    //if (echo) {
+    //  printf("Response received \n");
+    //}
 
     // Format from Arduino:
     // H:nnnnnnnn 
 
     // Now Convert from ASCII to HEXSTRING to FLOAT
-    if (echo) {
-      printf("Converting to Float \n");
-    }
+    //if (echo) {
+    //  printf("Converting to Float \n");
+    //}
     inputvar.inversion = 0;
     for(i=2;i<10;i++){
-      if (echo) {
-        printf("Hex Digit: i = %d char = %c \n",i,inLine[i]);
-      }
+      //if (echo) {
+      //  printf("Hex Digit: i = %d char = %c \n",i,inLine[i]);
+      //}
       inputvar.inversion <<= 4;
       inputvar.inversion |= (inLine[i] <= '9' ? inLine[i] - '0' : toupper(inLine[i]) - 'A' + 10);
     }
     if (echo) {
-      printf("Integer Received = %d \n",inputvar.inversion);
-      printf(" \n");
+      printf("Integer Received = %d Float Received = %lf \n",inputvar.inversion,inputvar.floatversion);
     }
     number_array[d] = inputvar.floatversion;
   }

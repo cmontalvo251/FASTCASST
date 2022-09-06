@@ -274,8 +274,8 @@ void hardware::hil(double currentTime,double elapsedTime) {
     
     //If we're running HIL on RPI we need to receive data from serial via desktop
     #if defined (HIL) && (RPI)
-    //printf("Receive Data from Desktop \n");
     if (recOK) {
+      printf("Receive Data from Desktop \n");
       ser.readSense(uart_sense_matrix);
       uart_sense_matrix.disp();
       //Again we need to populate this into the appropriate vectors
@@ -303,7 +303,7 @@ void hardware::hil(double currentTime,double elapsedTime) {
 
       //If you set this variable recOK to 1 the RPI will continually receive data from the DESKTOP
       //computer. It would be a good way to test 1 way communication
-      recOK = 0;
+      recOK = 1;
     } else {
       //Then send data to desktop
       //printf("Send data to Desktop \n");

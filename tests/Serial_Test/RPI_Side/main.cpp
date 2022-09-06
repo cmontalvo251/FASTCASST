@@ -8,7 +8,7 @@ using namespace std;
 TIMER watch;
 
 //Serial Module
-#include <Serial/Serial.h>
+#include <UART/Serial.h>
 
 int main(int argc,char* argv[]) {
   //Print name of software
@@ -17,11 +17,10 @@ int main(int argc,char* argv[]) {
   
   double NUMTELEMETRY = 2; //Set the actual values in the loop function
   double x = 0;
-  Serial comms;
-  ser.init(NUMTELEMETRY);
   float *uart_telemetry_array;
   uart_telemetry_array = (float *) calloc(NUMTELEMETRY,sizeof(float));
   int baudRate = 57600; //Hardcode. I don't think we ever need to change
+  Serial comms;
   comms.SerialInit("/dev/ttyAMA0",baudRate);
 
   //Initialize the Timer if we're running in Software mode
@@ -41,7 +40,7 @@ int main(int argc,char* argv[]) {
       //Then send it over UART
       comms.SerialSendArray(uart_telemetry_array,NUMTELEMETRY,1);
       nextTELEMtime=currentTime+TELEMRATE;
-      x+=1;
+      x+=10;
     }
       
     //Update Timer

@@ -1,6 +1,6 @@
-#########FAST MAKEFILE DEFAULTS##########
+#########Serial Test##########
 PLATFORM=RPI
-EXECUTABLE=a.exe
+EXECUTABLE=serial_test.exe
 MAIN=main.o
 WIRINGPI="-lwiringPi"
 
@@ -10,12 +10,13 @@ COMPILE=-c -w -std=c++11 -Wno-psabi
 FLAGS=-DDEBUG
 LIB=-L/usr/local/lib -L./
 #FAST is using boost for threading #sudo apt-get install libboost-all-dev
-INCLUDE=-Ilibraries/ -I./
+INCLUDE=-I${PLOC}libraries/ -I./
+PLOC=../../../
 ###HELPER
-HELPERSOURCES=libraries/MATLAB/MATLAB.cpp libraries/Mathp/mathp.cpp libraries/Timer/timer.cpp
+HELPERSOURCES=${PLOC}/libraries/Datalogger/Datalogger.cpp ${PLOC}libraries/MATLAB/MATLAB.cpp ${PLOC}libraries/Mathp/mathp.cpp ${PLOC}libraries/Timer/timer.cpp
 ###HARDWARE
-UARTSOURCES=$(wildcard libraries/UART/*.cpp)
-UTILSOURCES=$(wildcard libraries/Util/*.cpp)
+UARTSOURCES=$(wildcard ${PLOC}libraries/UART/*.cpp)
+UTILSOURCES=$(wildcard ${PLOC}libraries/Util/*.cpp)
 HARDWARESOURCES=$(UARTSOURCES) $(UTILSOURCES)
 ###COMBINE ALL SOURCES
 SOURCES=$(HELPERSOURCES) $(HARDWARESOURCES)
@@ -40,6 +41,6 @@ $(MAIN): $(MAIN:.o=.cpp)
 clean:
 	echo ' ' > d.exe
 	rm *.exe
+	echo ' ' > ${PLOC}libraries/MATLAB/d.o
 	rm *.o
-	echo ' ' > libraries/MATLAB/d.o
-	rm libraries/*/*.o
+	rm ${PLOC}libraries/*/*.o

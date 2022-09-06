@@ -1,3 +1,16 @@
+=======================9/6/2022===============
+
+Working on HIL again. This is what works so far and what doesn't work
+
+1.) Sending data from RPI (C++) to DESKTOP (Python) using Radios - Works
+2.) Sending data from RPI (C++) to DESKTOP (C++) using Radios - Does not work
+
+What I would like to do is the following  
+
+1.) Sending data from RPI (C++) to DESKTOP (Python) using Serial USB - This way I can test the Serial USB without having to use the wireless radios
+
+2.) Sending data from RPI (C++) to DESKTOP (C++) using Serial USB - Then we do this since somehow the python code works and the C++ code does not work.
+
 =======================9/3/2022===============
 
 Just finished adding the car forces and controller. Right now

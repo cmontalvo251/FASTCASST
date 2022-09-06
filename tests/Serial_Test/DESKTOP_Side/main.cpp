@@ -12,7 +12,7 @@ TIMER watch;
 
 int main(int argc,char* argv[]) {
   //Print name of software
-  printf("Desktop Send Test Script \n");
+  printf("Desktop Receive Test Script \n");
   printf("Main Loop Begin \n");
   
   double NUMTELEMETRY = 2; //Set the actual values in the loop function
@@ -34,13 +34,10 @@ int main(int argc,char* argv[]) {
   while (1) {
     //Send Telemetry
     if (currentTime >= nextTELEMtime) {
-      //Set up uart array
-      uart_telemetry_array[0] = currentTime;
-      uart_telemetry_array[1] = x;
-      //Then send it over UART
-      comms.SerialSendArray(uart_telemetry_array,NUMTELEMETRY,1);
+      //Receive UART
+      comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,0);
+      printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
       nextTELEMtime=currentTime+TELEMRATE;
-      x+=10;
     }
       
     //Update Timer

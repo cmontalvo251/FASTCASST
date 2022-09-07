@@ -212,7 +212,9 @@ void sensors::getCompassHeading() {
   //For now just pass IMU yaw through to yaw angle
   //compass = orientation.yaw;
   //Or if you want use GPS heading
-  compass = satellites.heading;
+  //compass = satellites.heading;
+  //OR WE CREATE A FUZZY LOGIC FILTER WHERE WE FUSE THE IMU AND THE GPS
+  compass = orientation.yaw + heading_offset;
   //compass = 400;
 }
 
@@ -268,6 +270,8 @@ void sensors::poll(double currentTime,double elapsedTime) {
     satellites.poll(currentTime); //This will compute XYZ as well. For now we are using 
     //hardcoded GPS coordinates
     nextGPStime = currentTime + GPS_RATE;
+    //Compute / Update the Offset
+    heading_offset = satellites.heading - orientation.yaw;
   }
 
   ///////////////////??THEN POPULATE STATE VECTOR////////////////////

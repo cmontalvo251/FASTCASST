@@ -28,7 +28,7 @@ class sensors {
   ADC analog;
   int NUMVARS;
   //Rates and baro flag
-  double GPS_RATE,IMU_RATE,ANALOG_RATE;
+  double GPS_RATE,IMU_RATE,ANALOG_RATE,heading_offset=0;
   double nextGPStime=0,nextIMUtime=0,nextANALOGtime=0;
   int IBARO;
   //Errors

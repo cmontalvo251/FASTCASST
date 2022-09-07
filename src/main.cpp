@@ -210,12 +210,12 @@ void loop() {
       //PWM Array
       hw.rc.out.print();
       //LAT LON PRESSURE ALTITUDE
-      #ifdef AUTO
-      printf(" %lf %lf %lf %lf ",hw.sense.satellites.latitude,hw.sense.satellites.longitude,hw.sense.atm.altitude,hw.satellites.heading,hw.sense.compass);
-      #else
+      //#ifdef AUTO
+      printf(" %lf %lf %lf %lf %lf ",hw.sense.satellites.latitude,hw.sense.satellites.longitude,hw.sense.atm.altitude,hw.sense.satellites.heading,hw.sense.compass);
+      //#else
       //XYZ
-      printf(" %lf %lf %lf ",hw.sense.satellites.X,hw.sense.satellites.Y,hw.sense.atm.altitude);
-      #endif
+      //printf(" %lf %lf %lf ",hw.sense.satellites.X,hw.sense.satellites.Y,hw.sense.atm.altitude);
+      //#endif
       //Newline
       printf("\n");
       }

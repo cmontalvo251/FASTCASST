@@ -271,7 +271,9 @@ void sensors::poll(double currentTime,double elapsedTime) {
     //hardcoded GPS coordinates
     nextGPStime = currentTime + GPS_RATE;
     //Compute / Update the Offset
-    heading_offset = satellites.heading - orientation.yaw;
+    heading_offset_new = satellites.heading - orientation.yaw;
+    double s = 0.1;
+    heading_offset = s*heading_offset_new + (1-s)*heading_offset;
   }
 
   ///////////////////??THEN POPULATE STATE VECTOR////////////////////

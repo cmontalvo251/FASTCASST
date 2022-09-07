@@ -86,6 +86,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //velocity
       VelocityLoop(sense_matrix);
     case 2:
+      //If the velocity controller is off we send 75% speed to the motor
+      if (velocity_command == -99) {
+        throttle = STICK_MID + 0.75*(STICK_MAX-STICK_MID); 
+      }
       //waypoint control
       //printf("WAYPOINT \n");
       WaypointLoop(sense_matrix);
@@ -97,10 +101,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //printf("Altitude + ");
       HeadingLoop(sense_matrix);
     case 0:
-      //If the velocity controller is off we send 75% speed to the motor
-      if (velocity_command == -99) {
-        throttle = STICK_MID + 0.75*(STICK_MAX-STICK_MID); 
-      }
       //printf("Passing signals \n");
       //Pass the receiver signals to the control_matrix and then break
       motor = throttle;
@@ -126,7 +126,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Set motor commands to the ctlcomms values
   control_matrix.set(1,1,motor);
   control_matrix.set(2,1,servo);
-  //ctlcomms.disp();
+  //control_matrix.disp();
 }
 
 void controller::WaypointLoop(MATLAB sense_matrix) {

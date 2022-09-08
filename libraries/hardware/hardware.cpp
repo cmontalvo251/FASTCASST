@@ -127,6 +127,11 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     //rc.in.printRCstate(-4);
     //printf("\n");
     nextRCtime=currentTime+RCRATE;
+
+    //Compute / Update the Offset / Only if Autopilot switched
+    if (rc.in.rx_array[4] > STICK_MID) {
+      sense.heading_offset = sense.satellites.heading - sense.orientation.yaw;
+    }
   }
 
   //Poll all as quickly as possible sensors - This puts all raw data into the sense matrix
@@ -160,11 +165,11 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     //printf("Sending Telemetry %lf \n",currentTime);
     //For right now let's send RPY and GPS coordinates
     telemetry_matrix.set(1,1,currentTime);
-    telemetry_matrix.set(2,1,sense.orientation.roll);
-    telemetry_matrix.set(3,1,sense.orientation.pitch);
+    telemetry_matrix.set(2,1,sense.satellites.latitude);
+    telemetry_matrix.set(3,1,sense.satellites.longitude);
     telemetry_matrix.set(4,1,sense.compass);
-    telemetry_matrix.set(5,1,sense.satellites.latitude);
-    telemetry_matrix.set(6,1,sense.satellites.longitude);
+    telemetry_matrix.set(5,1,sense.orientation.yaw);
+    telemetry_matrix.set(6,1,sense.satellites.heading);
     ser.sendTelemetry(telemetry_matrix,0);
     nextTELEMtime=currentTime+TELEMRATE;
   }

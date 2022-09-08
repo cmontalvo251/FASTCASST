@@ -4,7 +4,6 @@
 #include "controller.h"
 
 controller::controller() {
-  control_matrix.zeros(NUMSIGNALS,1,"PWM Control Signals"); //The standards must be TAERA1A2A3A4
 };
 
 void controller::init(MATLAB in_configuration_matrix) {
@@ -52,6 +51,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Check for user controlled
   if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {
+      //printf("AUTO !!!! ");
       icontrol = 1;
     } else {
       icontrol = 0;

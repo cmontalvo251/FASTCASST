@@ -129,7 +129,8 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     nextRCtime=currentTime+RCRATE;
 
     //Compute / Update the Offset / Only if Autopilot switched
-    if (rc.in.rx_array[4] > STICK_MID) {
+    if (rc.in.rx_array[4] > 2000) {
+      printf("SET HEADING !!! ");
       sense.heading_offset = sense.satellites.heading - sense.orientation.yaw;
     }
   }

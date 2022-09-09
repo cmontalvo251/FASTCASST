@@ -4,7 +4,6 @@
 #include "controller.h"
 
 controller::controller() {
-  control_matrix.zeros(NUMSIGNALS,1,"PWM Control Signals"); //The standards must be TAERA1A2A3A4
 };
 
 void controller::init(MATLAB in_configuration_matrix) {

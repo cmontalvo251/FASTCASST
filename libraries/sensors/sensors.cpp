@@ -270,10 +270,6 @@ void sensors::poll(double currentTime,double elapsedTime) {
     satellites.poll(currentTime); //This will compute XYZ as well. For now we are using 
     //hardcoded GPS coordinates
     nextGPStime = currentTime + GPS_RATE;
-    //Compute / Update the Offset
-    heading_offset_new = satellites.heading - orientation.yaw;
-    double s = 0.1;
-    heading_offset = s*heading_offset_new + (1-s)*heading_offset;
   }
 
   ///////////////////??THEN POPULATE STATE VECTOR////////////////////

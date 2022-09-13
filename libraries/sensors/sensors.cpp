@@ -212,7 +212,9 @@ void sensors::getCompassHeading() {
   //For now just pass IMU yaw through to yaw angle
   //compass = orientation.yaw;
   //Or if you want use GPS heading
-  compass = satellites.heading;
+  //compass = satellites.heading;
+  //OR WE CREATE A FUZZY LOGIC FILTER WHERE WE FUSE THE IMU AND THE GPS
+  compass = orientation.yaw + heading_offset;
   //compass = 400;
 }
 

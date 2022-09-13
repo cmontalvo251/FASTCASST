@@ -4,7 +4,6 @@
 #include "controller.h"
 
 controller::controller() {
-  control_matrix.zeros(NUMSIGNALS,1,"PWM Control Signals"); //The standards must be TAERA1A2A3A4
 };
 
 void controller::init(MATLAB in_configuration_matrix) {
@@ -52,6 +51,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Check for user controlled
   if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {
+      //printf("AUTO !!!! ");
       icontrol = 1;
     } else {
       icontrol = 0;
@@ -86,6 +86,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //velocity
       VelocityLoop(sense_matrix);
     case 2:
+      //If the velocity controller is off we send 75% speed to the motor
+      if (velocity_command == -99) {
+        throttle = STICK_MID + 0.75*(STICK_MAX-STICK_MID); 
+      }
       //waypoint control
       //printf("WAYPOINT \n");
       WaypointLoop(sense_matrix);
@@ -97,10 +101,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //printf("Altitude + ");
       HeadingLoop(sense_matrix);
     case 0:
-      //If the velocity controller is off we send 75% speed to the motor
-      if (velocity_command == -99) {
-        throttle = STICK_MID + 0.75*(STICK_MAX-STICK_MID); 
-      }
       //printf("Passing signals \n");
       //Pass the receiver signals to the control_matrix and then break
       motor = throttle;
@@ -126,7 +126,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Set motor commands to the ctlcomms values
   control_matrix.set(1,1,motor);
   control_matrix.set(2,1,servo);
-  //ctlcomms.disp();
+  //control_matrix.disp();
 }
 
 void controller::WaypointLoop(MATLAB sense_matrix) {

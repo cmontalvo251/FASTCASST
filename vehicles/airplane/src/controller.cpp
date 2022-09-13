@@ -74,14 +74,14 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   altitude_command = 20; //Hardcode to 100?
   heading_command = -99;
   
-  WAYPOINTS_X[0] = 1000;
+  WAYPOINTS_X[0] = 500;
   WAYPOINTS_Y[0] = 0;
 
-  WAYPOINTS_X[1] = 1000;
-  WAYPOINTS_Y[1] = 1000;
+  WAYPOINTS_X[1] = 500;
+  WAYPOINTS_Y[1] = 500;
 
   WAYPOINTS_X[2] = 0;
-  WAYPOINTS_Y[2] = 1000;
+  WAYPOINTS_Y[2] = 500;
 
   WAYPOINTS_X[3] = 0;
   WAYPOINTS_Y[3] = 0;
@@ -143,7 +143,7 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
   double distance = sqrt(DY*DY + DX*DX);
   //PAUSE();
   if (PRINTER == 4*100000) {
-    printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,heading_command,distance);
+    //printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,heading_command,distance);
     PRINTER = 0;
   }
   PRINTER+=1;

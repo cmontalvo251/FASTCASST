@@ -52,7 +52,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Check for user controlled
   if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {
-      icontrol = 1;
+      icontrol = 4;
     } else {
       icontrol = 0;
     }
@@ -94,8 +94,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     case 4:
       if (heading_command == -99) {
         heading_command = 0;
-        if (currentTime > 100) {
-          heading_command = 45; //degrees
+        if (currentTime > 0) {
+          heading_command = -90; //degrees
         }
       }
       //velocity, altitude and heading control
@@ -104,11 +104,11 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     case 3:
       //roll (rudder mixing), velocity and altitude control
       //printf("Altitude + ");
-      AltitudeLoop(sense_matrix);
+      //AltitudeLoop(sense_matrix);
     case 2:
       //roll (rudder mixing), pitch and velocity control
       //printf("Velocity + ");
-      VelocityLoop(sense_matrix);
+      //VelocityLoop(sense_matrix);
     case 1:
       //roll (rudder mixing) and pitch control
       //Run the Innerloop

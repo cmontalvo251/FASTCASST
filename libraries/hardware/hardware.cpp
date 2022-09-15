@@ -127,12 +127,6 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     //rc.in.printRCstate(-4);
     //printf("\n");
     nextRCtime=currentTime+RCRATE;
-
-    //Compute / Update the Offset / Only if Autopilot switched
-    if (rc.in.rx_array[4] > 2000) {
-      printf("SET HEADING !!! ");
-      sense.heading_offset = sense.satellites.heading - sense.orientation.yaw;
-    }
   }
 
   //Poll all as quickly as possible sensors - This puts all raw data into the sense matrix

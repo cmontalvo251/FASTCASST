@@ -267,7 +267,9 @@ void sensors::poll(double currentTime,double elapsedTime) {
   //Read the GPS
   if (currentTime >= nextGPStime) {
     //printf("Polling GPS %lf \n",currentTime);
-    satellites.poll(currentTime); //This will compute XYZ as well. For now we are using 
+    satellites.poll(currentTime); //This will compute XYZ as well. For now we are using
+    heading_offset = satellites.heading - orientation.yaw;
+    //printf("GPS Heading = %lf, Compass Heading = %lf, IMU Heading = %lf Offset = %lf \n",satellites.heading,compass,orientation.yaw,heading_offset); 
     //hardcoded GPS coordinates
     nextGPStime = currentTime + GPS_RATE;
   }

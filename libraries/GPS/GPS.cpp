@@ -53,7 +53,7 @@ void GPS::poll(float currentTime) {
     altitude = pos_data[3]/1000.0; ///height above ellipsoid 1984?
     //If the measurement is good
     if (VALIDGPS) {
-      computeGroundTrack(currentTime);
+      computeCOG(currentTime);
     } else {
       printf("GPS Coordinate initialized. Resetting GPS Vals \n");
       VALIDGPS = 1;
@@ -125,6 +125,47 @@ void GPS::ConvertGPS2XY(){
   }
   //printf("ConvertLLH2XY: %lf %lf %lf %lf \n",X,Y,latitude,longitude);
 }
+
+void GPS::computeCOG(double current_time) {
+  //First convert the current measurement to XY
+  ConvertGPS2XY();
+
+  //Then proceed with the speed measurement
+  double dx = X - xprev;
+  double dy = Y - yprev;
+  double dt = current_time - prev_time;
+  dist = sqrt((pow(dx,2)) + (pow(dy,2)));
+
+  if (abs(dx) + abs(dy) < 1e-20) {
+    return;
+  }
+  ///Also get heading
+  double heading_new = atan2(dy,dx)*180.0/M_PI;
+
+  //Filter heading
+  heading = (1-headingFilterConstant)*heading_new + (headingFilterConstant)*heading;
+
+  //printf("TIME = %lf , LATITUDE = %lf , LONGITUDE = %lf , X = %lf , Y = %lf , dx = %lf , dy = %lf , heading = %lf \n",current_time,latitude,longitude,X,Y,dx,dy,heading);
+
+  ///////////??COMPUTE RAW SPEED AND HEAVILY FILTERED SPEED
+  if (dt > 0) {
+    double vx = dx/dt;
+    double vy = dy/dt;
+    speed = sqrt((vx*vx + vy*vy));
+  } else {
+    speed = 0;
+  } 
+  //printf("speed = %lf \n",speed);
+
+  //UPDATE PREVIOUS VALUES
+  xprev = X;
+  yprev = Y;
+  zprev = Z;
+  prev_time = current_time;
+}
+
+
+////////////////////DO NOT USE THIS FUNCTION BELOW
 
 void GPS::computeGroundTrack(double current_time) {
   //First convert the current measurement to XY

@@ -20,7 +20,7 @@ class GPS {
   //is roughly set to Mobile
   double latitude=MOBX,longitude=MOBY,altitude=0.0,X=0,Y=0,Z=0,X_origin=MOBX,Y_origin=MOBY;
   double xprev=0,yprev=0,zprev=0,prev_time=0;
-  double headingFilterConstant = 0.5;
+  double headingFilterConstant = 0.0;
   double heading;
   Ublox sensor;
   int ok;
@@ -36,6 +36,7 @@ class GPS {
   int status();
   void computeSpeed(double);
   void computeGroundTrack(double);
+  void computeCOG(double);
   void ConvertGPS2XY();
   //void ConvertXYZ2LLH(); -- This has been moved to mathp.h as a helper function
   void setXYZ(double,double,double);

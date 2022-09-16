@@ -13,7 +13,7 @@ sensors::sensors() {
   headernames[2] = "Sense Z(m)";
   headernames[3] = "Sense Roll (deg)";
   headernames[4] = "Sense Pitch (deg)";
-  headernames[5] = "Sense Yaw (deg)";
+  headernames[5] = "Sense Compass (deg)";
   headernames[6] = "Sense U(m/s)";
   headernames[7] = "Sense V(m/s)";
   headernames[8] = "Sense W(m/s)";
@@ -176,6 +176,9 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
     q2 = model_matrix.get(6,1);
     q3 = model_matrix.get(7,1);
   }
+  //This converts doubles to floats because the AHRS filter uses floats
+  //I went ahead and changed these to doubles though so that we're more accurate
+  //during simulation. This may break auto mode so be sure to revisit
   orientation.ahrs.q0 = q0;
   orientation.ahrs.q1 = q1;
   orientation.ahrs.q2 = q2;
@@ -268,7 +271,11 @@ void sensors::poll(double currentTime,double elapsedTime) {
   if (currentTime >= nextGPStime) {
     //printf("Polling GPS %lf \n",currentTime);
     satellites.poll(currentTime); //This will compute XYZ as well. For now we are using
-    heading_offset = satellites.heading - orientation.yaw;
+    if (currentTime >= nextGPSOffset) {
+      heading_offset = satellites.heading - orientation.yaw;
+      //printf("Setting Offset = %lf \n",heading_offset);
+      nextGPSOffset = currentTime + GPS_RATE;
+    }
     //printf("GPS Heading = %lf, Compass Heading = %lf, IMU Heading = %lf Offset = %lf \n",satellites.heading,compass,orientation.yaw,heading_offset); 
     //hardcoded GPS coordinates
     nextGPStime = currentTime + GPS_RATE;

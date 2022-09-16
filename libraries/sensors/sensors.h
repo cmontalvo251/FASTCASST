@@ -30,6 +30,7 @@ class sensors {
   //Rates and baro flag
   double GPS_RATE,IMU_RATE,ANALOG_RATE,heading_offset_new=0;
   double nextGPStime=0,nextIMUtime=0,nextANALOGtime=0;
+  double nextGPSOffset=0;
   int IBARO;
   //Errors
   int IERROR;

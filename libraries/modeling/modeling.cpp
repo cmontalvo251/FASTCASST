@@ -68,7 +68,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[16] = "GPS Longitude (deg)";
   headernames[17] = "GPS Altitude (m)";
   headernames[18] = "GPS Heading (deg)";
-  headernames[19] = "IMU Heading (deg)";
+  headernames[19] = "Yaw (deg)";
   headernames[20] = "Analog 1 (V)";
   headernames[21] = "Analog 2 (V)";
   headernames[22] = "Analog 3 (V)";
@@ -197,6 +197,14 @@ void modeling::SetGPS() {
   model_matrix.set(17,1,latitude); //17 because model_matrix has quaternions
   model_matrix.set(18,1,longitude);
   model_matrix.set(19,1,altitude);
+  //Compute GPS heading
+  double heading = atan2(Y-yprev,X-xprev)*180.0/PI;
+  model_matrix.set(20,1,heading);
+  //printf("Model Matrix Heading = %lf \n",heading);
+  //Reset Old Coordinates
+  xprev = X;
+  yprev = Y;
+  zprev = Z;
 }
 
 ///Loop
@@ -282,6 +290,9 @@ void modeling::loop(double currentTime,int pwm_array[]) {
     //output_matrix.vecset(4,6,ptp,1);
     //Then the rest of the matrix
     output_matrix.vecset(7,NUMVARS-1,model_matrix,8);
+    //Copy Yaw Angle to IMU row
+    output_matrix.set(20,1,ptp.get(3,1)*180/PI);
+    //model_matrix.disp();
     //output_matrix.disp();
     logger.print(output_matrix);
     //Then output the pwm array
@@ -409,9 +420,9 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //Ok need to add these in no matter what if car and tank around
   FTOTALB.plus_eq(extforces.FB);
   #endif
-  extforces.FB.disp();
-  FGNDB.disp();
-  FTOTALB.disp();  
+  //extforces.FB.disp();
+  //FGNDB.disp();
+  //FTOTALB.disp();  
   //if (FTOTALB.get(1,1) > 0) {
   //  PAUSE();
   //}

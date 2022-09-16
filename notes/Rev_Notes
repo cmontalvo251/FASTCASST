@@ -1,3 +1,19 @@
+=======================9/16/2022==============
+
+Trying to fix the airplane code and heading angle controller. Current bugs
+
+1.) Heading offset screws with the heading controller
+2.) Turning the heading offset off creates discontinuous jumps. 
+3.) Moving to car, the car also has discontinuous jumps in heading
+4.) Ground contact model is not creating the correct velocity vectors
+
+FIXING SHIT
+
+1.) Yaw angle is computed from quaternions in floats. I just changed that to doubles. That might 
+mess up the auto mode but it did fix the heading angle estimate from the IMU - CHECK?
+2.) Ok discontinous heading is gone in the car model
+3.) 
+
 =======================9/6/2022===============
 
 Working on HIL again. This is what works so far and what doesn't work

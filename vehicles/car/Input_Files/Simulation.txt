@@ -1,12 +1,12 @@
 150.0 !Final Integration time
 0.001 !Integration rate // seconds
-2.0	!Initial X Position (m) ///Sixdof Model with quaternions
+0.0	!Initial X Position (m) ///Sixdof Model with quaternions
 0.0	!Initial Y Position (m)
 0.0	!Initial Z Position (m)
-1.0	!Quaternion 0
-0.0	!Quaternion 1
-0.0	!Quaternion 2
-0.0	!Quaternion 3
+1.0 !Quaternion 0
+0.0 !Quaternion 1
+0.0 !Quaternion 2
+0.0 !Quaternion 3
 0.0	!Initial Xbody Velocity (m/s)
 0.0	!Initial Ybody Velocity (m/s)
 0.0	!Initial Zbody Velocity (m/s)

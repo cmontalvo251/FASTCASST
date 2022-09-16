@@ -83,24 +83,24 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
   switch (icontrol) {
     case 3:
-      //velocity
-      VelocityLoop(sense_matrix);
-    case 2:
-      //If the velocity controller is off we send 75% speed to the motor
-      if (velocity_command == -99) {
-        throttle = STICK_MID + 0.75*(STICK_MAX-STICK_MID); 
-      }
       //waypoint control
       //printf("WAYPOINT \n");
       WaypointLoop(sense_matrix);
-    case 1:
+    case 2:
       if (heading_command == -99) {
         heading_command = 45;
       }
       //roll (rudder mixing), velocity and altitude control
       //printf("Altitude + ");
       HeadingLoop(sense_matrix);
+    case 1:
+      //velocity
+      VelocityLoop(sense_matrix);
     case 0:
+      //If the velocity controller is off we send 75% speed to the motor
+      if (velocity_command == -99) {
+        throttle = STICK_MID + 0.75*(STICK_MAX-STICK_MID); 
+      }
       //printf("Passing signals \n");
       //Pass the receiver signals to the control_matrix and then break
       motor = throttle;
@@ -152,7 +152,7 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
 }
 
 void controller::HeadingLoop(MATLAB sense_matrix) {
-  double kp = 0.1;
+  double kp = 2.5;
   double heading = sense_matrix.get(6,1);
   //I think the wrap issue is here
   double dheading = -delpsi(heading*PI/180.0,heading_command*PI/180.0)*180.0/PI;
@@ -180,13 +180,14 @@ void controller::VelocityLoop(MATLAB sense_matrix) {
   double velocityerror = velocity_command - u;
   //printf("Sense U = %lf \n",u);
   //printf("Velocity Error = %lf \n",velocityerror);
-  double kp = 40.0;
-  double ki = 3.0;
-  throttle = OUTMIN + kp*velocityerror + ki*velocityint;
+  double kp = 60.0;
+  double ki = 20.0;
+  throttle = OUTMID + kp*velocityerror + ki*velocityint;
   throttle = CONSTRAIN(throttle,OUTMIN,OUTMAX);
   //Integrate but prevent integral windup
   if ((throttle > OUTMIN) && (throttle < OUTMAX)) {
     velocityint += elapsedTime*velocityerror;
   }
+  //printf("Throttle = %lf \n",throttle);
 }
 

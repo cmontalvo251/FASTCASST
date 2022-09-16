@@ -66,6 +66,7 @@ class modeling {
   double latitude,longitude,altitude,X,Y,Z;
   double XYZ[3],LLH[3];
   void SetGPS();
+  double xprev,yprev,zprev;
   //boost::thread render;
  public:
   double keyboardVars[4];

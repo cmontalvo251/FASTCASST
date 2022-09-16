@@ -74,14 +74,14 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   altitude_command = 20; //Hardcode to 100?
   heading_command = -99;
   
-  WAYPOINTS_X[0] = 500;
+  WAYPOINTS_X[0] = 1000;
   WAYPOINTS_Y[0] = 0;
 
-  WAYPOINTS_X[1] = 500;
-  WAYPOINTS_Y[1] = 500;
+  WAYPOINTS_X[1] = 1000;
+  WAYPOINTS_Y[1] = 1000;
 
   WAYPOINTS_X[2] = 0;
-  WAYPOINTS_Y[2] = 500;
+  WAYPOINTS_Y[2] = 1000;
 
   WAYPOINTS_X[3] = 0;
   WAYPOINTS_Y[3] = 0;
@@ -95,7 +95,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       if (heading_command == -99) {
         heading_command = 0;
         if (currentTime > 0) {
-          heading_command = 5; //degrees
+          heading_command = -90; //degrees
         }
       }
       //velocity, altitude and heading control
@@ -158,8 +158,9 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
 }
 
 void controller::HeadingLoop(MATLAB sense_matrix) {
-  double kp = 0.5;
-  double kd = 0.5;
+  double kp = 0.4;
+  double kd = 0.25;
+  double ki = 0.02;
   double heading = sense_matrix.get(6,1);
   double yaw_rate = sense_matrix.get(12,1);
   //I think the wrap issue is here
@@ -174,7 +175,11 @@ void controller::HeadingLoop(MATLAB sense_matrix) {
     dheading += 180;
     dheading *= -1;
   }
-  roll_command = kp*dheading + kd*(0-yaw_rate);
+  roll_command = kp*dheading + kd*(0-yaw_rate) + ki*headingint;
+  //Integrate but prevent integral windup
+  if ((roll_command < 45) && (roll_command > -45)) {
+    headingint += elapsedTime*dheading;
+  }
   roll_command = CONSTRAIN(roll_command,-45,45);
   //printf("T, HEADING = %lf %lf \n",lastTime,heading,roll_command);
 }
@@ -198,7 +203,6 @@ void controller::AltitudeLoop(MATLAB sense_matrix) {
   double kd = 0.1;
   pitch_command = kp*(altitude_command - altitude) + kd*(0-altitude_dot);
   pitch_command = CONSTRAIN(pitch_command,-45,45);
-
   //printf("T, ALT, ALT DOT = %lf %lf %lf \n",lastTime,altitude,altitude_dot);  
 }
 
@@ -235,7 +239,7 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     elevator = kpe*(pitch-pitch_command) + kde*(pitch_rate);
 
     //Rudder signal will be proportional to aileron
-    double kr = 0.2;
+    double kr = 10.0;
     rudder = kr*aileron;
 
     //CONSTRAIN

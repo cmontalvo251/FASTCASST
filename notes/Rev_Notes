@@ -12,7 +12,9 @@ FIXING SHIT
 1.) Yaw angle is computed from quaternions in floats. I just changed that to doubles. That might 
 mess up the auto mode but it did fix the heading angle estimate from the IMU - CHECK?
 2.) Ok discontinous heading is gone in the car model
-3.) 
+3.) Turned on the heading offset again
+4.) Ok looks like heading controller on the plane is working. I think it was the
+gain on the rudder
 
 =======================9/6/2022===============
 

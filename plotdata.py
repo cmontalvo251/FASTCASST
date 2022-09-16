@@ -14,10 +14,10 @@ except:
     sys.exit()
 
 #Run code
-os.system('./clean_logs')
-os.system('rm simonly.exe')
-os.system('make simonly MODEL="car"')
-os.system('./simonly.exe car/')
+#os.system('./clean_logs')
+#os.system('rm simonly.exe')
+#os.system('make simonly MODEL="car"')
+#os.system('./simonly.exe car/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File

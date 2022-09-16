@@ -68,7 +68,6 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   double dela2 = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(delaUS2-OUTMID);
   double dele2 = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(deleUS2-OUTMID); 
   double delr2 = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(delrUS2-OUTMID);
-  
   //printf("DELE = %lf DELE2 = %lf \n",dele,dele2);
   
   //actuators.disp();
@@ -129,6 +128,8 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   double mx2 = aeropack.bws*Cl2;
   double my2 = aeropack.cbar*Cm2;
   double mz2 = aeropack.bws*Cn2;
+
+  //printf("My = %lf %lf \n",my,my2);
   
   //Forces and Moments
   FB.set(1,1,fx+fx2);

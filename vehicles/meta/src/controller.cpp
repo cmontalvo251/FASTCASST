@@ -75,7 +75,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   roll_command = -99;
   pitch_command = -99;
   velocity_command = 20; //Hardcode to 20?
-  altitude_command = 20; //Hardcode to 100?
+  altitude_command = 100; //Hardcode to 100?
   heading_command = -99;
   
   WAYPOINTS_X[0] = 500;
@@ -121,6 +121,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //with inner loop guidance 
       //printf("INNER LOOP CONTROL -- ");
       //Check for inner loop only guidance
+      //roll_command = 45;
       if (roll_command == -99) {
         roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
       }
@@ -167,10 +168,15 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
 }
 
 void controller::HeadingLoop(MATLAB sense_matrix) {
-  double kp = 1.0;
+  double kp = 0.4;
+  double kd = 0.25;
+  double ki = 0.02;
   double heading = sense_matrix.get(6,1);
+  double yaw_rate = sense_matrix.get(12,1);
   //I think the wrap issue is here
+  //printf("HEADING COMMAND = %lf \n",heading_command);
   double dheading = -delpsi(heading*PI/180.0,heading_command*PI/180.0)*180.0/PI;
+  //double dheading = -heading+heading_command;
   if (dheading > 180) {
     dheading -= 180;
     dheading *= -1;
@@ -179,7 +185,11 @@ void controller::HeadingLoop(MATLAB sense_matrix) {
     dheading += 180;
     dheading *= -1;
   }
-  roll_command = kp*dheading;
+  roll_command = kp*dheading + kd*(0-yaw_rate) + ki*headingint;
+  //Integrate but prevent integral windup
+  if ((roll_command < 45) && (roll_command > -45)) {
+    headingint += elapsedTime*dheading;
+  }
   roll_command = CONSTRAIN(roll_command,-45,45);
   //printf("T, HEADING = %lf %lf \n",lastTime,heading,roll_command);
 }
@@ -240,11 +250,12 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     elevator = kpe*(pitch-pitch_command) + kde*(pitch_rate);
 
     //Rudder signal will be proportional to aileron
-    double kr = 0.2;
+    double kr = 10.0;
     rudder = kr*aileron;
 
     //CONSTRAIN
     rudder = CONSTRAIN(rudder,-500,500) + OUTMID;
     aileron = -CONSTRAIN(aileron,-500,500) + OUTMID;
     elevator = CONSTRAIN(elevator,-500,500) + OUTMID;
+    //printf("Elevator = %lf pitch = %lf pitchc = %lf \n",elevator,pitch,pitch_command);
 }

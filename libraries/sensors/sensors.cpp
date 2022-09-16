@@ -210,11 +210,11 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
 void sensors::getCompassHeading() {
   //printf("IMU Yaw = %lf, MAG Yaw = %lf, GPS Heading = %lf \n",orientation.yaw,orientation.magyaw,satellites.heading);
   //For now just pass IMU yaw through to yaw angle
-  //compass = orientation.yaw;
+  compass = orientation.yaw;
   //Or if you want use GPS heading
   //compass = satellites.heading;
   //OR WE CREATE A FUZZY LOGIC FILTER WHERE WE FUSE THE IMU AND THE GPS
-  compass = orientation.yaw + heading_offset;
+  //compass = orientation.yaw + heading_offset;
   //compass = 400;
 }
 
@@ -268,7 +268,10 @@ void sensors::poll(double currentTime,double elapsedTime) {
   if (currentTime >= nextGPStime) {
     //printf("Polling GPS %lf \n",currentTime);
     satellites.poll(currentTime); //This will compute XYZ as well. For now we are using
-    heading_offset = satellites.heading - orientation.yaw;
+    if (currentTime >= nextGPSOffset) {
+      heading_offset = satellites.heading - orientation.yaw;
+      nextGPSOffset = currentTime + GPS_RATE;
+    }
     //printf("GPS Heading = %lf, Compass Heading = %lf, IMU Heading = %lf Offset = %lf \n",satellites.heading,compass,orientation.yaw,heading_offset); 
     //hardcoded GPS coordinates
     nextGPStime = currentTime + GPS_RATE;

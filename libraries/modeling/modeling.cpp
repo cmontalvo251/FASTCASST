@@ -409,9 +409,9 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //Ok need to add these in no matter what if car and tank around
   FTOTALB.plus_eq(extforces.FB);
   #endif
-  //extforces.FB.disp();
-  //FGNDB.disp();
-  //FTOTALB.disp();  
+  extforces.FB.disp();
+  FGNDB.disp();
+  FTOTALB.disp();  
   //if (FTOTALB.get(1,1) > 0) {
   //  PAUSE();
   //}

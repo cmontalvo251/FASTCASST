@@ -95,7 +95,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       if (heading_command == -99) {
         heading_command = 0;
         if (currentTime > 0) {
-          heading_command = -90; //degrees
+          heading_command = 5; //degrees
         }
       }
       //velocity, altitude and heading control
@@ -104,11 +104,12 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     case 3:
       //roll (rudder mixing), velocity and altitude control
       //printf("Altitude + ");
-      //AltitudeLoop(sense_matrix);
+      AltitudeLoop(sense_matrix);
+      //roll_command = -2;
     case 2:
       //roll (rudder mixing), pitch and velocity control
       //printf("Velocity + ");
-      //VelocityLoop(sense_matrix);
+      VelocityLoop(sense_matrix);
     case 1:
       //roll (rudder mixing) and pitch control
       //Run the Innerloop
@@ -157,10 +158,14 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
 }
 
 void controller::HeadingLoop(MATLAB sense_matrix) {
-  double kp = 1.0;
+  double kp = 0.5;
+  double kd = 0.5;
   double heading = sense_matrix.get(6,1);
+  double yaw_rate = sense_matrix.get(12,1);
   //I think the wrap issue is here
+  //printf("HEADING COMMAND = %lf \n",heading_command);
   double dheading = -delpsi(heading*PI/180.0,heading_command*PI/180.0)*180.0/PI;
+  //double dheading = -heading+heading_command;
   if (dheading > 180) {
     dheading -= 180;
     dheading *= -1;
@@ -169,7 +174,7 @@ void controller::HeadingLoop(MATLAB sense_matrix) {
     dheading += 180;
     dheading *= -1;
   }
-  roll_command = kp*dheading;
+  roll_command = kp*dheading + kd*(0-yaw_rate);
   roll_command = CONSTRAIN(roll_command,-45,45);
   //printf("T, HEADING = %lf %lf \n",lastTime,heading,roll_command);
 }

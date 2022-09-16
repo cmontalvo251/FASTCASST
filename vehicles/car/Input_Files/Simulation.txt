@@ -1,4 +1,4 @@
-500.0 !Final Integration time
+150.0 !Final Integration time
 0.001 !Integration rate // seconds
 2.0	!Initial X Position (m) ///Sixdof Model with quaternions
 0.0	!Initial Y Position (m)

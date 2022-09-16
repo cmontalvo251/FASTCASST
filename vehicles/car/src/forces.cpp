@@ -54,7 +54,7 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   //printf("FORCE = %lf \n",force);
   double xforce = force - 7.65*u;    // Modified to reflect 'Car' requirements
   //printf("xforce = %lf \n",xforce);
-  double yforce = -0.1*v + 0.0*steer_angle;    // Modified to reflect 'Car' requirements
+  double yforce = -10.0*v + 0.0*steer_angle;    // Modified to reflect 'Car' requirements
 
   //Calculate Moments
   double Nmoment = 75*(steer_angle-0.4*r);  

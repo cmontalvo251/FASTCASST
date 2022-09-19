@@ -20,6 +20,8 @@ print('All available serial ports...')
 os.system('ls /dev/ttyUSB*')
 ser = U(57600,"/dev/ttyUSB0",period=1.0) #Set the baudrate, port and period in seconds
 ##Initialize Filenumber at zero
+outfilename = 'logs/Ground_Station_'+datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")+'.csv'
+outfile = open(outfilename,'w')
 while True:
     position = -1
     #print('Reading Serial....')
@@ -33,5 +35,7 @@ while True:
                 for i in fastkit_packet:
                         st+=(str(i)+',')
                 print('Packets Received = ',st)
+                outfile.write(s)
+                outfile.write('\n')
     #Then sleep for 0.1 seconds 
     time.sleep(0.1)

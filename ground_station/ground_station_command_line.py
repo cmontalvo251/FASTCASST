@@ -35,7 +35,7 @@ while True:
                 for i in fastkit_packet:
                         st+=(str(i)+',')
                 print('Packets Received = ',st)
-                outfile.write(s)
+                outfile.write(st)
                 outfile.write('\n')
     #Then sleep for 0.1 seconds 
     time.sleep(0.1)

@@ -33,7 +33,7 @@ while True:
         if position == 0:
                 st = ''
                 for i in fastkit_packet:
-                        st+=(str(i)+',')
+                        st+=(str(i)+' ')
                 print('Packets Received = ',st)
                 outfile.write(st)
                 outfile.write('\n')

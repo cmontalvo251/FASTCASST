@@ -5,38 +5,51 @@ UART::UART() {
 }
 
 //The UART class needs to know how big the send array is
-void UART::init(int numtelem,int numsens,int numc) {
+
+//There are two functions for initializing HIL functions and one for telemetry
+void UART::TelemInit(int numtelem) {
   //First grab the telemetry number
   NUMTELEMETRY = numtelem;
-  NUMSENSE = numsens;
-  NUMCTL = numc;
-  //Then initialize the uary send array
+  //Then initialize the uart send array
   uart_telemetry_array = (float *) calloc(NUMTELEMETRY,sizeof(float));
-  uart_sense_array = (float *) calloc(NUMSENSE,sizeof(float));
-  uart_ctl_array = (float *) calloc(NUMCTL,sizeof(float));
 
   //We now set up communications depending on the type of comms we want
   #ifdef RPI
-  //This means we are on the raspberry pi.
   //Telemetry happens here
   comms.SerialInit("/dev/ttyAMA0",baudRate);
-  #ifdef HIL
+  #endif
+
+  #ifdef DESKTOP
+  //This means we are on the desktop.
+  //Telemetry on the desktop goes to a file but only when
+  //running in SIMONLY or SIL mode
+  //Run default init function which has the txt file bindings
+  //There are #define in the Serial.cpp file that makes that happen
+  comms.InitSerialPort(); 
+  #endif
+  
+}
+
+void UART::HILInit(int numsens,int numc) {
+  //Grab NUMSENSE AND NUMCTL
+  NUMSENSE = numsens;
+  NUMCTL = numc;
+  //Then initialize the uart send array
+  uart_sense_array = (float *) calloc(NUMSENSE,sizeof(float));
+  uart_ctl_array = (float *) calloc(NUMCTL,sizeof(float));
+
+  //This routine only runs if HIL is on so we don't need a #define HIL here
+
+  //We now set up communications depending on the type of comms we want
+  #ifdef RPI
   //HIL comms happens here
   hilcomms.SerialInit("/dev/ttyUSB0",baudRate);
-  #endif
   #endif
 
   #ifdef DESKTOP
   //This means we are on the desktop.
   //Hardware in the loop communication happens via USB0
-  #ifdef HIL
   hilcomms.SerialInit("/dev/ttyUSB0",baudRate);
-  #else
-  //Telemetry on the desktop goes to a file but only when
-  //running in SIMONLY or SIL mode
-  //Run default init function which has the txt file bindings
-  comms.InitSerialPort(); 
-  #endif
   #endif
   
 }
@@ -49,6 +62,7 @@ void UART::sendSense(MATLAB uart_sense_matrix) {
   }
   //Then send it over UART
   hilcomms.SerialSendArray(uart_sense_array,uart_sense_matrix.len(),1);
+  //PAUSE();
 }
 
 

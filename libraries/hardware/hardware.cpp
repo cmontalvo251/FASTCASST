@@ -1,7 +1,9 @@
 #include "hardware.h"
 
-//Asynchronous HIL thread
-void hil();
+#ifdef HIL
+boost::mutex HILmutex; //Mutex for passing data b/t HIL asynchronous threads
+#endif
+MATLAB uart_sense_matrix,uart_ctl_matrix;
 
 //Constructor
 hardware::hardware() {
@@ -93,10 +95,12 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix HW");
   uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
   uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
-  ser.init(NUMTELEMETRY,NUMSENSE,NUMCTL);
+  //Telemetry is always on an working in some sort of configuration
+  serTelem.TelemInit(NUMTELEMETRY);
 
   #ifdef HIL
-  boost::thread hilloop(hil);
+  serHIL.HILInit(NUMSENSE,NUMCTL);
+  boost::thread hilloop(hil,serHIL);
   #endif
 }
 
@@ -157,17 +161,12 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     nextLOGtime=currentTime+LOGRATE;
   }
 
-  #ifndef HIL
   //Send telemetry data. Always running to make sure
   //it works in SIL mode and SIMONLY.
-  //Unfortunately I have to turn off telemetry in HIL mode
-  //Because we are using the radios for HIL right now
-  //If I find another way to send data from a computer
-  //to an RPI I will change this.
-  //It turns out I can use a wired connection for HIL 
-  //and then wireless radios for Telemetry
-  //but that would require opening two serial ports
-  //I will work on that nother day
+  //Note that this code opens two serial ports when running in HIL mode
+  //Also note that this function loop() only runs on the pi in HIL mode
+  //So if HIL mode is on and you're on DESKTOP, this entire function won't
+  //run.
   if (currentTime >= nextTELEMtime) {
     //printf("Sending Telemetry %lf \n",currentTime);
     //For right now let's send RPY and GPS coordinates
@@ -177,10 +176,10 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     telemetry_matrix.set(4,1,sense.compass);
     telemetry_matrix.set(5,1,sense.orientation.yaw);
     telemetry_matrix.set(6,1,sense.satellites.heading);
-    ser.sendTelemetry(telemetry_matrix,0);
+    serTelem.sendTelemetry(telemetry_matrix,0);
     nextTELEMtime=currentTime+TELEMRATE;
   }
-  #endif
+
   //And then send the pwm_array to the servos and ESCs as quickly as possible
   //The write function has a built in saturation block no need to worry there
   //Right now we have to shut this off when using the satellite because
@@ -191,9 +190,19 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
 
 }
 
-void hardware::hilsend() {
+void hardware::hilsend(double currentTime) {
   //Because this uart_sense_matrix is controlled in two asynchronous threads
   //we need to place a mutex here
+
+  //Now we only need to send data to these matrices at like 10 Hz
+  //So HILRATE is hardcoded for the moment
+  if (currentTime < nextHILtime) {
+      return;
+    } else {
+      nextHILtime = currentTime + HILRATE;
+      printf("Sending Data to HIL MATRICES = %lf \n",currentTime);
+  }
+
   HILmutex.lock();
 
   #ifdef DESKTOP
@@ -218,7 +227,7 @@ void hardware::hilsend() {
   uart_sense_matrix.set(9,1,sense.sense_matrix.get(12,1));
   //10 - pressure
   uart_sense_matrix.set(10,1,sense.sense_matrix.get(27,1));
-  uart_sense_matrix.disp();
+  //uart_sense_matrix.disp();
   #endif //DESKTOP
 
   #ifdef RPI
@@ -249,17 +258,11 @@ void hardware::hilsend() {
   HILmutex.unlock();
 }
 
-void hil() {
+void hil(UART ser) {
     //This code needs to operate on a listen as often as possible
     //and only send when you've received a response  
     //In Debug mode we will have the desktop continually send data to 
     //the pi and have the pi continually listen
-
-    /*if (currentTime < nextHILtime) {
-      return;
-    } else {
-      nextHILtime = currentTime + HILRATE;
-    }*/
 
   //All vars in here must be globals or locally defined
   bool sendOK = 1;
@@ -270,7 +273,7 @@ void hil() {
 
     #ifdef DESKTOP
     if (sendOK) {
-      printf("Send Data to RPI \n");
+      printf("!!!!!!!!!!!!!!!!!! Send Data to RPI HIL !!!!!!!!!!!!!!!!!!!!!! \n");
 
       //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
       //to lock the mutex
@@ -380,7 +383,7 @@ void hil() {
     #endif
 
     //We need a cross sleep here or the code will blast serial data faster than we can read
-    cross_sleep(0.01);
+    cross_sleep(1.0);
 
   } //End of inifinite while loop
 

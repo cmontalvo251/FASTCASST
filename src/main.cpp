@@ -177,7 +177,7 @@ void loop() {
     #endif
     //No matter what though we need to run the hilsend routine which
     //puts all vars into the appropriate matrices to send back and forth
-    hw.hilsend();
+    hw.hilsend(watch.currentTime);
     #endif
     
     //We only run the hardware / control loop if we're in SIMONLY, SIL, AUTO or HIL RPI

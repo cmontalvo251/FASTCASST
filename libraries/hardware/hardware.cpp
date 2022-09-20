@@ -1,5 +1,8 @@
 #include "hardware.h"
 
+//Asynchronous HIL thread
+void hil();
+
 //Constructor
 hardware::hardware() {
 }
@@ -33,7 +36,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   LOGRATE = in_configuration_matrix.get(2,1);
   RCRATE = in_configuration_matrix.get(3,1);
   TELEMRATE = in_configuration_matrix.get(4,1);
-  HILRATE = in_configuration_matrix.get(4,1);
+  //HILRATE = in_configuration_matrix.get(4,1);
 
   sense.init(in_configuration_matrix,in_simulation_matrix);
 
@@ -91,6 +94,10 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
   uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
   ser.init(NUMTELEMETRY,NUMSENSE,NUMCTL);
+
+  #ifdef HIL
+  boost::thread hilloop(hil);
+  #endif
 }
 
 //This version of the loop runs assuming you are saving data from the simulation 
@@ -150,12 +157,17 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     nextLOGtime=currentTime+LOGRATE;
   }
 
+  #ifndef HIL
   //Send telemetry data. Always running to make sure
   //it works in SIL mode and SIMONLY.
   //Unfortunately I have to turn off telemetry in HIL mode
   //Because we are using the radios for HIL right now
   //If I find another way to send data from a computer
   //to an RPI I will change this.
+  //It turns out I can use a wired connection for HIL 
+  //and then wireless radios for Telemetry
+  //but that would require opening two serial ports
+  //I will work on that nother day
   if (currentTime >= nextTELEMtime) {
     //printf("Sending Telemetry %lf \n",currentTime);
     //For right now let's send RPY and GPS coordinates
@@ -168,7 +180,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     ser.sendTelemetry(telemetry_matrix,0);
     nextTELEMtime=currentTime+TELEMRATE;
   }
-
+  #endif
   //And then send the pwm_array to the servos and ESCs as quickly as possible
   //The write function has a built in saturation block no need to worry there
   //Right now we have to shut this off when using the satellite because
@@ -176,45 +188,95 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   #ifndef satellite
   rc.out.write();
   #endif
+
 }
 
-void hardware::hil(double currentTime,double elapsedTime) {
-    if (currentTime < nextHILtime) {
+void hardware::hilsend() {
+  //Because this uart_sense_matrix is controlled in two asynchronous threads
+  //we need to place a mutex here
+  HILmutex.lock();
+
+  #ifdef DESKTOP
+  //What data do I want sent to RPI???
+  //1 - roll
+  uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
+  //2 - pitch
+  uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
+  //3 - yaw
+  uart_sense_matrix.set(3,1,sense.sense_matrix.get(6,1));
+  //4 - lat
+  uart_sense_matrix.set(4,1,sense.sense_matrix.get(16,1));
+  //5 - lon
+  uart_sense_matrix.set(5,1,sense.sense_matrix.get(17,1));
+  //6 - alt
+  uart_sense_matrix.set(6,1,sense.sense_matrix.get(18,1));
+  //7 - gx
+  uart_sense_matrix.set(7,1,sense.sense_matrix.get(10,1));
+  //8 - gy
+  uart_sense_matrix.set(8,1,sense.sense_matrix.get(11,1));
+  //9 - gz
+  uart_sense_matrix.set(9,1,sense.sense_matrix.get(12,1));
+  //10 - pressure
+  uart_sense_matrix.set(10,1,sense.sense_matrix.get(27,1));
+  uart_sense_matrix.disp();
+  #endif //DESKTOP
+
+  #ifdef RPI
+  //Again we need to populate this into the appropriate vectors
+  //Roll
+  sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
+  //Pitch
+  sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
+  //Yaw
+  sense.sense_matrix.set(6,1,uart_sense_matrix.get(3,1));
+  //Lat
+  sense.sense_matrix.set(16,1,uart_sense_matrix.get(4,1));
+  //Lon
+  sense.sense_matrix.set(17,1,uart_sense_matrix.get(5,1));
+  //Alt
+  sense.sense_matrix.set(18,1,uart_sense_matrix.get(6,1));
+  //gx
+  sense.sense_matrix.set(10,1,uart_sense_matrix.get(7,1));
+  //gy
+  sense.sense_matrix.set(11,1,uart_sense_matrix.get(8,1));
+  //gz
+  sense.sense_matrix.set(12,1,uart_sense_matrix.get(9,1));
+  //pressure
+  sense.sense_matrix.set(27,1,uart_sense_matrix.get(10,1));
+  //sense.sense_matrix.disp();
+  #endif //RPI
+  
+  HILmutex.unlock();
+}
+
+void hil() {
+    //This code needs to operate on a listen as often as possible
+    //and only send when you've received a response  
+    //In Debug mode we will have the desktop continually send data to 
+    //the pi and have the pi continually listen
+
+    /*if (currentTime < nextHILtime) {
       return;
     } else {
       nextHILtime = currentTime + HILRATE;
-    }
+    }*/
 
-    #if defined (HIL) && (DESKTOP)
-    //Normally this line of code would run in the hardware::loop routine but since that's running on the
-    //pi we need to run it here. The poll just simply puts everything in the sense_matrix from the model
-    //matrix
-    sense.poll(currentTime,elapsedTime);
+  //All vars in here must be globals or locally defined
+  bool sendOK = 1;
+  bool recOK = 1;
+
+  //This needs to be an infinite loop or it will only run once
+  while (1) {
+
+    #ifdef DESKTOP
     if (sendOK) {
       printf("Send Data to RPI \n");
-      //What data do I want sent to RPI???
-      //1 - roll
-      uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
-      //2 - pitch
-      uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
-      //3 - yaw
-      uart_sense_matrix.set(3,1,sense.sense_matrix.get(6,1));
-      //4 - lat
-      uart_sense_matrix.set(4,1,sense.sense_matrix.get(16,1));
-      //5 - lon
-      uart_sense_matrix.set(5,1,sense.sense_matrix.get(17,1));
-      //6 - alt
-      uart_sense_matrix.set(6,1,sense.sense_matrix.get(18,1));
-      //7 - gx
-      uart_sense_matrix.set(7,1,sense.sense_matrix.get(10,1));
-      //8 - gy
-      uart_sense_matrix.set(8,1,sense.sense_matrix.get(11,1));
-      //9 - gz
-      uart_sense_matrix.set(9,1,sense.sense_matrix.get(12,1));
-      //10 - pressure
-      uart_sense_matrix.set(10,1,sense.sense_matrix.get(27,1));
-      uart_sense_matrix.disp();
+
+      //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
+      //to lock the mutex
+      HILmutex.lock();
       ser.sendSense(uart_sense_matrix);
+      HILmutex.unlock();
 
       //If you set this to sendOk = 1 the DESKTOP will continually send
       //data to the RPI. It'd be a good way to test one way communication from
@@ -223,7 +285,7 @@ void hardware::hil(double currentTime,double elapsedTime) {
     } else {
       printf("READING CONTROL MATRIX FROM SERIAL \n");
       //rec error code not operational at the moment
-      int rec = ser.readControl(uart_ctl_matrix);
+      /*int rec = ser.readControl(uart_ctl_matrix);
       uart_ctl_matrix.disp();
       sendOK = 1;
       //We then need to populate this into the appropriate vectors
@@ -268,43 +330,28 @@ void hardware::hil(double currentTime,double elapsedTime) {
       //printf("\n RCOUTPUT after potential revert \n");
       //rc.out.print();
       //printf("\n ---- \n");
-
+      */
     }
     #endif
     
     //If we're running HIL on RPI we need to receive data from serial via desktop
-    #if defined (HIL) && (RPI)
+    #ifdef RPI
     if (recOK) {
       printf("Receive Data from Desktop \n");
+
+      //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
+      //to lock the mutex
+      HILmutex.lock();
       ser.readSense(uart_sense_matrix);
       uart_sense_matrix.disp();
-      //Again we need to populate this into the appropriate vectors
-      //Roll
-      sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
-      //Pitch
-      sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
-      //Yaw
-      sense.sense_matrix.set(6,1,uart_sense_matrix.get(3,1));
-      //Lat
-      sense.sense_matrix.set(16,1,uart_sense_matrix.get(4,1));
-      //Lon
-      sense.sense_matrix.set(17,1,uart_sense_matrix.get(5,1));
-      //Alt
-      sense.sense_matrix.set(18,1,uart_sense_matrix.get(6,1));
-      //gx
-      sense.sense_matrix.set(10,1,uart_sense_matrix.get(7,1));
-      //gy
-      sense.sense_matrix.set(11,1,uart_sense_matrix.get(8,1));
-      //gz
-      sense.sense_matrix.set(12,1,uart_sense_matrix.get(9,1));
-      //pressure
-      sense.sense_matrix.set(27,1,uart_sense_matrix.get(10,1));
-      //sense.sense_matrix.disp();
+      HILmutex.unlock();
 
       //If you set this variable recOK to 1 the RPI will continually receive data from the DESKTOP
       //computer. It would be a good way to test 1 way communication
       recOK = 1;
     } else {
+
+      /*
       //Then send data to desktop
       //printf("Send data to Desktop \n");
       //What data do I want send to Desktop????
@@ -328,7 +375,13 @@ void hardware::hil(double currentTime,double elapsedTime) {
       uart_ctl_matrix.set(9,1,rc.out.pwm_array[3]);
       //ser.sendControl(uart_ctl_matrix);
       recOK = 1;
+      */
     }
     #endif
 
-}
+    //We need a cross sleep here or the code will blast serial data faster than we can read
+    cross_sleep(0.01);
+
+  } //End of inifinite while loop
+
+} //end of hil() function

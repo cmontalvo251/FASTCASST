@@ -84,6 +84,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //Set and log headers
   logger.appendheader("Time (sec)");
   logger.appendheaders(headernames,NUMVARS-1); //-1 because of quaternions
+  logger.appendheader("RC In Channel #5");
   logger.appendheaders(pwmnames,NUMACTUATORS);
   logger.printheaders();
 
@@ -208,7 +209,7 @@ void modeling::SetGPS() {
 }
 
 ///Loop
-void modeling::loop(double currentTime,int pwm_array[]) {
+void modeling::loop(double currentTime,int pwm_array[],int rx_array[]) {
 
   //Check to see if we're integrating too fast
   if (currentTime < integrationTime) {
@@ -295,8 +296,11 @@ void modeling::loop(double currentTime,int pwm_array[]) {
     //model_matrix.disp();
     //output_matrix.disp();
     logger.print(output_matrix);
+    //Log the RC channel # 5
+    logger.printvar(rx_array[4]);
     //Then output the pwm array
     //logger.printarrayln(pwm_array,NUMACTUATORS);
+    //Actually log the actuator states instead
     logger.println(actuatorStates);
     nextLOGtime=currentTime+LOGRATE;
   }

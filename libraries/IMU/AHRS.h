@@ -24,7 +24,7 @@ class AHRS {
   float integralFBx, integralFBy, integralFBz;
  public:
   AHRS();
-  float q0, q1, q2, q3;
+  double q0, q1, q2, q3;
   void update(float ax,float ay,float az,float gx, float gy, float gz,float mx,float my,float mz,float elapsedTime);
   void updateNOMAG(float ax,float ay,float az,float gx,float gy,float gz,float elapsedTime);
   void setGyroOffset(float offx,float offy,float offz);

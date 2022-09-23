@@ -56,17 +56,23 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   double delaUS = pwm_array[1];
   double deleUS = pwm_array[2];
   double delrUS = pwm_array[3];
+  double mewt2 = pwm_array[4];
+  double delaUS2 = pwm_array[5];
+  double deleUS2 = pwm_array[6];
+  double delrUS2 = pwm_array[7];
 
   //Convert US to degrees
   double dela = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(delaUS-OUTMID);
   double dele = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(deleUS-OUTMID); 
   double delr = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(delrUS-OUTMID);
-  
-  //printf("DELR = %lf \n",delr);
+  double dela2 = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(delaUS2-OUTMID);
+  double dele2 = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(deleUS2-OUTMID); 
+  double delr2 = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(delrUS2-OUTMID);
+  //printf("DELE = %lf DELE2 = %lf \n",dele,dele2);
   
   //actuators.disp();
   
-  //Compute Thrust
+  //Compute Thrust - 1
   double omega = aeropack.spin_slope*(mewt - OUTMIN);
   double Thrust = 0.5*RHOSLSI*aeropack.AREA*pow(omega*aeropack.Rrotor,2.0)*aeropack.ct;
   if (vinf < aeropack.max_speed) {
@@ -76,6 +82,16 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
     //printf("Velocity = %lf \n",vinf);
   }
   //printf("Thrust = %lf \n",Thrust);
+
+  //Compute Thrust - 2
+  double omega2 = aeropack.spin_slope*(mewt2 - OUTMIN);
+  double Thrust2 = 0.5*RHOSLSI*aeropack.AREA*pow(omega2*aeropack.Rrotor,2.0)*aeropack.ct;
+  if (vinf < aeropack.max_speed) {
+    Thrust2 *= vinf/aeropack.max_speed;
+  } else {
+    Thrust2 = 0.0;
+    //printf("Velocity = %lf \n",vinf);
+  }
 		
   //forces Coefficients
   double CL = aeropack.CLzero + (aeropack.CLalpha*alpha) + (aeropack.CLq*qhat) + (aeropack.CLdele*dele); //#Equation 19: Coefficient of Lift
@@ -85,17 +101,44 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   double Cm = (aeropack.Cmzero)+(aeropack.Cmalpha*alpha)+(aeropack.Cmq*qhat)+(aeropack.Cmdele*dele);
   double Cl = (aeropack.CLbeta*beta)+(aeropack.CLp*phat)+(aeropack.CLr*rhat)+(aeropack.CLdela*dela)+(aeropack.CLdelr*delr);
   double Cn = (aeropack.Cnp*phat)+(aeropack.Cnbeta*beta)+(aeropack.Cnr*rhat)+(aeropack.Cndela*dela)+(aeropack.Cndelr*delr);
+
+  //Compute Forces and moments
+  double fx = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(CL*sin(alpha)-CD*cos(alpha)) + Thrust;
+  double fy = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*CY;
+  double fz = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(-CL*cos(alpha)-CD*sin(alpha));
+
+  double mx = aeropack.bws*Cl;
+  double my = aeropack.cbar*Cm;
+  double mz = aeropack.bws*Cn;
+
+  //forces Coefficients
+  double CL2 = aeropack.CLzero + (aeropack.CLalpha*alpha) + (aeropack.CLq*qhat) + (aeropack.CLdele*dele2); //#Equation 19: Coefficient of Lift
+  double CD2 = aeropack.CDzero + (aeropack.CDalpha*(alpha*alpha)); //#Equation 19: Coefficient of Drag
+  double CY2 = (aeropack.Cybeta*beta)+(aeropack.Cydelr*delr2)+(aeropack.Cyp*phat)+(aeropack.Cyr*rhat);
+  //printf("CY = %lf \n",CY);
+  double Cm2 = (aeropack.Cmzero)+(aeropack.Cmalpha*alpha)+(aeropack.Cmq*qhat)+(aeropack.Cmdele*dele2);
+  double Cl2 = (aeropack.CLbeta*beta)+(aeropack.CLp*phat)+(aeropack.CLr*rhat)+(aeropack.CLdela*dela2)+(aeropack.CLdelr*delr2);
+  double Cn2 = (aeropack.Cnp*phat)+(aeropack.Cnbeta*beta)+(aeropack.Cnr*rhat)+(aeropack.Cndela*dela2)+(aeropack.Cndelr*delr2);
+
+  //Compute Forces and moments
+  double fx2 = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(CL2*sin(alpha)-CD2*cos(alpha)) + Thrust2;
+  double fy2 = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*CY2;
+  double fz2 = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(-CL2*cos(alpha)-CD2*sin(alpha));
+
+  double mx2 = aeropack.bws*Cl2;
+  double my2 = aeropack.cbar*Cm2;
+  double mz2 = aeropack.bws*Cn2;
+
+  //printf("My = %lf %lf \n",my,my2);
   
   //Forces and Moments
-  FB.set(1,1,CL*sin(alpha)-(CD*cos(alpha)));
-  FB.set(2,1,CY);
-  FB.set(3,1,-CL*cos(alpha)-CD*sin(alpha)); //#Equation 18: Aerodynamic forces
-  FB.mult_eq(0.5*RHOSLSI*(vinf*vinf)*aeropack.S);
-  FB.plus_eq1(1,1,Thrust);
-  MB.set(1,1,aeropack.bws*Cl);
-  MB.set(2,1,aeropack.cbar*Cm);
-  MB.set(3,1,aeropack.bws*Cn);
-  MB.mult_eq(0.5*RHOSLSI*(vinf*vinf)*aeropack.S);
+  FB.set(1,1,fx+fx2);
+  FB.set(2,1,fy+fy2);
+  FB.set(3,1,fz+fz2);
+  double l = aeropack.bws/2.0;
+  MB.set(1,1,mx+mx2-l*fz+l*fz2);
+  MB.set(2,1,my+my2);
+  MB.set(3,1,mz+mz2+l*fx-l*fx2);
 
   //FB.disp();
   //MB.disp();

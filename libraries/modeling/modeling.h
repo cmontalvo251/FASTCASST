@@ -81,7 +81,7 @@ class modeling {
   //initialization routine
   void init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB in_configuration_matrix,int argc,char** argv);
   //Loop
-  void loop(double currentTime,int pwm_array[]);
+  void loop(double currentTime,int pwm_array[],int rx_array[]);
   //RK4step
   void rk4step(int pwm_array[]);
 };

@@ -49,6 +49,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //Set and log headers
   logger.appendheader("Time (sec)");
   logger.appendheaders(sense.headernames,sense.getNumVars());
+  logger.appendheader("RC In Channel #5");
   logger.appendheaders(pwmnames,NUMSIGNALS);
   logger.printheaders();
 
@@ -144,8 +145,13 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   //Check to see if it's time to log
   if (currentTime >= nextLOGtime) {
     //printf("Hardware Logging %lf \n",currentTime);
+    //Time
     logger.printvar(currentTime);
+    //All sense states
     logger.print(sense.sense_matrix);
+    //RC Channel #5
+    logger.printvar(rc.in.rx_array[4]);
+    //RC Out Channels
     logger.printarrayln(rc.out.pwm_array,rc.out.NUMSIGNALS);
     nextLOGtime=currentTime+LOGRATE;
   }
@@ -159,12 +165,23 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   if (currentTime >= nextTELEMtime) {
     //printf("Sending Telemetry %lf \n",currentTime);
     //For right now let's send RPY and GPS coordinates
-    telemetry_matrix.set(1,1,currentTime);
+
+    //This is the telemetry data needed for ground station command line
+    /*telemetry_matrix.set(1,1,currentTime);
     telemetry_matrix.set(2,1,sense.satellites.latitude);
     telemetry_matrix.set(3,1,sense.satellites.longitude);
     telemetry_matrix.set(4,1,sense.compass);
     telemetry_matrix.set(5,1,sense.orientation.yaw);
-    telemetry_matrix.set(6,1,sense.satellites.heading);
+    telemetry_matrix.set(6,1,sense.satellites.heading);*/
+
+    //This is the telemetry data needed for ground station serial (GUI)
+    telemetry_matrix.set(1,1,currentTime);
+    telemetry_matrix.set(2,1,sense.orientation.roll);
+    telemetry_matrix.set(3,1,sense.orientation.pitch);
+    telemetry_matrix.set(4,1,sense.compass);
+    telemetry_matrix.set(5,1,sense.satellites.latitude);
+    telemetry_matrix.set(6,1,sense.satellites.longitude);
+    
     ser.sendTelemetry(telemetry_matrix,0);
     nextTELEMtime=currentTime+TELEMRATE;
   }

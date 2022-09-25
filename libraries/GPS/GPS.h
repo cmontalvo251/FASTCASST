@@ -18,7 +18,7 @@ class GPS {
   std::vector<double> pos_data,nav_data;
   //X AND Y are Hardcoded to be zero initially and the origin point
   //is roughly set to Mobile
-  double latitude=MOBX,longitude=MOBY,altitude=0.0,X=0,Y=0,Z=0,X_origin=MOBX,Y_origin=MOBY;
+  double latitude=MOBX,longitude=MOBY,altitude=0.0,X=0,Y=0,Z=0,X_origin=IRVX,Y_origin=IRVY;
   double xprev=0,yprev=0,zprev=0,prev_time=0;
   double headingFilterConstant = 0.0;
   double heading;

@@ -1,8 +1,8 @@
-300.0	!Final Integration time 
+110.0	!Final Integration time 
 0.01 	!Integration rate // seconds
 20.0	!Initial X Position (m) ///Sixdof Model with quaternions
 0.0	!Initial Y Position (m)
--100.0	!Initial Z Position (m)
+-10.0	!Initial Z Position (m)
 1.0	!Quaternion 0
 0.0	!Quaternion 1
 0.0	!Quaternion 2
@@ -42,16 +42,16 @@
 0.1	!Settling Time (sec) of 3 actuator
 0.1	!Settling Time (sec) of 4 actuator
 0.1	!Settling Time (sec) of first actuator - 2
-0.1	!Settling Time (sec) of 2 actuator - 2 
-0.1	!Settling Time (sec) of 3 actuator - 2 
+0.1	!Settling Time (sec) of 2 actuator - 2
+0.1	!Settling Time (sec) of 3 actuator - 2
 0.1	!Settling Time (sec) of 4 actuator - 2
 992.0  !Initial Condition of Actuator 1 (Throttle)
 1500.0  !Initial Condition of Actuator 2 (Aileron)
 1500.0  !Initial Condition of Actuator 3 (Elevator)
 1500.0  !Initial Condition of Actuator 4 (Rudder)
-992.0  !Initial Condition of Actuator 1 (Throttle-2)
-1500.0  !Initial Condition of Actuator 2 (Aileron-2)
-1500.0  !Initial Condition of Actuator 3 (Elevator-2)
-1500.0  !Initial Condition of Actuator 4 (Rudder-2)
+992.0  !Initial Condition of Actuator 1 (Throttle - 2)
+1500.0  !Initial Condition of Actuator 2 (Aileron - 2)
+1500.0  !Initial Condition of Actuator 3 (Elevator - 2)
+1500.0  !Initial Condition of Actuator 4 (Rudder - 2)
 
 ##Everything related to the simulation including sensor errors

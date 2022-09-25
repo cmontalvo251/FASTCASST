@@ -52,7 +52,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Check for user controlled
   if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {
-      icontrol = 4;
+      icontrol = 5;
     } else {
       icontrol = 0;
     }
@@ -73,15 +73,17 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   velocity_command = 20; //Hardcode to 20?
   altitude_command = 20; //Hardcode to 100?
   heading_command = -99;
+
+  double SQUAREWIDTH = 500;
   
-  WAYPOINTS_X[0] = 500;
+  WAYPOINTS_X[0] = SQUAREWIDTH;
   WAYPOINTS_Y[0] = 0;
 
-  WAYPOINTS_X[1] = 500;
-  WAYPOINTS_Y[1] = 500;
+  WAYPOINTS_X[1] = SQUAREWIDTH;
+  WAYPOINTS_Y[1] = SQUAREWIDTH;
 
   WAYPOINTS_X[2] = 0;
-  WAYPOINTS_Y[2] = 500;
+  WAYPOINTS_Y[2] = SQUAREWIDTH;
 
   WAYPOINTS_X[3] = 0;
   WAYPOINTS_Y[3] = 0;
@@ -94,9 +96,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     case 4:
       if (heading_command == -99) {
         heading_command = 0;
-        if (currentTime > 0) {
-          heading_command = -90; //degrees
-        }
+        //if (currentTime > 0) {
+        //  heading_command = -90; //degrees
+        //}
       }
       //velocity, altitude and heading control
       //printf("Heading + ");
@@ -120,7 +122,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
         roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
       }
       if (pitch_command == -99) {
-        pitch_command = -(elevator-STICK_MID)*15.0/((STICK_MAX-STICK_MIN)/2.0);
+        pitch_command = -(elevator-STICK_MID)*30.0/((STICK_MAX-STICK_MIN)/2.0);
       }
       InnerLoop(sense_matrix);
     case 0:

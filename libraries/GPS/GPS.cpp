@@ -77,8 +77,8 @@ void GPS::reset() {
 }
 
 void GPS::setOrigin(double latitude,double longitude) {
-  X_origin = latitude;
-  Y_origin = longitude;
+  //X_origin = latitude;
+  //Y_origin = longitude;
   printf("Origin Set = %lf %lf \n",X_origin,Y_origin);
 }
 

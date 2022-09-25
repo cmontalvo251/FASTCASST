@@ -74,7 +74,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   altitude_command = 20; //Hardcode to 100?
   heading_command = -99;
 
-  double SQUAREWIDTH = 300;
+  double SQUAREWIDTH = 500;
   
   WAYPOINTS_X[0] = SQUAREWIDTH;
   WAYPOINTS_Y[0] = 0;

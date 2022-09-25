@@ -68,7 +68,7 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   double dela2 = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(delaUS2-OUTMID);
   double dele2 = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(deleUS2-OUTMID); 
   double delr2 = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(delrUS2-OUTMID);
-  //printf("DELE = %lf DELE2 = %lf \n",dele,dele2);
+  //printf("DELR = %lf \n",delr);
   
   //actuators.disp();
   
@@ -107,9 +107,9 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   double fy = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*CY;
   double fz = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(-CL*cos(alpha)-CD*sin(alpha));
 
-  double mx = aeropack.bws*Cl;
-  double my = aeropack.cbar*Cm;
-  double mz = aeropack.bws*Cn;
+  double mx = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(aeropack.bws*Cl);
+  double my = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(aeropack.cbar*Cm);
+  double mz = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(aeropack.bws*Cn);
 
   //forces Coefficients
   double CL2 = aeropack.CLzero + (aeropack.CLalpha*alpha) + (aeropack.CLq*qhat) + (aeropack.CLdele*dele2); //#Equation 19: Coefficient of Lift
@@ -125,9 +125,9 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   double fy2 = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*CY2;
   double fz2 = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(-CL2*cos(alpha)-CD2*sin(alpha));
 
-  double mx2 = aeropack.bws*Cl2;
-  double my2 = aeropack.cbar*Cm2;
-  double mz2 = aeropack.bws*Cn2;
+  double mx2 = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(aeropack.bws*Cl2);
+  double my2 = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(aeropack.cbar*Cm2);
+  double mz2 = 0.5*RHOSLSI*(vinf*vinf)*aeropack.S*(aeropack.bws*Cn2);
 
   //printf("My = %lf %lf \n",my,my2);
   

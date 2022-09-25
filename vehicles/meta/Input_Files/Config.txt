@@ -1,18 +1,18 @@
 1.0 	 !Standard Out Print Rate // seconds (set to negative)
 0.1  	 !Data logging rate // seconds (numbers if you want)
 0.01	 !RC Rate // seconds (to run as fast as possible)
-1.0      !Telemetry Rate (seconds)
-1.0 	 !GPS Rate (seconds)
+1.0      !Telemetry Rate/HIL Rate (seconds)
+0.5 	 !GPS Rate (seconds)
 -99      !IMU Rate (seconds) (does not work at the moment)
-0.1      !Analog Rate (seconds)
-1	 !Poll Barometer (0=off,1=on)
+0.1    	 !Analog Rate (seconds)
+1	 	 !Poll Barometer (0=off,1=on)
 0        !IMUTYPE (0=MPU,1=LSM)
-0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
-2 	 !Control System (-1=controlled by PIC,0=off all the time,1=on all the time)
-5.669904 !Mass (kg)
-0.9288881744632 !Ixx(kg-m^2) (MAXWELL FIX THESE)
-0.92288881744632 !Iyy(kg-m^2) (MAXWELL FIX THESE)
-1.76889284930752 !Izz(kg-m^2) (MAXWELL FIX THESE)
+0        !IMU Filter Constant //0 for no filtering and 1.0 for overfiltering
+5	 	 !Control System (-1=controlled by PIC,0=off all the time,>0=see controller.cpp)
+2.4728	 !Mass (kg) (I THINK MASS IS WRONG HERE)
+3.1915111322215 !Ixx(kg-m^2)
+0.2465236293423 !Iyy(kg-m^2)
+3.253531623316164 !Izz(kg-m^2)
 
 !Note that the IMU, PWM out and control loop run as fast as possible
 !in my opinion those are the most crucial items
@@ -22,3 +22,5 @@
 !0.46288881744632 Ixx(kg-m^2)
 !0.46288881744632 Iyy(kg-m^2)
 !0.88889284930752 Izz(kg-m^2)
+
+

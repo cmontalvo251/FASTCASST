@@ -56,7 +56,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Check for user controlled
   if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {
-      icontrol = 1;
+      icontrol = 4;
     } else {
       icontrol = 0;
     }
@@ -75,7 +75,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   roll_command = -99;
   pitch_command = -99;
   velocity_command = 20; //Hardcode to 20?
-  altitude_command = 100; //Hardcode to 100?
+  altitude_command = 20; //Hardcode to 100?
   heading_command = -99;
   
   WAYPOINTS_X[0] = 500;
@@ -93,11 +93,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   switch (icontrol) {
     case 5:
       //velocity, altitude and waypoint control
-      //printf("Waypoint + ");
+      //printf("Waypoint Loop + ");
       WaypointLoop(sense_matrix);
     case 4:
-      //velocity, altitude and heading control
-      //printf("Heading + ");
       if (heading_command == -99) {
         heading_command = 0;
         if (currentTime > 0) {
@@ -111,6 +109,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //roll (rudder mixing), velocity and altitude control
       //printf("Altitude + ");
       AltitudeLoop(sense_matrix);
+      //roll_command = -2;
     case 2:
       //roll (rudder mixing), pitch and velocity control
       //printf("Velocity + ");
@@ -121,12 +120,11 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //with inner loop guidance 
       //printf("INNER LOOP CONTROL -- ");
       //Check for inner loop only guidance
-      //roll_command = 45;
       if (roll_command == -99) {
         roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
       }
       if (pitch_command == -99) {
-        pitch_command = -(elevator-STICK_MID)*15.0/((STICK_MAX-STICK_MIN)/2.0);
+        pitch_command = -(elevator-STICK_MID)*30.0/((STICK_MAX-STICK_MIN)/2.0);
       }
       InnerLoop(sense_matrix);
     case 0:
@@ -213,7 +211,6 @@ void controller::AltitudeLoop(MATLAB sense_matrix) {
   double kd = 0.1;
   pitch_command = kp*(altitude_command - altitude) + kd*(0-altitude_dot);
   pitch_command = CONSTRAIN(pitch_command,-45,45);
-
   //printf("T, ALT, ALT DOT = %lf %lf %lf \n",lastTime,altitude,altitude_dot);  
 }
 
@@ -257,5 +254,4 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     rudder = CONSTRAIN(rudder,-500,500) + OUTMID;
     aileron = -CONSTRAIN(aileron,-500,500) + OUTMID;
     elevator = CONSTRAIN(elevator,-500,500) + OUTMID;
-    //printf("Elevator = %lf pitch = %lf pitchc = %lf \n",elevator,pitch,pitch_command);
 }

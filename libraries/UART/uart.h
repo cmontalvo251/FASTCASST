@@ -33,7 +33,8 @@ class UART {
   int baudRate = 57600; //Hardcode. I don't think we ever need to change
  public:
   UART();
-  void init(int,int,int);
+  void TelemInit(int);
+  void HILInit(int,int);
   void readSense(MATLAB);
   void sendSense(MATLAB);
   int readControl(MATLAB);

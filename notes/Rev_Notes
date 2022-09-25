@@ -1,3 +1,37 @@
+======================9/20/2022===============
+
+Creating a separate thread for hil() is a lot harder than
+I thought. I am making progress.
+
+If you compile 
+
+make hil_desktop MODEL="airplane" 
+
+you will get the error that the ser and uart vars
+are not defined. This is because those variables are in the 
+hardware class. In order to access them outside in a standard 
+static function like loop and renderloop we need to pass
+them to a separate class somehow. You'll need to look up how that's
+done in openGL before moving on
+
+Oh and also in order to get telemetry to work alongside with
+HIL you'll need to open two serial ports
+
+----Later that day----
+
+Ok I've got two serial ports opening: one for wiring and one for radios
+I still have the problem where those serial vars and uart matrices are not
+in that function space.
+
+Ok since UART::serHIL is only used inside the hil() routine I just passed the entire
+serHIL variable to the function. Hopefully we won't get any runtime seg faults
+
+The only issue now is the uart matrices. Ok I made the uart matrices global and defined them 
+externally using extern in the header file and then had them defined in the hardware.cpp file
+
+Ok the code runs but I can't test it until I have the hardware interfaces. We're making progress
+though
+
 ======================9/18/2022===============
 
 My idea for HIL is to thread the hilSend function

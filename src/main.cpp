@@ -66,7 +66,7 @@ modeling model;
 ///////////////////////////////////////////////////
 
 //Main Loop Functions
-void renderloop(char* root_folder_name,int argc,char** argv);
+//void renderloop(char* root_folder_name,int argc,char** argv);
 void loop();
 
 int main(int argc,char* argv[]) {
@@ -168,8 +168,16 @@ void loop() {
     #endif
 
     //If We're running in HIL we need to run the HIL comms function    
-    #ifdef HIL
-    hw.hil(watch.currentTime,watch.elapsedTime);
+    #if HIL
+    #ifdef DESKTOP
+    //Normally this line of code would run in the hardware::loop routine but since that's running on the
+    //pi we need to run it here. The poll just simply puts everything in the sense_matrix from the model
+    //matrix
+    hw.sense.poll(watch.currentTime,watch.elapsedTime);
+    #endif
+    //No matter what though we need to run the hilsend routine which
+    //puts all vars into the appropriate matrices to send back and forth
+    hw.hilsend(watch.currentTime);
     #endif
     
     //We only run the hardware / control loop if we're in SIMONLY, SIL, AUTO or HIL RPI

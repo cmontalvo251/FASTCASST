@@ -22,6 +22,22 @@
 //Eventually I'm going to get Telemetry working in SIL and SIMONLY modes
 #include <UART/uart.h>
 
+//In order to get this to work on linux you need to run sudo apt-get install libboost-all-dev
+//You need boost to run the hil functions because the serial read/write must run as fast as possible 
+//to not lose data
+#ifdef HIL
+#include <boost/thread.hpp> 
+using namespace boost;
+extern boost::mutex HILmutex; //Mutex for passing data b/t HIL asynchronous threads
+#endif
+
+//Externs are to avoid multiple declaration errors during module compilation
+
+//Asynchronous HIL thread
+void hil(UART);
+//Global vars to pass info back and forth
+extern MATLAB uart_sense_matrix,uart_ctl_matrix;
+
 ///////////Inputs to Hardware Class///////////////
 // 1 - Root Folder name (char*)
 // 2 - Control Matrix (MATLAB)
@@ -39,21 +55,20 @@
 
 class hardware {
  private:
-  bool sendOK = 1;
-  bool recOK = 1;
   double nextLOGtime = 0;
   double nextRCtime = 0;
   double nextTELEMtime = 0;
   double nextHILtime = 0;
-  MATLAB telemetry_matrix,uart_sense_matrix,uart_ctl_matrix;
+  MATLAB telemetry_matrix;
   MATLAB q0123,ptp;
   Datalogger logger;
-  UART ser;
+  UART serTelem,serHIL;
   //Unfortunately telemetry values are going to be hardcoded
   //Rather than use input files you'll have to edit the code
   //in the init() and loop() functions
   int NUMTELEMETRY,NUMSENSE,NUMCTL;
   char** pwmnames;
+  //double HILtime;
  public:
   //RCIO Class
   RCIO rc;
@@ -71,8 +86,7 @@ class hardware {
   void send(double time,MATLAB model_matrix,double keyboardVars[]);
   //Main hardware loop
   void loop(double currentTime,double elapsedTime,MATLAB control_matrix);
-  //HIL function
-  void hil(double,double);
+  void hilsend(double);
   //Constructor
   hardware();
 };

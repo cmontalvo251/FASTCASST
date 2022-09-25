@@ -2,8 +2,9 @@
 
 #ifdef HIL
 boost::mutex HILmutex; //Mutex for passing data b/t HIL asynchronous threads
-#endif
+//Global variables for uart_sense matrix and uart_ctl_matrix
 MATLAB uart_sense_matrix,uart_ctl_matrix;
+#endif
 
 //Constructor
 hardware::hardware() {
@@ -91,15 +92,15 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //6 - longitude
   
   NUMTELEMETRY = 6; //Set the actual values in the loop function
-  NUMSENSE = 10;
-  NUMCTL = 9;
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix HW");
-  uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
-  uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
   //Telemetry is always on an working in some sort of configuration
   serTelem.TelemInit(NUMTELEMETRY);
 
   #ifdef HIL
+  NUMSENSE = 10;
+  NUMCTL = 9;
+  uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
+  uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
   serHIL.HILInit(NUMSENSE,NUMCTL);
   boost::thread hilloop(hil,serHIL);
   #endif
@@ -207,6 +208,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
 
 }
 
+#ifdef HIL
 void hardware::hilsend(double currentTime) {
   //Because this uart_sense_matrix is controlled in two asynchronous threads
   //we need to place a mutex here
@@ -405,3 +407,5 @@ void hil(UART ser) {
   } //End of inifinite while loop
 
 } //end of hil() function
+
+#endif //HIL

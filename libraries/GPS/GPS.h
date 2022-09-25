@@ -14,11 +14,13 @@ class GPS {
     double GPSupdateRate = 4.0; //every 4 seconds
     int VALIDGPS = 0;
     double XYZ[3],LLH[3];
+    double X_origin=GPSORIGINX,Y_origin=GPSORIGINY; //These are set in mathp.h
  public:
   std::vector<double> pos_data,nav_data;
   //X AND Y are Hardcoded to be zero initially and the origin point
   //is roughly set to Mobile
-  double latitude=MOBX,longitude=MOBY,altitude=0.0,X=0,Y=0,Z=0,X_origin=IRVX,Y_origin=IRVY;
+  //Origin is set in mathp.h
+  double latitude=GPSORIGINX,longitude=GPSORIGINY,altitude=0.0,X=0,Y=0,Z=0;
   double xprev=0,yprev=0,zprev=0,prev_time=0;
   double headingFilterConstant = 0.0;
   double heading;

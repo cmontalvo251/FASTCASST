@@ -9,7 +9,7 @@
 0        !IMUTYPE (0=MPU,1=LSM)
 0        !IMU Filter Constant //0 for no filtering and 1.0 for overfiltering
 5	 	 !Control System (-1=controlled by PIC,0=off all the time,>0=see controller.cpp)
-2.4728	 !Mass (kg) (I THINK MASS IS WRONG HERE)
+2.4728	 !Mass (kg)
 3.1915111322215 !Ixx(kg-m^2)
 0.2465236293423 !Iyy(kg-m^2)
 3.253531623316164 !Izz(kg-m^2)
@@ -18,9 +18,9 @@
 !in my opinion those are the most crucial items
 
 //ORIGINAL SINGLE AIRCRAFT MASS AND INERTIA
-!2.834952 - Mass (kg) - Single Aircraft
-!0.46288881744632 Ixx(kg-m^2)
-!0.46288881744632 Iyy(kg-m^2)
-!0.88889284930752 Izz(kg-m^2)
+1.2364	 !Mass (kg)
+0.23083252176875 !Ixx(kg-m^2)
+0.12326181467115 !Iyy(kg-m^2)
+0.261842767316082 !Izz(kg-m^2)
 
 

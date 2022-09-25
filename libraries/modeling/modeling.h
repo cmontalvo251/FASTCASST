@@ -61,8 +61,8 @@ class modeling {
   void Derivatives(double,int[]);
   double integrationTime=0;
   MATLAB output_matrix;
-  //GPS
-  double X_origin=MOBX,Y_origin=MOBY;
+  //GPS - origin set in Mathp.h
+  double X_origin=GPSORIGINX,Y_origin=GPSORIGINY;
   double latitude,longitude,altitude,X,Y,Z;
   double XYZ[3],LLH[3];
   void SetGPS();

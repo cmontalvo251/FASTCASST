@@ -1,3 +1,45 @@
+======================9/27/2022===============
+
+First flight test of heading loop resulted in significant oscillations
+
+Currently testing the velocity and altitude loop
+
+Altitude using python ground station yields about 30 meters to be appropriate for altitude
+
+Velocity loop controller caused a yaw oscillation. Dr. C has seen this in simulation.
+Rudder mixing lowered to kp = 1.0 from 10.0 (which is insane btw)
+
+Velocity command set to 15 m/s and telemetry updated to send speed (GPS) and Altitude (BARO)
+
+Velocity loop suffered no oscillations now and it reached about 9 m/s of velocity when the command is 15 m/s
+
+Tested altitude loop and altitude gains are terrible. Currently kp = 0.2 which means a 30 meter delta
+would result in a 6 degree pitch command. Suggest changing kp = 1.5 s.t a 30 meter delta results in 45 degree deflection
+
+Velocity loop tuning by doubling kp and ki (80,3) respectively
+
+Velocity loop test did decently. Can probably increase kp even more. Suggest to 120.
+
+Currently tuning altitude loop suggest kp = 1.5 and kd = 1.0
+
+High frequency pitch oscillations seen in flight with those gains. Suggest lowering kd
+
+It's also possible that kp is too high since large oscillations were seen in pitch.
+
+Suggest kp = 1.0 kd = 0.5 (originall kp = 0.2, kd = 0.1)
+
+Also suggest simulating aircraft with new gains
+
+Winds increased to 12 knots (6.2 m/s) causing almost failure in aircraft. Pilot experienced
+loss of control during last flight due to a large gust. If winds gusted to 8 m/s that is 50% of 
+the flight speed which is not safe to fly in my opinion.
+
+Current Status
+1.) Inner Loop - Check
+2.) Velocity Loop - Check (could increase Kp)
+3.) Altitude loop - Needs tuning
+4.) Heading loop - needs tuning
+
 ======================9/20/2022===============
 
 Creating a separate thread for hil() is a lot harder than

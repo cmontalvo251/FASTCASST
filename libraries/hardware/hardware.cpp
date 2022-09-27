@@ -91,7 +91,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //5 - latitude
   //6 - longitude
   
-  NUMTELEMETRY = 6; //Set the actual values in the loop function
+  NUMTELEMETRY = 8; //Set the actual values in the loop function
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix HW");
   //Telemetry is always on an working in some sort of configuration
   serTelem.TelemInit(NUMTELEMETRY);
@@ -193,6 +193,9 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     telemetry_matrix.set(4,1,sense.compass);
     telemetry_matrix.set(5,1,sense.satellites.latitude);
     telemetry_matrix.set(6,1,sense.satellites.longitude);
+    telemetry_matrix.set(7,1,sense.atm.altitude); 
+    telemetry_matrix.set(8,1,sense.satellites.speed);
+			 
     
     serTelem.sendTelemetry(telemetry_matrix,0);
     nextTELEMtime=currentTime+TELEMRATE;

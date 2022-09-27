@@ -12,7 +12,7 @@ import sys
 sys.path.append('../libraries/')
 from UART.uart import UART as U
 
-fastkit_packet = np.zeros(6)
+fastkit_packet = np.zeros(8)
 
 ##Open Serial Window
 print('Opening Serial port')

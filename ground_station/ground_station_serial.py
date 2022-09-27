@@ -110,19 +110,22 @@ class WINDOW():
 		self.outfile.flush()
 
 	def sendNewData(self,telemetry_packet):
-		time = telemetry_packet[0]
+		time = telemetry_packet[0] #time
 		self.t.append(time)
-		self.roll = telemetry_packet[1]
-		self.pitch = telemetry_packet[2]
-		self.yaw = telemetry_packet[3]
-		latitude = telemetry_packet[4]
-		self.latitude.append(latitude)
-		longitude = telemetry_packet[5]
-		self.longitude.append(longitude)
-		self.gps_altitude = telemetry_packet[6]
-		baro_pressure = telemetry_packet[7]
-		self.baro_altitude = ConvertPressure2Alt(baro_pressure)
-		self.gps_speed = telemetry_packet[8]
+		self.roll = telemetry_packet[1]  #roll
+		self.pitch = telemetry_packet[2] #pitch
+		self.yaw = telemetry_packet[3] #yaw
+		latitude = telemetry_packet[4] #lat
+		if latitude > 30:
+			self.latitude.append(latitude)
+		longitude = telemetry_packet[5] #lon
+		if longitude < -80:
+			self.longitude.append(longitude)
+		self.baro_altitude = telemetry_packet[6]
+		#baro_pressure = telemetry_packet[7]
+		#self.baro_altitude = ConvertPressure2Alt(baro_pressure)
+		self.gps_speed = telemetry_packet[7]
+		self.gps_altitude = telemetry_packet[8]
 		self.pitot_speed = telemetry_packet[9]
 		self.throttle = telemetry_packet[10]
 		self.aileron = telemetry_packet[11]
@@ -144,8 +147,11 @@ class WINDOW():
 
 	def updatewindow(self):
 		##GRID 1,1
-		self.ax11.text(0,0.9,'Latitude = '+str(self.latitude[-1]))
-		self.ax11.text(0,0.6,'Longitude = '+str(self.longitude[-1]))
+		try:
+			self.ax11.text(0,0.9,'Latitude = '+str(self.latitude[-1]))
+			self.ax11.text(0,0.6,'Longitude = '+str(self.longitude[-1]))
+		except:
+			pass
 		self.ax11.text(0,0.3,'GPS Alt (m) = '+str(self.gps_altitude))
 		self.ax11.text(0,0,'Baro Alt (m) = '+str(self.baro_altitude))
 		##GRID 1,2
@@ -156,7 +162,7 @@ class WINDOW():
 		##GRID 1,3
 		self.ax13.plot([-10,10],[self.gps_altitude,self.gps_altitude],'b-',label='GPS')
 		self.ax13.plot([-10,10],[self.baro_altitude,self.baro_altitude],'r-',label='Barometer')
-		comm_altitude = 10
+		comm_altitude = 25.0
 		self.ax13.plot([-10,10],[comm_altitude,comm_altitude],'g--',label='Command')
 		self.ax13.legend()
 		self.ax13.set_ylabel('Altitude (m)')
@@ -176,7 +182,7 @@ class WINDOW():
 		##GRID 3,2
 		self.ax32.plot([-10,10],[self.gps_speed,self.gps_speed],'b-',label='GPS')
 		self.ax32.plot([-10,10],[self.pitot_speed,self.pitot_speed],'r-',label='Pitot Probe')
-		comm_speed = 20.0
+		comm_speed = 15.0
 		self.ax32.plot([-10,10],[comm_speed,comm_speed],'g--',label='Command')
 		self.ax32.set_ylabel('Speed (m/s)')
 		self.ax32.set_ylim([0,30])
@@ -199,19 +205,19 @@ class WINDOW():
 t = np.arange(0,1000*np.pi,1)
 #latitude = 30.69 + 1.0 * np.sin(t)
 #longitude = -88.1 + 1.0*np.cos(t)
-gps_altitude = 10.5 + 1.0*np.sin(t)
-baro_pressure = 1013.25 + 3.0*np.sin(t)
+gps_altitude = 0.0 + 0.0*np.sin(t)
+#baro_pressure = 1013.25 + 3.0*np.sin(t)
 #roll = 0.0 + 10.0*np.exp(0.1*t)
 #pitch = 0.0 + 20.0*np.sin(t)
 #yaw = 0 + 45.0*np.sin(t)
-gps_speed = 22.0 + 0.2*np.sin(t)
-pitot_speed = 18.5 + 3.0*np.cos(t)
-throttle = 1800. + 200*np.sin(t)
-aileron = 992. + np.exp(0.1*t)
-elevator = 2000. - np.exp(0.1*t)
-rudder = 1500. + 500*np.cos(t)
+#gps_speed = 22.0 + 0.2*np.sin(t)
+pitot_speed = 0.0 + 0.0*np.cos(t)
+throttle = 992. + 0*np.sin(t)
+aileron = 992. + 0*np.exp(0.1*t)
+elevator = 992. - 0*np.exp(0.1*t)
+rudder = 992. + 0*np.cos(t)
 telemetry_packet = np.zeros(14)
-fastkit_packet = np.zeros(6)
+fastkit_packet = np.zeros(8)
 
 ##Create window
 print('Creating Window')
@@ -230,15 +236,15 @@ while True:
     print('Value Received, Position, Bytes = ',value,position,bytestring)
     if position >= 0:
         fastkit_packet[position] = value
-        telemetry_packet[0] = fastkit_packet[0]
-        telemetry_packet[1] = fastkit_packet[1]
-        telemetry_packet[2] = fastkit_packet[2]
-        telemetry_packet[3] = fastkit_packet[3]
-        telemetry_packet[4] = fastkit_packet[4]
-        telemetry_packet[5] = fastkit_packet[5]
-        telemetry_packet[6] = gps_altitude[i]
-        telemetry_packet[7] = baro_pressure[i]
-        telemetry_packet[8] = gps_speed[i]
+        telemetry_packet[0] = fastkit_packet[0] #time
+        telemetry_packet[1] = fastkit_packet[1] #roll
+        telemetry_packet[2] = fastkit_packet[2] #pitch
+        telemetry_packet[3] = fastkit_packet[3] #compass
+        telemetry_packet[4] = fastkit_packet[4] #lat
+        telemetry_packet[5] = fastkit_packet[5] #lon
+        telemetry_packet[6] = fastkit_packet[6] #baro altitude
+        telemetry_packet[7] = fastkit_packet[7] #gps speed
+        telemetry_packet[8] = gps_altitude[i]
         telemetry_packet[9] = pitot_speed[i]
         telemetry_packet[10] = throttle[i]
         telemetry_packet[11] = aileron[i]

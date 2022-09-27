@@ -52,7 +52,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Check for user controlled
   if (CONTROLLER_FLAG == -1) {
     if (autopilot > STICK_MID) {
-      icontrol = 5;
+      icontrol = 2;
     } else {
       icontrol = 0;
     }
@@ -70,8 +70,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Initialize commands
   roll_command = -99;
   pitch_command = -99;
-  velocity_command = 20; //Hardcode to 20?
-  altitude_command = 20; //Hardcode to 100?
+  velocity_command = 15; //Hardcode to 20?
+  altitude_command = 25; //Hardcode to 100?
   heading_command = -99;
 
   double SQUAREWIDTH = 1000;
@@ -190,7 +190,7 @@ void controller::AltitudeLoop(MATLAB sense_matrix) {
   //Probably a good idea to use pressure altitude but might need to use 
   //GPS altitude if the barometer isn't good or perhaps even a KF approach
   //Who knows. Just simulating this now.
-  double altitude = sense_matrix.get(28,1);
+  double altitude = sense_matrix.get(28,1); //This is 28,1 which is baro altitude
   //Initialize altitude_dot to zero
   double altitude_dot = 0;
   //If altitude_prev has been set compute a first order derivative
@@ -201,8 +201,8 @@ void controller::AltitudeLoop(MATLAB sense_matrix) {
   altitude_prev = altitude;
 
   //Compute Pitch Command in Degrees
-  double kp = 0.2;
-  double kd = 0.1;
+  double kp = 1.5;
+  double kd = 1.0;
   pitch_command = kp*(altitude_command - altitude) + kd*(0-altitude_dot);
   pitch_command = CONSTRAIN(pitch_command,-45,45);
   //printf("T, ALT, ALT DOT = %lf %lf %lf \n",lastTime,altitude,altitude_dot);  
@@ -215,8 +215,8 @@ void controller::VelocityLoop(MATLAB sense_matrix) {
   double velocityerror = velocity_command - u;
   //printf("Sense U = %lf \n",u);
   //printf("Velocity Error = %lf \n",velocityerror);
-  double kp = 40.0;
-  double ki = 3.0;
+  double kp = 80.0;
+  double ki = 6.0;
   throttle = OUTMIN + kp*velocityerror + ki*velocityint;
   throttle = CONSTRAIN(throttle,OUTMIN,OUTMAX);
   //Integrate but prevent integral windup
@@ -241,7 +241,7 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     elevator = kpe*(pitch-pitch_command) + kde*(pitch_rate);
 
     //Rudder signal will be proportional to aileron
-    double kr = 10.0;
+    double kr = 1.0;
     rudder = kr*aileron;
 
     //CONSTRAIN

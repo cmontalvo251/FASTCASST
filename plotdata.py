@@ -13,6 +13,10 @@ except:
     print('You need pdf and sixdof from Python.git This is on my Github just git clone that repo and put pdf.py and sixdof.py in this root or add to pythonpath')
     sys.exit()
 
+##TRUNCATION START AND END TIME
+tstart = 200.0
+tend = 400.0
+
 #Run code
 os.system('./clean_logs')
 os.system('rm simonly.exe')
@@ -44,11 +48,15 @@ model_data = np.array(model_data)
 #Plot everything
 sense_time = sense_data[:,0]
 model_time = model_data[:,0]
+istart_sense = np.where(sense_time>tstart)[0][0]
+iend_sense = np.where(sense_time>tend)[0][0]
+istart_model = np.where(model_time>tstart)[0][0]
+iend_model = np.where(model_time>tend)[0][0]
 for x in range(1,numVars):
     fig = plt.figure()
     plti = fig.add_subplot(1,1,1)
-    plti.plot(sense_time,sense_data[:,x],label=dataheaders[x])
-    plti.plot(model_time,model_data[:,x],label=logheaders[x])
+    plti.plot(sense_time[istart_sense:iend_sense],sense_data[istart_sense:iend_sense,x],label=dataheaders[x])
+    plti.plot(model_time[istart_model:iend_model],model_data[istart_model:iend_model,x],label=logheaders[x])
     plti.set_xlabel('Time (sec)')
     plti.set_ylabel(logheaders[x])
     print(logheaders[x],x)

@@ -13,9 +13,9 @@ except:
     print('You need pdf and sixdof from Python.git This is on my Github just git clone that repo and put pdf.py and sixdof.py in this root or add to pythonpath')
     sys.exit()
 
-##TRUNCATION START AND END TIME
-tstart = 200.0
-tend = 400.0
+##TRUNCATION START AND END TIME (Set to negative to turn off)
+tstart = -99
+tend = -99
 
 #Run code
 os.system('./clean_logs')
@@ -48,10 +48,18 @@ model_data = np.array(model_data)
 #Plot everything
 sense_time = sense_data[:,0]
 model_time = model_data[:,0]
-istart_sense = np.where(sense_time>tstart)[0][0]
-iend_sense = np.where(sense_time>tend)[0][0]
-istart_model = np.where(model_time>tstart)[0][0]
-iend_model = np.where(model_time>tend)[0][0]
+if tstart > 0:
+    istart_sense = np.where(sense_time>tstart)[0][0]
+    istart_model = np.where(model_time>tstart)[0][0]
+else:
+    istart_sense = 0
+    istart_model = 0
+if tend > 0:
+    iend_sense = np.where(sense_time>tend)[0][0]
+    iend_model = np.where(model_time>tend)[0][0]
+else:
+    iend_sense = -1
+    iend_model = -1
 for x in range(1,numVars):
     fig = plt.figure()
     plti = fig.add_subplot(1,1,1)

@@ -128,8 +128,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   model_matrix.vecset(1,NUMINTEGRATIONSTATES-NUMACTUATORS,integration_matrix,1);
 
   //Initialize X and Y Origin of GPS
-  X_origin = MOBX;
-  Y_origin = MOBY;
+  //origin set in the header file
   //And then set GPS coordinates
   SetGPS();
 
@@ -186,15 +185,16 @@ void modeling::SetGPS() {
   X = model_matrix.get(1,1);
   Y = model_matrix.get(2,1);
   Z = model_matrix.get(3,1);
-  //printf("X Y Z = %lf %lf %lf \n",model_matrix.get(1,1),model_matrix.get(2,1),model_matrix.get(3,1));  
+  //printf("MODEL XYZ = %lf %lf %lf \n",X,Y,Z);  
   XYZ[0] = X;
   XYZ[1] = Y;
   XYZ[2] = Z;
+  //printf("MODEL ORIGIN = %lf %lf \n",X_origin,Y_origin);
   ConvertXYZ2LLH(XYZ,LLH,X_origin,Y_origin);
   latitude = LLH[0];
   longitude = LLH[1];
   altitude = LLH[2];
-  //printf("LLH = %lf %lf %lf \n",latitude,longitude,altitude);
+  //printf("MODEL LLH = %lf %lf %lf \n",latitude,longitude,altitude);
   model_matrix.set(17,1,latitude); //17 because model_matrix has quaternions
   model_matrix.set(18,1,longitude);
   model_matrix.set(19,1,altitude);

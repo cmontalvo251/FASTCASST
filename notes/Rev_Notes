@@ -40,6 +40,9 @@ Current Status
 3.) Altitude loop - Needs tuning
 4.) Heading loop - needs tuning
 
+Back at the lab the code was merged. Unfortunately there is still a model mismatch from the GPS sense and model
+
+
 ======================9/20/2022===============
 
 Creating a separate thread for hil() is a lot harder than

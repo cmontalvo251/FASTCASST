@@ -4,6 +4,7 @@
 #include <GPS/Ublox.h>
 #include <Mathp/mathp.h>
 #include <MATLAB/MATLAB.h>
+#include <Timer/timer.h>
 
 #define GPSPERIOD 0.5
 #define NGPS 25

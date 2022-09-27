@@ -7,6 +7,7 @@
 #include <MATLAB/MATLAB.h>
 #include <Timer/timer.h>
 #include <Rotation/Rotation3.h>
+#include <Mathp/mathp.h>
 #include <Datalogger/Datalogger.h>
 
 ///If running SIL or HIL and on a desktop (anything with a rendering environment)

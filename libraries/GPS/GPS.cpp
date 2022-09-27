@@ -35,10 +35,14 @@ void GPS::poll(float currentTime) {
   XYZ[0] = X;
   XYZ[1] = Y;
   XYZ[2] = Z;
+  //printf("GPS XYZ = %lf %lf %lf \n",X,Y,Z);
+  //printf("GPS ORIGIN = %lf %lf \n",X_origin,Y_origin);
   ConvertXYZ2LLH(XYZ,LLH,X_origin,Y_origin);
   latitude = LLH[0];
   longitude = LLH[1];
   altitude = LLH[2];
+  //printf("GPS LLH = %lf %lf %lf \n",latitude,longitude,altitude);
+  //PAUSE();
   //Then populate pos_data so that the routine below still works
   pos_data.resize(5,1);
   pos_data[0] = 0.0; //not really sure what this is

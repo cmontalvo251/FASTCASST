@@ -195,7 +195,6 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     telemetry_matrix.set(6,1,sense.satellites.longitude);
     telemetry_matrix.set(7,1,sense.atm.altitude); 
     telemetry_matrix.set(8,1,sense.satellites.speed);
-			 
     
     serTelem.sendTelemetry(telemetry_matrix,0);
     nextTELEMtime=currentTime+TELEMRATE;

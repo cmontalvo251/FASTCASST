@@ -15,27 +15,29 @@
 #Add in all needed libraries and modules
 import sys, time
 
-sys.path.append('../hardware/Util')
+sys.path.append('../libraries/Util')
 import util
 
-sys.path.append('../hardware/GPS/')
+sys.path.append('../libraries/GPS/')
 import gps
 
-sys.path.append('../hardware/IMU/')
+sys.path.append('../libraries/IMU/')
 import mpu9250
 
-sys.path.append('../helper/Datalogger')
+sys.path.append('../libraries/Datalogger')
 import datalogger
 
-sys.path.append('../hardware/LED')
+sys.path.append('../libraries/LED')
 import leds
 
-sys.path.append('../hardware/RCIO/Python')
+sys.path.append('../libraries/RCIO/Python')
 import rcinput
 import pwm
 
 import numpy as np
 #Create a time for elapsed time
+LastTime = time.time()
+GPSTime = time.time()
 StartTime = time.time()
 
 #Make sure Ardupilot is off
@@ -43,11 +45,13 @@ util.check_apm()
 
 #Setup datalogger
 logger = datalogger.Datalogger()
-logger.findfile(sys.argv[1])
+if len(sys.argv) < 2:
+    logger.findfile('./')
+else:
+    logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
-#arm,throttlerc,yawrc,lat,lon,alt,velocity,roll,pitch,heading
-outdata = np.zeros(10)
+outdata = np.zeros(11)
 
 #Setup GPS
 gps_llh = gps.GPS()
@@ -97,8 +101,14 @@ def SATURATE(pwm_in):
 
 #This runs on repeat until code is killed
 while (True):
+    ##GET TIME
     RunTime = time.time()
-    elapsedTime = RunTime - StartTime
+
+    ##GET ELAPSED GPS TIME
+    elapsedGPSTime = RunTime - GPSTime
+
+    ##GET LOOP ELAPSED TIME
+    elapsedTime = RunTime - LastTime
     #print(elapsedTime)
     
     #Read in receiver commands
@@ -114,20 +124,26 @@ while (True):
     pitchrc = float(period[2])/1000.
     yawrc = float(period[3])/1000.
     armswitch = float(period[4])/1000.
-    #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
 
     #Get GPS update
     if(elapsedTime > 1.0):
-        StartTime = time.time()
+        GPSTime = time.time()
         gps_llh.update()
-        print(throttlerc,rollrc,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
+
+    #Get IMU
+    a,g,rpy,temp = imu.getALL()
+    roll = rpy[0]
+    pitch = rpy[1]
+    yaw = rpy[2]
 
     #Set arm switch up for safety reasons
+    MOTOR1 = SERVO_MIN
+    MOTOR2 = SERVO_MIN
     if(armswitch < 1.495):
         led.setColor('Red')
-        pwm1.set_duty_cycle(SERVO_MIN)
-        pwm2.set_duty_cycle(SERVO_MID)
         #print('Disarmed for safety')
+        MOTOR1 = SERVO_MIN
+        MOTOR2 = SERVO_MIN
     elif(1.495 < armswitch < 1.995):
         led.setColor('Green')
 
@@ -135,23 +151,36 @@ while (True):
         throttle_left = throttlerc + 1.0*(rollrc - SERVO_MID)
         throttle_right = throttlerc - 1.0*(rollrc - SERVO_MID)
 
-        throttle_left = SATURATE(throttle_left)
-        throttle_right = SATURATE(throttle_right)
-
-        #Send throttlerc to servo
-        pwm1.set_duty_cycle(throttle_left)
-        pwm2.set_duty_cycle(throttle_right)
+        MOTOR1 = SATURATE(throttle_left)
+        MOTOR2 = SATURATE(throttle_right)
 
     elif(armswitch > 1.995):
         led.setColor('Blue')
-        pwm1.set_duty_cycle(SERVO_MIN)
-        pwm2.set_duty_cycle(SERVO_MID)
-        #print('Autonomous Control')
+        MOTOR1 = SERVO_MIN
+        MOTOR2 = SERVO_MAX
+
+    pwm1.set_duty_cycle(MOTOR1)
+    pwm2.set_duty_cycle(MOTOR2)
     #print(armswitch,throttlerc,yawrc)
 
-    #Log data
-    outdata[0] = armswitch
-    outdata[1] = throttlerc
-    outdata[2] = yawrc
-    #outdata[]
-    logger.println(outdata)
+    ##Print Stuff
+    if elapsedTime > 0.1:
+        LastTime = RunTime
+        print(RunTime-StartTime,throttlerc,rollrc,armswitch,gps_llh.latitude,gps_llh.longitude,MOTOR1,MOTOR2,roll,pitch,yaw)
+
+        #Log data
+        outdata[0] = RunTime-StartTime
+        outdata[1] = throttlerc
+        outdata[2] = rollrc
+        outdata[3] = armswitch
+        outdata[4] = gps_llh.latitude
+        outdata[5] = gps_llh.longitude
+        outdata[6] = MOTOR1
+        outdata[7] = MOTOR2
+        outdata[8] = roll
+        outdata[9] = pitch
+        outdata[10] = yaw
+        #outdata[]
+        logger.println(outdata)
+
+    

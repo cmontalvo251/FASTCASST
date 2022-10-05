@@ -218,6 +218,13 @@ void sensors::getCompassHeading() {
   //compass = satellites.heading;
   //OR WE CREATE A FUZZY LOGIC FILTER WHERE WE FUSE THE IMU AND THE GPS
   compass = orientation.yaw + heading_offset;
+  //Fix wrap between +-180
+  if (compass > 180) {
+    compass -= 180;
+  }
+  if (compass < -180) {
+    compass += 180;
+  }
   //compass = 400;
 }
 

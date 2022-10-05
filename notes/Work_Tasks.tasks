@@ -16,6 +16,8 @@ SPEEDING UP FASTkit ON PI:
 
   ☐ Thread the IMU and GPS
 
+  ☐ Investigate the Barometer delay and see if we can make it better
+
   ☐ See why Ground station lags by two seconds. Possible source is updating the window (Turn some off and see what happens, actually the better option is to just thread the serial and update the GUI on a different thread using a queue)
 
   ☐ We can try systemd which is apparently what Arducopter uses

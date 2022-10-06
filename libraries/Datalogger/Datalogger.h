@@ -17,6 +17,7 @@ class Datalogger {
   void findfile(char* directory);
   void print(MATLAB);
   void printvar(double);
+  void printint(int);
   void print();
   void println(MATLAB);
   void println();

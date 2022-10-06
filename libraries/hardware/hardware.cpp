@@ -51,13 +51,15 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   }
 
   //Initialize Logger
-  logger.init("data/",sense.getNumVars()+1+NUMSIGNALS); //+1 for time
+  logger.init("data/",sense.getNumVars()+2+NUMSIGNALS); //+1 for time,+2 for RC In Channel #5
   //Set and log headers
   logger.appendheader("Time (sec)");
   logger.appendheaders(sense.headernames,sense.getNumVars());
   logger.appendheader("RC In Channel #5");
   logger.appendheaders(pwmnames,NUMSIGNALS);
   logger.printheaders();
+  /////////IF YOU ADD TO THIS HEADER YOU NEED TO MAKE SURE YOU INCREMENT
+  ////////THE LOGGER.INIT FUNCTION BY 1
 
   //What data do I want sent to RPI???
   //1 - roll
@@ -162,7 +164,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     //All sense states
     logger.print(sense.sense_matrix);
     //RC Channel #5
-    logger.printvar(rc.in.rx_array[4]);
+    logger.printint(rc.in.rx_array[4]);
     //RC Out Channels
     logger.printarrayln(rc.out.pwm_array,rc.out.NUMSIGNALS);
     nextLOGtime=currentTime+LOGRATE;

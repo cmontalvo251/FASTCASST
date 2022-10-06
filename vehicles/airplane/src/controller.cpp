@@ -50,9 +50,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   int icontrol = 0;
 
   //Check for user controlled
-  if (CONTROLLER_FLAG == -1) {
+  if (CONTROLLER_FLAG < 0) {
     if (autopilot > STICK_MID) {
-      icontrol = 3;
+      icontrol = -CONTROLLER_FLAG;
     } else {
       icontrol = 0;
     }
@@ -71,7 +71,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   roll_command = -99;
   pitch_command = -99;
   velocity_command = 15; //Hardcode to 20?
-  altitude_command = 25; //Hardcode to 100?
+  altitude_command = 50; //Hardcode to 100?
   heading_command = -99;
 
   double SQUAREWIDTH = 1000;
@@ -162,7 +162,7 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
 void controller::HeadingLoop(MATLAB sense_matrix) {
   double kp = 0.4;
   double kd = 0.25;
-  double ki = 0.02;
+  double ki = 0.0;
   double heading = sense_matrix.get(6,1);
   double yaw_rate = sense_matrix.get(12,1);
   //I think the wrap issue is here
@@ -201,8 +201,8 @@ void controller::AltitudeLoop(MATLAB sense_matrix) {
   altitude_prev = altitude;
 
   //Compute Pitch Command in Degrees
-  double kp = 1.5;
-  double kd = 1.0;
+  double kp = 1.0;
+  double kd = 0.5;
   pitch_command = kp*(altitude_command - altitude) + kd*(0-altitude_dot);
   pitch_command = CONSTRAIN(pitch_command,-45,45);
   //printf("T, ALT, ALT DOT = %lf %lf %lf \n",lastTime,altitude,altitude_dot);  
@@ -215,8 +215,8 @@ void controller::VelocityLoop(MATLAB sense_matrix) {
   double velocityerror = velocity_command - u;
   //printf("Sense U = %lf \n",u);
   //printf("Velocity Error = %lf \n",velocityerror);
-  double kp = 80.0;
-  double ki = 6.0;
+  double kp = 120.0;
+  double ki = 8.0;
   throttle = OUTMIN + kp*velocityerror + ki*velocityint;
   throttle = CONSTRAIN(throttle,OUTMIN,OUTMAX);
   //Integrate but prevent integral windup

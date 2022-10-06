@@ -150,7 +150,7 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
     PRINTER = 0;
   }
   PRINTER+=1;
-  if (distance < 150) {
+  if (distance < 10) {
     printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,heading_command,distance);
     WAYINDEX += 1;
     if (WAYINDEX > NUMWAYPOINTS-1) {

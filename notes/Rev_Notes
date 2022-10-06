@@ -1,3 +1,26 @@
+======================10/6/2022==============
+
+1.) Tested inner loop and it works.
+Note that barometer was biased by -33 meters. 
+2.) Fixed logic in controller.cpp to send negative numbers for icontrol
+3.) Added calibration step to barometer so you need to wait 5 seconds now before you fly.
+4.) Quite a North wind in Irvington. Did a South side bank at low speed and altitude. Lost lift and control and crashed into the ground. Meta 2 has been totaled. Motors, ESCs, servos and control rods all still in tact. Motor and ESC might be compromised but needs further testing. Airplane tail boom cracked in half and motor mount destroyed. Moving to Meta 1.
+5.) Flight test with Meta 1 was a success - Inner loop and velocity test success.
+6.) Altitude gains changed to kp = 1.0 and kd = 0.5. 
+Gains for altitude seem ok but might need ki gain for integral gain
+Since we calibrated the pressure at sea-level we really need to be flying a commanded 50 meters for alttiude
+also need to increase kp and ki on velocity controller
+Changed Velocity gains to kp = 120. and ki = 8.0
+Command altitude set to 50 meters
+With new gains on velocity and altitude command the pilot was capable of maintaining a circular loop at a somewhat constant heading. At one point the aircraft was flying into the wind and the aircraft slowed and lost altitude at which point the velocity controller increase and the aircraft began to climb. There was some overshoot so the aircraft controllers needed to slow and then pitch back down. The aircraft dove quite agressively but the aircraft saved itself and maintained an altitude that was still well above the ground.
+7.) Moving to heading controller
+Current gains are 
+  double kp = 0.4;
+  double kd = 0.25;
+  double ki = 0.02;
+Suggest setting ki = 0
+Flying with no ki did ok but the problem is that steady state error from the roll axis creeps in and the vehicle kept trying to fly to the right. Suggest adding ki back in but do it slowly at ki = 0.005
+
 ======================9/27/2022===============
 
 First flight test of heading loop resulted in significant oscillations

@@ -10,7 +10,7 @@ import numpy as np
 
 try:
     from pdf import *
-    import sixdof as dof
+    #import sixdof as dof
 except:
     print('You need pdf and sixdof from Python.git This is on my Github just git clone that repo and put pdf.py and sixdof.py in this root or add to pythonpath')
     sys.exit()
@@ -38,7 +38,8 @@ for line in datafile:
     sense_data.append(numarray)
 sense_data = np.array(sense_data)
 sense_time = sense_data[:,0]
-#Flight Time
+
+#Flight Time Truncation
 if tstart > 0:
     istart_sense = np.where(sense_time>tstart)[0][0]
 else:
@@ -47,87 +48,113 @@ if tend > 0:
     iend_sense = np.where(sense_time>tend)[0][0]
 else:
     iend_sense = -1
-#Control Time
-if cstart > 0:
-    istart_control = np.where(sense_time>cstart)[0][0]
-else:
-    istart_control = 0
-if cend > 0:
-    iend_control = np.where(sense_time>cend)[0][0]
-else:
-    iend_control = -1
+sense_flighttime = sense_time[istart_sense:iend_sense]
+sense_flightdata = []
 for x in range(1,numVars):
-    points = np.array([sense_time[istart_sense:iend_sense],sense_data[istart_sense:iend_sense,x]]).T.reshape(-1, 1, 2)
-    segments = np.concatenate([points[:-1], points[1:]], axis=1)
-    fig, axs = plt.subplots(1, 1, sharex=True, sharey=True)
-    cmap = ListedColormap(['b','r','b'])
-    norm = BoundaryNorm([sense_time[istart_sense],sense_time[istart_control],sense_time[iend_control],sense_time[iend_sense]], cmap.N)
-    lc = LineCollection(segments, cmap=cmap, norm=norm)
-    lc.set_array(sense_time[istart_sense:iend_sense])
-    lc.set_linewidth(2)
-    line = axs.add_collection(lc)
-    #This sets the color bar on side
-    #fig.colorbar(line, ax=axs)
-    axs.set_xlabel('Time (sec)')
-    axs.set_ylabel(dataheaders[x])
-    print(dataheaders[x],x)
-    axs.grid()
-    axs.get_yaxis().get_major_formatter().set_useOffset(False)
-    axs.gcf().subplots_adjust(left=0.18)
-    axs.set_xlim(c.min()-10, c.max()+10)
-    axs.set_ylim(a.min()-10, a.max()+10)
+    #print(x)
+    sense_trunc = sense_data[istart_sense:iend_sense,x]
+    sense_flightdata.append(sense_trunc)
+sense_flightdata = np.array(sense_flightdata)
+
+#Control Time Truncation
+if cstart > 0:
+    control_start = np.where(sense_flighttime>cstart)[0][0]
+else:
+    control_start = 0
+if cend > 0:
+    control_end = np.where(sense_flighttime>cend)[0][0]
+else:
+    control_end = -1
+flighttime_Start = sense_flighttime[0:control_start]
+flighttime_Control = sense_flighttime[control_start:control_end]
+flighttime_End = sense_flighttime[control_end:-1]
+
+#Plot All Flight Data vs Time
+for x in range(0,numVars-1):
+    flightdata = sense_flightdata[x]
+    fig = plt.figure()
+    plti = fig.add_subplot(1, 1, 1)
+    plti.plot(flighttime_Start,flightdata[0:control_start],'b',label='Manual Flight')
+    plti.plot(flighttime_Control,flightdata[control_start:control_end],'r',label='Controlled Flight')
+    plti.plot(flighttime_End,flightdata[control_end:-1],'b')
+    plti.set_xlabel('Time (sec)')
+    plti.set_ylabel(dataheaders[x+1])
+    print(dataheaders[x+1])
+    plti.grid()
+    plti.legend()
+    plti.get_yaxis().get_major_formatter().set_useOffset(False)
+    plt.gcf().subplots_adjust(left=0.18)
     pp.savefig()
 
-#for x in range(1,numVars):
-#    fig = plt.figure()
-#    plti = fig.add_subplot(1,1,1)
-#    plti.plot(sense_time[istart_sense:iend_sense],sense_data[istart_sense:iend_sense,x],label=dataheaders[x])
-#    plti.set_xlabel('Time (sec)')
-#    plti.set_ylabel(dataheaders[x])
-#    print(dataheaders[x],x)
-#    plti.grid()
-#    plti.get_yaxis().get_major_formatter().set_useOffset(False)
-#    plt.gcf().subplots_adjust(left=0.18)
-#    pp.savefig()
-
-fig = plt.figure()    
-plti = fig.add_subplot(1,1,1)
-#plti.plot(sense_data[:,1],sense_data[:,2],label='Sense')
-#plti.set_xlabel('X (m)')
-#plti.set_ylabel('Y (m)')
-plti.plot(sense_data[:,17],sense_data[:,16],label='Sense')
-plti.set_xlabel('Longitude (deg)')
-plti.set_ylabel('Latitude (deg)')
+#Plot Barometer vs GPS Altitude
+Baro = sense_flightdata[2]*-1
+GPSAlt = sense_flightdata[17]
+Baro_Start = Baro[0:control_start]
+Baro_Control = Baro[control_start:control_end]
+Baro_End = Baro[control_end:-1]
+GPSAlt_Start = GPSAlt[0:control_start]
+GPSAlt_Control = GPSAlt[control_start:control_end]
+GPSAlt_End = GPSAlt[control_end:-1]
+fig = plt.figure()
+plti = fig.add_subplot(1, 1, 1)
+plti.plot(flighttime_Start,Baro_Start,'g',label='Baro(Manual)')
+plti.plot(flighttime_Control,Baro_Control,'m',label='Baro(Controlled)')
+plti.plot(flighttime_End,Baro_End,'g')
+plti.plot(flighttime_Start,GPSAlt_Start,'b',label='GPS(Manual)')
+plti.plot(flighttime_Control,GPSAlt_Control,'r',label='GPS(Controlled)')
+plti.plot(flighttime_End,GPSAlt_End,'b')
+plti.set_xlabel('Time (sec)')
+plti.set_ylabel('Altitude (m)')
 plti.grid()
+plti.legend() 
 plti.get_yaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
-################################################################################################################################
-a = sense_data[:,1]
-b = sense_data[:,2]
-c = sense_time
-# Create a set of line segments so that we can color them individually
-# This creates the points as a N x 1 x 2 array so that we can stack points
-# together easily to get the segments. The segments array for line collection
-# needs to be (numlines) x (points per line) x 2 (for x and y)
-points = np.array([c, a]).T.reshape(-1, 1, 2)
-segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
-fig, axs = plt.subplots(1, 1, sharex=True, sharey=True)
+#Plot X vs Y Position
+X_Pos = sense_flightdata[0]
+Y_Pos = sense_flightdata[1]
+X_Pos_Start = X_Pos[0:control_start]
+X_Pos_Control = X_Pos[control_start:control_end]
+X_Pos_End = X_Pos[control_end:-1]
+Y_Pos_Start = Y_Pos[0:control_start]
+Y_Pos_Control = Y_Pos[control_start:control_end]
+Y_Pos_End = Y_Pos[control_end:-1]
+fig = plt.figure()
+plti = fig.add_subplot(1, 1, 1)
+plti.plot(X_Pos_Start,Y_Pos_Start,'b',label='Manual Flight')
+plti.plot(X_Pos_Control,Y_Pos_Control,'r',label='Controlled Flight')
+plti.plot(X_Pos_End,Y_Pos_End,'b')
+plti.set_xlabel('X (m)')
+plti.set_ylabel('Y (m)')
+plti.grid()
+plti.legend()
+plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plt.gcf().subplots_adjust(left=0.18)
+pp.savefig()
 
-cmap = ListedColormap(['b','r','b'])
-norm = BoundaryNorm([sense_time[istart_sense],sense_time[istart_control],sense_time[iend_control],sense_time[iend_sense]], cmap.N)
-lc = LineCollection(segments, cmap=cmap, norm=norm)
-lc.set_array(c)
-lc.set_linewidth(2)
-line = axs.add_collection(lc) 
-#This sets the color bar on side
-#fig.colorbar(line, ax=axs)
+#Plot Latitude vs Longitude
+Lat = sense_flightdata[15]
+Lon = sense_flightdata[16]
+Lat_Start = Lat[0:control_start]
+Lat_Control = Lat[control_start:control_end]
+Lat_End = Lat[control_end:-1]
+Lon_Start = Lon[0:control_start]
+Lon_Control = Lon[control_start:control_end]
+Lon_End = Lon[control_end:-1]
+fig = plt.figure()
+plti = fig.add_subplot(1, 1, 1)
+plti.plot(Lat_Start,Lon_Start,'b',label='Manual Flight')
+plti.plot(Lat_Control,Lon_Control,'r',label='Controlled Flight')
+plti.plot(Lat_End,Lon_End,'b')
+plti.set_xlabel('Longitude (deg)')
+plti.set_ylabel('Latitude (deg)')
+plti.grid()
+plti.legend()
+plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plt.gcf().subplots_adjust(left=0.18)
+pp.savefig()
 
-axs.set_xlim(c.min()-10, c.max()+10)
-axs.set_ylim(a.min()-10, a.max()+10)
-#plt.show()
-################################################################################################################################
 #Close file
 datafile.close()
 #Close PDF

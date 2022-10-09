@@ -3,6 +3,11 @@
 Working on HIL. Added a bunch of work tasks into
 the Work_Tasks.tasks file. Hopefully that will keep me on track 
 
+Running simonly and the code is broken most likely from
+tuning gains below
+
+Ok actually it was because of the barometer calibration
+
 ======================10/6/2022==============
 
 1.) Tested inner loop and it works.

@@ -215,8 +215,8 @@ void controller::VelocityLoop(MATLAB sense_matrix) {
   double velocityerror = velocity_command - u;
   //printf("Sense U = %lf \n",u);
   //printf("Velocity Error = %lf \n",velocityerror);
-  double kp = 120.0;
-  double ki = 8.0;
+  double kp = 120.0; //120
+  double ki = 8.0; //8.0
   throttle = OUTMIN + kp*velocityerror + ki*velocityint;
   throttle = CONSTRAIN(throttle,OUTMIN,OUTMAX);
   //Integrate but prevent integral windup

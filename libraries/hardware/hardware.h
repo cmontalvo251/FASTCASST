@@ -77,7 +77,12 @@ class hardware {
   //Status
   int ok = 1;
   //Rates
-  double PRINTRATE=1.0,RCRATE=1.0,LOGRATE=1.0,TELEMRATE=1.0,HILRATE=1.0;
+  double PRINTRATE=1.0,RCRATE=1.0,LOGRATE=1.0,TELEMRATE=1.0
+  //HILRATE IS NOW HARDCODED. Note that HILRATE is just the time that the sense matrices
+  //are updated. The serial hil loop runs as fast as possible to read data and not miss anything
+  //Now we only need to send data to these matrices at like 10 Hz
+  //So HILRATE is hardcoded for the moment
+  double HILRATE=1.0; //NOTE THIS NEEDS TO BE CHANGED TO 10 Hz but for now it is set to 1 Hz
   //Outputs
   MATLAB in_simulation_matrix,in_configuration_matrix;
   //Initialization routine needs the root folder name

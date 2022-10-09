@@ -6,9 +6,19 @@ HIL:
   
   ✔ MultiSAT++ simulation will still need copies of the C++ repo but as you make the Model=SAT mode more like MultiSAT++ you can deprecate this simulation. Still I would like to make sure I still have a running version of MultiSAT++ to work with in the event I do E-Sail simulations. @done (22-05-24 18:52)
   
-  ☐ Create a script that sends data back and forth and test in hardware
-  
   ✔ Add hooks to FASTSim that compile DESKTOP + HIL and RPI/Arduino HIL that sends sensor data and control commands back and forth. The RPI/HIL version will accept a polluted state vector from the computer and run that through the control algorithm and then pass back the control commands to the integrator. So serialListens and SerialResponds etc will need to be written to send data back and forth @done (22-05-24 18:50)
+
+  ☐ Testing sending sense data 1 way from desktop to Rpi - just have RPI print the data to the screen to be sure data is transmitting 1 way
+
+  ☐ Have the Rpi print the control matrix every time it receives new data that way you can see the update in the control signals based on the inputs. 
+
+  ☐ Have the Rpi send data 1 way to the desktop just like you did with the desktop. 
+
+  ☐ Create a loop where Desktop sends data to RPi and then waits for a valid update from Rpi
+
+  ☐ Create a loop on desktop where it waits for signal from desktop and then pushes data back to Desktop 
+
+  ☐ Decreate HILRATE until the code can't run any faster
 
 SPEEDING UP FASTkit ON PI:
 

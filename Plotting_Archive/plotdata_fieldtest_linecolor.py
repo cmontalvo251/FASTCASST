@@ -16,13 +16,11 @@ except:
     sys.exit()
 
 ##TRUNCATION START AND END TIME of flight (Set to negative to turn off)
-tstart = 220
-tend = 360
+tstart = 110
+tend = 250
 ##TRUNCATION START AND END TIME of control (Set to negative to turn off)
-cstart = 250
-c1 = 270
-c2 = 290
-cend = 310
+cstart = 125
+cend = 155
 
 ##Create PDF Handle
 pp = PDF(0,plt)
@@ -60,24 +58,16 @@ sense_flightdata = np.array(sense_flightdata)
 
 #Control Time Truncation
 if cstart > 0:
-    control_start = (np.where(sense_flighttime>cstart)[0][0])
-    control_off1 = (np.where(sense_flighttime>c1)[0][0])
+    control_start = np.where(sense_flighttime>cstart)[0][0]
 else:
     control_start = 0
-    control_off1 = 0
 if cend > 0:
-    control_end = (np.where(sense_flighttime>cend)[0][0])
-    control_on2 = (np.where(sense_flighttime>c2)[0][0])
+    control_end = np.where(sense_flighttime>cend)[0][0]
 else:
     control_end = -1
-    control_on2 = -1
-#print(control_start,control_off1,control_on2,control_end)
 flighttime_Start = sense_flighttime[0:control_start]
-flighttime_Control_on1 = sense_flighttime[control_start-10:control_off1]
-flighttime_Control_off1 = sense_flighttime[control_off1-10:control_on2]
-flighttime_Control_on2 = sense_flighttime[control_on2-10:control_end]
-flighttime_Control_off2 = sense_flighttime[control_end-10:-1]
-#print(flighttime_Control_off2[0],flighttime_Control_off2[-1],flighttime_Control_on2[0],flighttime_Control_on2[-1])
+flighttime_Control = sense_flighttime[control_start-10:control_end]
+flighttime_End = sense_flighttime[control_end-10:-1]
 
 #Plot All Flight Data vs Time
 for x in range(0,numVars-1):
@@ -85,10 +75,8 @@ for x in range(0,numVars-1):
     fig = plt.figure()
     plti = fig.add_subplot(1, 1, 1)
     plti.plot(flighttime_Start,flightdata[0:control_start],'b',label='Manual Flight')
-    plti.plot(flighttime_Control_on1,flightdata[control_start-10:control_off1],'r',label='Controlled Flight')
-    plti.plot(flighttime_Control_off1,flightdata[control_off1-10:control_on2],'b')
-    plti.plot(flighttime_Control_on2,flightdata[control_on2-10:control_end],'r')
-    plti.plot(flighttime_Control_off2,flightdata[control_end-10:-1],'b')
+    plti.plot(flighttime_Control,flightdata[control_start-10:control_end],'r',label='Controlled Flight')
+    plti.plot(flighttime_End,flightdata[control_end-10:-1],'b')
     plti.set_xlabel('Time (sec)')
     plti.set_ylabel(dataheaders[x+1])
     print(dataheaders[x+1])
@@ -102,27 +90,19 @@ for x in range(0,numVars-1):
 Baro = sense_flightdata[2]*-1
 GPSAlt = sense_flightdata[17]
 Baro_Start = Baro[0:control_start]
-Baro_Control_on1 = Baro[control_start-10:control_off1]
-Baro_Control_off1 = Baro[control_off1-10:control_on2]
-Baro_Control_on2 = Baro[control_on2-10:control_end]
+Baro_Control = Baro[control_start-10:control_end]
 Baro_End = Baro[control_end-10:-1]
 GPSAlt_Start = GPSAlt[0:control_start]
-GPSAlt_Control_on1 = GPSAlt[control_start-10:control_off1]
-GPSAlt_Control_off1 = GPSAlt[control_off1-10:control_on2]
-GPSAlt_Control_on2 = GPSAlt[control_on2-10:control_end]
+GPSAlt_Control = GPSAlt[control_start-10:control_end]
 GPSAlt_End = GPSAlt[control_end-10:-1]
 fig = plt.figure()
 plti = fig.add_subplot(1, 1, 1)
 plti.plot(flighttime_Start,Baro_Start,'g',label='Baro(Manual)')
-plti.plot(flighttime_Control_on1,Baro_Control_on1,'m',label='Baro(Controlled)')
-plti.plot(flighttime_Control_off1,Baro_Control_off1,'g')
-plti.plot(flighttime_Control_on2,Baro_Control_on2,'m')
-plti.plot(flighttime_Control_off2,Baro_End,'g')
+plti.plot(flighttime_Control,Baro_Control,'m',label='Baro(Controlled)')
+plti.plot(flighttime_End,Baro_End,'g')
 plti.plot(flighttime_Start,GPSAlt_Start,'b',label='GPS(Manual)')
-plti.plot(flighttime_Control_on1,GPSAlt_Control_on1,'r',label='GPS(Controlled)')
-plti.plot(flighttime_Control_off1,GPSAlt_Control_off1,'b')
-plti.plot(flighttime_Control_on2,GPSAlt_Control_on2,'r')
-plti.plot(flighttime_Control_off2,GPSAlt_End,'b')
+plti.plot(flighttime_Control,GPSAlt_Control,'r',label='GPS(Controlled)')
+plti.plot(flighttime_End,GPSAlt_End,'b')
 plti.set_xlabel('Time (sec)')
 plti.set_ylabel('Altitude (m)')
 plti.grid()
@@ -135,22 +115,15 @@ pp.savefig()
 X_Pos = sense_flightdata[0]
 Y_Pos = sense_flightdata[1]
 X_Pos_Start = X_Pos[0:control_start]
-X_Pos_Control_on1 = X_Pos[control_start-10:control_off1]
-X_Pos_Control_off1 = X_Pos[control_off1-10:control_on2]
-X_Pos_Control_on2 = X_Pos[control_on2-10:control_end]
+X_Pos_Control = X_Pos[control_start-10:control_end]
 X_Pos_End = X_Pos[control_end-10:-1]
 Y_Pos_Start = Y_Pos[0:control_start]
-Y_Pos_Control_on1 = Y_Pos[control_start-10:control_off1]
-Y_Pos_Control_off1 = Y_Pos[control_off1-10:control_on2]
-Y_Pos_Control_on2 = Y_Pos[control_on2-10:control_end]
+Y_Pos_Control = Y_Pos[control_start-10:control_end]
 Y_Pos_End = Y_Pos[control_end-10:-1]
-#print(Y_Pos_Control_off1[-1],Y_Pos_Control_on2[0])
 fig = plt.figure()
 plti = fig.add_subplot(1, 1, 1)
 plti.plot(X_Pos_Start,Y_Pos_Start,'b',label='Manual Flight')
-plti.plot(X_Pos_Control_on1,Y_Pos_Control_on1,'r',label='Controlled Flight')
-plti.plot(X_Pos_Control_off1,Y_Pos_Control_off1,'b')
-plti.plot(X_Pos_Control_on2,Y_Pos_Control_on2,'r')
+plti.plot(X_Pos_Control,Y_Pos_Control,'r',label='Controlled Flight')
 plti.plot(X_Pos_End,Y_Pos_End,'b')
 plti.set_xlabel('X (m)')
 plti.set_ylabel('Y (m)')
@@ -164,21 +137,15 @@ pp.savefig()
 Lat = sense_flightdata[15]
 Lon = sense_flightdata[16]
 Lat_Start = Lat[0:control_start]
-Lat_Control_on1 = Lat[control_start-10:control_off1]
-Lat_Control_off1 = Lat[control_off1-10:control_on2]
-Lat_Control_on2 = Lat[control_on2-10:control_end]
+Lat_Control = Lat[control_start-10:control_end]
 Lat_End = Lat[control_end-10:-1]
 Lon_Start = Lon[0:control_start]
-Lon_Control_on1 = Lon[control_start-10:control_off1]
-Lon_Control_off1 = Lon[control_off1-10:control_on2]
-Lon_Control_on2 = Lon[control_on2-10:control_end]
+Lon_Control = Lon[control_start-10:control_end]
 Lon_End = Lon[control_end-10:-1]
 fig = plt.figure()
 plti = fig.add_subplot(1, 1, 1)
 plti.plot(Lat_Start,Lon_Start,'b',label='Manual Flight')
-plti.plot(Lat_Control_on1,Lon_Control_on1,'r',label='Controlled Flight')
-plti.plot(Lat_Control_off1,Lon_Control_off1,'b')
-plti.plot(Lat_Control_on2,Lon_Control_on2,'r')
+plti.plot(Lat_Control,Lon_Control,'r',label='Controlled Flight')
 plti.plot(Lat_End,Lon_End,'b')
 plti.set_xlabel('Longitude (deg)')
 plti.set_ylabel('Latitude (deg)')

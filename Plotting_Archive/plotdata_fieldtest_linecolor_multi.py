@@ -16,8 +16,8 @@ except:
     sys.exit()
 
 ##TRUNCATION START AND END TIME of flight (Set to negative to turn off)
-tstart = 220
-tend = 360
+tstart = 215
+tend = 365
 ##TRUNCATION START AND END TIME of control (Set to negative to turn off)
 cstart = 250
 c1 = 270
@@ -95,6 +95,7 @@ for x in range(0,numVars-1):
     plti.grid()
     plti.legend()
     plti.get_yaxis().get_major_formatter().set_useOffset(False)
+    plti.get_xaxis().get_major_formatter().set_useOffset(False)
     plt.gcf().subplots_adjust(left=0.18)
     pp.savefig()
 
@@ -128,6 +129,7 @@ plti.set_ylabel('Altitude (m)')
 plti.grid()
 plti.legend() 
 plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 
@@ -157,6 +159,7 @@ plti.set_ylabel('Y (m)')
 plti.grid()
 plti.legend()
 plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 
@@ -180,10 +183,11 @@ plti.plot(Lat_Control_on1,Lon_Control_on1,'r',label='Controlled Flight')
 plti.plot(Lat_Control_off1,Lon_Control_off1,'b')
 plti.plot(Lat_Control_on2,Lon_Control_on2,'r')
 plti.plot(Lat_End,Lon_End,'b')
-plti.set_xlabel('Longitude (deg)')
-plti.set_ylabel('Latitude (deg)')
+plti.set_ylabel('Longitude (deg)')
+plti.set_xlabel('Latitude (deg)')
 plti.grid()
 plti.legend()
+plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plti.get_yaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()

@@ -19,8 +19,8 @@ except:
 tstart = 110
 tend = 250
 ##TRUNCATION START AND END TIME of control (Set to negative to turn off)
-cstart = 125
-cend = 155
+cstart = 130
+cend = 165
 
 ##Create PDF Handle
 pp = PDF(0,plt)
@@ -83,6 +83,7 @@ for x in range(0,numVars-1):
     plti.grid()
     plti.legend()
     plti.get_yaxis().get_major_formatter().set_useOffset(False)
+    plti.get_xaxis().get_major_formatter().set_useOffset(False)
     plt.gcf().subplots_adjust(left=0.18)
     pp.savefig()
 
@@ -108,6 +109,7 @@ plti.set_ylabel('Altitude (m)')
 plti.grid()
 plti.legend() 
 plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 
@@ -130,6 +132,7 @@ plti.set_ylabel('Y (m)')
 plti.grid()
 plti.legend()
 plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 
@@ -152,6 +155,7 @@ plti.set_ylabel('Latitude (deg)')
 plti.grid()
 plti.legend()
 plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 

@@ -282,9 +282,9 @@ void Serial::SerialGetArray(float number_array[],int num,int echo) {
     do {
       do {
         inchar = SerialGetc();
-	if (echo) {
-	  printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
-	}
+	      //if (echo) {
+    	  //printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
+      	//}  
         j++;
       } while ((inchar == '\0') && (j < 1000));
       //if (echo) {
@@ -314,7 +314,11 @@ void Serial::SerialGetArray(float number_array[],int num,int echo) {
     if (echo) {
       printf("Integer Received = %d Float Received = %lf \n",inputvar.inversion,inputvar.floatversion);
     }
-    number_array[d] = inputvar.floatversion;
+    if (inputvar.floatversion > -99999) {
+      number_array[d] = inputvar.floatversion;
+    } else {
+      number_array[d] = -99;
+    }
   }
 }
 

@@ -220,10 +220,10 @@ void sensors::getCompassHeading() {
   compass = orientation.yaw + heading_offset;
   //Fix wrap between +-180
   if (compass > 180) {
-    compass -= 180;
+    compass -= 360;
   }
   if (compass < -180) {
-    compass += 180;
+    compass += 360;
   }
   //compass = 400;
 }

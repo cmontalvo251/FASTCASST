@@ -39,7 +39,9 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   LOGRATE = in_configuration_matrix.get(2,1);
   RCRATE = in_configuration_matrix.get(3,1);
   TELEMRATE = in_configuration_matrix.get(4,1);
-  //HILRATE = in_configuration_matrix.get(4,1);
+  //HILRATE IS NOW HARDCODED. Note that HILRATE is just the time that the sense matrices
+  //are updated. The serial hil loop runs as fast as possible to read data and not miss anything  
+  //HILRATE = in_configuration_matrix.get(4,1); 
 
   sense.init(in_configuration_matrix,in_simulation_matrix);
 
@@ -51,13 +53,15 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   }
 
   //Initialize Logger
-  logger.init("data/",sense.getNumVars()+1+NUMSIGNALS); //+1 for time
+  logger.init("data/",sense.getNumVars()+2+NUMSIGNALS); //+1 for time,+2 for RC In Channel #5
   //Set and log headers
   logger.appendheader("Time (sec)");
   logger.appendheaders(sense.headernames,sense.getNumVars());
   logger.appendheader("RC In Channel #5");
   logger.appendheaders(pwmnames,NUMSIGNALS);
   logger.printheaders();
+  /////////IF YOU ADD TO THIS HEADER YOU NEED TO MAKE SURE YOU INCREMENT
+  ////////THE LOGGER.INIT FUNCTION BY 1
 
   //What data do I want sent to RPI???
   //1 - roll
@@ -162,7 +166,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     //All sense states
     logger.print(sense.sense_matrix);
     //RC Channel #5
-    logger.printvar(rc.in.rx_array[4]);
+    logger.printint(rc.in.rx_array[4]);
     //RC Out Channels
     logger.printarrayln(rc.out.pwm_array,rc.out.NUMSIGNALS);
     nextLOGtime=currentTime+LOGRATE;
@@ -404,6 +408,8 @@ void hil(UART ser) {
     #endif
 
     //We need a cross sleep here or the code will blast serial data faster than we can read
+    //This cross_sleep will eventually go away or reduce to like 0.001 so that we read as fast
+    //as possible for now we're in debug mode so we're only sending every 1.0 seconds
     cross_sleep(1.0);
 
   } //End of inifinite while loop

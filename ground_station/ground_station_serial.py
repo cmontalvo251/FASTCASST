@@ -116,10 +116,10 @@ class WINDOW():
 		self.pitch = telemetry_packet[2] #pitch
 		self.yaw = telemetry_packet[3] #yaw
 		latitude = telemetry_packet[4] #lat
-		if latitude > 30:
+		if latitude > 30 and latitude < 40:
 			self.latitude.append(latitude)
 		longitude = telemetry_packet[5] #lon
-		if longitude < -80:
+		if longitude < -80 and longitude > -90:
 			self.longitude.append(longitude)
 		self.baro_altitude = telemetry_packet[6]
 		#baro_pressure = telemetry_packet[7]
@@ -162,7 +162,7 @@ class WINDOW():
 		##GRID 1,3
 		self.ax13.plot([-10,10],[self.gps_altitude,self.gps_altitude],'b-',label='GPS')
 		self.ax13.plot([-10,10],[self.baro_altitude,self.baro_altitude],'r-',label='Barometer')
-		comm_altitude = 25.0
+		comm_altitude = 50.0
 		self.ax13.plot([-10,10],[comm_altitude,comm_altitude],'g--',label='Command')
 		self.ax13.legend()
 		self.ax13.set_ylabel('Altitude (m)')
@@ -205,7 +205,7 @@ class WINDOW():
 t = np.arange(0,1000*np.pi,1)
 #latitude = 30.69 + 1.0 * np.sin(t)
 #longitude = -88.1 + 1.0*np.cos(t)
-gps_altitude = 0.0 + 0.0*np.sin(t)
+gps_altitude = -99 + 0.0*np.sin(t)
 #baro_pressure = 1013.25 + 3.0*np.sin(t)
 #roll = 0.0 + 10.0*np.exp(0.1*t)
 #pitch = 0.0 + 20.0*np.sin(t)
@@ -251,6 +251,8 @@ while True:
         telemetry_packet[12] = elevator[i]
         telemetry_packet[13] = rudder[i]
         i+=1
+        if i > len(gps_altitude)-1:
+            i = 0
         #Clear the GUI window
         if position == 0:
             GND.clearwindow()

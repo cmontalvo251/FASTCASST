@@ -14,7 +14,7 @@ except:
     sys.exit()
 
 ##TRUNCATION START AND END TIME (Set to negative to turn off)
-tstart = 20
+tstart = -99
 tend = -99
 
 ##Create PDF Handle
@@ -58,7 +58,7 @@ for x in range(0,numVars-1):
     plti = fig.add_subplot(1,1,1)
     plti.plot(sense_flighttime,flightdata,'b',label=dataheaders[x])
     plti.set_xlabel('Time (sec)')
-    plti.set_ylabel(dataheaders[x])
+    plti.set_ylabel(dataheaders[x+1])
     print(dataheaders[x+1])
     plti.grid()
     #plti.legend()

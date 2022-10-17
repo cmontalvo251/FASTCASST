@@ -16,13 +16,8 @@ except:
     sys.exit()
 
 ##TRUNCATION START AND END TIME of flight (Set to negative to turn off)
-tstart = 215
-tend = 365
-##TRUNCATION START AND END TIME of control (Set to negative to turn off)
-cstart = 250
-c1 = 270
-c2 = 290
-cend = 310
+tstart = -99
+tend = -99
 
 ##Create PDF Handle
 pp = PDF(0,plt)
@@ -58,27 +53,55 @@ for x in range(1,numVars):
     sense_flightdata.append(sense_trunc)
 sense_flightdata = np.array(sense_flightdata)
 
-#Control Time Truncation
-if cstart > 0:
-    control_start = (np.where(sense_flighttime>cstart)[0][0])
-    control_off1 = (np.where(sense_flighttime>c1)[0][0])
-else:
-    control_start = 0
-    control_off1 = 0
-if cend > 0:
-    control_end = (np.where(sense_flighttime>cend)[0][0])
-    control_on2 = (np.where(sense_flighttime>c2)[0][0])
-else:
-    control_end = -1
-    control_on2 = -1
-#print(control_start,control_off1,control_on2,control_end)
-flighttime_Start = sense_flighttime[0:control_start]
-flighttime_Control_on1 = sense_flighttime[control_start-10:control_off1]
-flighttime_Control_off1 = sense_flighttime[control_off1-10:control_on2]
-flighttime_Control_on2 = sense_flighttime[control_on2-10:control_end]
-flighttime_Control_off2 = sense_flighttime[control_end-10:-1]
-#print(flighttime_Control_off2[0],flighttime_Control_off2[-1],flighttime_Control_on2[0],flighttime_Control_on2[-1])
+sense_flightcontroller = sense_flightdata[29]
+controllerON = np.where(sense_flightcontroller>1000)
+controlON = np.array(controllerON)
+controlON = np.matrix.transpose(controlON)
+#print(controllerON)
+controlEnd = []
+counter = controllerON[0][0]
+for x in range(0,len(controlON)):
+    #print(counter,controllerON[0][x])
+    if controllerON[0][x] != counter:
+        #print(counter,controllerON[0][x])
+        controlEnd.append(controllerON[0][x-1])
+        counter = controllerON[0][x]
+        #print(counter,controllerON[0][x],controllerON[0][x-1])
+        #break
+    counter += 1
+controlEnd.append(controllerON[0][-1])
+#print(controlEnd)
 
+controllerOFF = np.where(sense_flightcontroller<1000)
+controlOFF = np.array(controllerOFF)
+controlOFF = np.matrix.transpose(controlOFF)
+#print(controllerOFF)
+controlBegin = []
+counter = controllerOFF[0][0]
+for x in range(0,len(controlOFF)):
+    #print(counter,controllerOFF[0][x])
+    if controllerOFF[0][x] != counter:
+        print(counter,controllerOFF[0][x])
+        controlBegin.append(controllerOFF[0][x-1])
+        counter = controllerOFF[0][x]
+        print(counter,controllerOFF[0][x],controllerOFF[0][x-1])
+        #break
+    counter += 1
+#print(controlBegin)
+
+n = len(controlBegin)
+controllists = [[] for _ in range(n)]
+nocontrollists = [[] for _ in range(n)]
+#print(lists)
+flighttime_Start = sense_flighttime[0:controlBegin[0]]
+for x in range(1,n):
+    controllists[x-1] = sense_flighttime[controlBegin[x-1]:controlEnd[x-1]]
+    if x<n:
+        nocontrollists[x-1] = sense_flighttime[controlEnd[x-1]:controlBegin[x]]
+    else:
+        nocontrollists[x] = sense_flighttime[controlEnd[-1]:iend_sense]
+#print(len(controllists[0]),controllists[0])
+'''
 #Plot All Flight Data vs Time
 for x in range(0,numVars-1):
     flightdata = sense_flightdata[x]
@@ -191,7 +214,7 @@ plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plti.get_yaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
-
+'''
 #Close file
 datafile.close()
 #Close PDF

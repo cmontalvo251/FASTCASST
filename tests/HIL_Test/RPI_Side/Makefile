@@ -1,6 +1,6 @@
 #########Serial Test##########
 PLATFORM=RPI
-EXECUTABLE=serial_test.exe
+EXECUTABLE=hil_test.exe
 MAIN=main.o
 WIRINGPI="-lwiringPi"
 

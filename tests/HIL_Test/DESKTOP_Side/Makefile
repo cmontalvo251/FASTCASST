@@ -1,8 +1,8 @@
 #########Serial Test##########
-PLATFORM=RPI
-EXECUTABLE=serial_test.exe
+PLATFORM=DESKTOP
+EXECUTABLE=hil_test.exe
 MAIN=main.o
-WIRINGPI="-lwiringPi"
+WIRINGPI=
 
 ###COMPILER AND OTHER FLAGS
 CC=g++

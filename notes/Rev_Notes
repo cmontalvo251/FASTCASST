@@ -34,9 +34,11 @@ b.) The RPi will then read each number one at a time and make sure it grabs the 
 c.) Once the Rpi receives all numbers it will run the control loop and send back the numbers all at once
 d.) The computer will wait until it receives a valid response from the RPi before it sends again
 
-GOING BACK TO SERIAL TEST
+GOING BACK TO SERIAL TEST USING HARDWIRE
 
-1.) DESKTOP (C++) -> RPI (Python) - 
+1.) DESKTOP (C++) -> RPI (Python) - check
+2.) RPi (C++) -> DESKTOP (Python) - check
+3.) DESKTOP (C++) -> RPI (C++) - 
 
 
 

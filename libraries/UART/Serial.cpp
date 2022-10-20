@@ -35,18 +35,16 @@ void Serial::SerialInit(char *ComPortName, int BaudRate)
   printf("Opening Com Port on Raspberry Pi \n");
   if(wiringPiSetup() == -1) {
       fprintf(stdout, "Unable to start wiringPi: %s\n", strerror (errno));
-    }
-  hComm = serialOpen(ComPortName,BaudRate);
-  if (hComm < 0) {
-      fprintf(stderr, "Unable to open serial device: %s\n", strerror (errno));
-    }
-  return;
+    }  
   #endif
   
   //On linux you need to open the tty port
   #if defined __linux__ || __APPLE__
   printf("Opening Com Port on Linux \n");
   hComm = open(ComPortName,  O_RDWR | O_NOCTTY);
+  if (hComm < 0) {
+    fprintf(stderr, "Unable to open serial device: %s\n", strerror (errno));
+  }
   // Create new termios struc, we call it 'tty' for convention
   struct termios tty;
   memset(&tty, 0, sizeof tty);
@@ -93,15 +91,15 @@ char Serial::SerialGetc()
 {
   char rxchar;
 
-  #ifdef RPI
+  /*#ifdef RPI
   if (serialDataAvail(hComm)) {
       rxchar = serialGetchar(hComm);
       //fflush(stdout);
     }
   return rxchar;
-  #else
+  #else*/
   
-  #if defined __linux__ || __APPLE__
+  #if defined __linux__ || __APPLE__ || RPI
     // Allocate memory for read buffer, set size according to your needs
     memset(&rxchar, '\0', sizeof(rxchar));
     // Read bytes. The behaviour of read() (e.g. does it block?,
@@ -120,7 +118,7 @@ char Serial::SerialGetc()
     return rxchar;
   #endif
 
-  #endif
+    //#endif
 
 }
  

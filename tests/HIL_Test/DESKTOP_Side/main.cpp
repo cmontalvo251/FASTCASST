@@ -52,7 +52,7 @@ int main(int argc,char* argv[]) {
         comms.SerialSendArray(uart_telemetry_array,NUMTELEMETRY,1);
         nextTELEMtime=currentTime+TELEMRATE;
         x+=10;
-        //READMODE = 1; //Comment this out if you want to be in write mode forever
+        READMODE = 1; //Comment this out if you want to be in write mode forever
       }
     }
       

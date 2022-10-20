@@ -38,7 +38,7 @@ GOING BACK TO SERIAL TEST USING HARDWIRE
 
 1.) DESKTOP (C++) -> RPI (Python) - check
 2.) RPi (C++) -> DESKTOP (Python) - check
-3.) DESKTOP (C++) -> RPI (C++) - 
+3.) Rpi (C++) -> DESKTOP (C++) - check 
 
 
 

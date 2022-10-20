@@ -12,7 +12,7 @@ TIMER watch;
 
 int main(int argc,char* argv[]) {
   //Print name of software
-  printf("Desktop Receive Test Script \n");
+  printf("RPI Receive Test Script \n");
   printf("Main Loop Begin \n");
   
   double NUMTELEMETRY = 2; //Set the actual values in the loop function
@@ -28,20 +28,20 @@ int main(int argc,char* argv[]) {
   //Initialize the Timer if we're running in Software mode
   double initTime = 0;
   double nextTELEMtime = 0;
-  double TELEMRATE = 0.01;
+  double TELEMRATE = 0.0;
   watch.init(0);
   double currentTime = watch.currentTime;
 
   ///INFINITE WHILE LOOP
   while (1) {
-    if (currentTime >= nextTELEMtime) {
-      //Receive UART
-      //printf("RUNNING Get Array \n");
-      comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,0);
+    //Receive UART
+    int position = comms.SerialGetNumber(uart_telemetry_array,NUMTELEMETRY,0);
+    printf("RUNNING Get Array %d \n",position);
+    if (position == NUMTELEMETRY - 1) {
+      printf("CURRENT TIME = %lf \n",currentTime);
       printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
-      nextTELEMtime=currentTime+TELEMRATE;
     }
-      
+    
     //Update Timer
     watch.updateTime();
     currentTime = watch.currentTime;

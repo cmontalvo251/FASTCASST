@@ -295,9 +295,9 @@ int Serial::SerialGetNumber(float number_array[],int num,int echo) {
     }
     //I don't know if vvv that will work.
     position = int(inLine[0]);
-    if (position >=0) && (position < num) {
-	number_array[position] = inputvar.floatversion;
-      }
+    if ((position >=0) && (position < num)) {
+      number_array[position] = inputvar.floatversion;
+    }
   }
   
   return position;

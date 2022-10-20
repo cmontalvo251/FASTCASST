@@ -28,7 +28,7 @@ int main(int argc,char* argv[]) {
   //Initialize the Timer if we're running in Software mode
   double initTime = 0;
   double nextTELEMtime = 0;
-  double TELEMRATE = 0.01;
+  double TELEMRATE = 0.0;
   watch.init(0);
   double currentTime = watch.currentTime;
   int READMODE = 1; //We initialize to constantly be in READMODE
@@ -38,10 +38,7 @@ int main(int argc,char* argv[]) {
     if (READMODE) {
       //Receive UART
       comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,0);
-      if ((fabs(uart_telemetry_array[0]) + fabs(uart_telemetry_array[1])) > 1e-5) {
-	printf("READ MODE CURRENT TIME = %lf \n",currentTime);
-	printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
-      }
+      printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
       //READMODE = 0; //Comment this out if you just want to be in read mode forever
     } else {
       printf("WRITE MODE CURRENT TIME = %lf \n",currentTime);

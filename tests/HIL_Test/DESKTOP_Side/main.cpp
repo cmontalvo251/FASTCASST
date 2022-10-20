@@ -35,22 +35,24 @@ int main(int argc,char* argv[]) {
   ///INFINITE WHILE LOOP
   while (1) {
     if (READMODE) {
-	printf("READ MODE CURRENT TIME = %lf \n",currentTime);
-	//Receive UART
-	printf("RUNNING Get Array \n");
-	comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,0);
-	printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
-	READMODE = 0; //Comment this out if you just want to be in read mode forever
+      ////READMODE
+      printf("READ MODE CURRENT TIME = %lf \n",currentTime);
+      //Receive UART
+      printf("RUNNING Get Array \n");
+      comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,0);
+      printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
+      READMODE = 0; //Comment this out if you just want to be in read mode forever
     } else {
+      //WRITE MODE
       if (currentTime > nextTELEMtime) { 
-	//Set up uart array
-	uart_telemetry_array[0] = currentTime;
-	uart_telemetry_array[1] = x;
-	//Then send it over UART
-	comms.SerialSendArray(uart_telemetry_array,NUMTELEMETRY,1);
-	nextTELEMtime=currentTime+TELEMRATE;
-	x+=10;
-	//READMODE = 1; //Comment this out if you want to be in write mode forever
+      //Set up uart array
+        uart_telemetry_array[0] = currentTime;
+        uart_telemetry_array[1] = x;
+        //Then send it over UART
+        comms.SerialSendArray(uart_telemetry_array,NUMTELEMETRY,1);
+        nextTELEMtime=currentTime+TELEMRATE;
+        x+=10;
+        //READMODE = 1; //Comment this out if you want to be in write mode forever
       }
     }
       

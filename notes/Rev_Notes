@@ -62,11 +62,12 @@ main - RPI not found
 
 Ok I made a bunch of changes to Serial.cpp to make everything work so I need to start over
 
-1.) DESKTOP (C++) -> RPI (Python) - 
-2.) RPi (C++) -> DESKTOP (Python) - 
-3.) Rpi (C++) -> DESKTOP (C++) - 
-4.) DESKTOP (C++) -> RPI (C++) -
+1.) DESKTOP (C++) -> RPI (Python) - check
+2.) DESKTOP (C++) -> RPI (C++) - check
+3.) RPi (C++) -> DESKTOP (Python) - check
+4.) Rpi (C++) -> DESKTOP (C++) - check
 
+Alright let's head over to HIL and make sure that works
 
 ======================10/9/2022==============
 

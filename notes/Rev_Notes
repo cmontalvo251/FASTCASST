@@ -67,7 +67,7 @@ Ok I made a bunch of changes to Serial.cpp to make everything work so I need to 
 3.) RPi (C++) -> DESKTOP (Python) - check
 4.) Rpi (C++) -> DESKTOP (C++) - check
 
-Alright let's head over to HIL and make sure that works
+Alright let's head over to HIL and make sure that works. It works and HIL round trip test is working.
 
 ======================10/9/2022==============
 

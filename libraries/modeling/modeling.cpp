@@ -108,8 +108,14 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   mass = in_configuration_matrix.get(12,1);
   I.zeros(3,3,"Inertia");
   I.set(1,1,in_configuration_matrix.get(13,1));
-  I.set(2,2,in_configuration_matrix.get(14,1));
-  I.set(3,3,in_configuration_matrix.get(15,1));
+  I.set(1,2,in_configuration_matrix.get(14,1));
+  I.set(1,3,in_configuration_matrix.get(15,1));
+  I.set(2,1,in_configuration_matrix.get(16,1));
+  I.set(2,2,in_configuration_matrix.get(17,1));
+  I.set(2,3,in_configuration_matrix.get(18,1));
+  I.set(3,1,in_configuration_matrix.get(19,1));
+  I.set(3,2,in_configuration_matrix.get(20,1));
+  I.set(3,3,in_configuration_matrix.get(21,1));
   Iinv.zeros(3,3,"Inverse Inertia");
   Iinv.overwrite(I);
   Iinv.inverse();

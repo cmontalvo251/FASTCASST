@@ -11,7 +11,7 @@ FLAGS=-DDEBUG
 LIB=-L/usr/local/lib -L./
 #FAST is using boost for threading #sudo apt-get install libboost-all-dev
 INCLUDE=-I${PLOC}libraries/ -I./
-PLOC=../../../../
+PLOC=../../../
 ###HELPER
 HELPERSOURCES=${PLOC}/libraries/Datalogger/Datalogger.cpp ${PLOC}libraries/MATLAB/MATLAB.cpp ${PLOC}libraries/Mathp/mathp.cpp ${PLOC}libraries/Timer/timer.cpp
 ###HARDWARE

@@ -3,7 +3,7 @@
 import sys
 import time
 import numpy as np
-sys.path.append('../../../../libraries/')
+sys.path.append('../../../libraries/')
 from UART.uart import UART as U
 ser = U(57600,"/dev/ttyAMA0",period=1.0) #Set the baudrate, port and period in seconds
 

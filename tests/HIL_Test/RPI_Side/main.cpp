@@ -36,11 +36,12 @@ int main(int argc,char* argv[]) {
   ///INFINITE WHILE LOOP
   while (1) {
     if (READMODE) {
-      printf("READ MODE CURRENT TIME = %lf \n",currentTime);
       //Receive UART
-      printf("RUNNING Get Array \n");
       comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,0);
-      printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
+      if ((fabs(uart_telemetry_array[0]) + fabs(uart_telemetry_array[1])) > 1e-5) {
+	printf("READ MODE CURRENT TIME = %lf \n",currentTime);
+	printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
+      }
       //READMODE = 0; //Comment this out if you just want to be in read mode forever
     } else {
       printf("WRITE MODE CURRENT TIME = %lf \n",currentTime);

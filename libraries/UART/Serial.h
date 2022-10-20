@@ -104,6 +104,9 @@ class Serial {
 		//Again this is so fucking annoying because since we have 3 hex \r and 1 hex \r we now need
 		//different routines for a drone
 
+                int SerialGetNumber(float array[],int num);
+                int SerialGetNumber(float array[],int num,int echo);
+
 		//So this routine here sends an array in the 1 Hex \r format
 		void SerialSendArray(float array[],int num);
 		void SerialSendArray(float array[],int num,int echo);

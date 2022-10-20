@@ -265,6 +265,44 @@ void Serial::SerialGetAll() {
   printf("Response received \n");
 }
 
+int Serial::SerialGetNumber(float number_array[],int num) {
+  return SerialGetNumber(number_array,num,1);
+}
+
+int Serial::SerialGetNumber(float number_array[],int num,int echo) {
+  int position = -1;
+  union inparser inputvar;
+  char inLine[MAXLINE];
+  int i = 0;
+  char inchar = '\0';
+
+  //Loop until we hit a \r
+  do {
+    inchar = SerialGetc();
+    if (inchar != '\0') {
+      inLine[i++] = inchar;
+    }
+  } while ((inchar != '\r') && (i<MAXLINE));
+
+  // Format from Serial:
+  // H:nnnnnnnn 
+
+  inputvar.inversion = 0;
+  if (inLine[1] == ':') {
+    for(i=2;i<10;i++){
+      inputvar.inversion <<= 4;
+      inputvar.inversion |= (inLine[i] <= '9' ? inLine[i] - '0' : toupper(inLine[i]) - 'A' + 10);
+    }
+    //I don't know if vvv that will work.
+    position = int(inLine[0]);
+    if (position >=0) && (position < num) {
+	number_array[position] = inputvar.floatversion;
+      }
+  }
+  
+  return position;
+}
+
 void Serial::SerialGetArray(float number_array[],int num) {
   SerialGetArray(number_array,num,1);
 }
@@ -296,7 +334,7 @@ void Serial::SerialGetArray(float number_array[],int num,int echo) {
     //  printf("Response received \n");
     //}
 
-    // Format from Arduino:
+    // Format from Serial:
     // H:nnnnnnnn 
 
     // Now Convert from ASCII to HEXSTRING to FLOAT

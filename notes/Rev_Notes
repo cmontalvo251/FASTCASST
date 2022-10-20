@@ -39,8 +39,33 @@ GOING BACK TO SERIAL TEST USING HARDWIRE
 1.) DESKTOP (C++) -> RPI (Python) - check
 2.) RPi (C++) -> DESKTOP (Python) - check
 3.) Rpi (C++) -> DESKTOP (C++) - check 
-4.) DESKTOP (C++) -> RPI (C++) - 
+4.) DESKTOP (C++) -> RPI (C++) - check but I need to redo everything because I made a ton of changes
 
+One issue I found was that setting the platform to DESKTOP changed something.
+Datalogger - DESKTOP flag not found
+MATLAB - DESKTOP flag not found
+mathp - DESKTOP flag not found
+Serial - DESKTOP flag found but no change would result since SIL is not set
+I2Cdev - DESKTOP flag not found
+UART - DESKTOP found but no change would result
+Util - DESKTOP flag not found
+main - DESKTOP flag not found
+
+Ok but I need to look for RPI flag then
+MATLAB - RPI not found
+mathp - RPI not found
+Serial - RPI found and it makes a huge difference
+I2Cdev - RPI not found
+UAR - RPI found but would not make a difference because functions not called
+Util - RPI not found
+main - RPI not found
+
+Ok I made a bunch of changes to Serial.cpp to make everything work so I need to start over
+
+1.) DESKTOP (C++) -> RPI (Python) - 
+2.) RPi (C++) -> DESKTOP (Python) - 
+3.) Rpi (C++) -> DESKTOP (C++) - 
+4.) DESKTOP (C++) -> RPI (C++) -
 
 
 ======================10/9/2022==============

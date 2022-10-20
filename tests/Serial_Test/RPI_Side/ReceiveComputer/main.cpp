@@ -22,7 +22,7 @@ int main(int argc,char* argv[]) {
   int baudRate = 57600; //Hardcode. I don't think we ever need to change
   Serial comms;
   printf("Serial Init \n");
-  comms.SerialInit("/dev/ttyAMA0",baudRate);
+  comms.SerialInit("/dev/ttyUSB0",baudRate);
   printf("Serial Init done...\n");
 
   //Initialize the Timer if we're running in Software mode
@@ -35,8 +35,8 @@ int main(int argc,char* argv[]) {
   ///INFINITE WHILE LOOP
   while (1) {
     //Receive UART
-    //printf("RUNNING Get Array \n");
     int position = comms.SerialGetNumber(uart_telemetry_array,NUMTELEMETRY,0);
+    printf("RUNNING Get Array %d \n",position);
     if (position == NUMTELEMETRY - 1) {
       printf("CURRENT TIME = %lf \n",currentTime);
       printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);

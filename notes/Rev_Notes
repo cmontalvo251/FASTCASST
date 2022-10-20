@@ -1,3 +1,39 @@
+======================10/20/2022==============
+
+Working on HIL and I'm running into a couple communications issues. Like lost packets and such.
+so.....
+
+let's see how everything has worked in the past
+
+1.) Full HIL between Processing on Desktop and Arduino - this was just an HIL demo
+In this routine Processing would send a string of ALL floats separated by commas. xxx,xxx,xxx,xxx
+The arduino would wait for serial to be available and it would read all the floats and then compute control and send it
+right back. 
+Arduino would read until it received a \n
+Processing would read until it received a \n
+The arduino would not run the control routine until it received a packet from processing.
+The processing code would read the serial over and over until it received data and then once it did it would send data back but it wouldn't send data again until it received a valid packet.
+
+2.) Full HIL between C++ on Desktop and Arduino - This was for JagSAT
+C++ on Desktop would send all numbers in the H:XXXXXXX format all at once and then wait for a response from the Arduino. The end of the HEX send would be a \n.
+The Arduino then reads all 6 variables at once and parses them all at once
+The arduino then sends back all hex vars back all at once
+The GetArray routine would read all data from the Arduino at once back to back to back with a for loop
+
+3.) RPi Telemetry C++ over to Processing ground station
+RPI sends all numbers all at once over wireless telemetry
+Processing would read a number at a time and grab the position of the variable to make sure it got placed in the right spot
+
+4.) RPi Telemetry C++ over to Python Ground Station
+Same as above except with Python
+
+Ok so this is what I want to do
+
+a.) Computer sends all numbers all at once to RPi
+b.) The RPi will then read each number one at a time and make sure it grabs the proper number for each position
+c.) Once the Rpi receives all numbers it will run the control loop and send back the numbers all at once
+d.) The computer will wait until it receives a valid response from the RPi before it sends again
+
 ======================10/9/2022==============
 
 Working on HIL. Added a bunch of work tasks into

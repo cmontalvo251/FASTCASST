@@ -22,7 +22,7 @@ int main(int argc,char* argv[]) {
   int baudRate = 57600; //Hardcode. I don't think we ever need to change
   Serial comms;
   printf("Serial Init \n");
-  comms.SerialInit("/dev/ttyAMA0",baudRate);
+  comms.SerialInit("/dev/ttyUSB0",baudRate);
   printf("Serial Init done...\n");
 
   //Initialize the Timer if we're running in Software mode
@@ -39,7 +39,15 @@ int main(int argc,char* argv[]) {
       //Receive UART
       comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,0);
       printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
-      //READMODE = 0; //Comment this out if you just want to be in read mode forever
+      printf("COMPUTE CONTROLLER \n");
+      double x = uart_telemetry_array[0];
+      double y = uart_telemetry_array[1];
+      double xout = x + y;
+      double yout = x*y;
+      uart_telemetry_array[0] = xout;
+      uart_telemetry_array[1] = yout;
+      printf("CONTROLLER DONE \n");
+      READMODE = 0; //Comment this out if you just want to be in read mode forever
     } else {
       printf("WRITE MODE CURRENT TIME = %lf \n",currentTime);
       //Send UART

@@ -31,15 +31,30 @@ int main(int argc,char* argv[]) {
   double TELEMRATE = 0.0;
   watch.init(0);
   double currentTime = watch.currentTime;
+  int READMODE = 1; //We initialize to constantly be in READMODE
 
   ///INFINITE WHILE LOOP
   while (1) {
-    if (currentTime >= nextTELEMtime) {
+    if (READMODE) {
       //Receive UART
-      //printf("RUNNING Get Array \n");
       comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,0);
       printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
-      nextTELEMtime=currentTime+TELEMRATE;
+      printf("COMPUTE CONTROLLER \n");
+      double x = uart_telemetry_array[0];
+      double y = uart_telemetry_array[1];
+      double xout = x + y;
+      double yout = x*y;
+      uart_telemetry_array[0] = xout;
+      uart_telemetry_array[1] = yout;
+      printf("CONTROLLER DONE \n");
+      READMODE = 0; //Comment this out if you just want to be in read mode forever
+    } else {
+      printf("WRITE MODE CURRENT TIME = %lf \n",currentTime);
+      //Send UART
+      printf("Sending Data \n");
+      comms.SerialSendArray(uart_telemetry_array,NUMTELEMETRY,1);
+      printf("VARS Sent \n");
+      READMODE = 1; //Comment this out if you want to be in write mode forever
     }
       
     //Update Timer

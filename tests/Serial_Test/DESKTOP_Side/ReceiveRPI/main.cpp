@@ -34,8 +34,6 @@ int main(int argc,char* argv[]) {
 
   ///INFINITE WHILE LOOP
   while (1) {
-    //printf("CURRENT TIME = %lf \n",currentTime);
-    //Send Telemetry
     if (currentTime >= nextTELEMtime) {
       //Receive UART
       //printf("RUNNING Get Array \n");

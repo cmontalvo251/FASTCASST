@@ -35,18 +35,16 @@ void Serial::SerialInit(char *ComPortName, int BaudRate)
   printf("Opening Com Port on Raspberry Pi \n");
   if(wiringPiSetup() == -1) {
       fprintf(stdout, "Unable to start wiringPi: %s\n", strerror (errno));
-    }
-  hComm = serialOpen(ComPortName,BaudRate);
-  if (hComm < 0) {
-      fprintf(stderr, "Unable to open serial device: %s\n", strerror (errno));
-    }
-  return;
+    }  
   #endif
   
   //On linux you need to open the tty port
   #if defined __linux__ || __APPLE__
   printf("Opening Com Port on Linux \n");
   hComm = open(ComPortName,  O_RDWR | O_NOCTTY);
+  if (hComm < 0) {
+    fprintf(stderr, "Unable to open serial device: %s\n", strerror (errno));
+  }
   // Create new termios struc, we call it 'tty' for convention
   struct termios tty;
   memset(&tty, 0, sizeof tty);
@@ -93,15 +91,15 @@ char Serial::SerialGetc()
 {
   char rxchar;
 
-  #ifdef RPI
+  /*#ifdef RPI
   if (serialDataAvail(hComm)) {
       rxchar = serialGetchar(hComm);
       //fflush(stdout);
     }
   return rxchar;
-  #else
+  #else*/
   
-  #if defined __linux__ || __APPLE__
+  #if defined __linux__ || __APPLE__ || RPI
     // Allocate memory for read buffer, set size according to your needs
     memset(&rxchar, '\0', sizeof(rxchar));
     // Read bytes. The behaviour of read() (e.g. does it block?,
@@ -120,7 +118,7 @@ char Serial::SerialGetc()
     return rxchar;
   #endif
 
-  #endif
+    //#endif
 
 }
  
@@ -265,6 +263,44 @@ void Serial::SerialGetAll() {
   printf("Response received \n");
 }
 
+int Serial::SerialGetNumber(float number_array[],int num) {
+  return SerialGetNumber(number_array,num,1);
+}
+
+int Serial::SerialGetNumber(float number_array[],int num,int echo) {
+  int position = -1;
+  union inparser inputvar;
+  char inLine[MAXLINE];
+  int i = 0;
+  char inchar = '\0';
+
+  //Loop until we hit a \r
+  do {
+    inchar = SerialGetc();
+    if (inchar != '\0') {
+      inLine[i++] = inchar;
+    }
+  } while ((inchar != '\r') && (i<MAXLINE));
+
+  // Format from Serial:
+  // H:nnnnnnnn 
+
+  inputvar.inversion = 0;
+  if (inLine[1] == ':') {
+    for(i=2;i<10;i++){
+      inputvar.inversion <<= 4;
+      inputvar.inversion |= (inLine[i] <= '9' ? inLine[i] - '0' : toupper(inLine[i]) - 'A' + 10);
+    }
+    //I don't know if vvv that will work.
+    position = int(inLine[0]);
+    if ((position >=0) && (position < num)) {
+      number_array[position] = inputvar.floatversion;
+    }
+  }
+  
+  return position;
+}
+
 void Serial::SerialGetArray(float number_array[],int num) {
   SerialGetArray(number_array,num,1);
 }
@@ -296,7 +332,7 @@ void Serial::SerialGetArray(float number_array[],int num,int echo) {
     //  printf("Response received \n");
     //}
 
-    // Format from Arduino:
+    // Format from Serial:
     // H:nnnnnnnn 
 
     // Now Convert from ASCII to HEXSTRING to FLOAT

@@ -229,7 +229,7 @@ void hardware::hilsend(double currentTime) {
       return;
     } else {
       nextHILtime = currentTime + HILRATE;
-      printf("Processing HIL MATRICES = %lf \n",currentTime);
+      //printf("Processing HIL MATRICES = %lf \n",currentTime);
   }
 
   HILmutex.lock();
@@ -286,7 +286,7 @@ void hardware::hilsend(double currentTime) {
   
   HILmutex.unlock();
 
-  printf("Done Processing HIL Matrices = %lf \n",currentTime);
+  //printf("Done Processing HIL Matrices = %lf \n",currentTime);
 }
 
 void hil(UART ser,double SERIALLOOPRATE) {

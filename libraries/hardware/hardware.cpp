@@ -149,7 +149,16 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   }
 
   //Poll all as quickly as possible sensors - This puts all raw data into the sense matrix
-  sense.poll(currentTime,elapsedTime);
+  //If we are runnning on the RPI in HIL mode we don't run this
+  int POLL = 1;
+  #if defined (RPI) && (HIL)
+      POLL = 0;
+  #endfi
+  if (POLL) {
+      sense.poll(currentTime,elapsedTime);
+  } else {
+      sense.populate(currentTime,elapsedTime);
+  }
 
   //I then need to populate the pwm_array with the control signals as quickly as possible
   for (int i = 0;i<rc.out.NUMSIGNALS;i++) {
@@ -236,75 +245,64 @@ void hardware::hilsend(double currentTime) {
 
   #ifdef DESKTOP
   //What data do I want sent to RPI???
-  //1 - roll
-  uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
-  //2 - pitch
-  uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
-  //3 - yaw from IMU
-  uart_sense_matrix.set(3,1,sense.orientation.yaw);
-  //4 - lat
-  uart_sense_matrix.set(4,1,sense.sense_matrix.get(16,1));
-  //5 - lon
-  uart_sense_matrix.set(5,1,sense.sense_matrix.get(17,1));
-  //6 - alt
-  uart_sense_matrix.set(6,1,sense.sense_matrix.get(18,1));
-  //7 - gx
-  uart_sense_matrix.set(7,1,sense.sense_matrix.get(10,1));
-  //8 - gy
-  uart_sense_matrix.set(8,1,sense.sense_matrix.get(11,1));
-  //9 - gz
-  uart_sense_matrix.set(9,1,sense.sense_matrix.get(12,1));
-  //10 - pressure
-  uart_sense_matrix.set(10,1,sense.sense_matrix.get(27,1));
+  //1 - X
+  uart_sense_matrix.set(1,1,sense.sense_matrix.get(1,1));
+  //2 - Y
+  uart_sense_matrix.set(2,1,sense.sense_matrix.get(2,1));
+  //3 - Z - this is fused pressure and GPS altitude again combined on SIL DESKTOP
+  uart_sense_matrix.set(3,1,sense.sense_matrix.get(3,1));
+  //4 - roll
+  uart_sense_matrix.set(4,1,sense.sense_matrix.get(4,1));
+  //5 - pitch
+  uart_sense_matrix.set(5,1,sense.sense_matrix.get(5,1));
+  //6 - compass value - IMU and GPS are fused in SIL on DESKTOP
+  uart_sense_matrix.set(6,1,sense.sense_matrix.get(6,1));
+  //7 - u - forward flight speed
+  uart_sense_matrix.set(7,1,sense.sense_matrix.get(7,1));
   //uart_sense_matrix.disp();
+  //8 - gx
+  uart_sense_matrix.set(8,1,sense.sense_matrix.get(10,1));
+  //9 - gy
+  uart_sense_matrix.set(9,1,sense.sense_matrix.get(11,1));
+  //10 - gz
+  uart_sense_matrix.set(10,1,sense.sense_matrix.get(12,1));
+
   #endif //DESKTOP
 
   #ifdef RPI
   //Again we need to populate this into the appropriate vectors
-  //Roll
-  sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
-  sense.ptp.set(1,1,sense.sense_matrix.get(4,1)*PI/180.0);
-  //Pitch
-  sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
-  sense.ptp.set(2,1,sense.sense_matrix.get(5,1)*PI/180.0);
-  //Yaw from IMU
-  sense.sense_matrix.set(6,1,uart_sense_matrix.get(3,1));
-  sense.orientation.yaw = sense.sense_matrix.get(6,1);
-  sense.ptp.set(3,1,sense.sense_matrix.get(6,1)*PI/180.0);
-  sense.q0123.euler2quat(sense.ptp);
-  double q0 = q0123.get(1,1);
-  double q1 = q0123.get(2,1);
-  double q2 = q0123.get(3,1);
-  double q3 = q0123.get(4,1);
-  //This converts doubles to floats because the AHRS filter uses floats
-  //I went ahead and changed these to doubles though so that we're more accurate
-  //during simulation. This may break auto mode so be sure to revisit
-  sense.orientation.ahrs.q0 = q0;
-  sense.orientation.ahrs.q1 = q1;
-  sense.orientation.ahrs.q2 = q2;
-  sense.orientation.ahrs.q3 = q3;
-  //Lat
-  sense.sense_matrix.set(16,1,uart_sense_matrix.get(4,1));
-  sense.satellites.latitude = sense.sense_matrix.get(16,1);
-  //Lon
-  sense.sense_matrix.set(17,1,uart_sense_matrix.get(5,1));
-  sense.satellites.longitude = sense.sense_matrix.get(17,1);
-  //GPS Alt
-  sense.sense_matrix.set(18,1,uart_sense_matrix.get(6,1));
-  sense.satellites.altitude = sense.sense_matrix.get(18,1);
-  //gx
-  sense.sense_matrix.set(10,1,uart_sense_matrix.get(7,1));
-  sense.orientation.roll_rate = sense.sense_matrix.get(10,1);
-  //gy
-  sense.sense_matrix.set(11,1,uart_sense_matrix.get(8,1));
-  sense.orientation.pitch_rate = sense.sense_matrix.get(11,1);
-  //gz
-  sense.sense_matrix.set(12,1,uart_sense_matrix.get(9,1));
-  sense.orientation.yaw_rate = sense.sense_matrix.get(12,1);
-  //pressure
-  sense.sense_matrix.set(27,1,uart_sense_matrix.get(10,1));
-  sense.atm.pressure = sense.sense_matrix.get(27,1);
-  //sense.sense_matrix.disp();
+  // 1 - X
+  sense.sense_matrix.set(1,1,uart_sense_matrix.get(1,1));
+  sense.satellites.X = sense.sense_matrix.get(1,1);
+    // 2 - Y
+    sense.sense_matrix.set(2,1,uart_sense_matrix.get(2,1));
+    sense.satellites.Y = sense.sense_matrix.get(2,1);
+    // 3 - Z
+    sense.sense_matrix.set(3,1,uart_sense_matrix.get(3,1));
+    sense.satellites.Z = sense.sense_matrix.get(3,1);
+    // 4 - roll
+    sense.sense_matrix.set(4,1,uart_sense_matrix.get(4,1));
+    sense.orientation.roll = sense.sense_matrix.get(4,1);
+    // 5 - pitch
+    sense.sense_matrix.set(5,1,uart_sense_matrix.get(5,1));
+    sense.orientation.pitch = sense.sense_matrix.get(5,1);
+    // 6 - yaw (compass)
+    sense.sense_matrix.set(6,1,uart_sense_matrix.get(6,1));
+    sense.orientation.yaw = sense.sense_matrix.get(6,1); //For now we set everything to this value
+    sense.compass = sense.sense_matrix.get(6,1); //For now we set everything to this value
+    sense.satellites.heading = sense.sense_matrix.get(6,1);
+    // 7 - u (forward flight speed)
+    sense.sense_matrix.set(7,1,uart_sense_matrix.get(7,1));
+    sense.satellites.speed = sense.sense_matrix.get(7,1));
+    // 8 - gx
+    sense.sense_matrix.set(10,1,uart_sense_matrix.get(8,1));
+    sense.orientation.roll_rate = sense.sense_matrix.get(10,1);
+    // 9 - gy
+    sense.sense_matrix.set(11,1,uart_sense_matrix.get(9,1));
+    sense.orientation.pitch_rate = sense.sense_matrix.get(11,1);
+    // 10 - gz 
+    sense.sense_matrix.set(12,1,uart_sense_matrix.get(10,1));
+    sense.orientation.yaw_rate = sense.sense_matrix.get(12,1);
   #endif //RPI
   
   HILmutex.unlock();

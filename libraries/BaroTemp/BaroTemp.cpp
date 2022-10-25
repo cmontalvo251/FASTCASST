@@ -11,7 +11,6 @@ BaroTemp::BaroTemp() {
 
 void BaroTemp::poll(double currentTime) {
   #ifndef DESKTOP //This below only runs on RPI when not in HIL mode
-  #ifndef HIL
   if (PHASE == 0) {
     if ((currentTime - updatetime) > LOOP_TIME) {
       barometer.refreshPressure();
@@ -48,17 +47,6 @@ void BaroTemp::poll(double currentTime) {
       }
     }
   }
-  #else //HIL
-  //If running on RPI we just need to make sure that pressure0 is set
-  if (CALIBRATE_FLAG) {
-    pressure0 = ConvertZ2Pressure(0);
-    printf("BAROMETER CALIBRATED !!! Pressure0 = %lf \n",pressure0);          
-    CALIBRATE_FLAG = 0;
-  }
-  //This is because pressure is set in the uart.cpp routine
-  //Pressure is also converted to altitude below
-  temperature = NOMINALTEMP; //For now just set to the same as SIL mode
-  #endif //HIL
   #else //This below runs on desktop
   //Using fictitious pressure and temperature
   pressure = ConvertZ2Pressure(Z); //This function is in mathp btw.

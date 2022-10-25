@@ -287,6 +287,13 @@ void sensors::poll(double currentTime,double elapsedTime) {
     //hardcoded GPS coordinates
     nextGPStime = currentTime + GPS_RATE;
   }
+    
+  //Then populate the appropriate matrices
+  populate(currentTime,elapsedTime);
+    
+}
+
+void sensors::populate(double currentTime,double elapsedTime) {
 
   ///////////////////??THEN POPULATE STATE VECTOR////////////////////
 

@@ -168,7 +168,7 @@ void loop() {
     #endif
 
     //If We're running in HIL we need to run the HIL comms function    
-    #if HIL
+    #ifdef HIL
     #ifdef DESKTOP
     //Normally this line of code would run in the hardware::loop routine but since that's running on the
     //pi we need to run it here. The poll just simply puts everything in the sense_matrix from the model

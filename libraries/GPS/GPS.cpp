@@ -43,10 +43,6 @@ void GPS::poll(float currentTime) {
   altitude = LLH[2];
   //printf("GPS LLH = %lf %lf %lf \n",latitude,longitude,altitude);
   //PAUSE();
-  #endif 
-
-  #if defined (DESKTOP) || (HIL)
-  //this runs on DESKTOP or on RPI in HIL mode
   //Then populate pos_data so that the routine below still works
   pos_data.resize(5,1);
   pos_data[0] = 0.0; //not really sure what this is

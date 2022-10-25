@@ -106,7 +106,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
   uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
   serHIL.HILInit(NUMSENSE,NUMCTL);
-  boost::thread hilloop(hil,serHIL);
+  boost::thread hilloop(hil,serHIL,SERIALLOOPRATE);
   #endif
 }
 
@@ -221,11 +221,13 @@ void hardware::hilsend(double currentTime) {
 
   //Now we only need to send data to these matrices at like 10 Hz
   //So HILRATE is hardcoded for the moment
+  //Note that this HILRATE is different than how fast the serial
+  //threaded loop is running. 
   if (currentTime < nextHILtime) {
       return;
     } else {
       nextHILtime = currentTime + HILRATE;
-      printf("Sending Data to HIL MATRICES = %lf \n",currentTime);
+      printf("Processing HIL MATRICES = %lf \n",currentTime);
   }
 
   HILmutex.lock();
@@ -281,9 +283,11 @@ void hardware::hilsend(double currentTime) {
   #endif //RPI
   
   HILmutex.unlock();
+
+  printf("Done Processing HIL Matrices = %lf \n",currentTime);
 }
 
-void hil(UART ser) {
+void hil(UART ser,double SERIALLOOPRATE) {
     //This code needs to operate on a listen as often as possible
     //and only send when you've received a response  
     //In Debug mode we will have the desktop continually send data to 
@@ -408,9 +412,11 @@ void hil(UART ser) {
     #endif
 
     //We need a cross sleep here or the code will blast serial data faster than we can read
+    //At the same time on the RPI side we might need a different SERIALLOOPRATE to make sure 
+    //we read as fast as possible
     //This cross_sleep will eventually go away or reduce to like 0.001 so that we read as fast
     //as possible for now we're in debug mode so we're only sending every 1.0 seconds
-    cross_sleep(1.0);
+    cross_sleep(SERIALLOOPRATE);
 
   } //End of inifinite while loop
 

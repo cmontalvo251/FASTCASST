@@ -153,11 +153,9 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   int POLL = 1;
   #if defined (RPI) && (HIL)
       POLL = 0;
-  #endfi
+  #endif
   if (POLL) {
       sense.poll(currentTime,elapsedTime);
-  } else {
-      sense.populate(currentTime,elapsedTime);
   }
 
   //I then need to populate the pwm_array with the control signals as quickly as possible

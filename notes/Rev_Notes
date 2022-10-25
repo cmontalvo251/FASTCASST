@@ -7,6 +7,8 @@ Alright we're working on HIL and it's time to work on works.tasks
 3.) Now it's time to have the RPi run the control loop with the receiver taking data - Ok this is working no problem but I found a bug unfortunately. Right now it looks like the RPY and basically all data in general is set by the onboard sensors. I need to find the code to ignore that when running in HIL because it needs to get data from the serial port. 
 4.) Update sensor data from Serial - code compiles no idea if it works. Just need to keep making progress
 
+YOU FORGOT TO INITIALIZE ptp and q0123!!!!
+
 
 ======================10/20/2022==============
 

@@ -271,11 +271,11 @@ void hardware::hilsend(double currentTime) {
   sense.sense_matrix.set(6,1,uart_sense_matrix.get(3,1));
   sense.orientation.yaw = sense.sense_matrix.get(6,1);
   sense.ptp.set(3,1,sense.sense_matrix.get(6,1)*PI/180.0);
-  sense.q0123.euler2quat(ptp);
-  q0 = q0123.get(1,1);
-  q1 = q0123.get(2,1);
-  q2 = q0123.get(3,1);
-  q3 = q0123.get(4,1);
+  sense.q0123.euler2quat(sense.ptp);
+  double q0 = q0123.get(1,1);
+  double q1 = q0123.get(2,1);
+  double q2 = q0123.get(3,1);
+  double q3 = q0123.get(4,1);
   //This converts doubles to floats because the AHRS filter uses floats
   //I went ahead and changed these to doubles though so that we're more accurate
   //during simulation. This may break auto mode so be sure to revisit

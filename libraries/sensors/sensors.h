@@ -34,7 +34,6 @@ class sensors {
   int IBARO;
   //Errors
   int IERROR;
-  MATLAB q0123,ptp;
   MATLAB bias_pos_matrix,bias_gyro_matrix,bias_mag_matrix,bias_angle_matrix;
   double bias_pressure_val;
   double bias_angle,bias_gyro,bias_mag,bias_pos,bias_pressure;
@@ -50,6 +49,7 @@ class sensors {
   GPS satellites;
   BaroTemp atm;
   MATLAB sense_matrix,sense_matrix_dot;
+  MATLAB q0123,ptp;
   char** headernames,headernames_dot;
   double Heading_Mag,x_tilt,y_tilt,Hm,compass=0;
   double heading_offset=0;

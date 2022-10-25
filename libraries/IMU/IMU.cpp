@@ -64,6 +64,7 @@ void IMU::setTemperature(double tempin) {
 
 void IMU::loop(double elapsedTime){
   #ifndef DESKTOP
+  #ifndef HIL
   //This routine reads the accelerometer, magnetometer and rate_gyro
   mpulsm->update();
   //These functions here just put them into local memory. Really they should be name get_accelerometer
@@ -78,15 +79,18 @@ void IMU::loop(double elapsedTime){
   gx-=offset[0];
   gy-=offset[1];
   gz-=offset[2];
-  #endif
+  #endif //ENDIF DESKTOP
+  #endif //HIL
 
   //Filter the Gyro
   filterGyro();
   
   #ifndef DESKTOP
+  #ifndef HIL
   //printf(" gx,gy,gz B = %lf %lf %lf ",gx,gy,gz);
   //ahrs.update(ax,ay,az,gx,gy,gz,mx,my,mz,elapsedTime);
   ahrs.updateNOMAG(ax,ay,az,gx,gy,gz,elapsedTime);
+  #endif
   #endif
 
   //Convert Quaternions to Euler Angles
@@ -101,7 +105,6 @@ void IMU::loop(double elapsedTime){
 
   //Now get Heading just from the magnetometer
   getMagHeading();
-
 }
 
 void IMU::getMagHeading() {

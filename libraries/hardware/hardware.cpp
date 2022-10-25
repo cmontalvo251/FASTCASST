@@ -240,8 +240,8 @@ void hardware::hilsend(double currentTime) {
   uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
   //2 - pitch
   uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
-  //3 - yaw
-  uart_sense_matrix.set(3,1,sense.sense_matrix.get(6,1));
+  //3 - yaw from IMU
+  uart_sense_matrix.set(3,1,sense.orientation.yaw);
   //4 - lat
   uart_sense_matrix.set(4,1,sense.sense_matrix.get(16,1));
   //5 - lon
@@ -263,24 +263,47 @@ void hardware::hilsend(double currentTime) {
   //Again we need to populate this into the appropriate vectors
   //Roll
   sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
+  sense.ptp.set(1,1,sense.sense_matrix.get(4,1)*PI/180.0);
   //Pitch
   sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
-  //Yaw
+  sense.ptp.set(2,1,sense.sense_matrix.get(5,1)*PI/180.0);
+  //Yaw from IMU
   sense.sense_matrix.set(6,1,uart_sense_matrix.get(3,1));
+  sense.orientation.yaw = sense.sense_matrix.get(6,1);
+  sense.ptp.set(3,1,sense.sense_matrix.get(6,1)*PI/180.0);
+  sense.q0123.euler2quat(ptp);
+  q0 = q0123.get(1,1);
+  q1 = q0123.get(2,1);
+  q2 = q0123.get(3,1);
+  q3 = q0123.get(4,1);
+  //This converts doubles to floats because the AHRS filter uses floats
+  //I went ahead and changed these to doubles though so that we're more accurate
+  //during simulation. This may break auto mode so be sure to revisit
+  sense.orientation.ahrs.q0 = q0;
+  sense.orientation.ahrs.q1 = q1;
+  sense.orientation.ahrs.q2 = q2;
+  sense.orientation.ahrs.q3 = q3;
   //Lat
   sense.sense_matrix.set(16,1,uart_sense_matrix.get(4,1));
+  sense.satellites.latitude = sense.sense_matrix.get(16,1);
   //Lon
   sense.sense_matrix.set(17,1,uart_sense_matrix.get(5,1));
-  //Alt
+  sense.satellites.longitude = sense.sense_matrix.get(17,1);
+  //GPS Alt
   sense.sense_matrix.set(18,1,uart_sense_matrix.get(6,1));
+  sense.satellites.altitude = sense.sense_matrix.get(18,1);
   //gx
   sense.sense_matrix.set(10,1,uart_sense_matrix.get(7,1));
+  sense.orientation.roll_rate = sense.sense_matrix.get(10,1);
   //gy
   sense.sense_matrix.set(11,1,uart_sense_matrix.get(8,1));
+  sense.orientation.pitch_rate = sense.sense_matrix.get(11,1);
   //gz
   sense.sense_matrix.set(12,1,uart_sense_matrix.get(9,1));
+  sense.orientation.yaw_rate = sense.sense_matrix.get(12,1);
   //pressure
   sense.sense_matrix.set(27,1,uart_sense_matrix.get(10,1));
+  sense.atm.pressure = sense.sense_matrix.get(27,1);
   //sense.sense_matrix.disp();
   #endif //RPI
   

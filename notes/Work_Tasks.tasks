@@ -10,7 +10,9 @@ HIL:
 
   ✔ Testing sending sense data 1 way from desktop to Rpi - just have RPI print the data to the screen to be sure data is transmitting 1 way @done (22-10-25 12:25)
 
-  ☐ Have the Rpi print the control matrix every time it receives new data that way you can see the update in the control signals based on the inputs and do this with the receiver taking data so you can fly the plan manually
+  ✔ Have the Rpi print the control matrix every time it receives new data that way you can see the update in the control signals based on the inputs and do this with the receiver taking data so you can fly the plan manually @done (22-10-25 12:53)
+
+  ☐ Fix the problem where RPI reads the sensors from the Navio rather than the Serial port
 
   ☐ Have the Rpi send data 1 way to the desktop just like you did with the desktop but do this with the receiver taking data so you can fly the airplane manually
 

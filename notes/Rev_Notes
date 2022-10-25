@@ -4,7 +4,8 @@ Alright we're working on HIL and it's time to work on works.tasks
 
 1.) First let's make sure HIL test is working. - That's working.
 2.) Alright time to have desktop send data 1 way to Rpi. - This is working now. Had to fix some thread locks but I got it.
-3.) Now it's time to have the RPi run the control loop with the receiver taking data - 
+3.) Now it's time to have the RPi run the control loop with the receiver taking data - Ok this is working no problem but I found a bug unfortunately. Right now it looks like the RPY and basically all data in general is set by the onboard sensors. I need to find the code to ignore that when running in HIL because it needs to get data from the serial port. 
+4.) Update sensor data from Serial - 
 
 
 ======================10/20/2022==============

@@ -36,7 +36,7 @@ extern boost::mutex HILmutex; //Mutex for passing data b/t HIL asynchronous thre
 //Asynchronous HIL thread
 void hil(UART,double);
 //Global vars to pass info back and forth
-extern MATLAB uart_sense_matrix,uart_ctl_matrix;
+extern MATLAB uart_sense_matrix,uart_ctl_matrix,uart_sense_matrix_copy,uart_ctl_matrix_copy;
 
 ///////////Inputs to Hardware Class///////////////
 // 1 - Root Folder name (char*)

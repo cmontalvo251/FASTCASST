@@ -3,7 +3,7 @@
 #ifdef HIL
 boost::mutex HILmutex; //Mutex for passing data b/t HIL asynchronous threads
 //Global variables for uart_sense matrix and uart_ctl_matrix
-MATLAB uart_sense_matrix,uart_ctl_matrix;
+MATLAB uart_sense_matrix,uart_ctl_matrix,uart_sense_matrix_copy,uart_ctl_matrix_copy;
 #endif
 
 //Constructor
@@ -104,7 +104,9 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   NUMSENSE = 10;
   NUMCTL = 9;
   uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
+  uart_sense_matrix_copy.zeros(NUMSENSE,1,"Serial Sense Matrix Copy");
   uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
+  uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix Copy");
   serHIL.HILInit(NUMSENSE,NUMCTL);
   boost::thread hilloop(hil,serHIL,SERIALLOOPRATE);
   #endif
@@ -305,9 +307,20 @@ void hil(UART ser,double SERIALLOOPRATE) {
       printf("!!!!!!!!!!!!!!!!!! Send Data to RPI HIL !!!!!!!!!!!!!!!!!!!!!! \n");
 
       //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
-      //to lock the mutex
+      //to lock the mutex -- See comment below
       HILmutex.lock();
-      ser.sendSense(uart_sense_matrix);
+      uart_sense_matrix_copy.overwrite(uart_sense_matrix);
+      HILmutex.unlock();
+
+      //Then we send the copy
+      ser.sendSense(uart_sense_matrix_copy);
+
+      //So the senseSense and ReadSense functions enter an infinite while loop until data is read.
+      //Because of this we actually need to have a copy be used for the uart comms and then 
+      //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in 
+      //an infinite while loop and never send data.
+      HILmutex.lock();
+      uart_sense_matrix.overwrite(uart_sense_matrix_copy);
       HILmutex.unlock();
 
       //If you set this to sendOk = 1 the DESKTOP will continually send
@@ -317,8 +330,13 @@ void hil(UART ser,double SERIALLOOPRATE) {
     } else {
       printf("READING CONTROL MATRIX FROM SERIAL \n");
       //rec error code not operational at the moment
-      /*int rec = ser.readControl(uart_ctl_matrix);
-      uart_ctl_matrix.disp();
+      /*int rec = ser.readControl(uart_ctl_matrix_copy);
+      uart_ctl_matrix_copy.disp();
+
+      HILmutex.lock();
+      uart_ctl_matrix.overwrite(uart_ctl_matrix_copy);
+      HILmutex.unlock();
+
       sendOK = 1;
       //We then need to populate this into the appropriate vectors
       rc.in.rx_array[0] = uart_ctl_matrix.get(1,1); //wait. Why do we need these rcinputs?
@@ -372,10 +390,16 @@ void hil(UART ser,double SERIALLOOPRATE) {
       printf("Receive Data from Desktop \n");
 
       //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
-      //to lock the mutex
+      //to lock the mutex -- See comment below on thread safety. 
+      ser.readSense(uart_sense_matrix_copy);
+      uart_sense_matrix_copy.disp();
+
+      //So the senseSense and ReadSense functions enter an infinite while loop until data is read.
+      //Because of this we actually need to have a copy be used for the uart comms and then 
+      //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in 
+      //an infinite while loop and never send data.
       HILmutex.lock();
-      ser.readSense(uart_sense_matrix);
-      uart_sense_matrix.disp();
+      uart_sense_matrix.overwrite(uart_sense_matrix_copy);
       HILmutex.unlock();
 
       //If you set this variable recOK to 1 the RPI will continually receive data from the DESKTOP
@@ -387,6 +411,7 @@ void hil(UART ser,double SERIALLOOPRATE) {
       //Then send data to desktop
       //printf("Send data to Desktop \n");
       //What data do I want send to Desktop????
+      //Don't forget about thread safety here 
       //1 - rx 1
       uart_ctl_matrix.set(1,1,rc.in.rx_array[0]);
       //2 - rx 2 

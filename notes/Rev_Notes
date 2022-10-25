@@ -3,7 +3,8 @@
 Alright we're working on HIL and it's time to work on works.tasks
 
 1.) First let's make sure HIL test is working. - That's working.
-2.) Alright time to have desktop send data 1 way to Rpi. - 
+2.) Alright time to have desktop send data 1 way to Rpi. - This is working now. Had to fix some thread locks but I got it.
+3.) Now it's time to have the RPi run the control loop with the receiver taking data - 
 
 
 ======================10/20/2022==============

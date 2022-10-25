@@ -8,11 +8,11 @@ HIL:
   
   ✔ Add hooks to FASTSim that compile DESKTOP + HIL and RPI/Arduino HIL that sends sensor data and control commands back and forth. The RPI/HIL version will accept a polluted state vector from the computer and run that through the control algorithm and then pass back the control commands to the integrator. So serialListens and SerialResponds etc will need to be written to send data back and forth @done (22-05-24 18:50)
 
-  ☐ Testing sending sense data 1 way from desktop to Rpi - just have RPI print the data to the screen to be sure data is transmitting 1 way
+  ✔ Testing sending sense data 1 way from desktop to Rpi - just have RPI print the data to the screen to be sure data is transmitting 1 way @done (22-10-25 12:25)
 
-  ☐ Have the Rpi print the control matrix every time it receives new data that way you can see the update in the control signals based on the inputs. 
+  ☐ Have the Rpi print the control matrix every time it receives new data that way you can see the update in the control signals based on the inputs and do this with the receiver taking data so you can fly the plan manually
 
-  ☐ Have the Rpi send data 1 way to the desktop just like you did with the desktop. 
+  ☐ Have the Rpi send data 1 way to the desktop just like you did with the desktop but do this with the receiver taking data so you can fly the airplane manually
 
   ☐ Create a loop where Desktop sends data to RPi and then waits for a valid update from Rpi
 

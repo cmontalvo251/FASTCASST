@@ -78,6 +78,7 @@ class hardware {
   int ok = 1;
   //Rates
   double PRINTRATE=1.0,RCRATE=1.0,LOGRATE=1.0,TELEMRATE=1.0;
+  #ifdef DESKTOP
   //HILRATE IS NOW HARDCODED. Note that HILRATE is just the time that the sense matrices
   //are updated. The serial hil loop runs as fast as possible to read data and not miss anything
   //Now we only need to send data to these matrices at like 10 Hz
@@ -85,10 +86,11 @@ class hardware {
   //HILRATE is how often the uart matrices are updated
   double HILRATE=1.0; //NOTE THIS NEEDS TO BE CHANGED TO 10 Hz but for now it is set to 1 Hz
   //SERIALLOOPRATE is how fast the threaded hil loop is running 
-  #ifdef DESKTOP
   //For now we'll have the desktop blast at 1 Hz
   double SERIALLOOPRATE=1.0;
   #elif RPI
+  double HILRATE=0.1; //Right now I have these set differently just so I can debug
+  //I'm assuming in the future the HIL AND SERIALLOOP RATES will be the same but I might be wrong
   //But we'll have the RPI read at 10 Hz
   double SERIALLOOPRATE=0.1;
   #endif

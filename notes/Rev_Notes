@@ -5,10 +5,17 @@ Alright we're working on HIL and it's time to work on works.tasks
 1.) First let's make sure HIL test is working. - That's working.
 2.) Alright time to have desktop send data 1 way to Rpi. - This is working now. Had to fix some thread locks but I got it.
 3.) Now it's time to have the RPi run the control loop with the receiver taking data - Ok this is working no problem but I found a bug unfortunately. Right now it looks like the RPY and basically all data in general is set by the onboard sensors. I need to find the code to ignore that when running in HIL because it needs to get data from the serial port. 
-4.) Update sensor data from Serial - code compiles no idea if it works. Just need to keep making progress
+4.) Update sensor data from Serial - code compiles no idea if it works. Just need to keep making progress. Ok so on my bike ride home I didn't like how the routine was running the poll routine for the sensors at all on HIL RPI. Everything should be emulated and the only thing the RPI should be doing is taking inputs and computing outputs. All the filtering and data processing needs to be done on the desktop. So.... I think we're ready to test the next step.
+5.) Let's go back to sending data 1 way to RPi and see if we're getting data properly
 
-YOU FORGOT TO INITIALIZE ptp and q0123!!!!
+Ok so Serial and HIL tests don't work. I'm at home with the wireless connection. I can get the Pi to send data to the computer but I can't send data from my computer over to the Pi
 
+Not sure why but it could be a lot of issues. It could be the pi itself or it could be wireless communication.
+
+So.....we need to test 2 things.
+
+1.) Can I send data wirelessly back and forth with the Rpi at work
+2.) If I bring the hardwire connection home can I get the home Rpi to send data back and forth
 
 ======================10/20/2022==============
 

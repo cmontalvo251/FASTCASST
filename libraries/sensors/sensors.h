@@ -51,7 +51,7 @@ class sensors {
   BaroTemp atm;
   MATLAB sense_matrix,sense_matrix_dot;
   char** headernames,headernames_dot;
-  double Heading_Mag,x_tilt,y_tilt,Hm,compass=0;
+  double Heading_Mag,x_tilt,y_tilt,Hm,compass=0.0;
   double heading_offset=0;
   //constructor
   sensors();

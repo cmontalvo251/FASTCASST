@@ -291,7 +291,7 @@ void hardware::hilsend(double currentTime) {
     sense.satellites.heading = sense.sense_matrix.get(6,1);
     // 7 - u (forward flight speed)
     sense.sense_matrix.set(7,1,uart_sense_matrix.get(7,1));
-    sense.satellites.speed = sense.sense_matrix.get(7,1));
+    sense.satellites.speed = sense.sense_matrix.get(7,1);
     // 8 - gx
     sense.sense_matrix.set(10,1,uart_sense_matrix.get(8,1));
     sense.orientation.roll_rate = sense.sense_matrix.get(10,1);

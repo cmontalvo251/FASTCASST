@@ -66,7 +66,10 @@ void sensors::init(MATLAB in_configuration_matrix,MATLAB in_simulation_matrix) {
   //0 = MPU9250
   //1 = LSM9DS1
   int IMUTYPE = in_configuration_matrix.get(9,1);
+  #ifndef HIL
+  //Only Initialize IMU if we're not in HIL mode
   initIMU(IMUTYPE);
+  #endif
 
   //Set the Filter Constant
   orientation.FilterConstant = in_configuration_matrix.get(10,1);

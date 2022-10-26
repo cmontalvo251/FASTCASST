@@ -28,7 +28,7 @@ void Serial::InitSerialPort(void)
 
 void Serial::SerialInitWireless(char *ComPortName, int BaudRate) {
   #ifdef RPI
-  printf("Opening Com Port on Raspberry Pi \n");
+  printf("Opening Com %s Port on Raspberry Pi with Baud Rate %d \n",ComPortName,BaudRate);
   if(wiringPiSetup() == -1) {
       fprintf(stdout, "Unable to start wiringPi: %s\n", strerror (errno));
   }

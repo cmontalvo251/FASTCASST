@@ -39,7 +39,9 @@ int main(int argc,char* argv[]) {
       //Receive UART
       //printf("RUNNING Get Array \n");
       comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,0);
-      printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
+      if ((uart_telemetry_array[0] != -99) && (abs(uart_telemetry_array[0]) > 1e-2)) {
+	printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
+      }
       nextTELEMtime=currentTime+TELEMRATE;
     }
       

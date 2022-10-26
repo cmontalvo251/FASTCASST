@@ -59,6 +59,8 @@ class Serial {
 		void InitSerialPort(void);
 		//Use this if you want to specify ComPortName and BaudRate
 		void SerialInit(char *ComPortName, int BaudRate);
+                //This is for wireless comms on RPI
+                void SerialInitWireless(char *ComPortName, int BaudRate);
 		///Get and Receive 1 character
 		char SerialGetc();
 		void SerialPutc(char txchar);

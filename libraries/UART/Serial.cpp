@@ -108,13 +108,14 @@ char Serial::SerialGetc()
 {
   char rxchar;
 
-  /*#ifdef RPI
+  #ifdef RPI3
+  //printf("RPI3 Enabled \n");
   if (serialDataAvail(hComm)) {
       rxchar = serialGetchar(hComm);
-      //fflush(stdout);
+      fflush(stdout);
     }
   return rxchar;
-  #else*/
+  #endif
   
   #if defined __linux__ || __APPLE__ || RPI
     // Allocate memory for read buffer, set size according to your needs
@@ -134,8 +135,6 @@ char Serial::SerialGetc()
     //printf("Read %i bytes, rxchar = %c, ASCII = %d ",num_bytes,rxchar,int(rxchar));
     return rxchar;
   #endif
-
-    //#endif
 
 }
  

@@ -1,5 +1,6 @@
 #########Serial Test##########
 PLATFORM=RPI
+VERSION=RPI3
 EXECUTABLE=serial_test.exe
 MAIN=main.o
 WIRINGPI="-lwiringPi"
@@ -31,11 +32,11 @@ $(EXECUTABLE): $(OBJECTS) $(MAIN)
 
 ##Target MAIN depends on it's respective cpp file
 $(MAIN): $(MAIN:.o=.cpp)
-	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(PLATFORM) $(MAIN:.o=.cpp) -o $(MAIN) $(WIRINGPI)
+	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(VERSION) -D$(PLATFORM) $(MAIN:.o=.cpp) -o $(MAIN) $(WIRINGPI)
 
 ##The rule for the objects depends on the sources
 .cpp.o: $(SOURCES)
-	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(PLATFORM) $(LIB) $(WIRINGPI) $< -o $@
+	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(VERSION) -D$(PLATFORM) $(LIB) $(WIRINGPI) $< -o $@
 
 ##Clean function
 clean:

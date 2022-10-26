@@ -1,6 +1,7 @@
 #########Serial Test##########
 PLATFORM=RPI
-VERSION=RPI3
+#VERSION=RPI3
+VERSION=
 EXECUTABLE=serial_test.exe
 MAIN=main.o
 WIRINGPI="-lwiringPi"

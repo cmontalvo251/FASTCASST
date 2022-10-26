@@ -9,6 +9,26 @@ RPI to Desktop - exactly the same as telemetry - I must have fucked up Serial.cp
 Desktop to Pi - wireless receive working
 4.) Check HIL test - wireless - WORKS!!!!!
 
+Ok I'm home now.
+
+HIL wired at home works. Btw. The RPi at home is an RPi3 and the RPi at work is a 4.
+
+Now testing wireless: Receive on Rpi did the weird thing that was happening yesterday.
+
+Reverting to simple tests for Wireless at home
+
+1.) Serial Test
+RPI to Desktop - works
+Desktop to RPI - does not work and gives me issues. 
+
+At this point this is just a wireless two way RPi3 communication issue and we don't need that for HIL because 
+
+A.) We're using an RPI4 from now on 
+B.) We're using hardline for HIL 
+C.) Telemetry at the moment is only 1 way
+
+Ok so we can proceed to HIL steps now.
+
 ======================10/25/2022==============
 
 Alright we're working on HIL and it's time to work on works.tasks

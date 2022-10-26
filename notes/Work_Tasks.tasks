@@ -12,11 +12,13 @@ HIL:
 
   ✔ Have the Rpi print the control matrix every time it receives new data that way you can see the update in the control signals based on the inputs and do this with the receiver taking data so you can fly the plan manually @done (22-10-25 12:53)
 
-  ☐ Verify that HIL and Serial tests are still functioning at Work
+  ✔ Verify that HIL and Serial tests are still functioning at Work @done (22-10-26 12:49)
 
-  ☐ Can I send data wirelessly back and forth with the Rpi at work
+  ✔ Can I send data wirelessly back and forth with the Rpi at work @done (22-10-26 12:49)
 
-  ☐ If I bring the hardwire connection home can I get the home Rpi to send data back and forth
+  ✔ If I bring the hardwire connection home can I get the home Rpi to send data back and forth @done (22-10-26 12:49)
+
+  ✔ Then finally test wireless at home @done (22-10-26 13:05)
 
   ☐ Fix the problem where RPI reads the sensors from the Navio rather than the Serial port
 

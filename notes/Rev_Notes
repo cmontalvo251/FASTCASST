@@ -1,3 +1,13 @@
+======================10/26/2022==============
+
+1.) Recheck Serial Test - Wired 
+RPI to Desktop - works
+Desktop to RPI - works
+2.) Recheck the HIL Test - Wired - Works
+3.) Check Serial Test - Wireless
+RPI to Desktop - exactly the same as telemetry - I must have fucked up Serial.cpp because I had to make a separate function for Wireless tranmission from RPI
+4.) 
+
 ======================10/25/2022==============
 
 Alright we're working on HIL and it's time to work on works.tasks

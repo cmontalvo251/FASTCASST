@@ -85,6 +85,9 @@ void Serial::SerialInit(char *ComPortName, int BaudRate)
       printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
   }
   #endif
+
+  //Flush the serial port
+  fflush(stdout);
 } 
  
 char Serial::SerialGetc()
@@ -318,9 +321,9 @@ void Serial::SerialGetArray(float number_array[],int num,int echo) {
     do {
       do {
         inchar = SerialGetc();
-	      //if (echo) {
-    	  //printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
-      	//}  
+	      if (echo) {
+    	  printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
+      	}  
         j++;
       } while ((inchar == '\0') && (j < 1000));
       //if (echo) {

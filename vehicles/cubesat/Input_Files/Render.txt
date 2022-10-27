@@ -1,0 +1,19 @@
+0               !Save Each Frame to a File 1 = on,0 = off
+2  		     	!Number of objects in window 
+0.0				!Camera Offset Z axis
+1 				!Default camera (see directions below)
+vehicles/portalcube/objects/portalcube.obj 	!First Object file - No spaces allowed!!
+0.5000  	    !Scale Factor of Object
+0.000004		!Scale Factor of Position
+vehicles/static_objects/globe/globe.obj 	!Second Object file - This is the globe
+20.000000  	        !Scale Factor of Object
+1.000000  	        !Scale Factor of Position
+
+
+//default camera
+//This is where you set the default camera
+//#camera 0-objects-1 = follow cameras
+//#objects-objects*2 - origin cameras
+//so a 0 will follow the first object
+//if there are 3 objects (cube, sky, ground) then defcam = 3 would
+//be an origin camera following the cube

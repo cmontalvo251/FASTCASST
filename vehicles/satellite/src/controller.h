@@ -12,7 +12,6 @@ class controller {
 private:
   MATLAB pqr,mxyz,desired_moments;
   double elapsedTime = 0,lastTime=0; //These are used to keep track of time elapsed.
-  double delOmega_max = 10,delPWM = (STICK_MAX-STICK_MIN),pwmC = (delPWM/delOmega_max)+STICK_MID;
   int CONTROLLER_FLAG = -99;
   void set_defaults();
 public:

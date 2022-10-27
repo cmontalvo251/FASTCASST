@@ -1,4 +1,4 @@
-5400.0	!Final Integration time 
+5.0	!Final Integration time 
 0.01 	!Integration rate // seconds
 0.0	!Initial X Position (m) ///Sixdof Model with quaternions
 0.0	!Initial Y Position (m)
@@ -8,14 +8,14 @@
 0.0	!Quaternion 2
 0.0	!Quaternion 3
 0.0	!Initial Xbody Velocity (m/s)
-7560.0	!Initial Ybody Velocity (m/s)
+0.0	!Initial Ybody Velocity (m/s)
 0.0	!Initial Zbody Velocity (m/s)
-1.0	!Initial Roll Rate (rad/s)
-0.0	!Initial Pitch Rate (rad/s)
-0.0	!Initial Yaw Rate (rad/s)
+3.0	!Initial Roll Rate (rad/s)
+2.0	!Initial Pitch Rate (rad/s)
+1.0	!Initial Yaw Rate (rad/s)
 1	!External Force Model (0=off,1=on) - 16
 0	!Gravity Flag (-1=off,0=point mass, 1=egm2008,2=point mass + sun,3=flat earth)
-1	!Magnetic Field Model (0=off, 1=emm2015)
+0	!Magnetic Field Model (0=off, 1=emm2015)
 10	!Update Rate of Magnetic Field Model (sec) (-99=update once,0=everytimestep)
 2018	!Year
 0	!Sensor Errors (0=off,1=on)

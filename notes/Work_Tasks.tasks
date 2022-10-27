@@ -28,7 +28,7 @@ HIL:
 
   ☐ Create a loop on desktop where it waits for signal from desktop and then pushes data back to Desktop 
 
-  ☐ Decreate HILRATE until the code can't run any faster
+  ☐ Decrease HILRATE until the code can't run any faster
 
 SPEEDING UP FASTkit ON PI:
 
@@ -90,6 +90,8 @@ META:
   ☐ Meta flying waypoints to compare efficiency - Maxwell Cobar
 
   ☐ Disconnecting and reconnecting - this would be insane.
+
+  ☐ Two Way communication to update waypoints on the fly - Note that sending data from the Rpi to Desktop is working but Desktop to Rpi is broken if you use an Rpi3. This broke sometime between FASTPilot and FASTKit so circa 2019 to 2022. 
 
 WOODEN DRONE:
 

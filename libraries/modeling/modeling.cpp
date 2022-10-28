@@ -80,7 +80,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[28] = "Temperature (C)";
 
   //Initialize Logger
-  logger.init("logs/",NUMVARS+NUMACTUATORS); //Not minus 1 because you add time
+  logger.init("logs/",NUMVARS+1+NUMACTUATORS); //Not minus 1 because you add time
   //Set and log headers
   logger.appendheader("Time (sec)");
   logger.appendheaders(headernames,NUMVARS-1); //-1 because of quaternions

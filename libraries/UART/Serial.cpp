@@ -28,7 +28,7 @@ void Serial::InitSerialPort(void)
 
 void Serial::SerialInitWireless(char *ComPortName, int BaudRate) {
   #ifdef RPI
-  printf("Opening Com %s Port on Raspberry Pi with Baud Rate %d \n",ComPortName,BaudRate);
+  printf("Opening Wireless Com %s Port on Raspberry Pi with Baud Rate %d \n",ComPortName,BaudRate);
   if(wiringPiSetup() == -1) {
       fprintf(stdout, "Unable to start wiringPi: %s\n", strerror (errno));
   }
@@ -43,10 +43,9 @@ void Serial::SerialInitWireless(char *ComPortName, int BaudRate) {
 //Call this for higher level control
 void Serial::SerialInit(char *ComPortName, int BaudRate) 
 {
-  printf("Opening %s port with Baud Rate %d \n",ComPortName,BaudRate);
-  
+  printf("Opening Com Port %s port with Baud Rate %d \n",ComPortName,BaudRate);
   #ifdef RPI
-  printf("Opening Com Port on Raspberry Pi \n");
+  printf("Checking Wiring Pi \n");
   if(wiringPiSetup() == -1) {
       fprintf(stdout, "Unable to start wiringPi: %s\n", strerror (errno));
     }  
@@ -54,7 +53,7 @@ void Serial::SerialInit(char *ComPortName, int BaudRate)
   
   //On linux you need to open the tty port
   #if defined __linux__ || __APPLE__
-  printf("Opening Com Port on Linux \n");
+  printf("Opening Com Port on Linux or Apple \n");
   hComm = open(ComPortName,  O_RDWR | O_NOCTTY);
   if (hComm < 0) {
     fprintf(stderr, "Unable to open serial device: %s\n", strerror (errno));
@@ -334,9 +333,9 @@ void Serial::SerialGetArray(float number_array[],int num,int echo) {
     do {
       do {
         inchar = SerialGetc();
-	      if (echo) {
-    	  printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
-      	}  
+	//if (echo) {
+	//    	  printf("j = %d i = %d inchar = %c chartoint = %d \n",j,i,inchar,int(inchar));
+      	//}  
         j++;
       } while ((inchar == '\0') && (j < 1000));
       //if (echo) {

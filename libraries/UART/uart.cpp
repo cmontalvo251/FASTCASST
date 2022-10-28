@@ -16,6 +16,7 @@ void UART::TelemInit(int numtelem) {
   //We now set up communications depending on the type of comms we want
   #ifdef RPI
   //Telemetry happens here
+  printf("SETTING UP TELEMETRY \n");
   comms.SerialInit("/dev/ttyAMA0",baudRate);
   #endif
 
@@ -43,8 +44,9 @@ void UART::HILInit(int numsens,int numc) {
   //We now set up communications depending on the type of comms we want
   #ifdef RPI
   //HIL comms happens here
-  //hilcomms.SerialInit("/dev/ttyUSB0",baudRate);
-  hilcomms.SerialInit("/dev/ttyAMA0",baudRate);
+  printf("SETTING UP HIL COMMS \n");
+  hilcomms.SerialInit("/dev/ttyUSB0",baudRate);
+  //hilcomms.SerialInit("/dev/ttyAMA0",baudRate);
   #endif
 
   #ifdef DESKTOP

@@ -106,7 +106,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
   uart_sense_matrix_copy.zeros(NUMSENSE,1,"Serial Sense Matrix Copy");
   uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
-  uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix Copy");
+  uart_ctl_matrix_copy.zeros(NUMCTL,1,"Serial Control Matrix Copy");
   serHIL.HILInit(NUMSENSE,NUMCTL);
   boost::thread hilloop(hil,serHIL,SERIALLOOPRATE);
   #endif

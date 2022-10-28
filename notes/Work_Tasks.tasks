@@ -69,6 +69,8 @@ COMPLEX AUTOPILOT LOOP:
 
 META:
 
+  ☐ Barometer calibration has screwed up the z altitude before calibration. Need a fix here
+
   ☐ SysID of airplane (Flights + simulation)
 
   ☐ Simulation of waypoint flights of single airplane

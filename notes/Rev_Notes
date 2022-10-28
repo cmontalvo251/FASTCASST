@@ -1,3 +1,32 @@
+======================10/27/2022==============
+
+Alright. Time to get back to the Rev notes. I'm using an RPi4 with hardwired connection
+
+Ok what we want to do is first have the pi run in HIL mode without getting any data from the computer
+and see what happens.
+
+Time - check
+time_elapsed - check
+Receiver signals - check
+RPY - not updating since I'm not sending so that's good
+rcoutput - check
+Lat/Lon - set to origin - check for now
+atmoshpere altitude - check - set to zero
+compass - check - set to zero
+
+ok so that's working right. I can check that off. Alright now let's have the RPi get data from the desktop and update the values....
+
+Pause: I just noticed that the RPi is not sending telemetry. Why? Nvm. It is. That's something we need to check later
+
+Ok back to having the Rpi update values: Ok Rpi is receiving data properly. Now we need to make sure everything is being updated properly. So let's do everthing one at a time
+
+1.) X,Y,Z values are being sent over (need to check LAT/LON/ALT and barometer): 
+2.) RPY(compass) values are being sent over: 
+3.) Forward flight speed is being sent over (will need to check this in the controller.cpp routine): 
+4.) GXYZ are being sent over (will also need to check controller.cpp): 
+
+To solve the issue above you need to look at hardware.cpp on line 281
+
 ======================10/26/2022==============
 
 1.) Recheck Serial Test - Wired 

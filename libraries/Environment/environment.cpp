@@ -93,6 +93,7 @@ void environment::gravitymodel(MATLAB State) {
   }
 
   //printf("GX,GY,GZ = %lf %lf %lf \n",gx,gy,gz);
+  //PAUSE();
 
   //Add Sun gravity
   FGRAVI.plus_eq(gSun);

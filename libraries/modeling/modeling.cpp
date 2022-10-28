@@ -107,15 +107,25 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //Get Mass and Inertia parameters
   mass = in_configuration_matrix.get(12,1);
   I.zeros(3,3,"Inertia");
-  I.set(1,1,in_configuration_matrix.get(13,1));
-  I.set(1,2,in_configuration_matrix.get(14,1));
-  I.set(1,3,in_configuration_matrix.get(15,1));
-  I.set(2,1,in_configuration_matrix.get(16,1));
-  I.set(2,2,in_configuration_matrix.get(17,1));
-  I.set(2,3,in_configuration_matrix.get(18,1));
-  I.set(3,1,in_configuration_matrix.get(19,1));
-  I.set(3,2,in_configuration_matrix.get(20,1));
-  I.set(3,3,in_configuration_matrix.get(21,1));
+  double Ixx = in_configuration_matrix.get(13,1);
+  double Iyy = in_configuration_matrix.get(14,1);
+  double Izz = in_configuration_matrix.get(15,1);
+  I.set(1,1,Ixx);
+  I.set(2,2,Iyy);
+  I.set(3,3,Izz);
+  if (in_configuration_matrix.length() > 15) {
+    double Ixy = in_configuration_matrix.get(16,1);
+    double Ixz = in_configuration_matrix.get(17,1);
+    double Iyz = in_configuration_matrix.get(18,1);
+    I.set(1,2,Ixy);
+    I.set(2,1,Ixy);
+    I.set(1,3,Ixz);
+    I.set(3,1,Ixz);
+    I.set(2,3,Iyz);
+    I.set(3,2,Iyz);
+  }
+  //I.disp();
+  //PAUSE();
   Iinv.zeros(3,3,"Inverse Inertia");
   Iinv.overwrite(I);
   Iinv.inverse();
@@ -196,7 +206,11 @@ void modeling::SetGPS() {
   XYZ[1] = Y;
   XYZ[2] = Z;
   //printf("MODEL ORIGIN = %lf %lf \n",X_origin,Y_origin);
+  #if defined (satellite) || (cubesat)
+  ConvertXYZ2LLHSPHERICAL(XYZ,LLH);
+  #else
   ConvertXYZ2LLH(XYZ,LLH,X_origin,Y_origin);
+  #endif
   latitude = LLH[0];
   longitude = LLH[1];
   altitude = LLH[2];

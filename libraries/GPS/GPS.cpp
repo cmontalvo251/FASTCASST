@@ -37,7 +37,11 @@ void GPS::poll(float currentTime) {
   XYZ[2] = Z;
   //printf("GPS XYZ = %lf %lf %lf \n",X,Y,Z);
   //printf("GPS ORIGIN = %lf %lf \n",X_origin,Y_origin);
+  #if defined (satellite) || (cubesat) 
+  ConvertXYZ2LLHSPHERICAL(XYZ,LLH);
+  #else
   ConvertXYZ2LLH(XYZ,LLH,X_origin,Y_origin);
+  #endif
   latitude = LLH[0];
   longitude = LLH[1];
   altitude = LLH[2];

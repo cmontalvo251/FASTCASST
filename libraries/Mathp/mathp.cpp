@@ -18,6 +18,23 @@ double ConvertZ2Pressure(double Z) {
   return pressure;
 }
 
+void ConvertXYZ2LLHSPHERICAL(double XYZ[],double LLH[]) {
+  double X = XYZ[0];
+  double Y = XYZ[1];
+  double Z = XYZ[2];
+  //printf("XYZ = %lf %lf %lf \n",X,Y,Z);
+  double rho = sqrt(X*X + Y*Y + Z*Z);
+  double thetaE = acos(Z/rho);
+  double psiE = atan2(Y,X);
+  double latitude = 90.0 - thetaE*180.0/PI;
+  double longitude = psiE*180.0/PI;
+  double altitude = rho - REARTH;
+  LLH[0] = latitude;
+  LLH[1] = longitude;
+  LLH[2] = altitude;
+  //printf("LLH = %lf %lf %lf \n",latitude,longitude,altitude);
+}
+
 void ConvertXYZ2LLH(double XYZ[],double LLH[],double X_origin,double Y_origin) {
   double X = XYZ[0];
   double Y = XYZ[1];

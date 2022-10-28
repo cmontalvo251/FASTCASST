@@ -19,8 +19,8 @@ void controller::init(MATLAB in_configuration_matrix) {
 }
 
 void controller::set_defaults() {
-  control_matrix.set(1,1,0);
-  control_matrix.set(2,1,0);
+  control_matrix.set(1,1,0.0);
+  control_matrix.set(2,1,0.0);
 }
 
 void controller::print() {

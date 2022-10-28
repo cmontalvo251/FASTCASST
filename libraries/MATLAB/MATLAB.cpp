@@ -497,7 +497,9 @@ void MATLAB::diag(MATLAB vec) {
     data_[idx][idx] = vec.data_[idx][0];
   }
 }
-
+int MATLAB::length() {
+  return getRow();
+}
 int MATLAB::getRow() {
   return row_;
 }

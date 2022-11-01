@@ -281,7 +281,7 @@ void hardware::hilsend(double currentTime) {
     sense.atm.altitude = -Z; //Just assume that the altitude is negative -Z
     //Need to update the GPS Latitude and Longitude
     sense.satellites.decodeXYZ();
-    sense.satellites.processGPSCoordinates();
+    sense.satellites.processGPSCoordinates(currentTime);
     // 4 - roll
     sense.sense_matrix.set(4,1,uart_sense_matrix.get(4,1));
     sense.orientation.roll = sense.sense_matrix.get(4,1);

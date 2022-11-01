@@ -57,10 +57,10 @@ void GPS::poll(float currentTime) {
   #endif
 
   //This runs no matter what
-  processGPSCoordinates();
+  processGPSCoordinates(currentTime);
 }
 
-void processGPSCoordinates() {
+void GPS::processGPSCoordinates(double currentTime) {
     //This runs no matter what
   if (pos_data.size() > 4) {
     latitude = pos_data[2]/10000000.0; //lon - Maxwell says it may be lon lat

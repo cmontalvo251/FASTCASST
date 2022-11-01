@@ -36,7 +36,7 @@ class GPS {
   GPS(); //constructor
   void poll(float);
   void reset();
-  void processGPSCoordinates();
+  void processGPSCoordinates(double);
   void decodeXYZ();
   int status();
   void computeSpeed(double);

@@ -268,16 +268,20 @@ void hardware::hilsend(double currentTime) {
   #endif //DESKTOP
 
   #ifdef RPI
-  //Again we need to populate this into the appropriate vectors
-  // 1 - X
-  sense.sense_matrix.set(1,1,uart_sense_matrix.get(1,1));
-  sense.satellites.X = sense.sense_matrix.get(1,1);
+    //Again we need to populate this into the appropriate vectors
+    // 1 - X
+    sense.sense_matrix.set(1,1,uart_sense_matrix.get(1,1));
+    sense.satellites.X = sense.sense_matrix.get(1,1);
     // 2 - Y
     sense.sense_matrix.set(2,1,uart_sense_matrix.get(2,1));
     sense.satellites.Y = sense.sense_matrix.get(2,1);
     // 3 - Z
     sense.sense_matrix.set(3,1,uart_sense_matrix.get(3,1));
     sense.satellites.Z = sense.sense_matrix.get(3,1);
+    sense.atm.altitude = -Z; //Just assume that the altitude is negative -Z
+    //Need to update the GPS Latitude and Longitude
+    sense.satellites.decodeXYZ();
+    sense.satellites.processGPSCoordinates();
     // 4 - roll
     sense.sense_matrix.set(4,1,uart_sense_matrix.get(4,1));
     sense.orientation.roll = sense.sense_matrix.get(4,1);

@@ -25,12 +25,7 @@ GPS::GPS() {
   time_vec.zeros(NGPS,1,"time_vec");
 }
 
-void GPS::poll(float currentTime) {
-  lastTime = currentTime;
-  #ifndef DESKTOP
-  sensor.decodeSingleMessage(Ublox::NAV_POSLLH, pos_data);
-  #else
-  //USE SOFTWARE TO CREATE GPS COORDINATES
+void GPS::decodeXYZ() {
   //Assume that X,Y,Z coordinates are already set by some external function
   XYZ[0] = X;
   XYZ[1] = Y;
@@ -50,9 +45,23 @@ void GPS::poll(float currentTime) {
   pos_data[2] = latitude*10000000.0;
   pos_data[3] = altitude*1000.0;
   pos_data[4] = 0.0; //not sure what this is either
+}
+
+void GPS::poll(float currentTime) {
+  lastTime = currentTime;
+  #ifndef DESKTOP
+  sensor.decodeSingleMessage(Ublox::NAV_POSLLH, pos_data);
+  #else
+  //USE SOFTWARE TO CREATE GPS COORDINATES
+  decodeXYZ();
   #endif
 
   //This runs no matter what
+  processGPSCoordinates();
+}
+
+void processGPSCoordinates() {
+    //This runs no matter what
   if (pos_data.size() > 4) {
     latitude = pos_data[2]/10000000.0; //lon - Maxwell says it may be lon lat
     longitude = pos_data[1]/10000000.0; //lat - It really is lon lat

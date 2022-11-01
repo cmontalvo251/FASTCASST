@@ -1,3 +1,8 @@
+======================11/1/2022===============
+
+1.) Working on getting XYZ values to convert properly to Lat and Lon. I think I got GPS working
+Need to get barometer now. I think that's done too
+
 ======================10/27/2022==============
 
 Alright. Time to get back to the Rev notes. I'm using an RPi4 with hardwired connection

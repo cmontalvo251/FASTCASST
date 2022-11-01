@@ -278,7 +278,7 @@ void hardware::hilsend(double currentTime) {
     // 3 - Z
     sense.sense_matrix.set(3,1,uart_sense_matrix.get(3,1));
     sense.satellites.Z = sense.sense_matrix.get(3,1);
-    sense.atm.altitude = -sense.sense_matrxi.get(3,1); //Just assume that the altitude is negative -Z
+    sense.atm.altitude = -sense.sense_matrix.get(3,1); //Just assume that the altitude is negative -Z
     //Need to update the GPS Latitude and Longitude
     sense.satellites.decodeXYZ();
     sense.satellites.processGPSCoordinates(currentTime);

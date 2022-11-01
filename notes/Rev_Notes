@@ -2,6 +2,11 @@
 
 1.) Working on getting XYZ values to convert properly to Lat and Lon. I think I got GPS working
 Need to get barometer now. I think that's done too. Looks like X,Y,Z and Roll, Pitch and Yaw are working properly.
+2.) Good I think
+3.) Good I think
+4.) Good I think
+
+Ok I think the next ones should be fine. They are raw values that don't need processing. So I think we should turn off all the prints on the RPi and then go into the controller.cpp routine and turn on prints for RPi and see if we're getting the right data 
 
 ======================10/27/2022==============
 

@@ -37,14 +37,7 @@ void GPS::decodeXYZ() {
   longitude = LLH[1];
   altitude = LLH[2];
   //printf("GPS LLH = %lf %lf %lf \n",latitude,longitude,altitude);
-  //PAUSE();
-  //Then populate pos_data so that the routine below still works
-  pos_data.resize(5,1);
-  pos_data[0] = 0.0; //not really sure what this is
-  pos_data[1] = longitude*10000000.0;
-  pos_data[2] = latitude*10000000.0;
-  pos_data[3] = altitude*1000.0;
-  pos_data[4] = 0.0; //not sure what this is either
+  //PAUSE();  
 }
 
 void GPS::poll(float currentTime) {
@@ -54,6 +47,13 @@ void GPS::poll(float currentTime) {
   #else
   //USE SOFTWARE TO CREATE GPS COORDINATES
   decodeXYZ();
+  //Then populate pos_data so that the routine below still works
+  pos_data.resize(5,1);
+  pos_data[0] = 0.0; //not really sure what this is
+  pos_data[1] = longitude*10000000.0;
+  pos_data[2] = latitude*10000000.0;
+  pos_data[3] = altitude*1000.0;
+  pos_data[4] = 0.0; //not sure what this is either
   #endif
 
   //This runs no matter what

@@ -409,12 +409,12 @@ void hil(UART ser,double SERIALLOOPRATE) {
     //If we're running HIL on RPI we need to receive data from serial via desktop
     #ifdef RPI
     if (recOK) {
-      printf("Receive Data from Desktop \n");
+      //printf("Receive Data from Desktop \n");
 
       //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
       //to lock the mutex -- See comment below on thread safety. 
       ser.readSense(uart_sense_matrix_copy);
-      uart_sense_matrix_copy.disp();
+      //uart_sense_matrix_copy.disp();
 
       //So the senseSense and ReadSense functions enter an infinite while loop until data is read.
       //Because of this we actually need to have a copy be used for the uart comms and then 

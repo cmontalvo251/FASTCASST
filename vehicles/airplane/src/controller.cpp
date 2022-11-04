@@ -88,6 +88,13 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   WAYPOINTS_X[3] = 0;
   WAYPOINTS_Y[3] = 0;
 
+  //DEBUG PRINTS
+  double X = sense_matrix.get(1,1);
+  double Y = sense_matrix.get(2,1);
+  double Z = sense_matrix.get(3,1);
+  printf("XYZ = %lf %lf %lf \n",X,Y,Z);
+  
+
   switch (icontrol) {
     case 5:
       //velocity, altitude and waypoint control

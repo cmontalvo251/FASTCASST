@@ -82,7 +82,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     desired_moments.vecset(1,3,pqr,1);
     //desired_moments.disp();
     desired_moments.mult_eq(pwmC);
-    desired_moments.disp();
+    //desired_moments.disp();
     //Extract Magnetomter Readings
     //mxyz.vecset(1,3,sense_matrix,13);
     //mxyz.disp();

@@ -1,3 +1,14 @@
+======================11/4/2022================
+
+Alright. Time to check the values from controller.cpp and see if we're getting updated values
+
+1.) XYZ - This is updating correctly.
+2.) RPY
+3.) Forward flight speed
+4.) GXYZ
+
+
+
 ======================11/1/2022===============
 
 1.) Working on getting XYZ values to convert properly to Lat and Lon. I think I got GPS working

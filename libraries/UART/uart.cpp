@@ -71,7 +71,7 @@ void UART::sendSense(MATLAB uart_sense_matrix) {
 
 void UART::readSense(MATLAB uart_sense_matrix) {
   //This function will read the sense array over UART
-  hilcomms.SerialGetArray(uart_sense_array,uart_sense_matrix.len(),1);
+  hilcomms.SerialGetArray(uart_sense_array,uart_sense_matrix.len(),0);
   //It will then overwrite the sense matrix for use elsewhere
   for (int i = 1;i<=uart_sense_matrix.len();i++) {
     uart_sense_matrix.set(i,1,uart_sense_array[i-1]);

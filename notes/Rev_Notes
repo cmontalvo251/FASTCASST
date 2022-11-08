@@ -9,6 +9,12 @@ Alright. Time to check the values from controller.cpp and see if we're getting u
 
 Ok now that that is working properly it's time to switch and have the RPi take data and send the commands over to the Desktop so we can fly the aircraft manually
 
+1.) Change the recOK and sendOK commands to have desktop in perpetual read mode and pi in perpetual send mode
+2.) Turn on prints for receiver and make sure Rpi is sending UART PWM commands at 1 Hz for now
+3.) Ensure that Desktop is reading PWM commands correctly and sending that to the model
+4.) Increase data send rate and data receive rates until you can fly the plane as if it was in SIL mode
+5.) Move on to the next step in Work Tasks.tasks
+
 ======================11/1/2022===============
 
 1.) Working on getting XYZ values to convert properly to Lat and Lon. I think I got GPS working

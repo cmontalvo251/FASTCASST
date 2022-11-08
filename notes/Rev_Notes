@@ -15,6 +15,14 @@ Ok now that that is working properly it's time to switch and have the RPi take d
 4.) Increase data send rate and data receive rates until you can fly the plane as if it was in SIL mode
 5.) Move on to the next step in Work Tasks.tasks
 
+Alright 
+
+1.) Done
+2.) Done
+3.) Done
+4.) Done
+5.) Time to move on
+
 ======================11/1/2022===============
 
 1.) Working on getting XYZ values to convert properly to Lat and Lon. I think I got GPS working

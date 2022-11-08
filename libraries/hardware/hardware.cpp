@@ -391,16 +391,16 @@ void hil(UART ser,double SERIALLOOPRATE) {
     } else {
       //printf("READING CONTROL MATRIX FROM SERIAL \n");
 
-      //This uart_ctrl_matrix is set in another asynchronous thread. Therefor we need
+      //This uart_ctl_matrix is set in another asynchronous thread. Therefor we need
       //to lock the mutex -- see comment below on thread safety
-      ser.readControl(uart_ctrl_matrix_copy);
+      ser.readControl(uart_ctl_matrix_copy);
 
       //So the sendControl and readControl functions enter an inifinite while loop until data is read
       //Because of this we actually need to have a copy be used for the uart comms and then
       //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in
       //an infinite while loop and never send data
       HILmutex.lock();
-      uart_ctrl_matrix.overwrite(uart_ctrl_matrix_copy);
+      uart_ctl_matrix.overwrite(uart_ctl_matrix_copy);
       HILmutex.unlock();
 
       //if you set this sendOK = 0 the DESKTOP will conitnually be in read Mode. It'd be a good way to
@@ -438,18 +438,18 @@ void hil(UART ser,double SERIALLOOPRATE) {
       //This uart_ctl_matrix is set in another asynchronous thread therefor we need
       //to lock the mutex -- See comment below
       HILmutex.lock();
-      uart_ctrl_matrix_copy.overwrite(uart_ctrl_matrix);
+      uart_ctl_matrix_copy.overwrite(uart_ctl_matrix);
       HILmutex.unlock();
 
       //Then we send the copy
-      ser.senseControl(uart_ctrl_matrix_copy);
+      ser.senseControl(uart_ctl_matrix_copy);
 
       //So the sendControl and readControl functions enter an infinite while loop until
       //data is read. Because of this we actually need to have a copy be used for the uart
       //comms and then lock the mutex once we're ready to copy. Otherwise we enter into a thread
       //lock in an infinite loop and never can advance the rest of the code
       HILmutex.lock();
-      uart_ctrl_matrix.overwrite(uart_ctrl_matrix_copy);
+      uart_ctl_matrix.overwrite(uart_ctl_matrix_copy);
       HILmutex.unlock();
 
       //if you set this to recOK = 0 the RPI will contiunally send

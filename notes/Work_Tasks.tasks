@@ -22,7 +22,7 @@ HIL:
 
   ✔ Fix the problem where RPI reads the sensors from the Navio rather than the Serial port @done (22-10-27 10:17)
 
-  ☐ Go back and make sure that when you send data to the RPi the values update
+  ✔ Go back and make sure that when you send data to the RPi the values update @done (22-11-08 07:48)
 
   ☐ Have the Rpi send data 1 way to the desktop just like you did with the desktop but do this with the receiver taking data so you can fly the airplane manually
 

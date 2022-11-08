@@ -1,13 +1,13 @@
-======================11/4/2022================
+======================11/4 and 7 and 8/2022================
 
 Alright. Time to check the values from controller.cpp and see if we're getting updated values
 
 1.) XYZ - This is updating correctly.
-2.) RPY
-3.) Forward flight speed
-4.) GXYZ
+2.) RPY - This is updating correctly
+3.) Forward flight speed - This is updating correctly
+4.) GXYZ - This is updating correctly
 
-
+Ok now that that is working properly it's time to switch and have the RPi take data and send the commands over to the Desktop so we can fly the aircraft manually
 
 ======================11/1/2022===============
 

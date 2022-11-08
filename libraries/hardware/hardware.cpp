@@ -335,7 +335,7 @@ void hardware::hilsend(double currentTime) {
     sense.orientation.yaw_rate = sense.sense_matrix.get(12,1);
 
     //We also need to populate the rc out matrices
-    for (int i = 1;i<=NUMSIGNALS;i++) {
+    for (int i = 1;i<=rc.out.NUMSIGNALS;i++) {
       //control matrix - i
       uart_ctl_matrix.set(i,1,rc.out.pwm_array[i-1]);
     }
@@ -442,7 +442,7 @@ void hil(UART ser,double SERIALLOOPRATE) {
       HILmutex.unlock();
 
       //Then we send the copy
-      ser.senseControl(uart_ctl_matrix_copy);
+      ser.sendControl(uart_ctl_matrix_copy);
 
       //So the sendControl and readControl functions enter an infinite while loop until
       //data is read. Because of this we actually need to have a copy be used for the uart

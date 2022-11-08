@@ -103,8 +103,8 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   HILRATE = 0.1;
   SERIALLOOPRATE = 0.1;
   #elif RPI
-  HILRATE = 1.0;
-  SERIALLOOPRATE = 1.0;
+  HILRATE = 0.1;
+  SERIALLOOPRATE = 0.1;
   #endif
   
   NUMSENSE = 10;

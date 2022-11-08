@@ -84,15 +84,15 @@ class hardware {
   //Now we only need to send data to these matrices at like 10 Hz
   //So HILRATE is hardcoded for the moment
   //HILRATE is how often the uart matrices are updated
-  double HILRATE=1.0; //NOTE THIS NEEDS TO BE CHANGED TO 10 Hz but for now it is set to 1 Hz
+  double HILRATE=0.1; //NOTE THIS NEEDS TO BE CHANGED TO 10 Hz but for now it is set to 1 Hz
   //SERIALLOOPRATE is how fast the threaded hil loop is running 
   //For now we'll have the desktop blast at 1 Hz
-  double SERIALLOOPRATE=1.0;
+  double SERIALLOOPRATE=0.1;
   #elif RPI
-  double HILRATE=0.1; //Right now I have these set differently just so I can debug
+  double HILRATE=1.0; //Right now I have these set differently just so I can debug
   //I'm assuming in the future the HIL AND SERIALLOOP RATES will be the same but I might be wrong
   //But we'll have the RPI read at 10 Hz
-  double SERIALLOOPRATE=0.1;
+  double SERIALLOOPRATE=1.0;
   #endif
   //Outputs
   MATLAB in_simulation_matrix,in_configuration_matrix;

@@ -76,24 +76,18 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //10 - pressure
   
   //What data do I want send to Desktop????
-  //1 - rx 1
-  //2 - rx 2
-  //3 - rx 3
-  //4 - rx 4
-  //5 - rx 5
-  //6 - control matrix 1
-  //7 - control matrix 2
-  //8 - control matrix 3
-  //9 - control matrix 4
+  // All the control signals
 
   //Initialize the Telemetry
   //What do I want sent?
   //1 - Time
   //2 - roll
   //3 - pitch
-  //4 - yaw
+  //4 - yaw (compass)
   //5 - latitude
   //6 - longitude
+  //7 - altitude (barometer)
+  //8 - speed (GPS)
   
   NUMTELEMETRY = 8; //Set the actual values in the loop function
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix HW");
@@ -101,6 +95,18 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   serTelem.TelemInit(NUMTELEMETRY);
 
   #ifdef HIL
+
+  //LOOP RATES
+  //HILRATE IS HOW OFTEN THE MATRICES ARE UPDATED
+  //SERIALLOOPRATE IS HOW OFTEN THE DATA IS SENT VIA UART
+  #ifdef DESKTOP
+  HILREATE = 0.1;
+  SERIALLOOPRATE = 0.1;
+  #elif RPI
+  HILRATE = 1.0;
+  SERIALLOOPRATE = 1.0;
+  #endif
+  
   NUMSENSE = 10;
   NUMCTL = NUMSIGNALS; //Same as control signals
   uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
@@ -365,7 +371,7 @@ void hil(UART ser,double SERIALLOOPRATE) {
 
     #ifdef DESKTOP
     if (sendOK) {
-      printf("!!!!!!!!!!!!!!!!!! Send Data to RPI HIL !!!!!!!!!!!!!!!!!!!!!! \n");
+      //printf("!!!!!!!!!!!!!!!!!! Send Data to RPI HIL !!!!!!!!!!!!!!!!!!!!!! \n");
 
       //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
       //to lock the mutex -- See comment below

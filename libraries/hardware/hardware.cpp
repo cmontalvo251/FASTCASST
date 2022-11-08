@@ -439,7 +439,7 @@ void hil(UART ser,double SERIALLOOPRATE) {
     } else {
 
       //Then send data to desktop
-      printf("!!!!!!!!!!!!!!!!!!Send data to Desktop HIL !!!!!!!!!!!!!!!!!!! \n");
+      //printf("!!!!!!!!!!!!!!!!!!Send data to Desktop HIL !!!!!!!!!!!!!!!!!!! \n");
 
       //This uart_ctl_matrix is set in another asynchronous thread therefor we need
       //to lock the mutex -- See comment below

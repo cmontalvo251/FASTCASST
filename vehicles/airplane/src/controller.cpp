@@ -89,11 +89,20 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   WAYPOINTS_Y[3] = 0;
 
   //DEBUG PRINTS
-  double X = sense_matrix.get(1,1);
-  double Y = sense_matrix.get(2,1);
-  double Z = sense_matrix.get(3,1);
-  printf("XYZ = %lf %lf %lf \n",X,Y,Z);
-  
+  //double X = sense_matrix.get(1,1);
+  //double Y = sense_matrix.get(2,1);
+  //double Z = sense_matrix.get(3,1);
+  //printf("XYZ = %lf %lf %lf \n",X,Y,Z);
+  //double roll = sense_matrix.get(4,1);
+  //double pitch = sense_matrix.get(5,1);
+  //double yaw = sense_matrix.get(6,1);
+  //printf("RPY = %lf %lf %lf \n",roll,pitch,yaw);
+  //double u = sense_matrix.get(7,1);
+  //printf("U = %lf \n",u);
+  //double rollr = sense_matrix.get(10,1);
+  //double pitchr = sense_matrix.get(11,1);
+  //double yawr = sense_matrix.get(12,1);
+  //printf("GXYZ = %lf %lf %lf \n",rollr,pitchr,yawr);
 
   switch (icontrol) {
     case 5:

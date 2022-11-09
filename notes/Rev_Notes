@@ -1,3 +1,9 @@
+======================11/9====================
+
+Alright HIL works just not well enough to run the autopilot.
+
+At 10Hz it just can't keep up. Trying 20Hz. Let's see if the computers can keep up
+
 ======================11/4 and 7 and 8/2022================
 
 Alright. Time to check the values from controller.cpp and see if we're getting updated values

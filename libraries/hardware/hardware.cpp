@@ -360,11 +360,11 @@ void hil(UART ser,double SERIALLOOPRATE) {
 
   //All vars in here must be globals or locally defined
 
-  //bool sendOK = 1; //Set to 1 and DESKTOP will send first
-  //bool recOK = 1; //Set to 1 and RPI will receive first
+  bool sendOK = 1; //Set to 1 and DESKTOP will send first
+  bool recOK = 1; //Set to 1 and RPI will receive first
 
-  bool sendOK = 0; //Set to 0 and DESKTOP will receive first
-  bool recOK = 0; //Set to 0 and RPI will send first
+  //bool sendOK = 0; //Set to 0 and DESKTOP will receive first
+  //bool recOK = 0; //Set to 0 and RPI will send first
 
   //This needs to be an infinite loop or it will only run once
   while (1) {
@@ -393,7 +393,7 @@ void hil(UART ser,double SERIALLOOPRATE) {
       //If you set this to sendOk = 1 the DESKTOP will continually send
       //data to the RPI. It'd be a good way to test one way communication from
       //the desktop to the RPI
-      sendOK = 1;
+      sendOK = 0;
     } else {
       //printf("READING CONTROL MATRIX FROM SERIAL \n");
 
@@ -411,7 +411,7 @@ void hil(UART ser,double SERIALLOOPRATE) {
 
       //if you set this sendOK = 0 the DESKTOP will conitnually be in read Mode. It'd be a good way to
       //test one way communication from the Desktop to the RPI
-      sendOK = 0; 
+      sendOK = 1; 
     }
     #endif
     
@@ -435,7 +435,7 @@ void hil(UART ser,double SERIALLOOPRATE) {
 
       //If you set this variable recOK to 1 the RPI will continually receive data from the DESKTOP
       //computer. It would be a good way to test 1 way communication
-      recOK = 1;
+      recOK = 0;
     } else {
 
       //Then send data to desktop
@@ -461,7 +461,7 @@ void hil(UART ser,double SERIALLOOPRATE) {
       //if you set this to recOK = 0 the RPI will contiunally send
       //data to the DESKTOP. It'd be a good way to test one way communication
       //from the RPi to the desktop
-      recOK = 0; //Set to zero and RPI will perpetually send data
+      recOK = 1; //Set to zero and RPI will perpetually send data
     }
     #endif
 

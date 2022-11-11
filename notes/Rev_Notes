@@ -12,6 +12,16 @@ Perhaps the delay is enough to make it behave erratically
 
 If it's a speed issue I suggest sending RPY only to the Pi and see if that fixes it
 
+Ok so I changed it to only send RPY and now the system oscillates but doesn't freak out.
+
+That means that the issue is speed. So we need to figure out how to speed up the code.
+
+At this point though HIL is finished and I suggest merging the changes in and moving on to
+testing to get the system to perform quickly.
+
+I suggest doing what you did before where you turn everything else off except for what's
+necessary to see if it works
+
 ======================11/9====================
 
 Alright HIL works just not well enough to run the autopilot.

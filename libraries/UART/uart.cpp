@@ -17,7 +17,7 @@ void UART::TelemInit(int numtelem) {
   #ifdef RPI
   //Telemetry happens here
   printf("SETTING UP TELEMETRY \n");
-  comms.SerialInit("/dev/ttyAMA0",baudRate);
+  comms.SerialInitWireless("/dev/ttyAMA0",baudRate);
   #endif
 
   #ifdef DESKTOP

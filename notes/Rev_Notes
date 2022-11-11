@@ -2,6 +2,16 @@
 
 Working on running the tank in manual mode to see if HIL works
 
+Tank works in SIL mode both manual and autopilot
+
+In HIL mode I can drive the tank manually but autopilot still doesn't work.
+
+It's almost like packets are being dropped in a weird way but it's odd because 
+I can drive the tank just fine when I'm running in manual mode. I'm not sure what's going on.
+Perhaps the delay is enough to make it behave erratically
+
+If it's a speed issue I suggest sending RPY only to the Pi and see if that fixes it
+
 ======================11/9====================
 
 Alright HIL works just not well enough to run the autopilot.

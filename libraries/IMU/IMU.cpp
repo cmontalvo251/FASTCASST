@@ -78,8 +78,8 @@ void IMU::loop(double elapsedTime){
   gx-=offset[0];
   gy-=offset[1];
   gz-=offset[2];
-  #endif
-
+  #endif //ENDIF DESKTOP
+      
   //Filter the Gyro
   filterGyro();
   
@@ -101,7 +101,6 @@ void IMU::loop(double elapsedTime){
 
   //Now get Heading just from the magnetometer
   getMagHeading();
-
 }
 
 void IMU::getMagHeading() {

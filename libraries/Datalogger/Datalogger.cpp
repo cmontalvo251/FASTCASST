@@ -76,16 +76,17 @@ void Datalogger::setLogVars(int num) {
 void Datalogger::appendheader(char* header) {
   logheader[headerctr] = header;
   headerctr++;
-  printf("Appending Header = %s Header Counter = %d \n",header,headerctr);
+  //printf("Appending Header = %s Header Counter = %d \n",header,headerctr);
 }
 
 void Datalogger::appendheaders(char **headers,int length){
-  printf("Appending Headers \n");
+  //printf("Appending Headers: ");
   for (int i = 0;i<length;i++) {
     logheader[headerctr] = headers[i];
     headerctr++;
-    printf("%s Header Counter = %d \n",headers[i],headerctr);
+    //printf("%s Header Counter = %d \n",headers[i],headerctr);
   }
+  //printf("Counter = %d \n",headerctr);
 }
 
 void Datalogger::printheaders() {
@@ -93,7 +94,7 @@ void Datalogger::printheaders() {
   printf("Logging Headers to Data File \n");
   for (int i = 0;i<total_length;i++) {
     fprintf(outfile,"%s ",logheader[i]);
-    printf("%s ",logheader[i]);
+    //printf("%s ",logheader[i]);
     if (i < total_length - 1) {
       fprintf(outfile,"%s",",");
     }

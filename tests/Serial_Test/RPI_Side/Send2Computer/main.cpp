@@ -21,8 +21,8 @@ int main(int argc,char* argv[]) {
   uart_telemetry_array = (float *) calloc(NUMTELEMETRY,sizeof(float));
   int baudRate = 57600; //Hardcode. I don't think we ever need to change
   Serial comms;
-  comms.SerialInit("/dev/ttyUSB0",baudRate);
-  //comms.SerialInit("/dev/ttyAMA0",baudRate);
+  //comms.SerialInit("/dev/ttyUSB0",baudRate);
+  comms.SerialInitWireless("/dev/ttyAMA0",baudRate);
 
   //Initialize the Timer if we're running in Software mode
   double initTime = 0;

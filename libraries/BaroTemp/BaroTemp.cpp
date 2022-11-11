@@ -10,7 +10,7 @@ BaroTemp::BaroTemp() {
 }
 
 void BaroTemp::poll(double currentTime) {
-  #ifndef DESKTOP
+  #ifndef DESKTOP //This below only runs on RPI when not in HIL mode
   if (PHASE == 0) {
     if ((currentTime - updatetime) > LOOP_TIME) {
       barometer.refreshPressure();
@@ -47,7 +47,7 @@ void BaroTemp::poll(double currentTime) {
       }
     }
   }
-  #else
+  #else //This below runs on desktop
   //Using fictitious pressure and temperature
   pressure = ConvertZ2Pressure(Z); //This function is in mathp btw.
   if (CALIBRATE_FLAG == 1) {
@@ -56,6 +56,7 @@ void BaroTemp::poll(double currentTime) {
   }
   temperature = NOMINALTEMP; // just gonna have to hard code this
   #endif
+
   //Convert Pressure to Altitude but only if we have a valid measurement
   if (pressure != -99) {
     ConvertPressure2Altitude();

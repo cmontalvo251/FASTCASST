@@ -22,6 +22,7 @@ int main(int argc,char* argv[]) {
   int baudRate = 57600; //Hardcode. I don't think we ever need to change
   Serial comms;
   printf("Serial Init \n");
+  //comms.SerialInitWireless("/dev/ttyAMA0",baudRate);
   comms.SerialInit("/dev/ttyUSB0",baudRate);
   printf("Serial Init done...\n");
 

@@ -42,5 +42,6 @@ clean:
 	echo ' ' > d.exe
 	rm *.exe
 	echo ' ' > ${PLOC}libraries/MATLAB/d.o
+	echo ' ' > d.o
 	rm *.o
 	rm ${PLOC}libraries/*/*.o

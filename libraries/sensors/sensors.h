@@ -32,9 +32,9 @@ class sensors {
   double nextGPStime=0,nextIMUtime=0,nextANALOGtime=0;
   double nextGPSOffset=0;
   int IBARO;
+  MATLAB q0123,ptp;
   //Errors
   int IERROR;
-  MATLAB q0123,ptp;
   MATLAB bias_pos_matrix,bias_gyro_matrix,bias_mag_matrix,bias_angle_matrix;
   double bias_pressure_val;
   double bias_angle,bias_gyro,bias_mag,bias_pos,bias_pressure;
@@ -51,7 +51,7 @@ class sensors {
   BaroTemp atm;
   MATLAB sense_matrix,sense_matrix_dot;
   char** headernames,headernames_dot;
-  double Heading_Mag,x_tilt,y_tilt,Hm,compass=0;
+  double Heading_Mag,x_tilt,y_tilt,Hm,compass=0.0;
   double heading_offset=0;
   //constructor
   sensors();
@@ -63,6 +63,8 @@ class sensors {
   void initIMU(int);
   //Polling routine
   void poll(double currentTime,double elapsedTime);
+  //Populate Matrices Routine
+  void populate(double currentTime,double elapsedTime);
   //Magnetometer Heading
   double mag_heading(double,double,double,double,double);
   //Printing routine

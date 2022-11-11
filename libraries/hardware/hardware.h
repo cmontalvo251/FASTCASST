@@ -34,9 +34,9 @@ extern boost::mutex HILmutex; //Mutex for passing data b/t HIL asynchronous thre
 //Externs are to avoid multiple declaration errors during module compilation
 
 //Asynchronous HIL thread
-void hil(UART);
+void hil(UART,double);
 //Global vars to pass info back and forth
-extern MATLAB uart_sense_matrix,uart_ctl_matrix;
+extern MATLAB uart_sense_matrix,uart_ctl_matrix,uart_sense_matrix_copy,uart_ctl_matrix_copy;
 
 ///////////Inputs to Hardware Class///////////////
 // 1 - Root Folder name (char*)
@@ -78,11 +78,9 @@ class hardware {
   int ok = 1;
   //Rates
   double PRINTRATE=1.0,RCRATE=1.0,LOGRATE=1.0,TELEMRATE=1.0;
-  //HILRATE IS NOW HARDCODED. Note that HILRATE is just the time that the sense matrices
-  //are updated. The serial hil loop runs as fast as possible to read data and not miss anything
-  //Now we only need to send data to these matrices at like 10 Hz
-  //So HILRATE is hardcoded for the moment
-  double HILRATE=1.0; //NOTE THIS NEEDS TO BE CHANGED TO 10 Hz but for now it is set to 1 Hz
+  //Set these values in hardware init so that make recompiles
+  double HILRATE=0.0;  
+  double SERIALLOOPRATE=1.0;
   //Outputs
   MATLAB in_simulation_matrix,in_configuration_matrix;
   //Initialization routine needs the root folder name

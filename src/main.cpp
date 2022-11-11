@@ -168,7 +168,7 @@ void loop() {
     #endif
 
     //If We're running in HIL we need to run the HIL comms function    
-    #if HIL
+    #ifdef HIL
     #ifdef DESKTOP
     //Normally this line of code would run in the hardware::loop routine but since that's running on the
     //pi we need to run it here. The poll just simply puts everything in the sense_matrix from the model
@@ -219,7 +219,7 @@ void loop() {
       hw.rc.out.print();
       //LAT LON PRESSURE ALTITUDE
       //#ifdef AUTO
-      printf(" %lf %lf %lf %lf %lf ",hw.sense.satellites.latitude,hw.sense.satellites.longitude,hw.sense.atm.altitude,hw.sense.satellites.heading,hw.sense.compass);
+      printf(" %lf %lf %lf %lf ",hw.sense.satellites.latitude,hw.sense.satellites.longitude,hw.sense.atm.altitude,hw.sense.compass);
       //#else
       //XYZ
       //printf(" %lf %lf %lf ",hw.sense.satellites.X,hw.sense.satellites.Y,hw.sense.atm.altitude);

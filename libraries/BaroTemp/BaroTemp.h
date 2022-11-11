@@ -26,7 +26,7 @@ class BaroTemp {
   void poll(double currentTime);
   double temperature=NOMINALTEMP;
   double pressure=-99;
-  double altitude=-99;
+  double altitude=0.0; //Initialize altitude to zero
   void SendZ(double);
 };
 

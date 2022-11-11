@@ -324,6 +324,8 @@ void hardware::hilsend(double currentTime) {
     sense.orientation.pitch = sense.sense_matrix.get(5,1);
     // 6 - yaw (compass)
     sense.sense_matrix.set(6,1,uart_sense_matrix.get(6,1));
+    sense.sense_matrix.set(20,1,uart_sense_matrix.get(6,1));
+    sense.sense_matrix.set(19,1,uart_sense_matrix.get(6,1));
     sense.orientation.yaw = sense.sense_matrix.get(6,1); //For now we set everything to this value
     sense.compass = sense.sense_matrix.get(6,1); //For now we set everything to this value
     sense.satellites.heading = sense.sense_matrix.get(6,1);

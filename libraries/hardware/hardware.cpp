@@ -285,13 +285,13 @@ void hardware::hilsend(double currentTime) {
 
   //For Apprentice Inner loop
   //Roll
-  uart_sense_matrix.set(1,1,sense_matrix.matrix.get(4,1));
+  uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
   //Pitch
-  uart_sense_matrix.set(2,1,sense_matrix.matrix.get(5,1));
+  uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
   //Roll Rate
-  uart_sense_matrix.set(3,1,sense_matrix.matrix.get(10,1));
+  uart_sense_matrix.set(3,1,sense.sense_matrix.get(10,1));
   //Pitch Rate
-  uart_sense_matrix.set(4,1,sense_matrix.matrix.get(11,1));
+  uart_sense_matrix.set(4,1,sense.sense_matrix.get(11,1));
 
   //Data received from PI
   //Before we copy uart_ctl_matrix over to pwm_array we need to create a backup

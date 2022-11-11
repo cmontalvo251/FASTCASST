@@ -1,8 +1,14 @@
+======================11/10/2022===============
+
+Working on running the tank in manual mode to see if HIL works
+
 ======================11/9====================
 
 Alright HIL works just not well enough to run the autopilot.
 
 At 10Hz it just can't keep up. Trying 20Hz. Let's see if the computers can keep up
+
+Tried 100 Hz and it still isn't working
 
 ======================11/4 and 7 and 8/2022================
 

@@ -78,7 +78,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //printf("yaw = %lf \n",yaw);
     throttle_command = STICK_MID + 0.5*(STICK_MAX-STICK_MID);
     double yaw_command = 0;
-    aileron_command = STICK_MID - 5*(yaw-yaw_command);
+    aileron_command = STICK_MID - 50*(yaw-yaw_command);
   } else {
     throttle_command = throttle;
     aileron_command = aileron;

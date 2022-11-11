@@ -107,7 +107,8 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   SERIALLOOPRATE = 0.01;
   #endif
   
-  NUMSENSE = 10;
+  //NUMSENSE = 10;
+  NUMSENSE = 3;
   NUMCTL = NUMSIGNALS; //Same as control signals
   uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
   uart_sense_matrix_copy.zeros(NUMSENSE,1,"Serial Sense Matrix Copy");
@@ -250,7 +251,7 @@ void hardware::hilsend(double currentTime) {
   #ifdef DESKTOP
   //What data do I want sent to RPI???
   //1 - X
-  uart_sense_matrix.set(1,1,sense.sense_matrix.get(1,1));
+  /*uart_sense_matrix.set(1,1,sense.sense_matrix.get(1,1));
   //2 - Y
   uart_sense_matrix.set(2,1,sense.sense_matrix.get(2,1));
   //3 - Z - this is fused pressure and GPS altitude again combined on SIL DESKTOP
@@ -269,7 +270,14 @@ void hardware::hilsend(double currentTime) {
   //9 - gy
   uart_sense_matrix.set(9,1,sense.sense_matrix.get(11,1));
   //10 - gz
-  uart_sense_matrix.set(10,1,sense.sense_matrix.get(12,1));
+  uart_sense_matrix.set(10,1,sense.sense_matrix.get(12,1));*/
+
+  //1 - roll
+  uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
+  //2 - pitch
+  uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
+  //3 - compass value - IMU and GPS are fused in SIL on DESKTOP
+  uart_sense_matrix.set(3,1,sense.sense_matrix.get(6,1));
 
   //Data received from PI
   //Before we copy uart_ctl_matrix over to pwm_array we need to create a backup
@@ -305,7 +313,7 @@ void hardware::hilsend(double currentTime) {
   #ifdef RPI
     //Again we need to populate this into the appropriate vectors
     // 1 - X
-    sense.sense_matrix.set(1,1,uart_sense_matrix.get(1,1));
+    /*sense.sense_matrix.set(1,1,uart_sense_matrix.get(1,1));
     sense.satellites.X = sense.sense_matrix.get(1,1);
     // 2 - Y
     sense.sense_matrix.set(2,1,uart_sense_matrix.get(2,1));
@@ -341,7 +349,22 @@ void hardware::hilsend(double currentTime) {
     // 10 - gz 
     sense.sense_matrix.set(12,1,uart_sense_matrix.get(10,1));
     sense.orientation.yaw_rate = sense.sense_matrix.get(12,1);
+    */
 
+    // 4 - roll
+    sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
+    sense.orientation.roll = sense.sense_matrix.get(4,1);
+    // 5 - pitch
+    sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
+    sense.orientation.pitch = sense.sense_matrix.get(5,1);
+    // 6 - yaw (compass)
+    sense.sense_matrix.set(6,1,uart_sense_matrix.get(3,1));
+    sense.sense_matrix.set(20,1,uart_sense_matrix.get(3,1));
+    sense.sense_matrix.set(19,1,uart_sense_matrix.get(3,1));
+    sense.orientation.yaw = sense.sense_matrix.get(6,1); //For now we set everything to this value
+    sense.compass = sense.sense_matrix.get(6,1); //For now we set everything to this value
+    sense.satellites.heading = sense.sense_matrix.get(6,1);
+    
     //We also need to populate the rc out matrices
     for (int i = 1;i<=rc.out.NUMSIGNALS;i++) {
       //control matrix - i

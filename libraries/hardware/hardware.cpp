@@ -100,11 +100,11 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //HILRATE IS HOW OFTEN THE MATRICES ARE UPDATED
   //SERIALLOOPRATE IS HOW OFTEN THE DATA IS SENT VIA UART
   #ifdef DESKTOP
-  HILRATE = 0.01;
-  SERIALLOOPRATE = 0.01;
+  HILRATE = 0.001;
+  SERIALLOOPRATE = 0.001;
   #elif RPI
-  HILRATE = 0.01;
-  SERIALLOOPRATE = 0.01;
+  HILRATE = 0.001;
+  SERIALLOOPRATE = 0.001;
   #endif
   
   //NUMSENSE = 10;
@@ -276,8 +276,8 @@ void hardware::hilsend(double currentTime) {
   uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
   //2 - pitch
   uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
-  //3 - compass value - IMU and GPS are fused in SIL on DESKTOP
-  uart_sense_matrix.set(3,1,sense.sense_matrix.get(6,1));
+  //3 - IMU yaw
+  uart_sense_matrix.set(3,1,sense.sense_matrix.get(20,1));
 
   //Data received from PI
   //Before we copy uart_ctl_matrix over to pwm_array we need to create a backup
@@ -364,7 +364,7 @@ void hardware::hilsend(double currentTime) {
     sense.orientation.yaw = sense.sense_matrix.get(6,1); //For now we set everything to this value
     sense.compass = sense.sense_matrix.get(6,1); //For now we set everything to this value
     sense.satellites.heading = sense.sense_matrix.get(6,1);
-    
+
     //We also need to populate the rc out matrices
     for (int i = 1;i<=rc.out.NUMSIGNALS;i++) {
       //control matrix - i

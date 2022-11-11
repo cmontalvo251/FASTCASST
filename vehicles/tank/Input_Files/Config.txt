@@ -1,4 +1,4 @@
-1.0 	 !Standard Out Print Rate // seconds (set to negative)
+10.0 	 !Standard Out Print Rate // seconds (set to negative)
 100.0  	 !Data logging rate // seconds (numbers if you want)
 0.1	 !RC Rate // seconds (to run as fast as possible)
 100.0      !Telemetry Rate (seconds)

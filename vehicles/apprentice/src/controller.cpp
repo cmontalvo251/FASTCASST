@@ -53,6 +53,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   if (CONTROLLER_FLAG < 0) {
     if (autopilot > STICK_MID) {
       icontrol = -CONTROLLER_FLAG;
+      //printf("ICONTROL = %d \n",icontrol);
     } else {
       icontrol = 0;
     }

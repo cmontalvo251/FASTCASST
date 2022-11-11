@@ -108,7 +108,8 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   #endif
   
   //NUMSENSE = 10;
-  NUMSENSE = 3;
+  //NUMSENSE = 3; //For tank RPY
+  NUMSENSE = 4; //For apprentice innerloop RP GXGY
   NUMCTL = NUMSIGNALS; //Same as control signals
   uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
   uart_sense_matrix_copy.zeros(NUMSENSE,1,"Serial Sense Matrix Copy");
@@ -272,12 +273,25 @@ void hardware::hilsend(double currentTime) {
   //10 - gz
   uart_sense_matrix.set(10,1,sense.sense_matrix.get(12,1));*/
 
+  //For tank
+  /*
   //1 - roll
   uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
   //2 - pitch
   uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
   //3 - IMU yaw
   uart_sense_matrix.set(3,1,sense.sense_matrix.get(20,1));
+  */
+
+  //For Apprentice Inner loop
+  //Roll
+  uart_sense_matrix.set(1,1,sense_matrix.matrix.get(4,1));
+  //Pitch
+  uart_sense_matrix.set(2,1,sense_matrix.matrix.get(5,1));
+  //Roll Rate
+  uart_sense_matrix.set(3,1,sense_matrix.matrix.get(10,1));
+  //Pitch Rate
+  uart_sense_matrix.set(4,1,sense_matrix.matrix.get(11,1));
 
   //Data received from PI
   //Before we copy uart_ctl_matrix over to pwm_array we need to create a backup
@@ -351,6 +365,8 @@ void hardware::hilsend(double currentTime) {
     sense.orientation.yaw_rate = sense.sense_matrix.get(12,1);
     */
 
+    //FOR TANK
+    /*
     // 4 - roll
     sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
     sense.orientation.roll = sense.sense_matrix.get(4,1);
@@ -364,6 +380,20 @@ void hardware::hilsend(double currentTime) {
     sense.orientation.yaw = sense.sense_matrix.get(6,1); //For now we set everything to this value
     sense.compass = sense.sense_matrix.get(6,1); //For now we set everything to this value
     sense.satellites.heading = sense.sense_matrix.get(6,1);
+    */
+
+    //For Apprentice Innerloop
+    sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
+    sense.orientation.roll = sense.sense_matrix.get(4,1);
+    // 5 - pitch
+    sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
+    sense.orientation.pitch = sense.sense_matrix.get(5,1);
+    // 8 - gx
+    sense.sense_matrix.set(10,1,uart_sense_matrix.get(3,1));
+    sense.orientation.roll_rate = sense.sense_matrix.get(10,1);
+    // 9 - gy
+    sense.sense_matrix.set(11,1,uart_sense_matrix.get(3,1));
+    sense.orientation.pitch_rate = sense.sense_matrix.get(11,1);
 
     //We also need to populate the rc out matrices
     for (int i = 1;i<=rc.out.NUMSIGNALS;i++) {

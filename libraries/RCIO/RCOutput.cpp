@@ -17,14 +17,17 @@ void RCOutput::initialize(int num) {
 	//Initialize channels
 	for (int i = 0;i<NUMSIGNALS;i++) { 
 	  printf("Initializing PWM Output = %d \n",i);
-	  #ifdef AUTO
+	  #if defined AUTO || HIL
+	  #ifdef RPI
 	  if(!(pwm.init(i))) {
 	    exit(1);
 	  }
 	  #endif
+	  #endif
 	}
 
-	#ifdef AUTO
+	#if defined AUTO || HIL
+	#ifdef RPI
 	//INITIALIZE FREQUENCY
 	for (int i = 0;i<NUMSIGNALS;i++) { 
 	  printf("Setting Frequency of %d Servo \n",i);
@@ -39,6 +42,7 @@ void RCOutput::initialize(int num) {
 	  pwm.set_duty_cycle(i,OUTMIN/1000);
 	}
 	#endif
+	#endif
 }
 
 //Write function
@@ -49,8 +53,10 @@ void RCOutput::write() {
   for (int i = 0;i<NUMSIGNALS;i++) {
     float us = pwm_array[i];
     //printf("Sending PWM signal to channel = %d \n",i);
-    #ifdef AUTO
+    #if defined AUTO || HIL
+    #ifdef RPI
     pwm.set_duty_cycle(i,us/1000.0);
+    #endif
     #endif
   } 
 }

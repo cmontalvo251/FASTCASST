@@ -226,6 +226,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   //Right now we have to shut this off when using the satellite because
   //Satellites don't use servos
   #ifndef satellite
+  //printf("WRITING SIGNALS \n");
   rc.out.write();
   #endif
 

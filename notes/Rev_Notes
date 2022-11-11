@@ -22,6 +22,16 @@ testing to get the system to perform quickly.
 I suggest doing what you did before where you turn everything else off except for what's
 necessary to see if it works
 
+Changed the yaw controller tank gain from 50 to 5 and it worked. So it's definitely a delay
+and speed issue.
+
+We might just need to go back to the airplane and only send RP/GXY and change the gains
+to get the inner loop to work. Before you do that though I'd like you to do the following
+
+1.) Run Tank in SIMONLY, SIL, HIL (w/ and w/o telemetry and return rates back to normal) and auto
+2.) Merge HIL branch
+3.) Then start working on airplane - Only send RP/GXGY and see if you can get airplane to work with HIL. Then paper!!!
+
 ======================11/9====================
 
 Alright HIL works just not well enough to run the autopilot.

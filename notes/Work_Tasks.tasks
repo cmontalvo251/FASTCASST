@@ -32,10 +32,10 @@ HIL:
 
   ✔ Decrease HILRATE until the code can't run any faster @done (22-11-10 20:56)
 
-  ☐ Run Tank in SIMONLY
-  ☐ Run Tank in SIL
-  ☐ Run Tank in HIL w/o telemetry but return rates back to normal
-  ☐ Run Tank in HIL w/ telemetry
+  ✔ Run Tank in SIMONLY @done (22-11-11 10:09)
+  ✔ Run Tank in SIL @done (22-11-11 10:09)
+  ✔ Run Tank in HIL w/o telemetry but return rates back to normal @done (22-11-11 10:09)
+  ✔ Run Tank in HIL w/ telemetry @done (22-11-11 10:09)
   ☐ Merge HIL branch 
 
 SPEEDING UP FASTkit ON PI:

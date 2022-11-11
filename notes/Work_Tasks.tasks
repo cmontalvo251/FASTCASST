@@ -27,7 +27,7 @@ COMPLEX AUTOPILOT LOOP:
 
   ☐ Test autopilot control laws in SIL mode with Sensor errors
 
-  ☐ Test autopilot controls laws in HIL mode
+  ✔ Test autopilot controls laws in HIL mode @done (22-11-11 14:39)
 
   ☐ Test autopilot controls laws in HIL mode with Sensor Errors
 

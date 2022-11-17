@@ -44,8 +44,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   double DIFFERENTIAL = 1.0;
 
   //First extract the relavent commands from the receiver.
+  double throttle = rx_array[0];
   double aileron = rx_array[1];
-  double elevator = rx_array[2];
   //printf("Elevator = %lf \n",elevator);
   double autopilot = rx_array[4];
   bool icontrol = 0;
@@ -69,15 +69,23 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     break;
   }
 
+  double aileron_command = 0,throttle_command = 0;
+
   //Then you can run any control loop you want.
   if (icontrol) {
     //printf("Auto ON \n");
-    motor1_us = STICK_MID + (STICK_MID - elevator) + DIFFERENTIAL*(aileron - STICK_MID);
-    motor2_us = elevator + DIFFERENTIAL*(aileron - STICK_MID);
+    double yaw = sense_matrix.get(20,1);
+    //printf("yaw = %lf \n",yaw);
+    throttle_command = STICK_MID + 0.5*(STICK_MAX-STICK_MID);
+    double yaw_command = 0;
+    aileron_command = STICK_MID - 5*(yaw-yaw_command);
   } else {
-    motor1_us = STICK_MID + (STICK_MID - elevator) - DIFFERENTIAL*(aileron - STICK_MID);
-    motor2_us = elevator - DIFFERENTIAL*(aileron - STICK_MID);
+    throttle_command = throttle;
+    aileron_command = aileron;
   }
+
+  motor1_us = STICK_MID + (STICK_MID - throttle_command) - DIFFERENTIAL*(aileron_command - STICK_MID);
+  motor2_us = throttle_command - DIFFERENTIAL*(aileron_command - STICK_MID);
 
   //Saturation
   if (motor1_us < STICK_MIN) {
@@ -96,5 +104,5 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Set motor commands to the ctlcomms values
   control_matrix.set(1,1,motor1_us);
   control_matrix.set(2,1,motor2_us);
-  //ctlcomms.disp();
+  //control_matrix.disp();
 }

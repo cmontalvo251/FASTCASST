@@ -22,25 +22,26 @@ int main(int argc,char* argv[]) {
   int baudRate = 57600; //Hardcode. I don't think we ever need to change
   Serial comms;
   printf("Serial Init \n");
-  comms.SerialInit("/dev/ttyAMA0",baudRate);
+  //comms.SerialInit("/dev/ttyUSB0",baudRate);
+  comms.SerialInitWireless("/dev/ttyAMA0",baudRate);
   printf("Serial Init done...\n");
 
   //Initialize the Timer if we're running in Software mode
   double initTime = 0;
   double nextTELEMtime = 0;
-  double TELEMRATE = 0.01;
+  double TELEMRATE = 0.0;
   watch.init(0);
   double currentTime = watch.currentTime;
 
   ///INFINITE WHILE LOOP
   while (1) {
-    //printf("CURRENT TIME = %lf \n",currentTime);
-    //Send Telemetry
     if (currentTime >= nextTELEMtime) {
       //Receive UART
       //printf("RUNNING Get Array \n");
       comms.SerialGetArray(uart_telemetry_array,NUMTELEMETRY,0);
-      printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
+      if ((uart_telemetry_array[0] != -99) && (abs(uart_telemetry_array[0]) > 1e-2)) {
+	printf("VARS RECEIVED = %lf %lf \n",uart_telemetry_array[0],uart_telemetry_array[1]);
+      }
       nextTELEMtime=currentTime+TELEMRATE;
     }
       

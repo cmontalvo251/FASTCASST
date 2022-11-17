@@ -59,6 +59,8 @@ class Serial {
 		void InitSerialPort(void);
 		//Use this if you want to specify ComPortName and BaudRate
 		void SerialInit(char *ComPortName, int BaudRate);
+                //This is for wireless comms on RPI
+                void SerialInitWireless(char *ComPortName, int BaudRate);
 		///Get and Receive 1 character
 		char SerialGetc();
 		void SerialPutc(char txchar);
@@ -103,6 +105,9 @@ class Serial {
 		void SerialGetArray(float array[],int num,int echo);
 		//Again this is so fucking annoying because since we have 3 hex \r and 1 hex \r we now need
 		//different routines for a drone
+
+		int SerialGetNumber(float array[],int num);
+		int SerialGetNumber(float array[],int num,int echo);
 
 		//So this routine here sends an array in the 1 Hex \r format
 		void SerialSendArray(float array[],int num);

@@ -14,7 +14,9 @@
 class BaroTemp {
  private:
   MS5611 barometer;
-  double pressure0=-99;
+  int CALIBRATE = 0;
+  int CALIBRATE_FLAG = 1;
+  double pressure0=0;
   double updatetime=-99;
   double Z=0;
   int PHASE=0;
@@ -24,7 +26,7 @@ class BaroTemp {
   void poll(double currentTime);
   double temperature=NOMINALTEMP;
   double pressure=-99;
-  double altitude=-99;
+  double altitude=0.0; //Initialize altitude to zero
   void SendZ(double);
 };
 

@@ -3,7 +3,7 @@
 #ifdef HIL
 boost::mutex HILmutex; //Mutex for passing data b/t HIL asynchronous threads
 //Global variables for uart_sense matrix and uart_ctl_matrix
-MATLAB uart_sense_matrix,uart_ctl_matrix;
+MATLAB uart_sense_matrix,uart_ctl_matrix,uart_sense_matrix_copy,uart_ctl_matrix_copy;
 #endif
 
 //Constructor
@@ -39,7 +39,9 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   LOGRATE = in_configuration_matrix.get(2,1);
   RCRATE = in_configuration_matrix.get(3,1);
   TELEMRATE = in_configuration_matrix.get(4,1);
-  //HILRATE = in_configuration_matrix.get(4,1);
+  //HILRATE IS NOW HARDCODED. Note that HILRATE is just the time that the sense matrices
+  //are updated. The serial hil loop runs as fast as possible to read data and not miss anything  
+  //HILRATE = in_configuration_matrix.get(4,1); 
 
   sense.init(in_configuration_matrix,in_simulation_matrix);
 
@@ -51,13 +53,15 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   }
 
   //Initialize Logger
-  logger.init("data/",sense.getNumVars()+1+NUMSIGNALS); //+1 for time
+  logger.init("data/",sense.getNumVars()+2+NUMSIGNALS); //+1 for time,+2 for RC In Channel #5
   //Set and log headers
   logger.appendheader("Time (sec)");
   logger.appendheaders(sense.headernames,sense.getNumVars());
   logger.appendheader("RC In Channel #5");
   logger.appendheaders(pwmnames,NUMSIGNALS);
   logger.printheaders();
+  /////////IF YOU ADD TO THIS HEADER YOU NEED TO MAKE SURE YOU INCREMENT
+  ////////THE LOGGER.INIT FUNCTION BY 1
 
   //What data do I want sent to RPI???
   //1 - roll
@@ -72,24 +76,18 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //10 - pressure
   
   //What data do I want send to Desktop????
-  //1 - rx 1
-  //2 - rx 2
-  //3 - rx 3
-  //4 - rx 4
-  //5 - rx 5
-  //6 - control matrix 1
-  //7 - control matrix 2
-  //8 - control matrix 3
-  //9 - control matrix 4
+  // All the control signals
 
   //Initialize the Telemetry
   //What do I want sent?
   //1 - Time
   //2 - roll
   //3 - pitch
-  //4 - yaw
+  //4 - yaw (compass)
   //5 - latitude
   //6 - longitude
+  //7 - altitude (barometer)
+  //8 - speed (GPS)
   
   NUMTELEMETRY = 8; //Set the actual values in the loop function
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix HW");
@@ -97,12 +95,28 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   serTelem.TelemInit(NUMTELEMETRY);
 
   #ifdef HIL
-  NUMSENSE = 10;
-  NUMCTL = 9;
+
+  //LOOP RATES
+  //HILRATE IS HOW OFTEN THE MATRICES ARE UPDATED
+  //SERIALLOOPRATE IS HOW OFTEN THE DATA IS SENT VIA UART
+  #ifdef DESKTOP
+  HILRATE = 0.001;
+  SERIALLOOPRATE = 0.001;
+  #elif RPI
+  HILRATE = 0.001;
+  SERIALLOOPRATE = 0.001;
+  #endif
+  
+  //NUMSENSE = 10;
+  //NUMSENSE = 3; //For tank RPY
+  NUMSENSE = 4; //For apprentice innerloop RP GXGY
+  NUMCTL = NUMSIGNALS; //Same as control signals
   uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
+  uart_sense_matrix_copy.zeros(NUMSENSE,1,"Serial Sense Matrix Copy");
   uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
+  uart_ctl_matrix_copy.zeros(NUMCTL,1,"Serial Control Matrix Copy");
   serHIL.HILInit(NUMSENSE,NUMCTL);
-  boost::thread hilloop(hil,serHIL);
+  boost::thread hilloop(hil,serHIL,SERIALLOOPRATE);
   #endif
 }
 
@@ -143,7 +157,14 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   }
 
   //Poll all as quickly as possible sensors - This puts all raw data into the sense matrix
-  sense.poll(currentTime,elapsedTime);
+  //If we are runnning on the RPI in HIL mode we don't run this
+  int POLL = 1;
+  #if defined (RPI) && (HIL)
+      POLL = 0;
+  #endif
+  if (POLL) {
+      sense.poll(currentTime,elapsedTime);
+  }
 
   //I then need to populate the pwm_array with the control signals as quickly as possible
   for (int i = 0;i<rc.out.NUMSIGNALS;i++) {
@@ -162,7 +183,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     //All sense states
     logger.print(sense.sense_matrix);
     //RC Channel #5
-    logger.printvar(rc.in.rx_array[4]);
+    logger.printint(rc.in.rx_array[4]);
     //RC Out Channels
     logger.printarrayln(rc.out.pwm_array,rc.out.NUMSIGNALS);
     nextLOGtime=currentTime+LOGRATE;
@@ -205,6 +226,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   //Right now we have to shut this off when using the satellite because
   //Satellites don't use servos
   #ifndef satellite
+  //printf("WRITING SIGNALS \n");
   rc.out.write();
   #endif
 
@@ -217,194 +239,294 @@ void hardware::hilsend(double currentTime) {
 
   //Now we only need to send data to these matrices at like 10 Hz
   //So HILRATE is hardcoded for the moment
+  //Note that this HILRATE is different than how fast the serial
+  //threaded loop is running. 
   if (currentTime < nextHILtime) {
       return;
     } else {
       nextHILtime = currentTime + HILRATE;
-      printf("Sending Data to HIL MATRICES = %lf \n",currentTime);
+      //printf("Processing HIL MATRICES = %lf \n",currentTime);
   }
 
   HILmutex.lock();
 
   #ifdef DESKTOP
   //What data do I want sent to RPI???
+  //1 - X
+  /*uart_sense_matrix.set(1,1,sense.sense_matrix.get(1,1));
+  //2 - Y
+  uart_sense_matrix.set(2,1,sense.sense_matrix.get(2,1));
+  //3 - Z - this is fused pressure and GPS altitude again combined on SIL DESKTOP
+  uart_sense_matrix.set(3,1,sense.sense_matrix.get(3,1));
+  //4 - roll
+  uart_sense_matrix.set(4,1,sense.sense_matrix.get(4,1));
+  //5 - pitch
+  uart_sense_matrix.set(5,1,sense.sense_matrix.get(5,1));
+  //6 - compass value - IMU and GPS are fused in SIL on DESKTOP
+  uart_sense_matrix.set(6,1,sense.sense_matrix.get(6,1));
+  //7 - u - forward flight speed
+  uart_sense_matrix.set(7,1,sense.sense_matrix.get(7,1));
+  //uart_sense_matrix.disp();
+  //8 - gx
+  uart_sense_matrix.set(8,1,sense.sense_matrix.get(10,1));
+  //9 - gy
+  uart_sense_matrix.set(9,1,sense.sense_matrix.get(11,1));
+  //10 - gz
+  uart_sense_matrix.set(10,1,sense.sense_matrix.get(12,1));*/
+
+  //For tank
+  /*
   //1 - roll
   uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
   //2 - pitch
   uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
-  //3 - yaw
-  uart_sense_matrix.set(3,1,sense.sense_matrix.get(6,1));
-  //4 - lat
-  uart_sense_matrix.set(4,1,sense.sense_matrix.get(16,1));
-  //5 - lon
-  uart_sense_matrix.set(5,1,sense.sense_matrix.get(17,1));
-  //6 - alt
-  uart_sense_matrix.set(6,1,sense.sense_matrix.get(18,1));
-  //7 - gx
-  uart_sense_matrix.set(7,1,sense.sense_matrix.get(10,1));
-  //8 - gy
-  uart_sense_matrix.set(8,1,sense.sense_matrix.get(11,1));
-  //9 - gz
-  uart_sense_matrix.set(9,1,sense.sense_matrix.get(12,1));
-  //10 - pressure
-  uart_sense_matrix.set(10,1,sense.sense_matrix.get(27,1));
-  //uart_sense_matrix.disp();
+  //3 - IMU yaw
+  uart_sense_matrix.set(3,1,sense.sense_matrix.get(20,1));
+  */
+
+  //For Apprentice Inner loop
+  //Roll
+  uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
+  //Pitch
+  uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
+  //Roll Rate
+  uart_sense_matrix.set(3,1,sense.sense_matrix.get(10,1));
+  //Pitch Rate
+  uart_sense_matrix.set(4,1,sense.sense_matrix.get(11,1));
+
+  //Data received from PI
+  //Before we copy uart_ctl_matrix over to pwm_array we need to create a backup
+  //printf("\n RCOUTPUT before uart update \n");
+  //rc.out.print();
+  //printf("\n ----- \n");
+  rc.out.backup();
+  for (int i = 1;i<=NUMCTL;i++) {
+    rc.out.pwm_array[i-1] = uart_ctl_matrix.get(i,1); //don't we just need the rcoutputs?
+  }
+      
+  //printf("\n RCOUTPUT after uart update \n");
+  //rc.out.print();
+  //printf("\n ----- \n");
+
+  //We then will run the RangeCheck and it will return an error code
+  int err = rc.out.RangeCheck(); //This is a bit more robust to Serial errors than just the saturation block
+  //printf("\n RCOUTPUT after range check \n");
+  //rc.out.print();
+  //printf("\n ---- \n");
+  
+  if (err) {
+    //This means that the rangecheck through an error which means the values received from
+    //uart were invalid and we need to revert back to our previous values
+    rc.out.revert();
+  }
+
+  //printf("\n RCOUTPUT after potential revert \n");
+  //rc.out.print();
+  //printf("\n ---- \n");
   #endif //DESKTOP
 
   #ifdef RPI
-  //Again we need to populate this into the appropriate vectors
-  //Roll
-  sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
-  //Pitch
-  sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
-  //Yaw
-  sense.sense_matrix.set(6,1,uart_sense_matrix.get(3,1));
-  //Lat
-  sense.sense_matrix.set(16,1,uart_sense_matrix.get(4,1));
-  //Lon
-  sense.sense_matrix.set(17,1,uart_sense_matrix.get(5,1));
-  //Alt
-  sense.sense_matrix.set(18,1,uart_sense_matrix.get(6,1));
-  //gx
-  sense.sense_matrix.set(10,1,uart_sense_matrix.get(7,1));
-  //gy
-  sense.sense_matrix.set(11,1,uart_sense_matrix.get(8,1));
-  //gz
-  sense.sense_matrix.set(12,1,uart_sense_matrix.get(9,1));
-  //pressure
-  sense.sense_matrix.set(27,1,uart_sense_matrix.get(10,1));
-  //sense.sense_matrix.disp();
+    //Again we need to populate this into the appropriate vectors
+    // 1 - X
+    /*sense.sense_matrix.set(1,1,uart_sense_matrix.get(1,1));
+    sense.satellites.X = sense.sense_matrix.get(1,1);
+    // 2 - Y
+    sense.sense_matrix.set(2,1,uart_sense_matrix.get(2,1));
+    sense.satellites.Y = sense.sense_matrix.get(2,1);
+    // 3 - Z
+    sense.sense_matrix.set(3,1,uart_sense_matrix.get(3,1));
+    sense.satellites.Z = sense.sense_matrix.get(3,1);
+    sense.atm.altitude = -sense.sense_matrix.get(3,1); //Just assume that the altitude is negative -Z
+    //Need to update the GPS Latitude and Longitude
+    sense.satellites.decodeXYZ();
+    // 4 - roll
+    sense.sense_matrix.set(4,1,uart_sense_matrix.get(4,1));
+    sense.orientation.roll = sense.sense_matrix.get(4,1);
+    // 5 - pitch
+    sense.sense_matrix.set(5,1,uart_sense_matrix.get(5,1));
+    sense.orientation.pitch = sense.sense_matrix.get(5,1);
+    // 6 - yaw (compass)
+    sense.sense_matrix.set(6,1,uart_sense_matrix.get(6,1));
+    sense.sense_matrix.set(20,1,uart_sense_matrix.get(6,1));
+    sense.sense_matrix.set(19,1,uart_sense_matrix.get(6,1));
+    sense.orientation.yaw = sense.sense_matrix.get(6,1); //For now we set everything to this value
+    sense.compass = sense.sense_matrix.get(6,1); //For now we set everything to this value
+    sense.satellites.heading = sense.sense_matrix.get(6,1);
+    // 7 - u (forward flight speed)
+    sense.sense_matrix.set(7,1,uart_sense_matrix.get(7,1));
+    sense.satellites.speed = sense.sense_matrix.get(7,1);
+    // 8 - gx
+    sense.sense_matrix.set(10,1,uart_sense_matrix.get(8,1));
+    sense.orientation.roll_rate = sense.sense_matrix.get(10,1);
+    // 9 - gy
+    sense.sense_matrix.set(11,1,uart_sense_matrix.get(9,1));
+    sense.orientation.pitch_rate = sense.sense_matrix.get(11,1);
+    // 10 - gz 
+    sense.sense_matrix.set(12,1,uart_sense_matrix.get(10,1));
+    sense.orientation.yaw_rate = sense.sense_matrix.get(12,1);
+    */
+
+    //FOR TANK
+    /*
+    // 4 - roll
+    sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
+    sense.orientation.roll = sense.sense_matrix.get(4,1);
+    // 5 - pitch
+    sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
+    sense.orientation.pitch = sense.sense_matrix.get(5,1);
+    // 6 - yaw (compass)
+    sense.sense_matrix.set(6,1,uart_sense_matrix.get(3,1));
+    sense.sense_matrix.set(20,1,uart_sense_matrix.get(3,1));
+    sense.sense_matrix.set(19,1,uart_sense_matrix.get(3,1));
+    sense.orientation.yaw = sense.sense_matrix.get(6,1); //For now we set everything to this value
+    sense.compass = sense.sense_matrix.get(6,1); //For now we set everything to this value
+    sense.satellites.heading = sense.sense_matrix.get(6,1);
+    */
+
+    //For Apprentice Innerloop
+    sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
+    sense.orientation.roll = sense.sense_matrix.get(4,1);
+    // 5 - pitch
+    sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
+    sense.orientation.pitch = sense.sense_matrix.get(5,1);
+    // 8 - gx
+    sense.sense_matrix.set(10,1,uart_sense_matrix.get(3,1));
+    sense.orientation.roll_rate = sense.sense_matrix.get(10,1);
+    // 9 - gy
+    sense.sense_matrix.set(11,1,uart_sense_matrix.get(3,1));
+    sense.orientation.pitch_rate = sense.sense_matrix.get(11,1);
+
+    //We also need to populate the rc out matrices
+    for (int i = 1;i<=rc.out.NUMSIGNALS;i++) {
+      //control matrix - i
+      uart_ctl_matrix.set(i,1,rc.out.pwm_array[i-1]);
+    }
   #endif //RPI
   
   HILmutex.unlock();
+
+  //printf("Done Processing HIL Matrices = %lf \n",currentTime);
 }
 
-void hil(UART ser) {
+void hil(UART ser,double SERIALLOOPRATE) {
     //This code needs to operate on a listen as often as possible
     //and only send when you've received a response  
     //In Debug mode we will have the desktop continually send data to 
     //the pi and have the pi continually listen
 
   //All vars in here must be globals or locally defined
-  bool sendOK = 1;
-  bool recOK = 1;
+
+  bool sendOK = 1; //Set to 1 and DESKTOP will send first
+  bool recOK = 1; //Set to 1 and RPI will receive first
+
+  //bool sendOK = 0; //Set to 0 and DESKTOP will receive first
+  //bool recOK = 0; //Set to 0 and RPI will send first
 
   //This needs to be an infinite loop or it will only run once
   while (1) {
 
     #ifdef DESKTOP
     if (sendOK) {
-      printf("!!!!!!!!!!!!!!!!!! Send Data to RPI HIL !!!!!!!!!!!!!!!!!!!!!! \n");
+      //printf("!!!!!!!!!!!!!!!!!! Send Data to RPI HIL !!!!!!!!!!!!!!!!!!!!!! \n");
 
       //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
-      //to lock the mutex
+      //to lock the mutex -- See comment below
       HILmutex.lock();
-      ser.sendSense(uart_sense_matrix);
+      uart_sense_matrix_copy.overwrite(uart_sense_matrix);
+      HILmutex.unlock();
+
+      //Then we send the copy
+      ser.sendSense(uart_sense_matrix_copy);
+
+      //So the sendSense and ReadSense functions enter an infinite while loop until data is read.
+      //Because of this we actually need to have a copy be used for the uart comms and then 
+      //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in 
+      //an infinite while loop and never send data.
+      HILmutex.lock();
+      uart_sense_matrix.overwrite(uart_sense_matrix_copy);
       HILmutex.unlock();
 
       //If you set this to sendOk = 1 the DESKTOP will continually send
       //data to the RPI. It'd be a good way to test one way communication from
       //the desktop to the RPI
-      sendOK = 1;
+      sendOK = 0;
     } else {
-      printf("READING CONTROL MATRIX FROM SERIAL \n");
-      //rec error code not operational at the moment
-      /*int rec = ser.readControl(uart_ctl_matrix);
-      uart_ctl_matrix.disp();
-      sendOK = 1;
-      //We then need to populate this into the appropriate vectors
-      rc.in.rx_array[0] = uart_ctl_matrix.get(1,1); //wait. Why do we need these rcinputs?
-      rc.in.rx_array[1] = uart_ctl_matrix.get(2,1);
-      rc.in.rx_array[2] = uart_ctl_matrix.get(3,1);
-      rc.in.rx_array[3] = uart_ctl_matrix.get(4,1);
-      //Before we copy uart_ctl_matrix over to pwm_array we need to create a backup
-      //printf("\n RCOUTPUT before uart update \n");
-      //rc.out.print();
-      //printf("\n ----- \n");
-      rc.out.backup();
+      //printf("READING CONTROL MATRIX FROM SERIAL \n");
 
-      rc.out.pwm_array[0] = uart_ctl_matrix.get(5,1); //don't we just need the rcoutputs?
-      rc.out.pwm_array[1] = uart_ctl_matrix.get(6,1);
-      rc.out.pwm_array[2] = uart_ctl_matrix.get(7,1);
-      rc.out.pwm_array[3] = uart_ctl_matrix.get(8,1);
-      
-      //printf("\n RCOUTPUT after uart update \n");
-      //rc.out.print();
-      //printf("\n ----- \n");
+      //This uart_ctl_matrix is set in another asynchronous thread. Therefor we need
+      //to lock the mutex -- see comment below on thread safety
+      ser.readControl(uart_ctl_matrix_copy);
 
-      //Again the control matrix is coming from the control routine on the pi
-      //The control routine is written by the user. since we can't expect the user
-      //to worry about saturation we need to put in that block here
-      rc.in.saturation_block();
-      //printf("RCINPUT \n");
-      //rc.in.printRCstate(-4);
+      //So the sendControl and readControl functions enter an inifinite while loop until data is read
+      //Because of this we actually need to have a copy be used for the uart comms and then
+      //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in
+      //an infinite while loop and never send data
+      HILmutex.lock();
+      uart_ctl_matrix.overwrite(uart_ctl_matrix_copy);
+      HILmutex.unlock();
 
-      //We then will run the RangeCheck and it will return an error code
-      int err = rc.out.RangeCheck(); //This is a bit more robust to Serial errors than just the saturation block
-      //printf("\n RCOUTPUT after range check \n");
-      //rc.out.print();
-      //printf("\n ---- \n");
-
-      if (err) {
-        //This means that the rangecheck through an error which means the values received from
-        //uart were invalid and we need to revert back to our previous values
-        rc.out.revert();
-      }
-
-      //printf("\n RCOUTPUT after potential revert \n");
-      //rc.out.print();
-      //printf("\n ---- \n");
-      */
+      //if you set this sendOK = 0 the DESKTOP will conitnually be in read Mode. It'd be a good way to
+      //test one way communication from the Desktop to the RPI
+      sendOK = 1; 
     }
     #endif
     
     //If we're running HIL on RPI we need to receive data from serial via desktop
     #ifdef RPI
     if (recOK) {
-      printf("Receive Data from Desktop \n");
+      //printf("Receive Data from Desktop \n");
 
       //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
-      //to lock the mutex
+      //to lock the mutex -- See comment below on thread safety. 
+      ser.readSense(uart_sense_matrix_copy);
+      //uart_sense_matrix_copy.disp();
+
+      //So the sendSense and ReadSense functions enter an infinite while loop until data is read.
+      //Because of this we actually need to have a copy be used for the uart comms and then 
+      //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in 
+      //an infinite while loop and never send data.
       HILmutex.lock();
-      ser.readSense(uart_sense_matrix);
-      uart_sense_matrix.disp();
+      uart_sense_matrix.overwrite(uart_sense_matrix_copy);
       HILmutex.unlock();
 
       //If you set this variable recOK to 1 the RPI will continually receive data from the DESKTOP
       //computer. It would be a good way to test 1 way communication
-      recOK = 1;
+      recOK = 0;
     } else {
 
-      /*
       //Then send data to desktop
-      //printf("Send data to Desktop \n");
-      //What data do I want send to Desktop????
-      //1 - rx 1
-      uart_ctl_matrix.set(1,1,rc.in.rx_array[0]);
-      //2 - rx 2 
-      uart_ctl_matrix.set(2,1,rc.in.rx_array[1]);
-      //3 - rx 3
-      uart_ctl_matrix.set(3,1,rc.in.rx_array[2]);
-      //4 - rx 4
-      uart_ctl_matrix.set(4,1,rc.in.rx_array[3]);
-      //5 - rx 5
-      uart_ctl_matrix.set(5,1,rc.in.rx_array[4]);
-      //6 - control matrix 1
-      uart_ctl_matrix.set(6,1,rc.out.pwm_array[0]);
-      //7 - control matrix 2
-      uart_ctl_matrix.set(7,1,rc.out.pwm_array[1]);
-      //8 - control matrix 3
-      uart_ctl_matrix.set(8,1,rc.out.pwm_array[2]);
-      //9 - control matrix 4
-      uart_ctl_matrix.set(9,1,rc.out.pwm_array[3]);
-      //ser.sendControl(uart_ctl_matrix);
-      recOK = 1;
-      */
+      //printf("!!!!!!!!!!!!!!!!!!Send data to Desktop HIL !!!!!!!!!!!!!!!!!!! \n");
+
+      //This uart_ctl_matrix is set in another asynchronous thread therefor we need
+      //to lock the mutex -- See comment below
+      HILmutex.lock();
+      uart_ctl_matrix_copy.overwrite(uart_ctl_matrix);
+      HILmutex.unlock();
+
+      //Then we send the copy
+      ser.sendControl(uart_ctl_matrix_copy);
+
+      //So the sendControl and readControl functions enter an infinite while loop until
+      //data is read. Because of this we actually need to have a copy be used for the uart
+      //comms and then lock the mutex once we're ready to copy. Otherwise we enter into a thread
+      //lock in an infinite loop and never can advance the rest of the code
+      HILmutex.lock();
+      uart_ctl_matrix.overwrite(uart_ctl_matrix_copy);
+      HILmutex.unlock();
+
+      //if you set this to recOK = 0 the RPI will contiunally send
+      //data to the DESKTOP. It'd be a good way to test one way communication
+      //from the RPi to the desktop
+      recOK = 1; //Set to zero and RPI will perpetually send data
     }
     #endif
 
     //We need a cross sleep here or the code will blast serial data faster than we can read
-    cross_sleep(1.0);
+    //At the same time on the RPI side we might need a different SERIALLOOPRATE to make sure 
+    //we read as fast as possible
+    //This cross_sleep will eventually go away or reduce to like 0.001 so that we read as fast
+    //as possible for now we're in debug mode so we're only sending every 1.0 seconds
+    cross_sleep(SERIALLOOPRATE);
 
   } //End of inifinite while loop
 

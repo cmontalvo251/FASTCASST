@@ -26,7 +26,7 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   //Friction Parameters
   double XDAMPCOEFF = 7.26;
   double DAMPCOEFF = 50.0; //Guess and Check (y-direction)
-  double DAMPROTCOEFF = 1.0; //Guess and Check (yaw)
+  double DAMPROTCOEFF = 2.0; //Guess and Check (yaw)
   double d = 0.13335; //(m) - From wheel to center
   double force1;
   double force2;
@@ -49,7 +49,7 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   double r = state.get(13,1);
   
   //Calculate Forces
-  double force_max = (((1.7)/2.2)*9.81 + 4.454)/2.0;
+  double force_max = (((1.7)/2.2)*9.81 + 4.454)*1.0;
   double s = 0.007681;
   //motor1_US = STICK_MAX;
   //motor2_US = STICK_MAX;
@@ -93,13 +93,13 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   MB.plus_eq1(2,1,0.0);
   MB.plus_eq1(3,1,Nmoment);
   
-  /*FB.disp();
-  MB.disp();
-  for (int i = 0;i<2;i++) {
-    printf(" %d ",pwm_array[i]);
-  }
-  printf("\n");
-  PAUSE();*/
+  //FB.disp();
+  //MB.disp();
+  //for (int i = 0;i<2;i++) {
+  //  printf(" %d ",pwm_array[i]);
+  //}
+  //printf("\n");
+  //PAUSE();
 }
 
 

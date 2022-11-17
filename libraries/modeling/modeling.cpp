@@ -80,7 +80,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[28] = "Temperature (C)";
 
   //Initialize Logger
-  logger.init("logs/",NUMVARS+NUMACTUATORS); //Not minus 1 because you add time
+  logger.init("logs/",NUMVARS+1+NUMACTUATORS); //Not minus 1 because you add time
   //Set and log headers
   logger.appendheader("Time (sec)");
   logger.appendheaders(headernames,NUMVARS-1); //-1 because of quaternions
@@ -436,13 +436,14 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //FTOTALB.disp();
   //Only add external forces if FGNDB.norm is zero
   //WAIT WHY IS THIS HERE?????
-  #if not defined (car) || (tank)
+  #if defined car || tank
+  //Ok need to add these in no matter what if car and tank around
+  FTOTALB.plus_eq(extforces.FB);
+  //printf("Adding External Forces \n");
+  #else
   if (FGNDB.norm() == 0) {
     FTOTALB.plus_eq(extforces.FB);
   }
-  #else
-  //Ok need to add these in no matter what if car and tank around
-  FTOTALB.plus_eq(extforces.FB);
   #endif
   //extforces.FB.disp();
   //FGNDB.disp();
@@ -466,12 +467,12 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //Moments vector
   MTOTALB.mult_eq(0);
   MTOTALB.overwrite(MGNDB);
-  #if not defined (car) || (tank)
+  #if defined car || tank
+  MTOTALB.plus_eq(extforces.MB);
+  #else
   if (FGNDB.norm() == 0) {
     MTOTALB.plus_eq(extforces.MB);
   }
-  #else
-  MTOTALB.plus_eq(extforces.MB);
   #endif
   //MTOTALB.disp();
   //pqr.disp();

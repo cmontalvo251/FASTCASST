@@ -66,7 +66,10 @@ void sensors::init(MATLAB in_configuration_matrix,MATLAB in_simulation_matrix) {
   //0 = MPU9250
   //1 = LSM9DS1
   int IMUTYPE = in_configuration_matrix.get(9,1);
+  #ifndef HIL
+  //Only Initialize IMU if we're not in HIL mode
   initIMU(IMUTYPE);
+  #endif
 
   //Set the Filter Constant
   orientation.FilterConstant = in_configuration_matrix.get(10,1);
@@ -220,10 +223,10 @@ void sensors::getCompassHeading() {
   compass = orientation.yaw + heading_offset;
   //Fix wrap between +-180
   if (compass > 180) {
-    compass -= 180;
+    compass -= 360;
   }
   if (compass < -180) {
-    compass += 180;
+    compass += 360;
   }
   //compass = 400;
 }
@@ -287,6 +290,13 @@ void sensors::poll(double currentTime,double elapsedTime) {
     //hardcoded GPS coordinates
     nextGPStime = currentTime + GPS_RATE;
   }
+    
+  //Then populate the appropriate matrices
+  populate(currentTime,elapsedTime);
+    
+}
+
+void sensors::populate(double currentTime,double elapsedTime) {
 
   ///////////////////??THEN POPULATE STATE VECTOR////////////////////
 

@@ -1,3 +1,274 @@
+======================11/11/2022===============
+
+HIL WORKS!!! For the tank at least. It's time to get HIL working on the airplane
+
+1.) Made a new folder for Apprentice
+2.) Lowered gains by a factor of 10
+3.) simonly works for apprentice
+4.) sil works for apprentice
+5.) For HIL I need to send RP and GXGY
+6.) HIL WORKS!!!!!	
+
+======================11/10/2022===============
+
+Working on running the tank in manual mode to see if HIL works
+
+Tank works in SIL mode both manual and autopilot
+
+In HIL mode I can drive the tank manually but autopilot still doesn't work.
+
+It's almost like packets are being dropped in a weird way but it's odd because 
+I can drive the tank just fine when I'm running in manual mode. I'm not sure what's going on.
+Perhaps the delay is enough to make it behave erratically
+
+If it's a speed issue I suggest sending RPY only to the Pi and see if that fixes it
+
+Ok so I changed it to only send RPY and now the system oscillates but doesn't freak out.
+
+That means that the issue is speed. So we need to figure out how to speed up the code.
+
+At this point though HIL is finished and I suggest merging the changes in and moving on to
+testing to get the system to perform quickly.
+
+I suggest doing what you did before where you turn everything else off except for what's
+necessary to see if it works
+
+Changed the yaw controller tank gain from 50 to 5 and it worked. So it's definitely a delay
+and speed issue.
+
+We might just need to go back to the airplane and only send RP/GXY and change the gains
+to get the inner loop to work. Before you do that though I'd like you to do the following
+
+1.) Run Tank in SIMONLY, SIL, HIL (w/ and w/o telemetry and return rates back to normal) and auto
+2.) Merge HIL branch
+3.) Then start working on airplane - Only send RP/GXGY and see if you can get airplane to work with HIL. Then paper!!!
+
+======================11/9====================
+
+Alright HIL works just not well enough to run the autopilot.
+
+At 10Hz it just can't keep up. Trying 20Hz. Let's see if the computers can keep up
+
+Tried 100 Hz and it still isn't working
+
+======================11/4 and 7 and 8/2022================
+
+Alright. Time to check the values from controller.cpp and see if we're getting updated values
+
+1.) XYZ - This is updating correctly.
+2.) RPY - This is updating correctly
+3.) Forward flight speed - This is updating correctly
+4.) GXYZ - This is updating correctly
+
+Ok now that that is working properly it's time to switch and have the RPi take data and send the commands over to the Desktop so we can fly the aircraft manually
+
+1.) Change the recOK and sendOK commands to have desktop in perpetual read mode and pi in perpetual send mode
+2.) Turn on prints for receiver and make sure Rpi is sending UART PWM commands at 1 Hz for now
+3.) Ensure that Desktop is reading PWM commands correctly and sending that to the model
+4.) Increase data send rate and data receive rates until you can fly the plane as if it was in SIL mode
+5.) Move on to the next step in Work Tasks.tasks
+
+Alright 
+
+1.) Done
+2.) Done
+3.) Done
+4.) Done
+5.) Time to move on
+
+======================11/1/2022===============
+
+1.) Working on getting XYZ values to convert properly to Lat and Lon. I think I got GPS working
+Need to get barometer now. I think that's done too. Looks like X,Y,Z and Roll, Pitch and Yaw are working properly.
+2.) Good I think
+3.) Good I think
+4.) Good I think
+
+Ok I think the next ones should be fine. They are raw values that don't need processing. So I think we should turn off all the prints on the RPi and then go into the controller.cpp routine and turn on prints for RPi and see if we're getting the right data 
+
+======================10/27/2022==============
+
+Alright. Time to get back to the Rev notes. I'm using an RPi4 with hardwired connection
+
+Ok what we want to do is first have the pi run in HIL mode without getting any data from the computer
+and see what happens.
+
+Time - check
+time_elapsed - check
+Receiver signals - check
+RPY - not updating since I'm not sending so that's good
+rcoutput - check
+Lat/Lon - set to origin - check for now
+atmoshpere altitude - check - set to zero
+compass - check - set to zero
+
+ok so that's working right. I can check that off. Alright now let's have the RPi get data from the desktop and update the values....
+
+Pause: I just noticed that the RPi is not sending telemetry. Why? Nvm. It is. That's something we need to check later
+
+Ok back to having the Rpi update values: Ok Rpi is receiving data properly. Now we need to make sure everything is being updated properly. So let's do everthing one at a time
+
+1.) X,Y,Z values are being sent over (need to check LAT/LON/ALT and barometer): 
+2.) RPY(compass) values are being sent over: 
+3.) Forward flight speed is being sent over (will need to check this in the controller.cpp routine): 
+4.) GXYZ are being sent over (will also need to check controller.cpp): 
+
+To solve the issue above you need to look at hardware.cpp on line 281
+
+======================10/26/2022==============
+
+1.) Recheck Serial Test - Wired 
+RPI to Desktop - works
+Desktop to RPI - works
+2.) Recheck the HIL Test - Wired - Works
+3.) Check Serial Test - Wireless
+RPI to Desktop - exactly the same as telemetry - I must have fucked up Serial.cpp because I had to make a separate function for Wireless tranmission from RPI
+Desktop to Pi - wireless receive working
+4.) Check HIL test - wireless - WORKS!!!!!
+
+Ok I'm home now.
+
+HIL wired at home works. Btw. The RPi at home is an RPi3 and the RPi at work is a 4.
+
+Now testing wireless: Receive on Rpi did the weird thing that was happening yesterday.
+
+Reverting to simple tests for Wireless at home
+
+1.) Serial Test
+RPI to Desktop - works
+Desktop to RPI - does not work and gives me issues. 
+
+At this point this is just a wireless two way RPi3 communication issue and we don't need that for HIL because 
+
+A.) We're using an RPI4 from now on 
+B.) We're using hardline for HIL 
+C.) Telemetry at the moment is only 1 way
+
+Ok so we can proceed to HIL steps now.
+
+======================10/25/2022==============
+
+Alright we're working on HIL and it's time to work on works.tasks
+
+1.) First let's make sure HIL test is working. - That's working.
+2.) Alright time to have desktop send data 1 way to Rpi. - This is working now. Had to fix some thread locks but I got it.
+3.) Now it's time to have the RPi run the control loop with the receiver taking data - Ok this is working no problem but I found a bug unfortunately. Right now it looks like the RPY and basically all data in general is set by the onboard sensors. I need to find the code to ignore that when running in HIL because it needs to get data from the serial port. 
+4.) Update sensor data from Serial - code compiles no idea if it works. Just need to keep making progress. Ok so on my bike ride home I didn't like how the routine was running the poll routine for the sensors at all on HIL RPI. Everything should be emulated and the only thing the RPI should be doing is taking inputs and computing outputs. All the filtering and data processing needs to be done on the desktop. So.... I think we're ready to test the next step.
+5.) Let's go back to sending data 1 way to RPi and see if we're getting data properly
+
+Ok so Serial and HIL tests don't work. I'm at home with the wireless connection. I can get the Pi to send data to the computer but I can't send data from my computer over to the Pi
+
+Not sure why but it could be a lot of issues. It could be the pi itself or it could be wireless communication.
+
+So.....we need to test 2 things.
+
+1.) Can I send data wirelessly back and forth with the Rpi at work
+2.) If I bring the hardwire connection home can I get the home Rpi to send data back and forth
+
+======================10/20/2022==============
+
+Working on HIL and I'm running into a couple communications issues. Like lost packets and such.
+so.....
+
+let's see how everything has worked in the past
+
+1.) Full HIL between Processing on Desktop and Arduino - this was just an HIL demo
+In this routine Processing would send a string of ALL floats separated by commas. xxx,xxx,xxx,xxx
+The arduino would wait for serial to be available and it would read all the floats and then compute control and send it
+right back. 
+Arduino would read until it received a \n
+Processing would read until it received a \n
+The arduino would not run the control routine until it received a packet from processing.
+The processing code would read the serial over and over until it received data and then once it did it would send data back but it wouldn't send data again until it received a valid packet.
+
+2.) Full HIL between C++ on Desktop and Arduino - This was for JagSAT
+C++ on Desktop would send all numbers in the H:XXXXXXX format all at once and then wait for a response from the Arduino. The end of the HEX send would be a \n.
+The Arduino then reads all 6 variables at once and parses them all at once
+The arduino then sends back all hex vars back all at once
+The GetArray routine would read all data from the Arduino at once back to back to back with a for loop
+
+3.) RPi Telemetry C++ over to Processing ground station
+RPI sends all numbers all at once over wireless telemetry
+Processing would read a number at a time and grab the position of the variable to make sure it got placed in the right spot
+
+4.) RPi Telemetry C++ over to Python Ground Station
+Same as above except with Python
+
+Ok so this is what I want to do
+
+a.) Computer sends all numbers all at once to RPi
+b.) The RPi will then read each number one at a time and make sure it grabs the proper number for each position
+c.) Once the Rpi receives all numbers it will run the control loop and send back the numbers all at once
+d.) The computer will wait until it receives a valid response from the RPi before it sends again
+
+GOING BACK TO SERIAL TEST USING HARDWIRE
+
+1.) DESKTOP (C++) -> RPI (Python) - check
+2.) RPi (C++) -> DESKTOP (Python) - check
+3.) Rpi (C++) -> DESKTOP (C++) - check 
+4.) DESKTOP (C++) -> RPI (C++) - check but I need to redo everything because I made a ton of changes
+
+One issue I found was that setting the platform to DESKTOP changed something.
+Datalogger - DESKTOP flag not found
+MATLAB - DESKTOP flag not found
+mathp - DESKTOP flag not found
+Serial - DESKTOP flag found but no change would result since SIL is not set
+I2Cdev - DESKTOP flag not found
+UART - DESKTOP found but no change would result
+Util - DESKTOP flag not found
+main - DESKTOP flag not found
+
+Ok but I need to look for RPI flag then
+MATLAB - RPI not found
+mathp - RPI not found
+Serial - RPI found and it makes a huge difference
+I2Cdev - RPI not found
+UAR - RPI found but would not make a difference because functions not called
+Util - RPI not found
+main - RPI not found
+
+Ok I made a bunch of changes to Serial.cpp to make everything work so I need to start over
+
+1.) DESKTOP (C++) -> RPI (Python) - check
+2.) DESKTOP (C++) -> RPI (C++) - check
+3.) RPi (C++) -> DESKTOP (Python) - check
+4.) Rpi (C++) -> DESKTOP (C++) - check
+
+Alright let's head over to HIL and make sure that works. It works and HIL round trip test is working.
+
+======================10/9/2022==============
+
+Working on HIL. Added a bunch of work tasks into
+the Work_Tasks.tasks file. Hopefully that will keep me on track 
+
+Running simonly and the code is broken most likely from
+tuning gains below
+
+Ok actually it was because of the barometer calibration
+
+======================10/6/2022==============
+
+1.) Tested inner loop and it works.
+Note that barometer was biased by -33 meters. 
+2.) Fixed logic in controller.cpp to send negative numbers for icontrol
+3.) Added calibration step to barometer so you need to wait 5 seconds now before you fly.
+4.) Quite a North wind in Irvington. Did a South side bank at low speed and altitude. Lost lift and control and crashed into the ground. Meta 2 has been totaled. Motors, ESCs, servos and control rods all still in tact. Motor and ESC might be compromised but needs further testing. Airplane tail boom cracked in half and motor mount destroyed. Moving to Meta 1.
+5.) Flight test with Meta 1 was a success - Inner loop and velocity test success.
+6.) Altitude gains changed to kp = 1.0 and kd = 0.5. 
+Gains for altitude seem ok but might need ki gain for integral gain
+Since we calibrated the pressure at sea-level we really need to be flying a commanded 50 meters for alttiude
+also need to increase kp and ki on velocity controller
+Changed Velocity gains to kp = 120. and ki = 8.0
+Command altitude set to 50 meters
+With new gains on velocity and altitude command the pilot was capable of maintaining a circular loop at a somewhat constant heading. At one point the aircraft was flying into the wind and the aircraft slowed and lost altitude at which point the velocity controller increase and the aircraft began to climb. There was some overshoot so the aircraft controllers needed to slow and then pitch back down. The aircraft dove quite agressively but the aircraft saved itself and maintained an altitude that was still well above the ground.
+7.) Moving to heading controller
+Current gains are 
+  double kp = 0.4;
+  double kd = 0.25;
+  double ki = 0.02;
+Suggest setting ki = 0
+Flying with no ki did ok but the problem is that steady state error from the roll axis creeps in and the vehicle kept trying to fly to the right. Suggest adding ki back in but do it slowly at ki = 0.005
+
 ======================9/27/2022===============
 
 First flight test of heading loop resulted in significant oscillations
@@ -41,7 +312,6 @@ Current Status
 4.) Heading loop - needs tuning
 
 Back at the lab the code was merged. Unfortunately there is still a model mismatch from the GPS sense and model
-
 
 ======================9/20/2022===============
 

@@ -1,15 +1,3 @@
-HIL:
-
-  ✔ For HIL - use the HIL code from MultiSAT++ for FASTsim @done (22-05-24 18:50)
-
-  ✔ Once HIL mode works for SIM you can deprecate the HIL simulation in MultiSAT++ (See note below. Definitely not going to deprecate. I definitely want a copy. I think the point more is to try and get FASTKit to work like MultiSAT++ does for embedded Sims.) @done (22-05-24 18:54)
-  
-  ✔ MultiSAT++ simulation will still need copies of the C++ repo but as you make the Model=SAT mode more like MultiSAT++ you can deprecate this simulation. Still I would like to make sure I still have a running version of MultiSAT++ to work with in the event I do E-Sail simulations. @done (22-05-24 18:52)
-  
-  ☐ Create a script that sends data back and forth and test in hardware
-  
-  ✔ Add hooks to FASTSim that compile DESKTOP + HIL and RPI/Arduino HIL that sends sensor data and control commands back and forth. The RPI/HIL version will accept a polluted state vector from the computer and run that through the control algorithm and then pass back the control commands to the integrator. So serialListens and SerialResponds etc will need to be written to send data back and forth @done (22-05-24 18:50)
-
 SPEEDING UP FASTkit ON PI:
 
   ✔ Create a scheduler for all sensors. @done (22-05-17 20:21)
@@ -39,16 +27,16 @@ COMPLEX AUTOPILOT LOOP:
 
   ☐ Test autopilot control laws in SIL mode with Sensor errors
 
-  ☐ Test autopilot controls laws in HIL mode
+  ✔ Test autopilot controls laws in HIL mode @done (22-11-11 14:39)
 
   ☐ Test autopilot controls laws in HIL mode with Sensor Errors
 
   ☐ Need to actually measure the values of bias, noise and std otherwise all the simulations above are kind of pointless
 
-  ☐ Test autopilot on real systems - RCIO needs to be able to handle where to send ESC signals depending on #define in Makefile
-    ☐ Heading Angle Estimation and make sure we are adequately estimating heading in real life
-    ☐ (phi from accel only, theta from accel only, heading from mag only, Euler from gyro only, filtered roll and pitch from gyro and accel, heading from gps, filtered heading from mag, gyro, gps, Euler from AHRS, heading from AHRS and GPS)
-    ☐ Test velocity controller in real life
+  ✔ Test autopilot on real systems - RCIO needs to be able to handle where to send ESC signals depending on #define in Makefile @done (22-11-10 20:59)
+    ✔ Heading Angle Estimation and make sure we are adequately estimating heading in real life @done (22-11-10 21:00)
+    ✔ (phi from accel only, theta from accel only, heading from mag only, Euler from gyro only, filtered roll and pitch from gyro and accel, heading from gps, filtered heading from mag, gyro, gps, Euler from AHRS, heading from AHRS and GPS) @done (22-11-10 20:59)
+    ✔ Test velocity controller in real life @done (22-11-10 21:00)
     ☐ Test waypoint contorller in real life
 
   FASTPILOT:
@@ -59,17 +47,21 @@ COMPLEX AUTOPILOT LOOP:
 
 META:
 
+  ☐ Barometer calibration has screwed up the z altitude before calibration. Need a fix here
+
   ☐ SysID of airplane (Flights + simulation)
 
-  ☐ Simulation of waypoint flights of single airplane
+  ✔ Simulation of waypoint flights of single airplane @done (22-11-10 21:00)
 
   ☐ Waypoint flights of single airplane
 
-  ☐ Simulation of Meta waypoint controller
+  ✔ Simulation of Meta waypoint controller @done (22-11-10 21:00)
 
   ☐ Meta flying waypoints to compare efficiency - Maxwell Cobar
 
   ☐ Disconnecting and reconnecting - this would be insane.
+
+  ☐ Two Way communication to update waypoints on the fly - Note that sending data from the Rpi to Desktop is working but Desktop to Rpi is broken if you use an Rpi3. This broke sometime between FASTPilot and FASTKit so circa 2019 to 2022. 
 
 WOODEN DRONE:
 
@@ -235,6 +227,46 @@ RENDERING:
     ✔ X8 @done (21-11-06 11:30)
 
   ☐ How do you feel about updating OpenGL rendering environment to Unreal engine or something like Godot or even Unity???
+
+HIL:
+
+  ✔ For HIL - use the HIL code from MultiSAT++ for FASTsim @done (22-05-24 18:50)
+
+  ✔ Once HIL mode works for SIM you can deprecate the HIL simulation in MultiSAT++ (See note below. Definitely not going to deprecate. I definitely want a copy. I think the point more is to try and get FASTKit to work like MultiSAT++ does for embedded Sims.) @done (22-05-24 18:54)
+  
+  ✔ MultiSAT++ simulation will still need copies of the C++ repo but as you make the Model=SAT mode more like MultiSAT++ you can deprecate this simulation. Still I would like to make sure I still have a running version of MultiSAT++ to work with in the event I do E-Sail simulations. @done (22-05-24 18:52)
+  
+  ✔ Add hooks to FASTSim that compile DESKTOP + HIL and RPI/Arduino HIL that sends sensor data and control commands back and forth. The RPI/HIL version will accept a polluted state vector from the computer and run that through the control algorithm and then pass back the control commands to the integrator. So serialListens and SerialResponds etc will need to be written to send data back and forth @done (22-05-24 18:50)
+
+  ✔ Testing sending sense data 1 way from desktop to Rpi - just have RPI print the data to the screen to be sure data is transmitting 1 way @done (22-10-25 12:25)
+
+  ✔ Have the Rpi print the control matrix every time it receives new data that way you can see the update in the control signals based on the inputs and do this with the receiver taking data so you can fly the plan manually @done (22-10-25 12:53)
+
+  ✔ Verify that HIL and Serial tests are still functioning at Work @done (22-10-26 12:49)
+
+  ✔ Can I send data wirelessly back and forth with the Rpi at work @done (22-10-26 12:49)
+
+  ✔ If I bring the hardwire connection home can I get the home Rpi to send data back and forth @done (22-10-26 12:49)
+
+  ✔ Then finally test wireless at home @done (22-10-26 13:05)
+
+  ✔ Fix the problem where RPI reads the sensors from the Navio rather than the Serial port @done (22-10-27 10:17)
+
+  ✔ Go back and make sure that when you send data to the RPi the values update @done (22-11-08 07:48)
+
+  ✔ Have the Rpi send data 1 way to the desktop just like you did with the desktop but do this with the receiver taking data so you can fly the airplane manually @done (22-11-08 11:56)
+
+  ✔ Create a loop where Desktop sends data to RPi and then waits for a valid update from Rpi @done (22-11-09 10:50)
+
+  ✔ Create a loop on desktop where it waits for signal from desktop and then pushes data back to Desktop @done (22-11-09 10:50)
+
+  ✔ Decrease HILRATE until the code can't run any faster @done (22-11-10 20:56)
+
+  ✔ Run Tank in SIMONLY @done (22-11-11 10:09)
+  ✔ Run Tank in SIL @done (22-11-11 10:09)
+  ✔ Run Tank in HIL w/o telemetry but return rates back to normal @done (22-11-11 10:09)
+  ✔ Run Tank in HIL w/ telemetry @done (22-11-11 10:09)
+  ✔ Merge HIL branch @done (22-11-11 10:42)
 
 REACH:
 

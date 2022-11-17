@@ -74,22 +74,24 @@ void Datalogger::setLogVars(int num) {
 }
 
 void Datalogger::appendheader(char* header) {
-  printf("Appending Header = %s \n",header);
   logheader[headerctr] = header;
   headerctr++;
+  //printf("Appending Header = %s Header Counter = %d \n",header,headerctr);
 }
 
 void Datalogger::appendheaders(char **headers,int length){
-  printf("Appending Headers \n");
+  //printf("Appending Headers: ");
   for (int i = 0;i<length;i++) {
-    printf("%s \n",headers[i]);
     logheader[headerctr] = headers[i];
     headerctr++;
+    //printf("%s Header Counter = %d \n",headers[i],headerctr);
   }
+  //printf("Counter = %d \n",headerctr);
 }
 
 void Datalogger::printheaders() {
   headerctr = 0;
+  printf("Logging Headers to Data File \n");
   for (int i = 0;i<total_length;i++) {
     fprintf(outfile,"%s ",logheader[i]);
     //printf("%s ",logheader[i]);
@@ -112,6 +114,11 @@ void Datalogger::append(MATLAB in) {
 //Print functions
 void Datalogger::printvar(double var) {
   fprintf(outfile,"%lf,",var);
+  flush();
+}
+
+void Datalogger::printint(int var) {
+  fprintf(outfile,"%d,",var);
   flush();
 }
 

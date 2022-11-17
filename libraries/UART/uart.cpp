@@ -16,7 +16,8 @@ void UART::TelemInit(int numtelem) {
   //We now set up communications depending on the type of comms we want
   #ifdef RPI
   //Telemetry happens here
-  comms.SerialInit("/dev/ttyAMA0",baudRate);
+  printf("SETTING UP TELEMETRY \n");
+  comms.SerialInitWireless("/dev/ttyAMA0",baudRate);
   #endif
 
   #ifdef DESKTOP
@@ -43,7 +44,9 @@ void UART::HILInit(int numsens,int numc) {
   //We now set up communications depending on the type of comms we want
   #ifdef RPI
   //HIL comms happens here
+  printf("SETTING UP HIL COMMS \n");
   hilcomms.SerialInit("/dev/ttyUSB0",baudRate);
+  //hilcomms.SerialInit("/dev/ttyAMA0",baudRate);
   #endif
 
   #ifdef DESKTOP
@@ -61,14 +64,14 @@ void UART::sendSense(MATLAB uart_sense_matrix) {
     uart_sense_array[i-1] = uart_sense_matrix.get(i,1);
   }
   //Then send it over UART
-  hilcomms.SerialSendArray(uart_sense_array,uart_sense_matrix.len(),1);
+  hilcomms.SerialSendArray(uart_sense_array,uart_sense_matrix.len(),0);
   //PAUSE();
 }
 
 
 void UART::readSense(MATLAB uart_sense_matrix) {
   //This function will read the sense array over UART
-  hilcomms.SerialGetArray(uart_sense_array,uart_sense_matrix.len(),1);
+  hilcomms.SerialGetArray(uart_sense_array,uart_sense_matrix.len(),0);
   //It will then overwrite the sense matrix for use elsewhere
   for (int i = 1;i<=uart_sense_matrix.len();i++) {
     uart_sense_matrix.set(i,1,uart_sense_array[i-1]);

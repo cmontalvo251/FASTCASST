@@ -19,8 +19,8 @@ void controller::init(MATLAB in_configuration_matrix) {
 }
 
 void controller::set_defaults() {
-  control_matrix.set(1,1,0.0);
-  control_matrix.set(2,1,0.0);
+  control_matrix.mult_eq(0);
+  control_matrix.plus_eq(STICK_MID);
 }
 
 void controller::print() {
@@ -33,6 +33,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //The sensor state is a 12x1 of standard 6DOF sensors
   //At a minimum you need to just feed through the rxcomms into the ctlcomms
   //Which means you can't have more control signals than receiver signals
+  
   //Default Control Signals
   set_defaults();
 
@@ -48,63 +49,87 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   double rudder = rx_array[3];
   double autopilot = rx_array[4];
   bool icontrol = 0;
-  //printf("autopilot = %lf \n",autopilot);
 
-  switch (CONTROLLER_FLAG) {
-  case -1:
-    //User decides
+  //Check for user controlled
+  if (CONTROLLER_FLAG < 0) {
     if (autopilot > STICK_MID) {
-      icontrol = 1;
+      icontrol = -CONTROLLER_FLAG;
     } else {
       icontrol = 0;
     }
-    break;
-  case 0:
-    //Always off
-    icontrol = 0;
-    break;
-  case 1:
-    //Always on
-    icontrol = 1;
-    break;
+  } else {
+    icontrol = CONTROLLER_FLAG;
   }
 
-  //Then you can run any control loop you want.
-  if (icontrol) {
-    //printf("RUNNING DETUMBLING \n");
-    //Extract PQR in (deg/s)
-    //sense_matrix.disp();
-    pqr.vecset(1,3,sense_matrix,10);
-    //pqr.disp();
-    //Convert to (rad/s)
-    //pqr.mult_eq(PI/180.0);
-    //pqr.disp();
-    desired_moments.vecset(1,3,pqr,1);
-    //desired_moments.disp();
-    desired_moments.mult_eq(pwmC);
-    //desired_moments.disp();
-    //Extract Magnetomter Readings
-    //mxyz.vecset(1,3,sense_matrix,13);
-    //mxyz.disp();
-    //mu_ideal = k*(omega cross B)
-    //desired_moments.cross(pqr,mxyz);
-    //desired_moments.mult_eq(KMAG);
-    //Convert to currents
-    //desired_moments.mult_eq(1.0/(NUMTURNS*AREA));
-    //send to ctlcomms (but might not be 3 actuators)
-    for (int i = 0;i<NUMSIGNALS;i++) {
-      control_matrix.set(i+1,1,desired_moments.get(i+1,1));
-    }
-    //Saturation on current
-    //double sum = control_matrix.abssum();
-    //if (sum > MAXCURRENT) {
-    //control_matrix.mult_eq(MAXCURRENT/sum);
-      // for (int i = 0;i<3;i++) {
-      //   double val = ctlcomms.get(i+1,1);
-      //   ctlcomms.set(i+1,val/sum*maxcurrent);
-      // }
-    //}
-  } 
-  //control_matrix.disp();
-  //printf("SUM = %lf \n",ctlcomms.abssum());
+  //Aircraft Control cases
+  // 0 = No Control
+  // 1 = Proportional Control
+  // 2 = Feedback Linearized Control
+  // 3 = Two-Stage Control
+  //Initialize commands
+  p_command = 0.0;
+  q_command = 0.0;
+  r_command = 0.0;
+
+  switch (icontrol) {
+    //case 3:
+      //Two-Stage
+      //TwoStageLoop(sense_matrix);
+      //break;
+    //case 2:
+      //Feedback Linearized
+      //FeedbackLinearizedLoop(sense_matrix);
+      //break;
+    case 1:
+      //Proportional
+      ProportionalLoop(sense_matrix);
+      break;
+    case 0:
+      //No Control
+      //sense_matrix.disp();
+      //pqr.vecset(1,3,sense_matrix,10);
+      //pqr.disp();
+      //desired_moments.vecset(1,3,pqr,1);
+      //desired_moments.disp();
+      desired_moments.mult_eq(0.0);
+      //desired_moments.disp();
+      desired_moments.plus_eq(STICK_MID);
+      //desired_moments.disp();
+      for (int i = 0;i<NUMSIGNALS;i++) {
+        control_matrix.set(i+1,1,desired_moments.get(i+1,1));
+      }
+      //control_matrix.disp();
+      break;
+  }
+}
+
+//void controller::TwoStageLoop(MATLAB sense_matrix) {}
+
+//void controller::FeedbackLinearizedLoop(MATLAB sense_matrix) {}
+
+void controller::ProportionalLoop(MATLAB sense_matrix) {
+  double kpp = -0.2;
+  double kpq = -0.2;
+  double kpr = -0.2;
+  pqr.vecset(1,3,sense_matrix,10);
+  double p = pqr.get(1,1);
+  double q = pqr.get(2,1);
+  double r = pqr.get(3,1);
+  pqr.disp();
+  //Calculate Error
+  double p_error = p - p_command;
+  double q_error = q - q_command;
+  double r_error = r - r_command;
+  //Apply P Control
+  desired_moments.set(1,1,kpp*p_error);
+  desired_moments.set(2,1,kpq*q_error);
+  desired_moments.set(3,1,kpr*r_error);
+  //desired_moments.disp();
+  desired_moments.mult_eq(pwmC);
+  //desired_moments.disp();
+  desired_moments.plus_eq(STICK_MID);
+  //desired_moments.disp();
+  for (int i = 0;i<NUMSIGNALS;i++) {
+    control_matrix.set(i+1,1,desired_moments.get(i+1,1));
+  }
 }

@@ -20,13 +20,9 @@ tend = -99
 #Run code
 os.system('./clean_logs')
 os.system('rm simonly.exe')
-<<<<<<< HEAD
+#os.system('make clean')
 os.system('make simonly MODEL="cubesat"')
 os.system('./simonly.exe cubesat/')
-=======
-os.system('make simonly MODEL="apprentice"')
-os.system('./simonly.exe apprentice/')
->>>>>>> 68346c1d5da0e27d12fc620b20b2460ff3171501
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File

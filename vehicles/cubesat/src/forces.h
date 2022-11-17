@@ -22,7 +22,8 @@ class forces {
  private:
   //You can put any private functions or vars in here that you like but it 
   //must adhere to the standards below
-  MATLAB MMTVEC;
+  MATLAB pqr_PWM;
+  double dOmega_max = 10,dPWM = (STICK_MAX-STICK_MIN),IpwmC = (dOmega_max/dPWM);
  public:
   //These are 3x1 MATLAB vectors that must be in units of Newtons
   //and in the body frame

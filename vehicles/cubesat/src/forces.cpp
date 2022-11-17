@@ -15,7 +15,7 @@ forces::forces() {
   //The constructor must create these 3x1 vectors
   FB.zeros(3,1,"Force in Body Frame");
   MB.zeros(3,1,"Moment in Body Frame");
-  MMTVEC.zeros(3,1,"Magnetometer Momemt");
+  pqr_PWM.zeros(3,1,"PQR converted to PWM");
 }
 
 void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[],environment env) {
@@ -23,22 +23,19 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   //You can do whatever you want in here but you must create those two vectors.
   FB.mult_eq(0); //Zero these out just to make sure something is in here
   MB.mult_eq(0);
-  
-  //This is where magnetorquer torque is computed
-  //actuators.disp();
-  //Cannot overwrite because actuators might be less than 3
-  MMTVEC.mult_eq(0);
-  //MMTVEC.overwrite(actuators);
+
+  //state.disp();
   for (int i = 0;i<NUMTORQUERS;i++){
-    //printf("%d ",pwm_array[i]);
-    MMTVEC.set(i+1,1,pwm_array[i]);
+    pqr_PWM.set(i+1,1,pwm_array[i]);
+    //printf("pwm_array = %d \n",pwm_array[i]);
   }
-  //printf("\n");
-  MMTVEC.mult_eq(AREA*NUMTURNS);
-  //Once you have the magnetic moment and magnetic field you can compute the total
+  pqr_PWM.minus_eq(STICK_MID);
+  pqr_PWM.mult_eq(IpwmC);
+  //pqr_PWM.disp();
+  
+  //PAUSE();
+  
   //torque placed on the satellite
-  MB.cross(MMTVEC, env.BVECB_Tesla);
+  MB.vecset(1,3,pqr_PWM,1);
   //MB.disp();
 }
-
-

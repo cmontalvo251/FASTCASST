@@ -221,12 +221,8 @@ void loop() {
       hw.rc.out.print();
       //LAT LON PRESSURE ALTITUDE
       //#ifdef AUTO
-<<<<<<< HEAD
       printf("LL(B)H %lf %lf %lf ",hw.sense.satellites.latitude,hw.sense.satellites.longitude,hw.sense.atm.altitude);
       printf("Head,Comp %lf %lf ",hw.sense.satellites.heading,hw.sense.compass);
-=======
-      printf(" %lf %lf %lf %lf ",hw.sense.satellites.latitude,hw.sense.satellites.longitude,hw.sense.atm.altitude,hw.sense.compass);
->>>>>>> 68346c1d5da0e27d12fc620b20b2460ff3171501
       //#else
       //XYZ
       //printf(" %lf %lf %lf ",hw.sense.satellites.X,hw.sense.satellites.Y,hw.sense.atm.altitude);

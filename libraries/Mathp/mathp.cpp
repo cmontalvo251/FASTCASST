@@ -102,6 +102,14 @@ double out = atan2(spsi*cpsic-cpsi*spsic,cpsi*cpsic+spsi*spsic);
 return out;
 }
 
+double saturation(double input,double max_value) {
+  if (abs(input) > max_value) {
+    return copysign(1.0,input)*max_value;
+  } else {
+    return input;
+  }
+}
+
 double sat(double input,double epsilon,double scalefactor)
 {
   if (input > epsilon) {

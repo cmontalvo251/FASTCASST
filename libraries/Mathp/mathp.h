@@ -50,6 +50,7 @@ void ClearHome();
 double delpsi(double,double);
 double randnum(double,double);
 void printdouble(double,char*);
+double saturation(double,double);
 double delpsi(double,double);
 double sat(double,double,double);
 void ConvertXYZ2LLH(double XYZ[],double LLH[],double X_origin,double Y_origin);

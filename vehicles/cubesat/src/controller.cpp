@@ -124,6 +124,16 @@ void controller::ProportionalLoop(MATLAB sense_matrix) {
   desired_moments.set(1,1,kpp*p_error);
   desired_moments.set(2,1,kpq*q_error);
   desired_moments.set(3,1,kpr*r_error);
+
+  ///MAXIMUM MOMENT
+  double max_moment = 0.1;
+
+  for (int i = 0;i<3;i++) {
+    double input = desired_moments.get(i+1,1);
+    double output = saturation(input,max_moment);
+    desired_moments.set(i+1,1,output);
+  }
+
   //desired_moments.disp();
   desired_moments.mult_eq(pwmC);
   //desired_moments.disp();

@@ -128,7 +128,7 @@ void controller::ProportionalLoop(MATLAB sense_matrix) {
   ///MAXIMUM MOMENT
   double max_moment = 0.1;
 
-  for (int i = 0;i<3;i++) {
+  for (int i = 0;i<NUMSIGNALS;i++) {
     double input = desired_moments.get(i+1,1);
     double output = saturation(input,max_moment);
     desired_moments.set(i+1,1,output);

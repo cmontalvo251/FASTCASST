@@ -102,6 +102,28 @@ plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 
+###JUST FOR CUBESAT PLOT MOMENTS
+STICK_MAX = 2016
+STICK_MID = 1500
+STICK_MIN = 992
+dOmega_max = 10
+dPWM = (STICK_MAX-STICK_MIN)
+IpwmC = (dOmega_max/dPWM)
+control_signals = sense_data[istart_sense:iend_sense,31:34]
+moments = (control_signals - STICK_MID)*IpwmC
+fig = plt.figure()    
+plti = fig.add_subplot(1,1,1)
+#plti.plot(sense_time[istart_sense:iend_sense],control_signals)
+axis = ['X','Y','Z']
+for i in range(0,3):
+    plti.plot(sense_time[istart_sense:iend_sense],moments[:,i],label=axis[i])
+plti.grid()
+plti.legend()
+plti.set_xlabel('Time (sec)')
+#plti.set_ylabel('Control Signals (us)')
+plti.set_ylabel('Moments (N-m)')
+pp.savefig()
+
 #Close file
 datafile.close()
 #Close PDF

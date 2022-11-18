@@ -108,14 +108,14 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 //void controller::FeedbackLinearizedLoop(MATLAB sense_matrix) {}
 
 void controller::ProportionalLoop(MATLAB sense_matrix) {
-  double kpp = -0.2;
+  double kpp = -0.02;
   double kpq = -0.2;
-  double kpr = -0.2;
+  double kpr = -0.05;
   pqr.vecset(1,3,sense_matrix,10);
   double p = pqr.get(1,1);
   double q = pqr.get(2,1);
   double r = pqr.get(3,1);
-  pqr.disp();
+  //pqr.disp();
   //Calculate Error
   double p_error = p - p_command;
   double q_error = q - q_command;

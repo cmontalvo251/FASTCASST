@@ -18,6 +18,43 @@ double ConvertZ2Pressure(double Z) {
   return pressure;
 }
 
+void ConvertLLH2XYZ(double XYZ[],double LLH[],double X_origin,double Y_origin){
+  //Extract LLH
+  double latitude = LLH[0];
+  double longitude = LLH[1];
+  double altitude = LLH[2];
+  ///CONVERT LAT LON TO METERS
+  double X,Y,Z;
+  Y = (longitude - Y_origin)*GPSVAL*cos(X_origin*DEG2RAD);  
+  X = (latitude - X_origin)*GPSVAL;
+  Z = -altitude;
+  //Populate XYZ matrix
+  XYZ[0] = X;
+  XYZ[1] = Y;
+  XYZ[2] = Z;
+  //printf("ConvertLLH2XY: %lf %lf %lf %lf \n",X,Y,latitude,longitude);
+}
+
+void ConvertLLH2XYZSPHERICAL(double XYZ[],double LLH[]) {
+  //Extract LLH
+  double latitude = LLH[0];
+  double longitude = LLH[1];
+  double altitude = LLH[2];
+  //Compute spherical coordinates
+  double thetaE = (90.0 - latitude)*PI/180.0;
+  double psiE = longitude*PI/180.0;
+  double rho = altitude + REARTH;
+  ///CONVERT LAT LON TO METERS
+  double X,Y,Z; 
+  X = rho*sin(thetaE)*cos(psiE);
+  Y = rho*sin(thetaE)*sin(psiE);
+  Z = rho*cos(thetaE);
+  //Populate XYZ matrix
+  XYZ[0] = X;
+  XYZ[1] = Y;
+  XYZ[2] = Z;
+}
+
 void ConvertXYZ2LLHSPHERICAL(double XYZ[],double LLH[]) {
   double X = XYZ[0];
   double Y = XYZ[1];

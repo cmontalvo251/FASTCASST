@@ -4,5 +4,5 @@
 #define NUMTURNS 84
 #define AREA 0.02
 #define MAXCURRENT 0.12
-#define NUMTORQUERS 2 //X,Y no Z
+#define NUMTORQUERS 3 //X,Y no Z
 #endif 

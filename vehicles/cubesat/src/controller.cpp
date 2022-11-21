@@ -17,6 +17,29 @@ void controller::init(MATLAB in_configuration_matrix) {
   mxyz.zeros(3,1,"MXYZ");
   desired_moments.zeros(NUMSIGNALS,1,"desired moment");
   fully_controlled.zeros(3,1,"fully controlled");
+  //FEEDBACK LIN
+  gamma.zeros(3,1,"Gamma for FL");
+  I.zeros(3,3,"CONTROLLER INERTIA");
+  I_pqr.zeros(3,1,"I*pqr");
+  I_gamma.zeros(3,1,"I*gamma");
+  pqrskew_I_pqr.zeros(3,1,"pqr x I*pqr");
+  double Ixx = in_configuration_matrix.get(13,1);
+  double Iyy = in_configuration_matrix.get(14,1);
+  double Izz = in_configuration_matrix.get(15,1);
+  I.set(1,1,Ixx);
+  I.set(2,2,Iyy);
+  I.set(3,3,Izz);
+  if (in_configuration_matrix.length() > 15) {
+    double Ixy = in_configuration_matrix.get(16,1);
+    double Ixz = in_configuration_matrix.get(17,1);
+    double Iyz = in_configuration_matrix.get(18,1);
+    I.set(1,2,Ixy);
+    I.set(2,1,Ixy);
+    I.set(1,3,Ixz);
+    I.set(3,1,Ixz);
+    I.set(2,3,Iyz);
+    I.set(3,2,Iyz);
+  }
 }
 
 void controller::set_defaults() {
@@ -49,7 +72,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   double elevator = rx_array[2];
   double rudder = rx_array[3];
   double autopilot = rx_array[4];
-  bool icontrol = 0;
+  int icontrol = 0;
 
   //Check for user controlled
   if (CONTROLLER_FLAG < 0) {
@@ -61,6 +84,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   } else {
     icontrol = CONTROLLER_FLAG;
   }
+  //printf("CONTROLLER FLAG = %d \n",CONTROLLER_FLAG);
 
   //Aircraft Control cases
   // 0 = No Control
@@ -77,13 +101,15 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //Two-Stage
       //TwoStageLoop(sense_matrix);
       //break;
-    //case 2:
+    case 2:
       //Feedback Linearized
-      //FeedbackLinearizedLoop(sense_matrix);
-      //break;
+      FeedbackLinearizedLoop(sense_matrix);
+      //printf("FL \n");
+      break;
     case 1:
       //Proportional
       ProportionalLoop(sense_matrix);
+      //printf("PID \n");
       break;
     case 0:
       //No Control
@@ -100,13 +126,45 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
         control_matrix.set(i+1,1,desired_moments.get(i+1,1));
       }
       //control_matrix.disp();
+      //printf("MANUAL CONTROL \n");
       break;
   }
 }
 
 //void controller::TwoStageLoop(MATLAB sense_matrix) {}
 
-//void controller::FeedbackLinearizedLoop(MATLAB sense_matrix) {}
+void controller::FeedbackLinearizedLoop(MATLAB sense_matrix) {
+  double kpp = -2.0;
+  double kpq = -2.0;
+  double kpr = -2.0;
+  pqr.vecset(1,3,sense_matrix,10);
+  double p = pqr.get(1,1);
+  double q = pqr.get(2,1);
+  double r = pqr.get(3,1);
+  //pqr.disp();
+  //Calculate Error
+  double p_error = p - p_command;
+  double q_error = q - q_command;
+  double r_error = r - r_command;
+  //GAMMA
+  gamma.set(1,1,kpp*p_error);
+  gamma.set(2,1,kpq*q_error);
+  gamma.set(3,1,kpr*r_error);
+  // I * gamma + omega cross I omega 
+  //I.disp();
+  //gamma.disp();
+  I_gamma.mult(I,gamma);
+  //I_gamma.disp();
+  I_pqr.mult(I,pqr);
+  //I_pqr.disp();
+  pqrskew_I_pqr.cross(pqr,I_pqr);
+  //pqrskew_I_pqr.disp();
+  I_gamma.plus_eq(pqrskew_I_pqr);
+  fully_controlled.overwrite(I_gamma);
+  //fully_controlled.disp();
+
+  CleanControl();
+}
 
 void controller::ProportionalLoop(MATLAB sense_matrix) {
   double kpp = -0.02;
@@ -126,6 +184,10 @@ void controller::ProportionalLoop(MATLAB sense_matrix) {
   fully_controlled.set(2,1,kpq*q_error);
   fully_controlled.set(3,1,kpr*r_error);
 
+  CleanControl();
+}
+
+void controller::CleanControl() {
   //Apply P Control
   for (int i = 0;i<NUMSIGNALS;i++) {
     desired_moments.set(i+1,1,fully_controlled.get(i+1,1));
@@ -148,4 +210,5 @@ void controller::ProportionalLoop(MATLAB sense_matrix) {
   for (int i = 0;i<NUMSIGNALS;i++) {
     control_matrix.set(i+1,1,desired_moments.get(i+1,1));
   }
+  //control_matrix.disp();
 }

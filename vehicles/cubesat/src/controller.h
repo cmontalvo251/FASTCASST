@@ -11,7 +11,7 @@
 
 class controller {
 private:
-  MATLAB pqr,mxyz,desired_moments,fully_controlled;
+  MATLAB pqr,mxyz,desired_moments,fully_controlled,gamma,I,I_pqr,I_gamma,pqrskew_I_pqr;
   double p_command,r_command,q_command;
   double elapsedTime = 0,lastTime=0; //These are used to keep track of time elapsed.
   double delOmega_max = 10,delPWM = (STICK_MAX-STICK_MIN),pwmC = (delPWM/delOmega_max);
@@ -20,6 +20,7 @@ private:
   void ProportionalLoop(MATLAB);
   void FeedbackLinearizedLoop(MATLAB);
   void TwoStageLoop(MATLAB);
+  void CleanControl();
 public:
   int NUMSIGNALS=NUMTORQUERS; //Number set in params.h
   MATLAB control_matrix; //This is a vector of TAERA1A2 in PWM signals

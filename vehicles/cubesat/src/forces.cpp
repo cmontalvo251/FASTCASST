@@ -25,6 +25,8 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   MB.mult_eq(0);
 
   //state.disp();
+  pqr_PWM.mult_eq(0);
+  pqr_PWM.plus_eq(STICK_MID);
   for (int i = 0;i<NUMTORQUERS;i++){
     pqr_PWM.set(i+1,1,pwm_array[i]);
     //printf("pwm_array = %d \n",pwm_array[i]);

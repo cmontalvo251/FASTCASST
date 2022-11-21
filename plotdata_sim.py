@@ -109,14 +109,20 @@ STICK_MIN = 992
 dOmega_max = 10
 dPWM = (STICK_MAX-STICK_MIN)
 IpwmC = (dOmega_max/dPWM)
-control_signals = sense_data[istart_sense:iend_sense,31:34]
+try:
+    control_signals = sense_data[istart_sense:iend_sense,31:34]
+except:
+    control_signals = sense_data[istart_sense:iend_sense,31:33]
 moments = (control_signals - STICK_MID)*IpwmC
 fig = plt.figure()    
 plti = fig.add_subplot(1,1,1)
 #plti.plot(sense_time[istart_sense:iend_sense],control_signals)
 axis = ['X','Y','Z']
-for i in range(0,3):
-    plti.plot(sense_time[istart_sense:iend_sense],moments[:,i],label=axis[i])
+try:
+    for i in range(0,3):
+        plti.plot(sense_time[istart_sense:iend_sense],moments[:,i],label=axis[i])
+except:
+    pass
 plti.grid()
 plti.legend()
 plti.set_xlabel('Time (sec)')

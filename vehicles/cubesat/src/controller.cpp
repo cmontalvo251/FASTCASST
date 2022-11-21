@@ -15,7 +15,8 @@ void controller::init(MATLAB in_configuration_matrix) {
   printf("Controller Setup \n");
   pqr.zeros(3,1,"PQR");
   mxyz.zeros(3,1,"MXYZ");
-  desired_moments.zeros(3,1,"desired moment");
+  desired_moments.zeros(NUMSIGNALS,1,"desired moment");
+  fully_controlled.zeros(3,1,"fully controlled");
 }
 
 void controller::set_defaults() {
@@ -120,10 +121,15 @@ void controller::ProportionalLoop(MATLAB sense_matrix) {
   double p_error = p - p_command;
   double q_error = q - q_command;
   double r_error = r - r_command;
+  //FULLY CONTORLLED MATRIX
+  fully_controlled.set(1,1,kpp*p_error);
+  fully_controlled.set(2,1,kpq*q_error);
+  fully_controlled.set(3,1,kpr*r_error);
+
   //Apply P Control
-  desired_moments.set(1,1,kpp*p_error);
-  desired_moments.set(2,1,kpq*q_error);
-  desired_moments.set(3,1,kpr*r_error);
+  for (int i = 0;i<NUMSIGNALS;i++) {
+    desired_moments.set(i+1,1,fully_controlled.get(i+1,1));
+  }
 
   ///MAXIMUM MOMENT
   double max_moment = 0.1;

@@ -12,7 +12,7 @@
 3.0	 !Mass (kg)
 0.05    !Ixx (kg-m^2)
 0.011    !Iyy (kg-m^2)
-0.09   !Izz (kg-m^2)
+0.09  !Izz (kg-m^2)
 0.000    !Ixy (kg-m^2)
 0.000    !Ixz (kg-m^2)
 0.000    !Iyz (kg-m^2)

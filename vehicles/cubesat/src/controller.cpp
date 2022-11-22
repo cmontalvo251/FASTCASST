@@ -130,10 +130,34 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       break;
   }
 }
+/*
+void controller::TwoStageLoop(MATLAB sense_matrix) {
+  //Fully Actuated:
+  //1U -
+  //2U,upright -
+  //2U,sideways -
+  //6U -
+  //Underactuated:
+  //1U -
+  //2U,upright -
+  //2U,sideways -
+  //6U -
 
-//void controller::TwoStageLoop(MATLAB sense_matrix) {}
+  CleanControl();
+}
+*/
 
 void controller::FeedbackLinearizedLoop(MATLAB sense_matrix) {
+  //Fully Actuated:
+  //1U -
+  //2U,upright -
+  //2U,sideways -
+  //6U -
+  //Underactuated:
+  //1U -
+  //2U,upright -
+  //2U,sideways -
+  //6U - 
   double kpp = -2.0;
   double kpq = -2.0;
   double kpr = -2.0;
@@ -167,9 +191,19 @@ void controller::FeedbackLinearizedLoop(MATLAB sense_matrix) {
 }
 
 void controller::ProportionalLoop(MATLAB sense_matrix) {
-  double kpp = -0.02;
-  double kpq = -0.2;
-  double kpr = -0.05;
+  //Fully Actuated:
+  //1U - -0.1, -0.17,-0.15
+  //2U,upright -
+  //2U,sideways -
+  //6U -
+  //Underactuated:
+  //1U -
+  //2U,upright -
+  //2U,sideways -
+  //6U - 
+  double kpp = -0.1;
+  double kpq = -0.17;
+  double kpr = -0.15;
   pqr.vecset(1,3,sense_matrix,10);
   double p = pqr.get(1,1);
   double q = pqr.get(2,1);
@@ -193,8 +227,13 @@ void controller::CleanControl() {
     desired_moments.set(i+1,1,fully_controlled.get(i+1,1));
   }
 
-  ///MAXIMUM MOMENT
-  double max_moment = 0.1;
+  //MAXIMUM MOMENT
+  //Using VACCO's Integrated Prop System
+  //https://cubesat-propulsion.com/integrated-propulsion-system/
+  //Max Thrust = 2N
+  //Moment Arm = sqrt(1.5U^2 + 0.5U^2) =  sqrt(0.15^2 + 0.05^2)m
+  //Max Moment = Max Thrust * Moment Arm
+  double max_moment = 0.32; //Nm
 
   for (int i = 0;i<NUMSIGNALS;i++) {
     double input = desired_moments.get(i+1,1);

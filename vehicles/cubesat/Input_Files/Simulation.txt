@@ -1,4 +1,4 @@
-10.0	!Final Integration time 
+5700.0	!Final Integration time 
 0.01 	!Integration rate // seconds
 6871393	!Initial X Position (m) (Radius of Earth = 6371393)
 0.0	!Initial Y Position (m) ///Sixdof Model with quaternions
@@ -11,8 +11,8 @@
 7616.18	!Initial Ybody Velocity (m/s) (For eq circular orbit = v = sqrt(mu/r))
 0.0	!Initial Zbody Velocity (m/s) (500 km is 7,616.18 m/s)
 0.2	!Initial Roll Rate (rad/s)
-0.15	!Initial Pitch Rate (rad/s)
-0.1	!Initial Yaw Rate (rad/s)
+0.2	!Initial Pitch Rate (rad/s)
+0.2	!Initial Yaw Rate (rad/s)
 1	!External Force Model (0=off,1=on) - 16
 0	!Gravity Flag (-1=off,0=point mass, 1=egm2008,2=point mass + sun,3=flat earth)
 0	!Magnetic Field Model (0=off, 1=emm2015)
@@ -39,9 +39,9 @@
 3	!Number of Actuators to Simulate (Must be the same as control signals)
 0.1	!Settling Time (sec) of 1 magT
 0.1	!Settling Time (sec) of 2 magT
-0.1	!Settling Time (sec) of 3 magT
+0.1	!Settling Time (sec) of 2 magT
 1500  	!Initial Condition of Actuator 1 magT
 1500  	!Initial Condition of Actuator 2 magT
-1500  	!Initial Condition of Actuator 3 magT
+1500  	!Initial Condition of Actuator 2 magT
 
 ##Everything related to the simulation including sensor errors

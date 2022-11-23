@@ -130,13 +130,13 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       break;
   }
 }
-/*
+
 void controller::TwoStageLoop(MATLAB sense_matrix) {
   //Fully Actuated:
-  //1U -
-  //2U,upright -
-  //2U,sideways -
-  //6U -
+  //1U: -
+  //2U,upright: -
+  //2U,sideways: -
+  //6U: -
   //Underactuated:
   //1U -
   //2U,upright -
@@ -145,22 +145,22 @@ void controller::TwoStageLoop(MATLAB sense_matrix) {
 
   CleanControl();
 }
-*/
+
 
 void controller::FeedbackLinearizedLoop(MATLAB sense_matrix) {
   //Fully Actuated:
-  //1U -
-  //2U,upright -
-  //2U,sideways -
-  //6U -
+  //1U: -35, -35, -35
+  //2U,upright: -25, -25, -30
+  //2U,sideways: -30, -25, -25
+  //6U: -20, -18, -15
   //Underactuated:
   //1U -
   //2U,upright -
   //2U,sideways -
   //6U - 
-  double kpp = -2.0;
-  double kpq = -2.0;
-  double kpr = -2.0;
+  double kpp = -20.0;
+  double kpq = -18.0;
+  double kpr = -15.0;
   pqr.vecset(1,3,sense_matrix,10);
   double p = pqr.get(1,1);
   double q = pqr.get(2,1);
@@ -173,7 +173,7 @@ void controller::FeedbackLinearizedLoop(MATLAB sense_matrix) {
   //GAMMA
   gamma.set(1,1,kpp*p_error);
   gamma.set(2,1,kpq*q_error);
-  gamma.set(3,1,kpr*r_error);
+  gamma.set(3,1,kpr*r_error); 
   // I * gamma + omega cross I omega 
   //I.disp();
   //gamma.disp();
@@ -192,18 +192,18 @@ void controller::FeedbackLinearizedLoop(MATLAB sense_matrix) {
 
 void controller::ProportionalLoop(MATLAB sense_matrix) {
   //Fully Actuated:
-  //1U - -0.1, -0.17,-0.15
-  //2U,upright -
-  //2U,sideways -
-  //6U -
+  //1U: -0.1, -0.1, -0.1
+  //2U,upright: -0.5, -0.5, -0.2
+  //2U,sideways: -0.2, -0.5, -0.5
+  //6U: -1.05, -1.0, -0.95
   //Underactuated:
   //1U -
   //2U,upright -
   //2U,sideways -
   //6U - 
   double kpp = -0.1;
-  double kpq = -0.17;
-  double kpr = -0.15;
+  double kpq = -0.1;
+  double kpr = -0.1;
   pqr.vecset(1,3,sense_matrix,10);
   double p = pqr.get(1,1);
   double q = pqr.get(2,1);

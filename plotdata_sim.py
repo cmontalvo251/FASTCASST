@@ -30,7 +30,7 @@ datafile = open('data/0.csv','r')
 logfile = open('logs/0.csv','r')
 dataheaders = datafile.readline().split(',')
 logheaders = logfile.readline().split(',')
-numVars = len(dataheaders)
+numVars = len(logheaders)
 print('Number of Vars = ',numVars)
 print(logheaders)
 #Grab entire data file

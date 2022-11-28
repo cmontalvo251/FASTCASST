@@ -200,7 +200,7 @@ void loop() {
 
     ///////////MODELING LOOP/////////////////
     #ifdef MODELING
-    model.loop(watch.currentTime,hw.rc.out.pwm_array,hw.rc.in.rx_array);
+    model.loop(watch.currentTime,hw.rc.out.pwm_array,hw.rc.in.rx_array,control.control_matrix);
     #endif
     /////////////////////////////////////////
 

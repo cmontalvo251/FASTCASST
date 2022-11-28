@@ -97,10 +97,11 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   r_command = 0.0;
 
   switch (icontrol) {
-    //case 3:
+    case 3:
       //Two-Stage
-      //TwoStageLoop(sense_matrix);
-      //break;
+      TwoStageLoop(sense_matrix);
+      //printf("Two-Stage \n");
+      break;
     case 2:
       //Feedback Linearized
       FeedbackLinearizedLoop(sense_matrix);
@@ -142,7 +143,57 @@ void controller::TwoStageLoop(MATLAB sense_matrix) {
   //2U,upright -
   //2U,sideways -
   //6U -
+  double kpp = -2.0;
+  double kpq = -1.0;
+  double kpr = -1.0;
+  pqr.vecset(1,3,sense_matrix,10);
+  double p = pqr.get(1,1);
+  double q = pqr.get(2,1);
+  double r = pqr.get(3,1);
+  //pqr.disp();
+  double Ixx = I.get(1,1);
+  double Iyy = I.get(2,2);
+  double Izz = I.get(3,3);
 
+  ///TEST PHASE 1
+  // if(abs(q) > 0.1){
+  p_command = 0.5;
+  //Start with P
+  double p_error = p - p_command;
+  double gammaP = kpp*p_error;
+  double L = Ixx*gammaP - q*r*(Iyy-Izz);
+  //Move to R
+  double r_error = r - r_command;
+  double gammaR = kpr*r_error;
+  q_command = (Izz*gammaR)/(p_command*(Ixx-Iyy));
+  if (abs(q_command) > 1.0) {
+    q_command = copysign(1.0,q_command)*1.0;
+  }
+  printf("QCommand = %lf \n",q_command);
+  //End with Q
+  double q_error = q - q_command;
+  double gammaQ = kpq*q_error;
+  double M = gammaQ*Iyy - p*r*(Izz-Ixx);
+  //M = 0;
+  //FULLY CONTORLLED MATRIX
+  fully_controlled.set(1,1,L);
+  fully_controlled.set(2,1,M);
+  //}
+  /*else{
+    p_command = 0;
+    q_command = 0;
+    //Start with P
+    double p_error = p - p_command;
+    double gammaP = kpp*p_error;
+    double L = Ixx*gammaP - q*r*(Iyy-Izz);
+    //End with Q
+    double q_error = q - q_command;
+    double gammaQ = kpq*q_error;
+    double M = gammaQ*Iyy - p*r*(Izz-Ixx);
+    //FULLY CONTORLLED MATRIX
+    fully_controlled.set(1,1,L);
+    fully_controlled.set(2,1,M);
+    }*/
   CleanControl();
 }
 
@@ -158,9 +209,9 @@ void controller::FeedbackLinearizedLoop(MATLAB sense_matrix) {
   //2U,upright -
   //2U,sideways -
   //6U - 
-  double kpp = -20.0;
-  double kpq = -18.0;
-  double kpr = -15.0;
+  double kpp = -35.0;
+  double kpq = -35.0;
+  double kpr = -35.0;
   pqr.vecset(1,3,sense_matrix,10);
   double p = pqr.get(1,1);
   double q = pqr.get(2,1);
@@ -231,9 +282,9 @@ void controller::CleanControl() {
   //Using VACCO's Integrated Prop System
   //https://cubesat-propulsion.com/integrated-propulsion-system/
   //Max Thrust = 2N
-  //Moment Arm = sqrt(1.5U^2 + 0.5U^2) =  sqrt(0.15^2 + 0.05^2)m
+  //Moment Arm = 0.5U = 0.05
   //Max Moment = Max Thrust * Moment Arm
-  double max_moment = 0.32; //Nm
+  double max_moment = 0.1; //Nm
 
   for (int i = 0;i<NUMSIGNALS;i++) {
     double input = desired_moments.get(i+1,1);

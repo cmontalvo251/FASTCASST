@@ -35,7 +35,7 @@ class forces {
   //time is in seconds
   //state is a 13x1 using quaternions and using standard aerospace convention
   //statedot is the derivatives of the state vector
-  void ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[],environment env); 
+  void ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB actuatorStates,environment env); 
   //Constructor
   forces();
 };

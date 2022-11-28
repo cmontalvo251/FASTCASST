@@ -102,17 +102,28 @@ plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 
-###JUST FOR CUBESAT PLOT MOMENTS
-STICK_MAX = 2016
-STICK_MID = 1500
-STICK_MIN = 992
-dOmega_max = 10
+###JUST FOR CUBESAT PLOT MOMENTS AND PQR
+fig = plt.figure()
+plti = fig.add_subplot(1,1,1)
+plti.plot(model_time[istart_sense:iend_sense],model_data[istart_sense:iend_sense,10],label='P')
+plti.plot(model_time[istart_sense:iend_sense],model_data[istart_sense:iend_sense,11],label='Q')
+plti.plot(model_time[istart_sense:iend_sense],model_data[istart_sense:iend_sense,12],label='R')
+plti.grid()
+plti.legend()
+plti.set_xlabel('Time (sec)')
+plti.set_ylabel('Angular Velocity (rad/s)')
+pp.savefig()
+
+STICK_MAX = 2016.
+STICK_MID = 1500.
+STICK_MIN = 992.
+dOmega_max = 10.
 dPWM = (STICK_MAX-STICK_MIN)
 IpwmC = (dOmega_max/dPWM)
 try:
-    control_signals = sense_data[istart_sense:iend_sense,31:34]
+    control_signals = model_data[istart_model:iend_model,31:34]
 except:
-    control_signals = sense_data[istart_sense:iend_sense,31:33]
+    control_signals = model_data[istart_model:iend_model,31:33]
 moments = (control_signals - STICK_MID)*IpwmC
 fig = plt.figure()    
 plti = fig.add_subplot(1,1,1)
@@ -120,7 +131,7 @@ plti = fig.add_subplot(1,1,1)
 axis = ['X','Y','Z']
 try:
     for i in range(0,3):
-        plti.plot(sense_time[istart_sense:iend_sense],moments[:,i],label=axis[i])
+        plti.plot(model_time[istart_model:iend_model],moments[:,i],label=axis[i])
 except:
     pass
 plti.grid()

@@ -229,7 +229,7 @@ void modeling::SetGPS() {
 }
 
 ///Loop
-void modeling::loop(double currentTime,int pwm_array[],int rx_array[]) {
+void modeling::loop(double currentTime,int pwm_array[],int rx_array[],MATLAB control_matrix) {
 
   //Check to see if we're integrating too fast
   if (currentTime < integrationTime) {
@@ -252,17 +252,8 @@ void modeling::loop(double currentTime,int pwm_array[],int rx_array[]) {
   if (IACTUATORERROR) {
     for (int i = 0;i<NUMACTUATORS;i++){
       pwm_array[i]=pwm_array[i]*(100+pwm_error.get(i+1,1))/100;
+      control_matrix.set(i+1,1,control_matrix.get(i+1,1)*(100+pwm_error.get(i+1,1))/100);
     }
-  }
-
-  //Run RK4 Loop
-  rk4step(currentTime,pwm_array);
-
-  //Reset the Integration matrix
-  integration_matrix.overwrite(integrator.State);
-  //Copy over actuators
-  if (IACTUATORERROR) {
-    actuatorStates.vecset(1,NUMACTUATORS,integrator.State,14);
   }
 
   //Copy the states over to the model matrix for opengl and hardware loops
@@ -276,25 +267,6 @@ void modeling::loop(double currentTime,int pwm_array[],int rx_array[]) {
   model_matrix.set(28,1,pressure);
   //Just set pressure altitude to the actual Z coordinate
   model_matrix.set(29,1,-model_matrix.get(3,1)); 
-
-  //Send the model matrix to opengl
-  #ifdef OPENGL_H
-  GLmutex.lock();
-  if (glhandle_g.ready == 1) {
-    glhandle_g.state.UpdateRender(currentTime,cg,ptp,1,keyboardVars);
-    //printf("Key = ");
-    //for (int i = 0;i<4;i++) {
-    //printf("%lf ",keyboardVars[i]);
-    //}
-    //printf("\n");
-  } else {
-    printf("GL Handle Closed \n");
-    GLmutex.unlock();
-    //pthread_cancel(render.native_handle());
-    exit(1);
-  }
-  GLmutex.unlock();
-  #endif
 
   //Log data if needed
   if (currentTime >= nextLOGtime) {
@@ -325,20 +297,49 @@ void modeling::loop(double currentTime,int pwm_array[],int rx_array[]) {
     nextLOGtime=currentTime+LOGRATE;
   }
 
+  //Send the model matrix to opengl
+  #ifdef OPENGL_H
+  GLmutex.lock();
+  if (glhandle_g.ready == 1) {
+    glhandle_g.state.UpdateRender(currentTime,cg,ptp,1,keyboardVars);
+    //printf("Key = ");
+    //for (int i = 0;i<4;i++) {
+    //printf("%lf ",keyboardVars[i]);
+    //}
+    //printf("\n");
+  } else {
+    printf("GL Handle Closed \n");
+    GLmutex.unlock();
+    //pthread_cancel(render.native_handle());
+    exit(1);
+  }
+  GLmutex.unlock();
+  #endif
+
+  //Run RK4 Loop
+  rk4step(currentTime,pwm_array,control_matrix);
+
+  //Reset the Integration matrix
+  integration_matrix.overwrite(integrator.State);
+  //Copy over actuators
+  if (IACTUATORERROR) {
+    actuatorStates.vecset(1,NUMACTUATORS,integrator.State,14);
+  }
+
   //increment integration time
   integrationTime+=TIMESTEP;
 }
 
-void modeling::rk4step(double currentTime,int pwm_array[]) {
+void modeling::rk4step(double currentTime,int pwm_array[],MATLAB control_matrix) {
   //Integrate one timestep by running a 4 step RK4 integrator
   for (int i = 1;i<=4;i++){
-    Derivatives(currentTime,pwm_array);
+    Derivatives(currentTime,pwm_array,control_matrix);
     integrator.integrate(i);
   }
 }
 
 
-void modeling::Derivatives(double currentTime,int pwm_array[]) {
+void modeling::Derivatives(double currentTime,int pwm_array[],MATLAB control_matrix) {
   //Actuator Dynamics
   double time_constant = 0;
   double settling_time = 0;
@@ -347,11 +348,19 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
     settling_time = settling_time_matrix.get(i+1,1);
     if ((settling_time == 0) || (IACTUATORERROR == 0)) {
       //Pass through
+      #if defined (cubesat) || (satellite)
+      actuatorStates.set(i+1,1,control_matrix.get(i+1,1));
+      #else
       actuatorStates.set(i+1,1,pwm_array[i]);
+      #endif
     } else {
       //Integrate
       time_constant = 4.0/settling_time;
+      #if defined (cubesat) || (satellite)
+      actuatorDot = time_constant*(control_matrix.get(i+1,1) - actuatorStates.get(i+1,1));
+      #else
       actuatorDot = time_constant*(pwm_array[i] - actuatorStates.get(i+1,1));
+      #endif
       //printf("i = %d, actuatorDot = %lf \n",actuatorDot);
       integrator.k.set(13+i+1,1,actuatorDot);
     }
@@ -413,7 +422,11 @@ void modeling::Derivatives(double currentTime,int pwm_array[]) {
   //Send the external forces model the actuator_state instead of the ctlcomms
   if (FORCES_FLAG) {
     //printf("RUNNING FORCE MODEL \n");
+    #ifdef cubesat
+    extforces.ForceMoment(currentTime,integrator.StateDel,integrator.k,actuatorStates,env);
+    #else
     extforces.ForceMoment(currentTime,integrator.StateDel,integrator.k,pwm_dynamics_array,env);
+    #endif
   } else {
     extforces.FB.mult_eq(0); //Zero these out just to make sure something is in here
     extforces.MB.mult_eq(0);

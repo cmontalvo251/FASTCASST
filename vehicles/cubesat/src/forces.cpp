@@ -18,7 +18,7 @@ forces::forces() {
   pqr_PWM.zeros(3,1,"PQR converted to PWM");
 }
 
-void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[],environment env) {
+void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB actuatorStates,environment env) {
   //The only thing this function needs to do is populate FB and MB. 
   //You can do whatever you want in here but you must create those two vectors.
   FB.mult_eq(0); //Zero these out just to make sure something is in here
@@ -27,8 +27,9 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   //state.disp();
   pqr_PWM.mult_eq(0);
   pqr_PWM.plus_eq(STICK_MID);
+  //actuatorStates.disp();
   for (int i = 0;i<NUMTORQUERS;i++){
-    pqr_PWM.set(i+1,1,pwm_array[i]);
+    pqr_PWM.set(i+1,1,actuatorStates.get(i+1,1));
     //printf("pwm_array = %d \n",pwm_array[i]);
   }
   pqr_PWM.minus_eq(STICK_MID);

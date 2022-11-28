@@ -133,29 +133,24 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 }
 
 void controller::TwoStageLoop(MATLAB sense_matrix) {
-  //Fully Actuated:
-  //1U: -
-  //2U,upright: -
-  //2U,sideways: -
-  //6U: -
   //Underactuated:
-  //1U -
-  //2U,upright -
-  //2U,sideways -
-  //6U -
-  double kpp = -4.0;
-  double kpq = -2.0;
-  double kpr = -1.0;
+  //1U: -4, -2, -1
+  //2U,upright: -4, -2, -1
+  //2U,sideways: -4, -2, -1
+  //6U: -1.5, -0.5, -1.25
+  double kpp = -4.;
+  double kpq = -2.;
+  double kpr = -1.;
   pqr.vecset(1,3,sense_matrix,10);
   double p = pqr.get(1,1);
   double q = pqr.get(2,1);
   double r = pqr.get(3,1);
-  //pqr.disp();
+  pqr.disp();
   double Ixx = I.get(1,1);
   double Iyy = I.get(2,2);
   double Izz = I.get(3,3);
   //Stage 1
-  if(abs(q) > 0.009 && abs(r) > 0.009){
+  if(abs(q) > 0.009 || abs(r) > 0.009){
     //printf("First Stage \n");
     p_command = 0.5;
     r_command = 0.0;
@@ -167,6 +162,7 @@ void controller::TwoStageLoop(MATLAB sense_matrix) {
     double r_error = r - r_command;
     double gammaR = kpr*r_error;
     q_command = (Izz*gammaR)/(p*(Ixx-Iyy));
+    //printf("Q Command: %lf \n",q_command);
     if (abs(q_command) > 1.0) {
       q_command = copysign(1.0,q_command)*1.0;
     }
@@ -205,15 +201,10 @@ void controller::FeedbackLinearizedLoop(MATLAB sense_matrix) {
   //1U: -35, -35, -35
   //2U,upright: -25, -25, -30
   //2U,sideways: -30, -25, -25
-  //6U: -20, -18, -15
-  //Underactuated:
-  //1U -
-  //2U,upright -
-  //2U,sideways -
-  //6U - 
-  double kpp = -35.0;
-  double kpq = -35.0;
-  double kpr = -35.0;
+  //6U: -5, -6.5, -12
+  double kpp = -5.0;
+  double kpq = -6.5;
+  double kpr = -12.0;
   pqr.vecset(1,3,sense_matrix,10);
   double p = pqr.get(1,1);
   double q = pqr.get(2,1);
@@ -248,15 +239,10 @@ void controller::ProportionalLoop(MATLAB sense_matrix) {
   //1U: -0.1, -0.1, -0.1
   //2U,upright: -0.5, -0.5, -0.2
   //2U,sideways: -0.2, -0.5, -0.5
-  //6U: -1.05, -1.0, -0.95
-  //Underactuated:
-  //1U -
-  //2U,upright -
-  //2U,sideways -
-  //6U - 
-  double kpp = -0.1;
-  double kpq = -0.1;
-  double kpr = -0.1;
+  //6U: -0.6, -0.55, -0.55
+  double kpp = -0.6;
+  double kpq = -0.55;
+  double kpr = -0.55;
   pqr.vecset(1,3,sense_matrix,10);
   double p = pqr.get(1,1);
   double q = pqr.get(2,1);

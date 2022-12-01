@@ -2,6 +2,12 @@ SPEEDING UP FASTkit ON PI:
 
   ✔ Create a scheduler for all sensors. @done (22-05-17 20:21)
 
+  ☐ Try running the integrator on the pi and send data to computer for rendering and create a new mode called RENDER
+
+  ☐ Call Panini at AREAI
+
+  ☐ Run SIL on Pi with Desktop mode - As in run FASTKit on Raspbian and do away with Emlid
+
   ☐ Thread the IMU and GPS
 
   ☐ Investigate the Barometer delay and see if we can make it better

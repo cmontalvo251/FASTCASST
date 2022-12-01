@@ -178,7 +178,7 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
 void controller::HeadingLoop(MATLAB sense_matrix) {
   double kp = 0.4;
   double kd = 0.25;
-  double ki = 0.0;
+  double ki = 0.001;
   double heading = sense_matrix.get(6,1);
   double yaw_rate = sense_matrix.get(12,1);
   //I think the wrap issue is here

@@ -1,3 +1,42 @@
+=======================12/1/2022================
+
+We are at irvington at the moment and using
+
+make auto MODEL="apprentice" 
+
+and only inner loop contorl the aircraft flew great with manual and autopilot(innerloop)
+control.
+
+Note that we're seeing oscillations in the motor not sure if that's a hardware or software issue
+yet.
+
+Moving on to 
+
+make auto MODEL="airplane"
+
+we are moving back to heading angle contorl.
+
+----------Here is where we left off---------------
+
+
+7.) Moving to heading controller
+Current gains are 
+  double kp = 0.4;
+  double kd = 0.25;
+  double ki = 0.02;
+Suggest setting ki = 0
+Flying with no ki did ok but the problem is that steady state error from the roll axis creeps in and the vehicle kept trying to fly to the right. Suggest adding ki back in but do it slowly at ki = 0.005
+
+------------------------------------------------
+
+My suggestion is actually
+
+kp = 0.4
+kd = 0.25
+ki = 0.001
+
+Unfortunately motor oscillation did not go away and we scrubbed the flight.
+
 ======================11/11/2022===============
 
 HIL WORKS!!! For the tank at least. It's time to get HIL working on the airplane

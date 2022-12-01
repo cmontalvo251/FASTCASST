@@ -1,7 +1,7 @@
 0               !Save Each Frame to a File 1 = on,0 = off
 3  		     	!Number of objects in window 
 10				!Camera Offset Z axis
-3				!Default camera (directions below)
+0				!Default camera (directions below)
 vehicles/apprentice/objects/plane.obj 	!First Object file - No spaces allowed!!
 2.5000  	    !Scale Factor of Object
 5.000000		!Scale Factor of Position

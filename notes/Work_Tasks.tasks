@@ -4,6 +4,12 @@ Cleaning up FASTkit ON PI:
 
   ☐ Fix the double to integer numerical precision issue by adding a quantization flag to the Simulation.txt file. I added a terrible hack where the control_matrix and the pwm_array is sent to every routine and a #ifdef cubesat is there to switch between the two. That's terrible. What we need to do is send the double array to all routines and then somewhere in the model we quantize the array if the flag is set
 
+  ☐ Try running the integrator on the pi and send data to computer for rendering and create a new mode called RENDER
+
+  ☐ Call Panini at AREAI
+
+  ☐ Run SIL on Pi with Desktop mode - As in run FASTKit on Raspbian and do away with Emlid
+
   ☐ Thread the IMU and GPS
 
   ☐ Investigate the Barometer delay and see if we can make it better

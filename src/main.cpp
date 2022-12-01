@@ -200,7 +200,7 @@ void loop() {
 
     ///////////MODELING LOOP/////////////////
     #ifdef MODELING
-    model.loop(watch.currentTime,hw.rc.out.pwm_array,hw.rc.in.rx_array);
+    model.loop(watch.currentTime,hw.rc.out.pwm_array,hw.rc.in.rx_array,control.control_matrix);
     #endif
     /////////////////////////////////////////
 
@@ -208,18 +208,21 @@ void loop() {
     if (lastPRINTtime <= watch.currentTime) {
       lastPRINTtime+=hw.PRINTRATE;
       //Time
-      printf("%lf %lf ",watch.currentTime,watch.elapsedTime);
+      printf("T,dt %lf %lf ",watch.currentTime,watch.elapsedTime);
       //First 5 RX signals
+      printf("RX ");
       hw.rc.in.printRCstate(-5);
       //Roll Pitch Yaw
-      printf(" %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
+      printf("RPY %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
       //PQR
       //printf(" %lf %lf %lf ",hw.sense.orientation.roll_rate,hw.sense.orientation.pitch_rate,hw.sense.orientation.yaw_rate);
       //PWM Array
+      printf("PWM ");
       hw.rc.out.print();
       //LAT LON PRESSURE ALTITUDE
       //#ifdef AUTO
-      printf(" %lf %lf %lf %lf ",hw.sense.satellites.latitude,hw.sense.satellites.longitude,hw.sense.atm.altitude,hw.sense.compass);
+      printf("LL(B)H %lf %lf %lf ",hw.sense.satellites.latitude,hw.sense.satellites.longitude,hw.sense.atm.altitude);
+      printf("Head,Comp %lf %lf ",hw.sense.satellites.heading,hw.sense.compass);
       //#else
       //XYZ
       //printf(" %lf %lf %lf ",hw.sense.satellites.X,hw.sense.satellites.Y,hw.sense.atm.altitude);

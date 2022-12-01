@@ -58,8 +58,8 @@ class modeling {
   environment env;
   forces extforces;
   //double ACTUATOR_ERROR_PERCENT;
-  void rk4step(double,int[]);
-  void Derivatives(double,int[]);
+  void rk4step(double time,int pwm_array[],MATLAB control_matrix);
+  void Derivatives(double,int[],MATLAB);
   double integrationTime=0;
   MATLAB output_matrix;
   //GPS - origin set in Mathp.h
@@ -82,9 +82,7 @@ class modeling {
   //initialization routine
   void init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB in_configuration_matrix,int argc,char** argv);
   //Loop
-  void loop(double currentTime,int pwm_array[],int rx_array[]);
-  //RK4step
-  void rk4step(int pwm_array[]);
+  void loop(double currentTime,int pwm_array[],int rx_array[],MATLAB control_matrix);
 };
 
 //Render Loop function

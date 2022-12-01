@@ -32,7 +32,11 @@ void GPS::decodeXYZ() {
   XYZ[2] = Z;
   //printf("GPS XYZ = %lf %lf %lf \n",X,Y,Z);
   //printf("GPS ORIGIN = %lf %lf \n",X_origin,Y_origin);
+  #if defined (satellite) || (cubesat) 
+  ConvertXYZ2LLHSPHERICAL(XYZ,LLH);
+  #else
   ConvertXYZ2LLH(XYZ,LLH,X_origin,Y_origin);
+  #endif
   latitude = LLH[0];
   longitude = LLH[1];
   altitude = LLH[2];
@@ -75,7 +79,7 @@ void GPS::processGPSCoordinates(double currentTime) {
       //Set the origin
       setOrigin(latitude,longitude);
       //Convert to XYZ
-      ConvertGPS2XY();
+      ConvertGPS2XY(); 
       //Reset Prev Values
       xprev = X;
       yprev = Y;
@@ -121,29 +125,32 @@ int GPS::status() {
   return ok;
 }
 
-void GPS::ConvertGPS2XY(){
-  ///CONVERT LAT LON TO METERS
-  if (longitude == -99) {
-    Y = yprev;
-  } else {
-    Y = (longitude - Y_origin)*GPSVAL*cos(X_origin*DEG2RAD);  
-  }
-  if (latitude == -99) {
+void GPS::ConvertGPS2XY()  {
+  if ((latitude == -99) || (longitude == -99) || (altitude == -99)) {
     X = xprev;
-  } else {
-    X = (latitude - X_origin)*GPSVAL;
-  }
-  if (altitude == -99) {
+    Y = yprev;
     Z = zprev;
   } else {
-    Z = -altitude;
+    //Populate LLH matrices
+    LLH[0] = latitude;
+    LLH[1] = longitude;
+    LLH[2] = altitude;
+    //These functions are in mathp.cpp
+    #if defined (satellite) || (cubesat) 
+    ConvertLLH2XYZSPHERICAL(XYZ,LLH);
+    #else
+    ConvertLLH2XYZ(XYZ,LLH,X_origin,Y_origin);
+    #endif
+    //Extract XYZ
+    X = XYZ[0];
+    Y = XYZ[1];
+    Z = XYZ[2];
   }
-  //printf("ConvertLLH2XY: %lf %lf %lf %lf \n",X,Y,latitude,longitude);
 }
 
 void GPS::computeCOG(double current_time) {
   //First convert the current measurement to XY
-  ConvertGPS2XY();
+  ConvertGPS2XY(); //This has been moved to mathp.cpp
 
   //Then proceed with the speed measurement
   double dx = X - xprev;

@@ -18,6 +18,60 @@ double ConvertZ2Pressure(double Z) {
   return pressure;
 }
 
+void ConvertLLH2XYZ(double XYZ[],double LLH[],double X_origin,double Y_origin){
+  //Extract LLH
+  double latitude = LLH[0];
+  double longitude = LLH[1];
+  double altitude = LLH[2];
+  ///CONVERT LAT LON TO METERS
+  double X,Y,Z;
+  Y = (longitude - Y_origin)*GPSVAL*cos(X_origin*DEG2RAD);  
+  X = (latitude - X_origin)*GPSVAL;
+  Z = -altitude;
+  //Populate XYZ matrix
+  XYZ[0] = X;
+  XYZ[1] = Y;
+  XYZ[2] = Z;
+  //printf("ConvertLLH2XY: %lf %lf %lf %lf \n",X,Y,latitude,longitude);
+}
+
+void ConvertLLH2XYZSPHERICAL(double XYZ[],double LLH[]) {
+  //Extract LLH
+  double latitude = LLH[0];
+  double longitude = LLH[1];
+  double altitude = LLH[2];
+  //Compute spherical coordinates
+  double thetaE = (90.0 - latitude)*PI/180.0;
+  double psiE = longitude*PI/180.0;
+  double rho = altitude + REARTH;
+  ///CONVERT LAT LON TO METERS
+  double X,Y,Z; 
+  X = rho*sin(thetaE)*cos(psiE);
+  Y = rho*sin(thetaE)*sin(psiE);
+  Z = rho*cos(thetaE);
+  //Populate XYZ matrix
+  XYZ[0] = X;
+  XYZ[1] = Y;
+  XYZ[2] = Z;
+}
+
+void ConvertXYZ2LLHSPHERICAL(double XYZ[],double LLH[]) {
+  double X = XYZ[0];
+  double Y = XYZ[1];
+  double Z = XYZ[2];
+  //printf("XYZ = %lf %lf %lf \n",X,Y,Z);
+  double rho = sqrt(X*X + Y*Y + Z*Z);
+  double thetaE = acos(Z/rho);
+  double psiE = atan2(Y,X);
+  double latitude = 90.0 - thetaE*180.0/PI;
+  double longitude = psiE*180.0/PI;
+  double altitude = rho - REARTH;
+  LLH[0] = latitude;
+  LLH[1] = longitude;
+  LLH[2] = altitude;
+  //printf("LLH = %lf %lf %lf \n",latitude,longitude,altitude);
+}
+
 void ConvertXYZ2LLH(double XYZ[],double LLH[],double X_origin,double Y_origin) {
   double X = XYZ[0];
   double Y = XYZ[1];
@@ -46,6 +100,14 @@ double cpsic = cos(psic);
 double out = atan2(spsi*cpsic-cpsi*spsic,cpsi*cpsic+spsi*spsic);
 
 return out;
+}
+
+double saturation(double input,double max_value) {
+  if (abs(input) > max_value) {
+    return copysign(1.0,input)*max_value;
+  } else {
+    return input;
+  }
 }
 
 double sat(double input,double epsilon,double scalefactor)

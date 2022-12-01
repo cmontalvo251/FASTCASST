@@ -20,8 +20,9 @@ tend = -99
 #Run code
 os.system('./clean_logs')
 os.system('rm simonly.exe')
-os.system('make simonly MODEL="apprentice"')
-os.system('./simonly.exe apprentice/')
+#os.system('make clean')
+os.system('make simonly MODEL="cubesat"')
+os.system('./simonly.exe cubesat/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File
@@ -29,7 +30,7 @@ datafile = open('data/0.csv','r')
 logfile = open('logs/0.csv','r')
 dataheaders = datafile.readline().split(',')
 logheaders = logfile.readline().split(',')
-numVars = len(dataheaders)
+numVars = len(logheaders)
 print('Number of Vars = ',numVars)
 print(logheaders)
 #Grab entire data file
@@ -99,6 +100,45 @@ plti.legend()
 plti.get_yaxis().get_major_formatter().set_useOffset(False)
 plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
+pp.savefig()
+
+###JUST FOR CUBESAT PLOT MOMENTS AND PQR
+fig = plt.figure()
+plti = fig.add_subplot(1,1,1)
+plti.plot(model_time[istart_sense:iend_sense],model_data[istart_sense:iend_sense,10],label='P')
+plti.plot(model_time[istart_sense:iend_sense],model_data[istart_sense:iend_sense,11],label='Q')
+plti.plot(model_time[istart_sense:iend_sense],model_data[istart_sense:iend_sense,12],label='R')
+plti.grid()
+plti.legend()
+plti.set_xlabel('Time (sec)')
+plti.set_ylabel('Angular Velocity (rad/s)')
+pp.savefig()
+
+STICK_MAX = 2016.
+STICK_MID = 1500.
+STICK_MIN = 992.
+dOmega_max = 10.
+dPWM = (STICK_MAX-STICK_MIN)
+IpwmC = (dOmega_max/dPWM)
+try:
+    control_signals = model_data[istart_model:iend_model,31:34]
+except:
+    control_signals = model_data[istart_model:iend_model,31:33]
+moments = (control_signals - STICK_MID)*IpwmC
+fig = plt.figure()    
+plti = fig.add_subplot(1,1,1)
+#plti.plot(sense_time[istart_sense:iend_sense],control_signals)
+axis = ['X','Y','Z']
+try:
+    for i in range(0,3):
+        plti.plot(model_time[istart_model:iend_model],moments[:,i],label=axis[i])
+except:
+    pass
+plti.grid()
+plti.legend()
+plti.set_xlabel('Time (sec)')
+#plti.set_ylabel('Control Signals (us)')
+plti.set_ylabel('Moments (N-m)')
 pp.savefig()
 
 #Close file

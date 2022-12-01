@@ -119,6 +119,7 @@ class MATLAB {
   void disp();
   void dmatrixprint(double**,int,char*);
   int getRow();
+  int length();
   int getCol();
   int len();
   char* getName();

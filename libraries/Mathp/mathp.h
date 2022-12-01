@@ -50,9 +50,13 @@ void ClearHome();
 double delpsi(double,double);
 double randnum(double,double);
 void printdouble(double,char*);
+double saturation(double,double);
 double delpsi(double,double);
 double sat(double,double,double);
 void ConvertXYZ2LLH(double XYZ[],double LLH[],double X_origin,double Y_origin);
+void ConvertLLH2XYZ(double XYZ[],double LLH[],double X_origin,double Y_origin);
+void ConvertXYZ2LLHSPHERICAL(double XYZ[],double LLH[]);
+void ConvertLLH2XYZSPHERICAL(double XYZ[],double LLH[]);
 double ConvertZ2Pressure(double Z);
 
 #endif

@@ -185,8 +185,8 @@ void loop() {
     //When on desktop HIL mode
     //The CONTROLLOOP variable is set in the preamble of this cpp file
     if (CONTROLLOOP) {
-      hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
       //printf("hw.loop %lf %lf %lf \n",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
+      hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
       /////////////////////////////////////////
       
       //////////CONTROL LOOP///////////////////

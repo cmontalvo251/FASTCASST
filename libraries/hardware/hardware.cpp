@@ -208,6 +208,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   //run.
   if (currentTime >= nextTELEMtime) {
     //printf("Sending Telemetry %lf \n",currentTime);
+    //PAUSE();
     //For right now let's send RPY and GPS coordinates
 
     //This is the telemetry data needed for ground station command line

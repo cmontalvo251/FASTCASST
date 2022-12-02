@@ -22,7 +22,11 @@ void Serial::InitSerialPort(void)
   //If SIMONLY or SIL are not defined you are running in HIL or AUTO mode
   //In both instances you want to use the 915 Mhz radios which is initialized 
   //using the function below
+  #ifdef HIL
+  printf("You must run the ground station software on another computer \n");
+  #else
   SerialInit(port,BaudRate);
+  #endif
   #endif
 }
 

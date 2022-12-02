@@ -2,6 +2,8 @@
 
 //Constructor
 UART::UART() {
+  baudRateWireless = 57600;
+  baudRate = 57600;
 }
 
 //The UART class needs to know how big the send array is
@@ -14,9 +16,9 @@ void UART::TelemInit(int numtelem) {
   uart_telemetry_array = (float *) calloc(NUMTELEMETRY,sizeof(float));
 
   //We now set up communications depending on the type of comms we want
+  printf("SETTING UP TELEMETRY \n");
   #ifdef RPI
   //Telemetry happens here
-  printf("SETTING UP TELEMETRY \n");
   comms.SerialInitWireless("/dev/ttyAMA0",baudRateWireless);
   #endif
 
@@ -42,9 +44,9 @@ void UART::HILInit(int numsens,int numc) {
   //This routine only runs if HIL is on so we don't need a #define HIL here
 
   //We now set up communications depending on the type of comms we want
+  printf("SETTING UP HIL COMMS \n");
   #ifdef RPI
   //HIL comms happens here
-  printf("SETTING UP HIL COMMS \n");
   hilcomms.SerialInit("/dev/ttyUSB0",baudRate);
   //hilcomms.SerialInit("/dev/ttyAMA0",baudRate);
   #endif

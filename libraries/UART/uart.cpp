@@ -3,7 +3,7 @@
 //Constructor
 UART::UART() {
   baudRateWireless = 57600;
-  baudRate = 57600;
+  baudRate = 57600; //115200 on rpi3 did not work
 }
 
 //The UART class needs to know how big the send array is

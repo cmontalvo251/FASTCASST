@@ -263,8 +263,8 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     //kde = 0.5
     //kr = 0.1
 
-    double kpa = 2.5;
-    double kda = 0.05;
+    double kpa = 5.0;
+    double kda = 0.1;
     aileron = kpa*(roll-roll_command) + kda*(roll_rate);
     double kpe = 10.0;
     double kde = 0.5;

@@ -30,7 +30,8 @@ class UART {
   int NUMTELEMETRY,NUMCTL,NUMSENSE;
   Serial comms;
   Serial hilcomms;
-  int baudRate = 57600; //Hardcode. I don't think we ever need to change
+  //int baudRate = 57600; //Hardcode. I don't think we ever need to change
+  int baudRate = 115200; //Dr. Russ told me to change the baudrate to 115200
  public:
   UART();
   void TelemInit(int);

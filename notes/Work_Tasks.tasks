@@ -2,11 +2,13 @@ Cleaning up FASTkit ON PI:
 
   ✔ Create a scheduler for all sensors. @done (22-05-17 20:21)
 
+  ☐ Change the name to FASTCAST - Configurable Autopilot and Simulation Tool
+
   ☐ Fix the double to integer numerical precision issue by adding a quantization flag to the Simulation.txt file. I added a terrible hack where the control_matrix and the pwm_array is sent to every routine and a #ifdef cubesat is there to switch between the two. That's terrible. What we need to do is send the double array to all routines and then somewhere in the model we quantize the array if the flag is set
 
   ☐ Try running the integrator on the pi and send data to computer for rendering and create a new mode called RENDER
 
-  ☐ Call Panini at AREAI
+  ✔ Call Panini at AREAI @done (22-12-02 10:07)
 
   ☐ Run SIL on Pi with Desktop mode - As in run FASTKit on Raspbian and do away with Emlid
 
@@ -20,7 +22,7 @@ Cleaning up FASTkit ON PI:
 
   ☐ Another option is we write our own embedded software for the Pi
   
-  ☐ We can also upgrade from the Pi3 to the Pi4 with lots of RAM
+  ✔ We can also upgrade from the Pi3 to the Pi4 with lots of RAM @done (22-12-02 09:49)
 
 COMPLEX AUTOPILOT LOOP:
     
@@ -45,17 +47,11 @@ COMPLEX AUTOPILOT LOOP:
     ✔ Heading Angle Estimation and make sure we are adequately estimating heading in real life @done (22-11-10 21:00)
     ✔ (phi from accel only, theta from accel only, heading from mag only, Euler from gyro only, filtered roll and pitch from gyro and accel, heading from gps, filtered heading from mag, gyro, gps, Euler from AHRS, heading from AHRS and GPS) @done (22-11-10 20:59)
     ✔ Test velocity controller in real life @done (22-11-10 21:00)
-    ☐ Test waypoint contorller in real life
-
-  FASTPILOT:
-
- ☐ Fork code to www.gitlab.com:Montalvo/FASTPilot.git - To do this just put the MODELS in FASTPilot. So all you need to do is edit the MakeFile to reference that FASTPilot folder but main.cpp will still be in github
-
- ☐ Only fork code to FASTPilot in the event you are developing code that does not already exist in print
+    ☐ Test waypoint controller in real life
 
 META:
 
-  ☐ Barometer calibration has screwed up the z altitude before calibration. Need a fix here
+  ✔ Barometer calibration has screwed up the z altitude before calibration. Need a fix here @done (22-12-02 09:50)
 
   ☐ SysID of airplane (Flights + simulation)
 
@@ -235,6 +231,12 @@ RENDERING:
     ✔ X8 @done (21-11-06 11:30)
 
   ☐ How do you feel about updating OpenGL rendering environment to Unreal engine or something like Godot or even Unity???
+
+FASTPILOT:
+
+ ✔ Fork code to www.gitlab.com:Montalvo/FASTPilot.git - To do this just put the MODELS in FASTPilot. So all you need to do is edit the MakeFile to reference that FASTPilot folder but main.cpp will still be in github @done (22-12-02 09:50)
+
+ ✔ Only fork code to FASTPilot in the event you are developing code that does not already exist in print @done (22-12-02 09:50)
 
 HIL:
 

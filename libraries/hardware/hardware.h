@@ -68,6 +68,7 @@ class hardware {
   //in the init() and loop() functions
   int NUMTELEMETRY,NUMSENSE,NUMCTL;
   char** pwmnames;
+  char** rcnames;
   //double HILtime;
  public:
   //RCIO Class

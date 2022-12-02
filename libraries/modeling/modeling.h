@@ -46,6 +46,7 @@ class modeling {
   char** headernames;
   int *pwm_dynamics_array=NULL;
   char** pwmnames;
+  char** rcnames;
   Datalogger logger;
   RK4 integrator;
   int NUMVARS,NUMINTEGRATIONSTATES,FORCES_FLAG;

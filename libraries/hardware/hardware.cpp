@@ -53,11 +53,20 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   }
 
   //Initialize Logger
-  logger.init("data/",sense.getNumVars()+2+NUMSIGNALS); //+1 for time,+2 for RC In Channel #5
+  logger.init("data/",sense.getNumVars()+6+NUMSIGNALS); //+6 for time and 5 RC channels
   //Set and log headers
+  //TIME
   logger.appendheader("Time (sec)");
+  //SENSE VARS
   logger.appendheaders(sense.headernames,sense.getNumVars());
-  logger.appendheader("RC In Channel #5");
+  //RC IN SIGNALS
+  rcnames = (char**)malloc((5)*sizeof(char*));
+  for (int i = 1;i<=5;i++) {
+    rcnames[i-1] = (char*)malloc((18)*sizeof(char));
+    sprintf(rcnames[i-1],"RC Channel #%d",i);
+  }
+  logger.appendheaders(rcnames,5);
+  //RC OUT SIGNALS
   logger.appendheaders(pwmnames,NUMSIGNALS);
   logger.printheaders();
   /////////IF YOU ADD TO THIS HEADER YOU NEED TO MAKE SURE YOU INCREMENT
@@ -182,8 +191,10 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     logger.printvar(currentTime);
     //All sense states
     logger.print(sense.sense_matrix);
-    //RC Channel #5
-    logger.printint(rc.in.rx_array[4]);
+    //RC Channels
+    for (int i = 0;i<5;i++) {
+      logger.printint(rc.in.rx_array[i]);
+    }
     //RC Out Channels
     logger.printarrayln(rc.out.pwm_array,rc.out.NUMSIGNALS);
     nextLOGtime=currentTime+LOGRATE;

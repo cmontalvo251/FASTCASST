@@ -80,11 +80,21 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[28] = "Temperature (C)";
 
   //Initialize Logger
-  logger.init("logs/",NUMVARS+1+NUMACTUATORS); //Not minus 1 because you add time
+  logger.init("logs/",NUMVARS+5+NUMACTUATORS); //Not minus 1 because you add time and the +5 is RC channels
   //Set and log headers
+
+  //TIME
   logger.appendheader("Time (sec)");
+  //VARS
   logger.appendheaders(headernames,NUMVARS-1); //-1 because of quaternions
-  logger.appendheader("RC In Channel #5");
+  //RC IN SIGNALS
+  rcnames = (char**)malloc((5)*sizeof(char*));
+  for (int i = 1;i<=5;i++) {
+    rcnames[i-1] = (char*)malloc((18)*sizeof(char));
+    sprintf(rcnames[i-1],"RC Channel #%d",i);
+  }
+  logger.appendheaders(rcnames,5);
+  //RC OUT SIGNALS
   logger.appendheaders(pwmnames,NUMACTUATORS);
   logger.printheaders();
 
@@ -289,7 +299,9 @@ void modeling::loop(double currentTime,int pwm_array[],int rx_array[],MATLAB con
     //output_matrix.disp();
     logger.print(output_matrix);
     //Log the RC channel # 5
-    logger.printvar(rx_array[4]);
+    for (int i = 0;i<5;i++) {
+      logger.printint(rx_array[i]);
+    }
     //Then output the pwm array
     //logger.printarrayln(pwm_array,NUMACTUATORS);
     //Actually log the actuator states instead

@@ -1,3 +1,24 @@
+=====================12/2/2022============
+
+Plotted the data from the flight test yesterday and unfortunately 
+the data is inconclusive because we're not logging the rc signals
+so....we need to....wait...is it possible to back out the rc signals???
+
+aileron_out = kpa*(roll-roll_command) + kda*(roll_rate)
+
+1.) roll_command = roll - (aileron_out - kda*(roll_rate) ) / kpa
+2.) pitch_command = pitch - (elevator_out - kde*pitch_rate) / kpe
+
+Ok so plotting that now....
+
+Also looking at work tasks 
+
+1.) We've already switched from a pi3 to pi4 to try and increase speed
+2.) FASTPilot code project has basically been abandoned. The software we've created has basic functionality for inner loop control and there's really no need for FASTPilot. The code thats in FASTpilot may never be used and I don't want to get rid of the repo at the moment but for now there's nothing I want to do with it other than port functionality over to FASTKit. Same with MultiSAT. All that functionality eventually needs to be brought over to FASTKit.
+3.) I also emailed my friends over at AREAI to try and speed up HIL
+
+Oh yea and I want to change the name to FASTCAST - Configurable Autopilot and Simulation Tool
+
 =======================12/1/2022================
 
 We are at irvington at the moment and using
@@ -36,6 +57,8 @@ kd = 0.25
 ki = 0.001
 
 Unfortunately motor oscillation did not go away and we scrubbed the flight.
+
+Came back to the lab and oscillations were fully diagnosed. Bad battery so that battery was scrapped. It's odd though because the battery was fully charged so it's obivously something chemical happening in the battery itself.
 
 ======================11/11/2022===============
 

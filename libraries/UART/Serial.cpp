@@ -4,7 +4,7 @@
 void Serial::InitSerialPort(void)
 {
   // VERY IMPORTANT: Edit this line of code to designate which COM port 
-  int BaudRate = 115200;
+  int BaudRate = 115200; //Default Baud Rate
   #ifdef __WIN32__
     char *port = "\\\\.\\COM12";
   #endif

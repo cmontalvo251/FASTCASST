@@ -16,13 +16,13 @@ except:
     sys.exit()
 
 ##TRUNCATION START AND END TIME of flight (Set to negative to turn off)
-tstart = 750
-tend = 920
+tstart = 80
+tend = 200
 
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File
-datafile = open('data/HIL_PI_FLIGHT.csv','r')
+datafile = open('data/Pi_Intramural_Flight.csv','r')
 dataheaders = datafile.readline().split(',')
 numVars = len(dataheaders)
 print('Number of Vars = ',numVars)
@@ -52,7 +52,7 @@ for x in range(1,numVars):
     sense_flightdata.append(sense_trunc)
 sense_flightdata = np.array(sense_flightdata)
 
-sense_flightcontroller = sense_flightdata[29]
+sense_flightcontroller = sense_flightdata[33]
 #print(len(sense_flightdata))
 controllerON = np.where(sense_flightcontroller>1000)
 #print(controllerON)
@@ -66,10 +66,10 @@ for x in range(0,len(controlON)):
         counter = controllerON[0][x]
     counter += 1
 controlEnd.append(controllerON[0][-1]+1)
-print(controlEnd)
+#print(controlEnd)
 
 controllerOFF = np.where(sense_flightcontroller<1000)
-print(controllerOFF)
+#print(controllerOFF)
 controlOFF = np.array(controllerOFF)
 controlOFF = np.matrix.transpose(controlOFF)
 controlBegin = []
@@ -80,7 +80,7 @@ for x in range(0,len(controlOFF)):
         controlBegin.append(controllerOFF[0][x-1]-1)
         counter = controllerOFF[0][x]
     counter += 1
-print(controlBegin)
+#print(controlBegin)
 
 n = len(controlBegin)
 controllists = [[] for _ in range(n)]
@@ -126,25 +126,33 @@ roll = sense_flightdata[3]
 pitch = sense_flightdata[4]
 roll_rate = sense_flightdata[9]
 pitch_rate = sense_flightdata[10]
-pwm_aileron = sense_flightdata[31]
-pwm_elevator = sense_flightdata[32]
+phiC_pwm = sense_flightdata[30]
+thetaC_pwm = sense_flightdata[31]
+pwm_aileron = sense_flightdata[35]
+pwm_elevator = sense_flightdata[36]
 ##Compute Roll and pitch commands
-kpa = 5.0
-kda = 0.1
+kpa = 2.5
+kda = 0.05
 kpe = 10.0;
 kde = 0.5;
 OUTMID = 1500;
+OUTMAX = 2016
+OUTMIN = 992
 roll_command = roll - (pwm_aileron - kda*roll_rate - OUTMID)/kpa;
+#aileron = kpa*(roll-phiC_pwm) + kda*(roll_rate)
+phi_command = (phiC_pwm-OUTMID)*50.0/((OUTMAX-OUTMIN)/2.0)
 pitch_command = pitch - (pwm_elevator - kde*pitch_rate - OUTMID)/kpe;
+#elevator = kpe*(pitch-thetaC_pwm) + kde*(pitch_rate)
+theta_command = -(thetaC_pwm-OUTMID)*30.0/((OUTMAX-OUTMIN)/2.0)
 ##Plot
 fig = plt.figure()
 plti = fig.add_subplot(1, 1, 1)
-plti.plot(flighttime_Start,roll_command[0:controlBegin[0]+1],'b',label='Roll Command Manual Flight')
+plti.plot(flighttime_Start,roll_command[0:controlBegin[0]+1],'b',label='Calculated Command Manual Flight')
 plti.plot(flighttime_Start,roll[0:controlBegin[0]+1],'g--',label='Roll Angle Manual Flight')
 for i in range(0,n):
     controlTime = controllists[i]
     if i<1:
-        plti.plot(controlTime,roll_command[controlBegin[i]:controlEnd[i]],'r',label='Roll Command Controlled Flight')
+        plti.plot(controlTime,roll_command[controlBegin[i]:controlEnd[i]],'r',label='Calculated Command Controlled Flight')
         plti.plot(controlTime,roll[controlBegin[i]:controlEnd[i]],'m--',label='Roll Angle Controlled Flight')
     else:
         plti.plot(controlTime,roll_command[controlBegin[i]:controlEnd[i]],'r')
@@ -167,12 +175,40 @@ pp.savefig()
 ##Plot
 fig = plt.figure()
 plti = fig.add_subplot(1, 1, 1)
-plti.plot(flighttime_Start,pitch_command[0:controlBegin[0]+1],'b',label='Pitch Command Manual Flight')
+plti.plot(flighttime_Start,phi_command[0:controlBegin[0]+1],'b',label='Roll Command Manual Flight')
+plti.plot(flighttime_Start,roll[0:controlBegin[0]+1],'g--',label='Roll Angle Manual Flight')
+for i in range(0,n):
+    controlTime = controllists[i]
+    if i<1:
+        plti.plot(controlTime,phi_command[controlBegin[i]:controlEnd[i]],'r',label='Roll Command Controlled Flight')
+        plti.plot(controlTime,roll[controlBegin[i]:controlEnd[i]],'m--',label='Roll Angle Controlled Flight')
+    else:
+        plti.plot(controlTime,phi_command[controlBegin[i]:controlEnd[i]],'r')
+        plti.plot(controlTime,roll[controlBegin[i]:controlEnd[i]],'m--')
+for ii in range(0,n-1):
+    nonControl = nocontrollists[ii]
+    plti.plot(nonControl,phi_command[controlEnd[ii]-1:controlBegin[ii+1]+1],'b')
+    plti.plot(nonControl,roll[controlEnd[ii]-1:controlBegin[ii+1]+1],'g--')
+plti.plot(flighttime_End,phi_command[controlEnd[-1]-1:iend_sense],'b')
+plti.plot(flighttime_End,roll[controlEnd[-1]-1:iend_sense],'g--')
+plti.set_xlabel('Time (sec)')
+plti.set_ylabel('Roll Angle (deg)')
+plti.grid()
+plti.legend() 
+plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plti.get_xaxis().get_major_formatter().set_useOffset(False)
+plt.gcf().subplots_adjust(left=0.18)
+pp.savefig()
+
+##Plot
+fig = plt.figure()
+plti = fig.add_subplot(1, 1, 1)
+plti.plot(flighttime_Start,pitch_command[0:controlBegin[0]+1],'b',label='Calculated Command Manual Flight')
 plti.plot(flighttime_Start,pitch[0:controlBegin[0]+1],'g--',label='Pitch Angle Manual Flight')
 for i in range(0,n):
     controlTime = controllists[i]
     if i<1:
-        plti.plot(controlTime,pitch_command[controlBegin[i]:controlEnd[i]],'r',label='Pitch Command Controlled Flight')
+        plti.plot(controlTime,pitch_command[controlBegin[i]:controlEnd[i]],'r',label='Calculated Command Controlled Flight')
         plti.plot(controlTime,pitch[controlBegin[i]:controlEnd[i]],'m--',label='Pitch Angle Controlled Flight')
     else:
         plti.plot(controlTime,pitch_command[controlBegin[i]:controlEnd[i]],'r')
@@ -182,6 +218,34 @@ for ii in range(0,n-1):
     plti.plot(nonControl,pitch_command[controlEnd[ii]-1:controlBegin[ii+1]+1],'b')
     plti.plot(nonControl,pitch[controlEnd[ii]-1:controlBegin[ii+1]+1],'g--')
 plti.plot(flighttime_End,pitch_command[controlEnd[-1]-1:iend_sense],'b')
+plti.plot(flighttime_End,pitch[controlEnd[-1]-1:iend_sense],'g--')
+plti.set_xlabel('Time (sec)')
+plti.set_ylabel('Pitch Angle (deg)')
+plti.grid()
+plti.legend() 
+plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plti.get_xaxis().get_major_formatter().set_useOffset(False)
+plt.gcf().subplots_adjust(left=0.18)
+pp.savefig()
+
+##Plot
+fig = plt.figure()
+plti = fig.add_subplot(1, 1, 1)
+plti.plot(flighttime_Start,theta_command[0:controlBegin[0]+1],'b',label='Pitch Command Manual Flight')
+plti.plot(flighttime_Start,pitch[0:controlBegin[0]+1],'g--',label='Pitch Angle Manual Flight')
+for i in range(0,n):
+    controlTime = controllists[i]
+    if i<1:
+        plti.plot(controlTime,theta_command[controlBegin[i]:controlEnd[i]],'r',label='Pitch Command Controlled Flight')
+        plti.plot(controlTime,pitch[controlBegin[i]:controlEnd[i]],'m--',label='Pitch Angle Controlled Flight')
+    else:
+        plti.plot(controlTime,theta_command[controlBegin[i]:controlEnd[i]],'r')
+        plti.plot(controlTime,pitch[controlBegin[i]:controlEnd[i]],'m--')
+for ii in range(0,n-1):
+    nonControl = nocontrollists[ii]
+    plti.plot(nonControl,theta_command[controlEnd[ii]-1:controlBegin[ii+1]+1],'b')
+    plti.plot(nonControl,pitch[controlEnd[ii]-1:controlBegin[ii+1]+1],'g--')
+plti.plot(flighttime_End,theta_command[controlEnd[-1]-1:iend_sense],'b')
 plti.plot(flighttime_End,pitch[controlEnd[-1]-1:iend_sense],'g--')
 plti.set_xlabel('Time (sec)')
 plti.set_ylabel('Pitch Angle (deg)')

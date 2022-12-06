@@ -19,6 +19,11 @@ Also looking at work tasks
 
 Oh yea and I want to change the name to FASTCAST - Configurable Autopilot and Simulation Tool
 
+I ran into Dr. Russ and he recommended I send data at a baudRate of 115,200
+unfortunately I tried that and even edited the code to accommodate two different
+baud rates for wireless and wired and it still didn't increase the speed enough
+to have HIL work for high gains.
+
 =======================12/1/2022================
 
 We are at irvington at the moment and using

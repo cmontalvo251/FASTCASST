@@ -197,6 +197,19 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     }
     //RC Out Channels
     logger.printarrayln(rc.out.pwm_array,rc.out.NUMSIGNALS);
+    //DEBUG PRINT
+    /*printf("Ail RX Ch = %d ",rc.in.rx_array[1]);
+    printf(" Ail RX Out = %d ",rc.out.pwm_array[1]);
+    int aileron = rc.in.rx_array[1];
+    double roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+    printf(" Phi_c from RX Ch = %lf ",roll_command);
+    int aileron_out = rc.out.pwm_array[1];
+    double kpa = 2.5;
+    double kda = 0.05;
+    double roll = sense.sense_matrix.get(4,1);
+    double roll_rate = sense.sense_matrix.get(10,1);
+    double roll_command_out = roll - (-(aileron_out - OUTMID) - kda*roll_rate)/kpa;
+    printf(" Phi_c from RX Out = %lf \n",roll_command_out);*/
     nextLOGtime=currentTime+LOGRATE;
   }
 

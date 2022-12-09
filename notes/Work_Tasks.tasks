@@ -12,7 +12,7 @@ Cleaning up FASTkit ON PI:
 
   ✔ Call Panini at AREAI @done (22-12-02 10:07)
 
-  ☐ Dan said it's possible the RK4 vector and control vector are asynchronous and causing issues. Might need to investigate the RK4 state and the control state and see if I'm dealing with that properly. 
+  ☐ Dan said it's possible the RK4 vector and control vector are asynchronous and causing issues. Might need to investigate the RK4 state and the control state and see if I'm dealing with that properly. To do that print time,state,control on both desktop and pi and see if you're off. Maxwell had a good idea to lower the timestep to see if that fixes it.
 
   ☐ Run SIL on Pi with Desktop mode - As in run FASTKit on Raspbian and do away with Emlid
 

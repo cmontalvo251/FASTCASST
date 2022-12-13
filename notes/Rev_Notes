@@ -59,6 +59,35 @@ Let's make a branch and see what happens
 
 Ok I'm running into some more issues so I need to make the pi side synchronous as well
 
+Ok I think I figured out the problem. The rpi receives a new state vector and then send the old control input because it happens right away.
+
+What we need to do is have the desktop side be asynchronous but the pi side be synchronous but a bit different.
+
+We need to pi to read the new state, compute control and then send the new control vector. That's a bit different than what we had.
+
+I will probably need to revert a bunch of stuff to get that to work properly 
+
+I think what I want to do is have a few routines
+
+DESKTOP SIDE
+0.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+1.) hilsend -> this sends data to rpi (state vector)
+2.) hilreceive -> we then wait for a response from the pi (control vector)
+3.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+4.) rk4 -> we run one timestep on the rk4 engine to get a new state vector
+
+Asynchronous option is to have 1-2 run asynchronously and 0 and 3 run synchronously around the rk4 call
+
+PI SIDE
+0.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+1.) hilreceive -> we wait for a response from the desktop (state vector)
+2.) controller -> we run the controller on the pi
+3.) hilsend -> this sends data to the desktop (control vector)
+
+So you see how this is a bit different than what we had before
+
+My suggestion is to work on this at home and then test this on hardware at work
+
 =====================12/2/2022============
 
 Plotted the data from the flight test yesterday and unfortunately 

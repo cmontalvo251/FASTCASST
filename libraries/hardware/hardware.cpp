@@ -103,6 +103,8 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //Telemetry is always on an working in some sort of configuration
   serTelem.TelemInit(NUMTELEMETRY);
 
+
+  /////////////////////////HIL/////////////////////////////
   #ifdef HIL
 
   //LOOP RATES
@@ -125,8 +127,11 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
   uart_ctl_matrix_copy.zeros(NUMCTL,1,"Serial Control Matrix Copy");
   serHIL.HILInit(NUMSENSE,NUMCTL);
-  boost::thread hilloop(hil,serHIL,SERIALLOOPRATE);
+  //In this branch, rather than kicking off the hil routine as a thread we're going to call it in
+  //the actual function call
+  //boost::thread hilloop(hil,serHIL,SERIALLOOPRATE);
   #endif
+  ////////////////////////////////////////////////////////
 }
 
 //This version of the loop runs assuming you are saving data from the simulation 
@@ -273,7 +278,7 @@ void hardware::hilsend(double currentTime) {
       //printf("Processing HIL MATRICES = %lf \n",currentTime);
   }
 
-  HILmutex.lock();
+  //HILmutex.lock(); //In this branch we don't need the mutex locks
 
   #ifdef DESKTOP
   //What data do I want sent to RPI???
@@ -311,13 +316,23 @@ void hardware::hilsend(double currentTime) {
 
   //For Apprentice Inner loop
   //Roll
-  uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
+  //uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
+  if (currentTime < 10) {
+    uart_sense_matrix.set(1,1,50);
+  } else {
+    printf("SWAPPED \n");
+    uart_sense_matrix.set(1,1,-50);
+  }
   //Pitch
   uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
   //Roll Rate
-  uart_sense_matrix.set(3,1,sense.sense_matrix.get(10,1));
+  uart_sense_matrix.set(3,1,2);
+  //uart_sense_matrix.set(3,1,sense.sense_matrix.get(10,1));
   //Pitch Rate
   uart_sense_matrix.set(4,1,sense.sense_matrix.get(11,1));
+
+  //Fir this HIL branch, once we put the matrices where they need to go we call the hilroutine
+  hil(currentTime);
 
   //Data received from PI
   //Before we copy uart_ctl_matrix over to pwm_array we need to create a backup
@@ -328,6 +343,8 @@ void hardware::hilsend(double currentTime) {
   for (int i = 1;i<=NUMCTL;i++) {
     rc.out.pwm_array[i-1] = uart_ctl_matrix.get(i,1); //don't we just need the rcoutputs?
   }
+
+  printf("rec -> aileron = %d \n",rc.out.pwm_array[1]);
       
   //printf("\n RCOUTPUT after uart update \n");
   //rc.out.print();
@@ -343,6 +360,7 @@ void hardware::hilsend(double currentTime) {
     //This means that the rangecheck through an error which means the values received from
     //uart were invalid and we need to revert back to our previous values
     rc.out.revert();
+    //printf("INVALID REVERTING \n");
   }
 
   //printf("\n RCOUTPUT after potential revert \n");
@@ -421,6 +439,9 @@ void hardware::hilsend(double currentTime) {
     sense.sense_matrix.set(11,1,uart_sense_matrix.get(3,1));
     sense.orientation.pitch_rate = sense.sense_matrix.get(11,1);
 
+    //Fir this HIL branch, once we put the matrices where they need to go we call the hilroutine
+    hil(currentTime);
+
     //We also need to populate the rc out matrices
     for (int i = 1;i<=rc.out.NUMSIGNALS;i++) {
       //control matrix - i
@@ -428,122 +449,107 @@ void hardware::hilsend(double currentTime) {
     }
   #endif //RPI
   
-  HILmutex.unlock();
+  //In this branch we don't need to mutex locks
+  //HILmutex.unlock();
 
   //printf("Done Processing HIL Matrices = %lf \n",currentTime);
 }
 
-void hil(UART ser,double SERIALLOOPRATE) {
+void hardware::hil(double currentTime) {
     //This code needs to operate on a listen as often as possible
     //and only send when you've received a response  
     //In Debug mode we will have the desktop continually send data to 
     //the pi and have the pi continually listen
 
-  //All vars in here must be globals or locally defined
-
-  bool sendOK = 1; //Set to 1 and DESKTOP will send first
-  bool recOK = 1; //Set to 1 and RPI will receive first
-
+  //All vars in here must be globals or locally defined -- Not anymore after we moved to synchronous
   //bool sendOK = 0; //Set to 0 and DESKTOP will receive first
   //bool recOK = 0; //Set to 0 and RPI will send first
 
   //This needs to be an infinite loop or it will only run once
-  while (1) {
+  //In this branch we will run this function call one at a time
+  //while (1) {
 
     #ifdef DESKTOP
-    if (sendOK) {
-      //printf("!!!!!!!!!!!!!!!!!! Send Data to RPI HIL !!!!!!!!!!!!!!!!!!!!!! \n");
+    //printf("!!!!!!!!!!!!!!!!!! Send Data to RPI HIL !!!!!!!!!!!!!!!!!!!!!! \n");
 
-      //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
-      //to lock the mutex -- See comment below
-      HILmutex.lock();
-      uart_sense_matrix_copy.overwrite(uart_sense_matrix);
-      HILmutex.unlock();
+    //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
+    //to lock the mutex -- See comment below
+    //HILmutex.lock(); -- No need for lock anymore in synchronous function calls
+    uart_sense_matrix_copy.overwrite(uart_sense_matrix);
+    //HILmutex.unlock();
 
-      //Then we send the copy
-      ser.sendSense(uart_sense_matrix_copy);
+    //Then we send the copy
+    printf("send -> time = %lf phi,p = %lf %lf ",currentTime,uart_sense_matrix_copy.get(1,1),uart_sense_matrix_copy.get(3,1));
+    serHIL.sendSense(uart_sense_matrix_copy);
 
-      //So the sendSense and ReadSense functions enter an infinite while loop until data is read.
-      //Because of this we actually need to have a copy be used for the uart comms and then 
-      //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in 
-      //an infinite while loop and never send data.
-      HILmutex.lock();
-      uart_sense_matrix.overwrite(uart_sense_matrix_copy);
-      HILmutex.unlock();
+    //So the sendSense and ReadSense functions enter an infinite while loop until data is read.
+    //Because of this we actually need to have a copy be used for the uart comms and then 
+    //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in 
+    //an infinite while loop and never send data.
+    //HILmutex.lock(); -- No need for locks anymore in synchronous function calls
+    uart_sense_matrix.overwrite(uart_sense_matrix_copy);
+    //HILmutex.unlock();
 
-      //If you set this to sendOk = 1 the DESKTOP will continually send
-      //data to the RPI. It'd be a good way to test one way communication from
-      //the desktop to the RPI
-      sendOK = 0;
-    } else {
-      //printf("READING CONTROL MATRIX FROM SERIAL \n");
+    //If you set this to sendOk = 1 the DESKTOP will continually send
+    //data to the RPI. It'd be a good way to test one way communication from
+    //the desktop to the RPI
+    //printf("READING CONTROL MATRIX FROM SERIAL \n");
+    //This uart_ctl_matrix is set in another asynchronous thread. Therefor we need
+    //to lock the mutex -- see comment below on thread safety
+    serHIL.readControl(uart_ctl_matrix_copy);
 
-      //This uart_ctl_matrix is set in another asynchronous thread. Therefor we need
-      //to lock the mutex -- see comment below on thread safety
-      ser.readControl(uart_ctl_matrix_copy);
-
-      //So the sendControl and readControl functions enter an inifinite while loop until data is read
-      //Because of this we actually need to have a copy be used for the uart comms and then
-      //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in
-      //an infinite while loop and never send data
-      HILmutex.lock();
-      uart_ctl_matrix.overwrite(uart_ctl_matrix_copy);
-      HILmutex.unlock();
-
-      //if you set this sendOK = 0 the DESKTOP will conitnually be in read Mode. It'd be a good way to
-      //test one way communication from the Desktop to the RPI
-      sendOK = 1; 
-    }
+    //So the sendControl and readControl functions enter an inifinite while loop until data is read
+    //Because of this we actually need to have a copy be used for the uart comms and then
+    //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in
+    //an infinite while loop and never send data
+    //HILmutex.lock(); -- no need for locks in synchronous function calls
+    uart_ctl_matrix.overwrite(uart_ctl_matrix_copy);
+    //HILmutex.unlock();
+    //if you set this sendOK = 0 the DESKTOP will conitnually be in read Mode. It'd be a good way to
+    //test one way communication from the Desktop to the RPI
     #endif
     
     //If we're running HIL on RPI we need to receive data from serial via desktop
     #ifdef RPI
-    if (recOK) {
-      //printf("Receive Data from Desktop \n");
+    //printf("Receive Data from Desktop \n");
 
-      //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
-      //to lock the mutex -- See comment below on thread safety. 
-      ser.readSense(uart_sense_matrix_copy);
-      //uart_sense_matrix_copy.disp();
+    //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
+    //to lock the mutex -- See comment below on thread safety. 
+    ser.readSense(uart_sense_matrix_copy);
+    //uart_sense_matrix_copy.disp();
+    //So the sendSense and ReadSense functions enter an infinite while loop until data is read.
+    //Because of this we actually need to have a copy be used for the uart comms and then 
+    //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in 
+    //an infinite while loop and never send data.
+    //HILmutex.lock(); -- moving to synchronous
+    uart_sense_matrix.overwrite(uart_sense_matrix_copy);
+    //HILmutex.unlock();
 
-      //So the sendSense and ReadSense functions enter an infinite while loop until data is read.
-      //Because of this we actually need to have a copy be used for the uart comms and then 
-      //lock the mutex once we're ready to copy. Otherwise we enter into a thread lock in 
-      //an infinite while loop and never send data.
-      HILmutex.lock();
-      uart_sense_matrix.overwrite(uart_sense_matrix_copy);
-      HILmutex.unlock();
+    //If you set this variable recOK to 1 the RPI will continually receive data from the DESKTOP
+    //computer. It would be a good way to test 1 way communication
+    //Then send data to desktop
+    //printf("!!!!!!!!!!!!!!!!!!Send data to Desktop HIL !!!!!!!!!!!!!!!!!!! \n");
 
-      //If you set this variable recOK to 1 the RPI will continually receive data from the DESKTOP
-      //computer. It would be a good way to test 1 way communication
-      recOK = 0;
-    } else {
+    //This uart_ctl_matrix is set in another asynchronous thread therefor we need
+    //to lock the mutex -- See comment below
+    //HILmutex.lock(); -- moving to synchronous
+    uart_ctl_matrix_copy.overwrite(uart_ctl_matrix);
+    //HILmutex.unlock();
 
-      //Then send data to desktop
-      //printf("!!!!!!!!!!!!!!!!!!Send data to Desktop HIL !!!!!!!!!!!!!!!!!!! \n");
+    //Then we send the copy
+    ser.sendControl(uart_ctl_matrix_copy);
 
-      //This uart_ctl_matrix is set in another asynchronous thread therefor we need
-      //to lock the mutex -- See comment below
-      HILmutex.lock();
-      uart_ctl_matrix_copy.overwrite(uart_ctl_matrix);
-      HILmutex.unlock();
+    //So the sendControl and readControl functions enter an infinite while loop until
+    //data is read. Because of this we actually need to have a copy be used for the uart
+    //comms and then lock the mutex once we're ready to copy. Otherwise we enter into a thread
+    //lock in an infinite loop and never can advance the rest of the code
+    //HILmutex.lock(); -- moving to synchronous
+    uart_ctl_matrix.overwrite(uart_ctl_matrix_copy);
+    //HILmutex.unlock();
 
-      //Then we send the copy
-      ser.sendControl(uart_ctl_matrix_copy);
-
-      //So the sendControl and readControl functions enter an infinite while loop until
-      //data is read. Because of this we actually need to have a copy be used for the uart
-      //comms and then lock the mutex once we're ready to copy. Otherwise we enter into a thread
-      //lock in an infinite loop and never can advance the rest of the code
-      HILmutex.lock();
-      uart_ctl_matrix.overwrite(uart_ctl_matrix_copy);
-      HILmutex.unlock();
-
-      //if you set this to recOK = 0 the RPI will contiunally send
-      //data to the DESKTOP. It'd be a good way to test one way communication
-      //from the RPi to the desktop
-      recOK = 1; //Set to zero and RPI will perpetually send data
-    }
+    //if you set this to recOK = 0 the RPI will contiunally send
+    //data to the DESKTOP. It'd be a good way to test one way communication
+    //from the RPi to the desktop
     #endif
 
     //We need a cross sleep here or the code will blast serial data faster than we can read
@@ -551,9 +557,9 @@ void hil(UART ser,double SERIALLOOPRATE) {
     //we read as fast as possible
     //This cross_sleep will eventually go away or reduce to like 0.001 so that we read as fast
     //as possible for now we're in debug mode so we're only sending every 1.0 seconds
-    cross_sleep(SERIALLOOPRATE);
+    //cross_sleep(SERIALLOOPRATE); -- No longer need this because function is synchronous now
 
-  } //End of inifinite while loop
+  //} //End of inifinite while loop -- Removed for synchronouse function call
 
 } //end of hil() function
 

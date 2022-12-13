@@ -33,8 +33,8 @@ extern boost::mutex HILmutex; //Mutex for passing data b/t HIL asynchronous thre
 
 //Externs are to avoid multiple declaration errors during module compilation
 
-//Asynchronous HIL thread
-void hil(UART,double);
+//Asynchronous HIL thread -- Moved to class and synchronous function call
+//void hil(UART,double);
 //Global vars to pass info back and forth
 extern MATLAB uart_sense_matrix,uart_ctl_matrix,uart_sense_matrix_copy,uart_ctl_matrix_copy;
 
@@ -55,6 +55,8 @@ extern MATLAB uart_sense_matrix,uart_ctl_matrix,uart_sense_matrix_copy,uart_ctl_
 
 class hardware {
  private:
+  bool sendOK = 1; //Set to 1 and DESKTOP will send first
+  bool recOK = 1; //Set to 1 and RPI will receive first
   double nextLOGtime = 0;
   double nextRCtime = 0;
   double nextTELEMtime = 0;
@@ -62,6 +64,7 @@ class hardware {
   MATLAB telemetry_matrix;
   MATLAB q0123,ptp;
   Datalogger logger;
+  void hil(double);
   UART serTelem,serHIL;
   //Unfortunately telemetry values are going to be hardcoded
   //Rather than use input files you'll have to edit the code

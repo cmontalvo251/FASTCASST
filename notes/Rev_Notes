@@ -1,3 +1,64 @@
+======================12/12/2022==============
+
+Ok looking at the asynchronous nature of the HIL sims. First let's look at the rates
+
+DESKTOP SIDE and RPI side
+10.0 	 !Standard Out Print Rate // seconds (set to negative)
+0.1  	 !Data logging rate // seconds (numbers if you want)
+0.01	 	 !RC Rate // seconds (to run as fast as possible)
+0.001 	!Integration rate // seconds
+
+HIL and SERIALLOOP RATE for RPI and DESKTOP
+HILRATE = 0.001;
+SERIALLOOPRATE = 0.001;
+
+Ok so the standard out print rate of 10.0 is probably good but let's set the datalogging rate and Print rate to 100.0 seconds
+The RC rate of 0.01 is probably fine but let's increase the integration rate to 0.01 seconds or 100Hz rather than 1000 Hz
+
+Let's also increase gains to 5.0 and 0.2 since that's the harder setup
+
+Alright. Let's do SIL and make sure everything is working
+
+Let's also plug the computer into power so it runs at full tilt without any power throttling.
+
+Ok SIL worked just fine. Just FYI, an integration rate of 0.1 did not work
+
+Alright let's now try HIL and see what happens
+
+The growth rate is small but the roll channel is still unstable. Before we start adding print statements I want to try something and that's change the HILRATE to 0.01 which is the same as the integration rate. The SERIALLOOPRATE needs to go afap but I don't think the HILRATE which just transfer matrices needs to operate that quickly.
+
+Ok that didn't fix it. Same problem popped up. Interestingly though the instability is changed by airspeed. I'm pressure sure the dynamics change with airspeed. Let's look at the roll dynamics
+
+pdot = L/Ixx -- assuming pure roll about the x-axis
+
+L = La + Lc -- La = aerodynamics and Lc is control
+
+La + Lc = 0.5*rho*v^2*S*Cl
+Cl = -Clp*phat + Clda*da
+
+pdot = 0.5*rho*v^2*S*(Clda*da - Clp*phat)/Ixx
+
+then in homogenous form
+
+pdot + 0.5*rho*v^2*S*Clp*phat/Ixx = 0.5*rho*v^2*S*Clda*da/Ixx
+
+So the pole is s = -0.5*rho*v^2*S*Clp/Ixx*a where a is a*p = phat
+
+so yea the dynamics get faster when the velocity increases which means flying slower helps the HIL simulation.
+
+Ok so we need to dig deeper
+
+My plan is to do this. 
+
+1.) Print the roll and roll rate on desktop side and the aileron signal during the dynamic rk4 call
+2.) Print the roll, roll rate and aileron signal after control is computed on the pi side
+
+Ok so there's definitely a huge delay in the asynchronous function calls. I wonder if I should try and break the code so that the integrator waits until it hears back from the pi and do away with these asynchronous loops? But just on the desktop side.
+
+Let's make a branch and see what happens
+
+Ok I'm running into some more issues so I need to make the pi side synchronous as well
+
 =====================12/2/2022============
 
 Plotted the data from the flight test yesterday and unfortunately 

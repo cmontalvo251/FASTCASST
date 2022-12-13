@@ -515,7 +515,7 @@ void hardware::hil(double currentTime) {
 
     //This uart_sense_matrix is set in another asynchronous thread. Therefore we need
     //to lock the mutex -- See comment below on thread safety. 
-    ser.readSense(uart_sense_matrix_copy);
+    serHIL.readSense(uart_sense_matrix_copy);
     //uart_sense_matrix_copy.disp();
     //So the sendSense and ReadSense functions enter an infinite while loop until data is read.
     //Because of this we actually need to have a copy be used for the uart comms and then 
@@ -537,7 +537,7 @@ void hardware::hil(double currentTime) {
     //HILmutex.unlock();
 
     //Then we send the copy
-    ser.sendControl(uart_ctl_matrix_copy);
+    serHIL.sendControl(uart_ctl_matrix_copy);
 
     //So the sendControl and readControl functions enter an infinite while loop until
     //data is read. Because of this we actually need to have a copy be used for the uart

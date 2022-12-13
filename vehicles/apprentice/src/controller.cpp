@@ -44,6 +44,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //First extract the relavent commands from the receiver.
   throttle = rx_array[0];
   aileron = rx_array[1];
+  //printf("Ail RX Ch = %lf ",aileron);
   elevator = rx_array[2];
   rudder = rx_array[3];
   autopilot = rx_array[4];
@@ -140,9 +141,19 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       }
       if (pitch_command == -99) {
         pitch_command = -(elevator-STICK_MID)*30.0/((STICK_MAX-STICK_MIN)/2.0);
+	//printf("Theta and Theta Command: %lf, %lf \n",elevator,pitch_command);
       }
       InnerLoop(sense_matrix);
     case 0:
+      /*printf(" Ail RX Out = %lf ",aileron);
+      printf(" Phi_c from RX Ch = %lf ",roll_command);
+      double kpa = 2.5;
+      double kda = 0.05;
+      double roll_rate = sense_matrix.get(10,1);
+      double roll = sense_matrix.get(4,1);
+      double roll_command_out = roll - (-(aileron - OUTMID) - kda*roll_rate)/kpa;
+      printf(" Phi_c from RX Out = %lf \n",roll_command_out);*/
+     
       //printf("Passing signals \n");
       //Pass the receiver signals to the control_matrix and then break
       control_matrix.set(1,1,throttle);
@@ -278,4 +289,5 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     rudder = CONSTRAIN(rudder,-500,500) + OUTMID;
     aileron = -CONSTRAIN(aileron,-500,500) + OUTMID;
     elevator = CONSTRAIN(elevator,-500,500) + OUTMID;
+    //printf("InnerLoop Phi: %lf \n",aileron);
 }

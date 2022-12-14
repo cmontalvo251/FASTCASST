@@ -86,6 +86,20 @@ DESKTOP -> rk4()
 Ok that's all setup. Let's see if it compiles on DESKTOP. One little public/private error.
 We're now running on pi
 
+Ok progress. So the HIL control routine works now. Problem is that the game engine is absurdly slow. Or is it?
+
+I think we need to run SIMONLY with throttle = 992 and aileron=STICK_MAX and see how quickly we hit 180 degrees
+
+Then do it again in SIL mode and see if we get the same
+
+Then do it again in HIL mode. If it turns out we're still having a speed issue it means we need to make
+a thread for something.
+
+We also can turn on print statements a bit more and see if perhaps it's the OpenGL routine or the actual RK4
+routine.
+
+The watch.currentTime is using the internal clock but the RK4 engine is integrating as fast as possible.
+
 ======================12/12/2022==============
 
 Ok looking at the asynchronous nature of the HIL sims. First let's look at the rates

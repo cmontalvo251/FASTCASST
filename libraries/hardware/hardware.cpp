@@ -270,17 +270,17 @@ void hardware::hil(double currentTime,int mode){
     #ifdef DESKTOP
     //For Apprentice Inner loop
     //Roll
-    //uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
-    if (currentTime < 10) {
+    uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
+    /*if (currentTime < 10) {
       uart_sense_matrix.set(1,1,50);
     } else {
       uart_sense_matrix.set(1,1,-50);
-    }
+      }*/
     //Pitch
     uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
     //Roll Rate
-    uart_sense_matrix.set(3,1,2);
-    //uart_sense_matrix.set(3,1,sense.sense_matrix.get(10,1));
+    //uart_sense_matrix.set(3,1,2);
+    uart_sense_matrix.set(3,1,sense.sense_matrix.get(10,1));
     //Pitch Rate
     uart_sense_matrix.set(4,1,sense.sense_matrix.get(11,1));
 

@@ -274,7 +274,6 @@ void hardware::hil(double currentTime,int mode){
     if (currentTime < 10) {
       uart_sense_matrix.set(1,1,50);
     } else {
-      printf("SWAPPED \n");
       uart_sense_matrix.set(1,1,-50);
     }
     //Pitch
@@ -324,7 +323,9 @@ void hardware::hil(double currentTime,int mode){
   //Mode 2 has all the read routines
   if (mode == 2) {
     #ifdef DESKTOP
+    //printf("READING... \n");
     serHIL.readControl(uart_ctl_matrix_copy);
+    //printf("ANYTHING? \n");
     #endif
     #ifdef RPI
     serHIL.readSense(uart_sense_matrix_copy);

@@ -344,7 +344,7 @@ void modeling::loop(double currentTime,int pwm_array[],int rx_array[],MATLAB con
 
 void modeling::rk4step(double currentTime,int pwm_array[],MATLAB control_matrix) {
   //Integrate one timestep by running a 4 step RK4 integrator
-  printf("===========\n");
+  ///printf("===========\n");
   for (int i = 1;i<=4;i++){    
     Derivatives(currentTime,pwm_array,control_matrix);
     integrator.integrate(i);
@@ -446,7 +446,7 @@ void modeling::Derivatives(double currentTime,int pwm_array[],MATLAB control_mat
   }
 
   //Debug print
-  printf("time = %lf phi,p = %lf %lf aileron = %d \n",currentTime,ptp.get(1,1)*180.0/PI,integrator.StateDel.get(11,1),pwm_dynamics_array[1]);
+  //printf("time = %lf phi,p = %lf %lf aileron = %d \n",currentTime,ptp.get(1,1)*180.0/PI,integrator.StateDel.get(11,1),pwm_dynamics_array[1]);
   
   //Add Up Forces and Moments
   //env.FGRAVI.disp();

@@ -149,11 +149,11 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //printf(" Phi_c from RX Ch = %lf ",roll_command);
       //double kpa = 2.5;
       //double kda = 0.05;
-      double roll_rate = sense_matrix.get(10,1);
-      double roll = sense_matrix.get(4,1);
+      //double roll_rate = sense_matrix.get(10,1);
+      //double roll = sense_matrix.get(4,1);
       //double roll_command_out = roll - (-(aileron - OUTMID) - kda*roll_rate)/kpa;
       //printf(" Phi_c from RX Out = %lf \n",roll_command_out);
-      printf("time = %lf phi,p = %lf %lf aileron = %lf \n",currentTime,roll,roll_rate,aileron);
+      //printf("time = %lf phi,p = %lf %lf aileron = %lf \n",currentTime,roll,roll_rate,aileron);
       
       //printf("Passing signals \n");
       //Pass the receiver signals to the control_matrix and then break

@@ -201,7 +201,7 @@ void loop() {
       /////////////////////////////////////////
     }
 
-    #ifdef HIl
+    #ifdef HIL
     //^^^Pi just ran the controller
     #ifdef DESKTOP
     hw.hil(watch.currentTime,2); //2 = wait for update from pi

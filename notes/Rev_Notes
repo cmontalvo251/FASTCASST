@@ -83,7 +83,8 @@ PI -> hil(1)
 
 DESKTOP -> rk4()
 
-Ok that's all setup. Let's see if it compiles on DESKTOP
+Ok that's all setup. Let's see if it compiles on DESKTOP. One little public/private error.
+We're now running on pi
 
 ======================12/12/2022==============
 

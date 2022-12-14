@@ -64,7 +64,6 @@ class hardware {
   MATLAB telemetry_matrix;
   MATLAB q0123,ptp;
   Datalogger logger;
-  void hil(double);
   UART serTelem,serHIL;
   //Unfortunately telemetry values are going to be hardcoded
   //Rather than use input files you'll have to edit the code
@@ -93,7 +92,8 @@ class hardware {
   void send(double time,MATLAB model_matrix,double keyboardVars[]);
   //Main hardware loop
   void loop(double currentTime,double elapsedTime,MATLAB control_matrix);
-  void hilsend(double);
+  //void hilsend(double);
+  void hil(double,int);
   //Constructor
   hardware();
 };

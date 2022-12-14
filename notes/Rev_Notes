@@ -1,3 +1,90 @@
+=====================12/14/2022============
+
+This is what I wanted yesterday.
+
+DESKTOP SIDE
+0.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+1.) hilsend -> this sends data to rpi (state vector)
+2.) hilreceive -> we then wait for a response from the pi (control vector)
+3.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+4.) rk4 -> we run one timestep on the rk4 engine to get a new state vector
+
+Asynchronous option is to have 1-2 run asynchronously and 0 and 3 run synchronously around the rk4 call
+
+PI SIDE
+0.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+1.) hilreceive -> we wait for a response from the desktop (state vector)
+2.) controller -> we run the controller on the pi
+3.) hilsend -> this sends data to the desktop (control vector)
+
+So you see how this is a bit different than what we had before
+
+My suggestion is to work on this at home and then test this on hardware at work
+
+This is what I want today
+
+hil(0)
+-DESKTOP - Take state vector and put it into the matrix copy
+-PI - wait for update from DESKTOP - will send state vector to copy
+
+hil(1)
+-DESKTOP - Send state vector from DESKTOP to PI
+-PI - put state vector copy into actual state vector
+
+controller()
+-only runs on PI
+
+hil(2)
+-DESKTOP - wait for a response from the PI - get control vector
+-PI      - put control vector into control vector copy   
+
+hil(3)
+-DESKTOP - take control vector copy and put it into memory
+-PI      - send control vector copy to DESKTOP
+
+rk4()
+-only runs on DESKTOP
+
+or do this, first let's define the functions
+
+hil(0)
+-DESKTOP - Take state vector and put it into matrix copy
+-PI      - put state vector copy into actual state vector
+
+hil(1)
+-DESKTOP - Send state vector copy from DESKTOP to PI
+-PI      - send control vector copy from PI to DESKTOP
+
+hil(2)
+-DESKTOP - wait for a response from the PI - get control vector
+-PI      - wait for update from DESKTOP - will send state vector to copy
+
+hil(3)
+-DESKTOP - take control vector copy and put it into memory
+-PI      - put control vector into control vector copy
+
+Then the order would be
+
+----TOP----
+
+DESKTOP -> hil(0)
+PI -> hil(2)
+
+DESKTOP -> hil(1)
+PI -> hil(0)
+
+PI -> controller()
+
+DESKTOP -> hil(2)
+PI -> hil(3)
+
+DESKTOP -> hil(3)
+PI -> hil(1)
+
+DESKTOP -> rk4()
+
+Ok that's all setup. Let's see if it compiles on DESKTOP
+
 ======================12/12/2022==============
 
 Ok looking at the asynchronous nature of the HIL sims. First let's look at the rates

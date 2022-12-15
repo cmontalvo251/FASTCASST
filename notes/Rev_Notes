@@ -1,3 +1,13 @@
+==================12/15/20222=============
+
+Alright I investigated the issue. I printed the Rk4 time and the watch timer and the integration
+is too slow to keep up. Right now the timestep is at 0.01. I'm going to run in SIL mode and 
+see how high I can run the timestep before the whole simulation goes unstable
+
+timestep = 0.01 - good
+timestep = 0.1 - bad
+timestep = 0.05 - 
+
 =====================12/14/2022============
 
 This is what I wanted yesterday.

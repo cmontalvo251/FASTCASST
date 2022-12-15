@@ -246,6 +246,9 @@ void modeling::loop(double currentTime,int pwm_array[],int rx_array[],MATLAB con
     //if this loop is true we need to break prematurely because if not we will 
     //integrate faster than the real time clock
     return;
+  } else if ((currentTime > integrationTime) && (abs(currentTime-integrationTime)>TIMESTEP)) {
+    //We're integrating too slowly
+    printf("Actual Time = %lf Integration Time = %lf \n",currentTime,integrationTime);
   }
 
   //printf("Modeling Loop \n");

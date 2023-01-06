@@ -6,7 +6,11 @@ see how high I can run the timestep before the whole simulation goes unstable
 
 timestep = 0.01 - good
 timestep = 0.1 - bad
-timestep = 0.05 - 
+timestep = 0.05 - bad
+timestep = 0.04 - bad but almost made it
+timestep = 0.03 - stable
+
+ok 0.03 is the highest I can make it. So let's try HIL at a timestep of 0.03
 
 =====================12/14/2022============
 

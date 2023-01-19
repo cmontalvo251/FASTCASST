@@ -1,0 +1,1 @@
+g++ -c -w BumbleBee.cpp -I../../Navio_Emlid/C++/Navio -Ilinks

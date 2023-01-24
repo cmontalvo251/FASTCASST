@@ -16,13 +16,13 @@ except:
     sys.exit()
 
 ##TRUNCATION START AND END TIME of flight (Set to negative to turn off)
-tstart = 120
-tend = 200
+tstart = 110
+tend = 230
 
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File
-datafile = open('data/Pi_Intramural_Flight.csv','r')
+datafile = open('data/HIL_LIGHTWINDS5_0.csv','r')
 dataheaders = datafile.readline().split(',')
 numVars = len(dataheaders)
 print('Number of Vars = ',numVars)
@@ -139,83 +139,15 @@ OUTMID = 1500;
 OUTMAX = 2016
 OUTMIN = 992
 roll_command = roll - (-(pwm_aileron - OUTMID)-kda*roll_rate)/kpa;
-#aileron = kpa*(roll-phiC_pwm) + kda*(roll_rate)
 phi_command = (phiC_pwm-OUTMID)*50.0/((OUTMAX-OUTMIN)/2.0)
 pitch_command = pitch - (pwm_elevator - kde*pitch_rate - OUTMID)/kpe;
-#elevator = kpe*(pitch-thetaC_pwm) + kde*(pitch_rate)
 theta_command = -(thetaC_pwm-OUTMID)*30.0/((OUTMAX-OUTMIN)/2.0)
 
-##Plot
+##Plot Roll vs Roll Command
 fig = plt.figure()
 plti = fig.add_subplot(1,1,1)
 plti.plot(sense_flighttime,roll,label="Roll Angle")
-#plti.plot(sense_flighttime,roll_command,label="Calculated Roll Command")
 plti.plot(sense_flighttime,phi_command,label="RX Roll Command")
-plti.set_xlabel('Time (sec)')
-plti.set_ylabel('Roll Angle (deg)')
-plti.grid()
-plti.legend() 
-plti.get_yaxis().get_major_formatter().set_useOffset(False)
-plti.get_xaxis().get_major_formatter().set_useOffset(False)
-plt.gcf().subplots_adjust(left=0.18)
-pp.savefig()
-
-fig = plt.figure()
-plti = fig.add_subplot(1,1,1)
-plti.plot(sense_flighttime,abs(roll-phi_command))
-plti.set_xlabel('Time (sec)')
-plti.set_ylabel('Roll Angle Error (deg)')
-plti.grid()
-plti.get_yaxis().get_major_formatter().set_useOffset(False)
-plti.get_xaxis().get_major_formatter().set_useOffset(False)
-plt.gcf().subplots_adjust(left=0.18)
-pp.savefig()
-
-##Plot
-fig = plt.figure()
-plti = fig.add_subplot(1,1,1)
-plti.plot(sense_flighttime,pitch,label="Pitch Angle")
-plti.plot(sense_flighttime,pitch_command,label="Calculated Pitch Command")
-plti.plot(sense_flighttime,theta_command,label="RX Pitch Command")
-plti.set_xlabel('Time (sec)')
-plti.set_ylabel('Pitch Angle (deg)')
-plti.grid()
-plti.legend() 
-plti.get_yaxis().get_major_formatter().set_useOffset(False)
-plti.get_xaxis().get_major_formatter().set_useOffset(False)
-plt.gcf().subplots_adjust(left=0.18)
-pp.savefig()
-
-fig = plt.figure()
-plti = fig.add_subplot(1,1,1)
-plti.plot(sense_flighttime,abs(pitch-theta_command))
-plti.set_xlabel('Time (sec)')
-plti.set_ylabel('Pitch Angle Error (deg)')
-plti.grid()
-plti.get_yaxis().get_major_formatter().set_useOffset(False)
-plti.get_xaxis().get_major_formatter().set_useOffset(False)
-plt.gcf().subplots_adjust(left=0.18)
-pp.savefig()
-
-##Plot
-fig = plt.figure()
-plti = fig.add_subplot(1, 1, 1)
-plti.plot(flighttime_Start,roll_command[0:controlBegin[0]+1],'b',label='Calculated Command Manual Flight')
-plti.plot(flighttime_Start,roll[0:controlBegin[0]+1],'g--',label='Roll Angle Manual Flight')
-for i in range(0,n):
-    controlTime = controllists[i]
-    if i<1:
-        plti.plot(controlTime,roll_command[controlBegin[i]:controlEnd[i]],'r',label='Calculated Command Controlled Flight')
-        plti.plot(controlTime,roll[controlBegin[i]:controlEnd[i]],'m--',label='Roll Angle Controlled Flight')
-    else:
-        plti.plot(controlTime,roll_command[controlBegin[i]:controlEnd[i]],'r')
-        plti.plot(controlTime,roll[controlBegin[i]:controlEnd[i]],'m--')
-for ii in range(0,n-1):
-    nonControl = nocontrollists[ii]
-    plti.plot(nonControl,roll_command[controlEnd[ii]-1:controlBegin[ii+1]+1],'b')
-    plti.plot(nonControl,roll[controlEnd[ii]-1:controlBegin[ii+1]+1],'g--')
-plti.plot(flighttime_End,roll_command[controlEnd[-1]-1:iend_sense],'b')
-plti.plot(flighttime_End,roll[controlEnd[-1]-1:iend_sense],'g--')
 plti.set_xlabel('Time (sec)')
 plti.set_ylabel('Roll Angle (deg)')
 plti.grid()
@@ -253,25 +185,23 @@ plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 
-##Plot
+##Plot Roll Command Error
 fig = plt.figure()
-plti = fig.add_subplot(1, 1, 1)
-plti.plot(flighttime_Start,pitch_command[0:controlBegin[0]+1],'b',label='Calculated Command Manual Flight')
-plti.plot(flighttime_Start,pitch[0:controlBegin[0]+1],'g--',label='Pitch Angle Manual Flight')
-for i in range(0,n):
-    controlTime = controllists[i]
-    if i<1:
-        plti.plot(controlTime,pitch_command[controlBegin[i]:controlEnd[i]],'r',label='Calculated Command Controlled Flight')
-        plti.plot(controlTime,pitch[controlBegin[i]:controlEnd[i]],'m--',label='Pitch Angle Controlled Flight')
-    else:
-        plti.plot(controlTime,pitch_command[controlBegin[i]:controlEnd[i]],'r')
-        plti.plot(controlTime,pitch[controlBegin[i]:controlEnd[i]],'m--')
-for ii in range(0,n-1):
-    nonControl = nocontrollists[ii]
-    plti.plot(nonControl,pitch_command[controlEnd[ii]-1:controlBegin[ii+1]+1],'b')
-    plti.plot(nonControl,pitch[controlEnd[ii]-1:controlBegin[ii+1]+1],'g--')
-plti.plot(flighttime_End,pitch_command[controlEnd[-1]-1:iend_sense],'b')
-plti.plot(flighttime_End,pitch[controlEnd[-1]-1:iend_sense],'g--')
+plti = fig.add_subplot(1,1,1)
+plti.plot(sense_flighttime,abs(roll-phi_command))
+plti.set_xlabel('Time (sec)')
+plti.set_ylabel('Roll Angle Error (deg)')
+plti.grid()
+plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plti.get_xaxis().get_major_formatter().set_useOffset(False)
+plt.gcf().subplots_adjust(left=0.18)
+pp.savefig()
+
+##Plot Pitch vs Pitch Command
+fig = plt.figure()
+plti = fig.add_subplot(1,1,1)
+plti.plot(sense_flighttime,pitch,label="Pitch Angle")
+plti.plot(sense_flighttime,theta_command,label="RX Pitch Command")
 plti.set_xlabel('Time (sec)')
 plti.set_ylabel('Pitch Angle (deg)')
 plti.grid()
@@ -304,6 +234,18 @@ plti.set_xlabel('Time (sec)')
 plti.set_ylabel('Pitch Angle (deg)')
 plti.grid()
 plti.legend() 
+plti.get_yaxis().get_major_formatter().set_useOffset(False)
+plti.get_xaxis().get_major_formatter().set_useOffset(False)
+plt.gcf().subplots_adjust(left=0.18)
+pp.savefig()
+
+##Plot Pitch Command Error
+fig = plt.figure()
+plti = fig.add_subplot(1,1,1)
+plti.plot(sense_flighttime,abs(pitch-theta_command))
+plti.set_xlabel('Time (sec)')
+plti.set_ylabel('Pitch Angle Error (deg)')
+plti.grid()
 plti.get_yaxis().get_major_formatter().set_useOffset(False)
 plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)

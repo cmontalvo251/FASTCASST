@@ -145,15 +145,16 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       }
       InnerLoop(sense_matrix);
     case 0:
-      /*printf(" Ail RX Out = %lf ",aileron);
-      printf(" Phi_c from RX Ch = %lf ",roll_command);
-      double kpa = 2.5;
-      double kda = 0.05;
-      double roll_rate = sense_matrix.get(10,1);
-      double roll = sense_matrix.get(4,1);
-      double roll_command_out = roll - (-(aileron - OUTMID) - kda*roll_rate)/kpa;
-      printf(" Phi_c from RX Out = %lf \n",roll_command_out);*/
-     
+      //printf(" Ail RX Out = %lf ",aileron);
+      //printf(" Phi_c from RX Ch = %lf ",roll_command);
+      //double kpa = 2.5;
+      //double kda = 0.05;
+      //double roll_rate = sense_matrix.get(10,1);
+      //double roll = sense_matrix.get(4,1);
+      //double roll_command_out = roll - (-(aileron - OUTMID) - kda*roll_rate)/kpa;
+      //printf(" Phi_c from RX Out = %lf \n",roll_command_out);
+      //printf("time = %lf phi,p = %lf %lf aileron = %lf \n",currentTime,roll,roll_rate,aileron);
+      
       //printf("Passing signals \n");
       //Pass the receiver signals to the control_matrix and then break
       control_matrix.set(1,1,throttle);
@@ -274,8 +275,8 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     //kde = 0.5
     //kr = 0.1
 
-    double kpa = 2.5;
-    double kda = 0.05;
+    double kpa = 5.0;
+    double kda = 0.1;
     aileron = kpa*(roll-roll_command) + kda*(roll_rate);
     double kpe = 10.0;
     double kde = 0.5;

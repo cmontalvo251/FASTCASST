@@ -2,6 +2,21 @@
 
 Changed the name to FASTCASST
 
+==================1/6/2023===============
+
+Happy New Year. On the 15th I started working on lowering the timestep. Even at 0.03
+the code does not run fast enough. This means we need to look into the following action items and in this order
+
+☐ Fix the double to integer numerical precision issue by adding a quantization flag to the Simulation.txt file. I added a terrible hack where the control_matrix and the pwm_array is sent to every routine and a #ifdef cubesat is there to switch between the two. That's terrible. What we need to do is send the double array to all routines and then somewhere in the model we quantize the array if the flag is set
+
+☐ Try running the integrator on the pi and send data to computer for rendering and create a new mode called RENDER
+
+☐ Dan said it's possible the RK4 vector and control vector are asynchronous and causing issues. Might need to investigate the RK4 state and the control state and see if I'm dealing with that properly. To do that print time,state,control on both desktop and pi and see if you're off. Maxwell had a good idea to lower the timestep to see if that fixes it.
+
+☐ Thread the IMU and GPS
+
+☐ Run SIL on Pi with Desktop mode - As in run FASTKit on Raspbian and do away with Emlid
+
 ==================12/15/20222=============
 
 Alright I investigated the issue. I printed the Rk4 time and the watch timer and the integration

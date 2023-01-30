@@ -1,10 +1,10 @@
-Cleaning up FASTkit ON PI:
+Cleaning up FASTCASST ON PI:
 
   ✔ Create a scheduler for all sensors. @done (22-05-17 20:21)
 
   ✔ Increase baudrate for HIL to 115200 @done (22-12-03 07:55)
 
-  ☐ Change the name to FASTCAST - Configurable Autopilot and Simulation Tool
+  ☐ Change the name to FASTCASST - Configurable Autopilot and Simulation Software Tool
 
   ☐ Fix the double to integer numerical precision issue by adding a quantization flag to the Simulation.txt file. I added a terrible hack where the control_matrix and the pwm_array is sent to every routine and a #ifdef cubesat is there to switch between the two. That's terrible. What we need to do is send the double array to all routines and then somewhere in the model we quantize the array if the flag is set
 

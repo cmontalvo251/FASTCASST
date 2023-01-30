@@ -174,10 +174,13 @@ void loop() {
     //pi we need to run it here. The poll just simply puts everything in the sense_matrix from the model
     //matrix
     hw.sense.poll(watch.currentTime,watch.elapsedTime);
+    hw.hil(watch.currentTime,0); //0 = State vector update
+    hw.hil(watch.currentTime,1); //1 = send state to PI
     #endif
-    //No matter what though we need to run the hilsend routine which
-    //puts all vars into the appropriate matrices to send back and forth
-    hw.hilsend(watch.currentTime);
+    #ifdef RPI
+    hw.hil(watch.currentTime,2); //2 = wait for update from desktop
+    hw.hil(watch.currentTime,0); //0 = State vector update
+    #endif
     #endif
     
     //We only run the hardware / control loop if we're in SIMONLY, SIL, AUTO or HIL RPI
@@ -196,7 +199,20 @@ void loop() {
       //and we're on the desktop we don't run control.loop()
       control.loop(watch.currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
       /////////////////////////////////////////
-    } 
+    }
+
+    #ifdef HIL
+    //^^^Pi just ran the controller
+    #ifdef DESKTOP
+    hw.hil(watch.currentTime,2); //2 = wait for update from pi
+    hw.hil(watch.currentTime,3); //3 = control vector update
+    #endif
+    #ifdef RPI
+    hw.hil(watch.currentTime,3); //3 = control vector update
+    hw.hil(watch.currentTime,1); //1 = send control vector to DESKTOP
+    #endif
+    //Note that DESKTOP runs rk4 below
+    #endif
 
     ///////////MODELING LOOP/////////////////
     #ifdef MODELING

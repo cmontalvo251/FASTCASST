@@ -1,3 +1,209 @@
+==================12/15/20222=============
+
+Alright I investigated the issue. I printed the Rk4 time and the watch timer and the integration
+is too slow to keep up. Right now the timestep is at 0.01. I'm going to run in SIL mode and 
+see how high I can run the timestep before the whole simulation goes unstable
+
+timestep = 0.01 - good
+timestep = 0.1 - bad
+timestep = 0.05 - bad
+timestep = 0.04 - bad but almost made it
+timestep = 0.03 - stable
+
+ok 0.03 is the highest I can make it. So let's try HIL at a timestep of 0.03
+
+=====================12/14/2022============
+
+This is what I wanted yesterday.
+
+DESKTOP SIDE
+0.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+1.) hilsend -> this sends data to rpi (state vector)
+2.) hilreceive -> we then wait for a response from the pi (control vector)
+3.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+4.) rk4 -> we run one timestep on the rk4 engine to get a new state vector
+
+Asynchronous option is to have 1-2 run asynchronously and 0 and 3 run synchronously around the rk4 call
+
+PI SIDE
+0.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+1.) hilreceive -> we wait for a response from the desktop (state vector)
+2.) controller -> we run the controller on the pi
+3.) hilsend -> this sends data to the desktop (control vector)
+
+So you see how this is a bit different than what we had before
+
+My suggestion is to work on this at home and then test this on hardware at work
+
+This is what I want today
+
+hil(0)
+-DESKTOP - Take state vector and put it into the matrix copy
+-PI - wait for update from DESKTOP - will send state vector to copy
+
+hil(1)
+-DESKTOP - Send state vector from DESKTOP to PI
+-PI - put state vector copy into actual state vector
+
+controller()
+-only runs on PI
+
+hil(2)
+-DESKTOP - wait for a response from the PI - get control vector
+-PI      - put control vector into control vector copy   
+
+hil(3)
+-DESKTOP - take control vector copy and put it into memory
+-PI      - send control vector copy to DESKTOP
+
+rk4()
+-only runs on DESKTOP
+
+or do this, first let's define the functions
+
+hil(0)
+-DESKTOP - Take state vector and put it into matrix copy
+-PI      - put state vector copy into actual state vector
+
+hil(1)
+-DESKTOP - Send state vector copy from DESKTOP to PI
+-PI      - send control vector copy from PI to DESKTOP
+
+hil(2)
+-DESKTOP - wait for a response from the PI - get control vector
+-PI      - wait for update from DESKTOP - will send state vector to copy
+
+hil(3)
+-DESKTOP - take control vector copy and put it into memory
+-PI      - put control vector into control vector copy
+
+Then the order would be
+
+----TOP----
+
+DESKTOP -> hil(0)
+PI -> hil(2)
+
+DESKTOP -> hil(1)
+PI -> hil(0)
+
+PI -> controller()
+
+DESKTOP -> hil(2)
+PI -> hil(3)
+
+DESKTOP -> hil(3)
+PI -> hil(1)
+
+DESKTOP -> rk4()
+
+Ok that's all setup. Let's see if it compiles on DESKTOP. One little public/private error.
+We're now running on pi
+
+Ok progress. So the HIL control routine works now. Problem is that the game engine is absurdly slow. Or is it?
+
+I think we need to run SIMONLY with throttle = 992 and aileron=STICK_MAX and see how quickly we hit 180 degrees
+
+Then do it again in SIL mode and see if we get the same
+
+Then do it again in HIL mode. If it turns out we're still having a speed issue it means we need to make
+a thread for something.
+
+We also can turn on print statements a bit more and see if perhaps it's the OpenGL routine or the actual RK4
+routine.
+
+The watch.currentTime is using the internal clock but the RK4 engine is integrating as fast as possible.
+
+======================12/12/2022==============
+
+Ok looking at the asynchronous nature of the HIL sims. First let's look at the rates
+
+DESKTOP SIDE and RPI side
+10.0 	 !Standard Out Print Rate // seconds (set to negative)
+0.1  	 !Data logging rate // seconds (numbers if you want)
+0.01	 	 !RC Rate // seconds (to run as fast as possible)
+0.001 	!Integration rate // seconds
+
+HIL and SERIALLOOP RATE for RPI and DESKTOP
+HILRATE = 0.001;
+SERIALLOOPRATE = 0.001;
+
+Ok so the standard out print rate of 10.0 is probably good but let's set the datalogging rate and Print rate to 100.0 seconds
+The RC rate of 0.01 is probably fine but let's increase the integration rate to 0.01 seconds or 100Hz rather than 1000 Hz
+
+Let's also increase gains to 5.0 and 0.2 since that's the harder setup
+
+Alright. Let's do SIL and make sure everything is working
+
+Let's also plug the computer into power so it runs at full tilt without any power throttling.
+
+Ok SIL worked just fine. Just FYI, an integration rate of 0.1 did not work
+
+Alright let's now try HIL and see what happens
+
+The growth rate is small but the roll channel is still unstable. Before we start adding print statements I want to try something and that's change the HILRATE to 0.01 which is the same as the integration rate. The SERIALLOOPRATE needs to go afap but I don't think the HILRATE which just transfer matrices needs to operate that quickly.
+
+Ok that didn't fix it. Same problem popped up. Interestingly though the instability is changed by airspeed. I'm pressure sure the dynamics change with airspeed. Let's look at the roll dynamics
+
+pdot = L/Ixx -- assuming pure roll about the x-axis
+
+L = La + Lc -- La = aerodynamics and Lc is control
+
+La + Lc = 0.5*rho*v^2*S*Cl
+Cl = -Clp*phat + Clda*da
+
+pdot = 0.5*rho*v^2*S*(Clda*da - Clp*phat)/Ixx
+
+then in homogenous form
+
+pdot + 0.5*rho*v^2*S*Clp*phat/Ixx = 0.5*rho*v^2*S*Clda*da/Ixx
+
+So the pole is s = -0.5*rho*v^2*S*Clp/Ixx*a where a is a*p = phat
+
+so yea the dynamics get faster when the velocity increases which means flying slower helps the HIL simulation.
+
+Ok so we need to dig deeper
+
+My plan is to do this. 
+
+1.) Print the roll and roll rate on desktop side and the aileron signal during the dynamic rk4 call
+2.) Print the roll, roll rate and aileron signal after control is computed on the pi side
+
+Ok so there's definitely a huge delay in the asynchronous function calls. I wonder if I should try and break the code so that the integrator waits until it hears back from the pi and do away with these asynchronous loops? But just on the desktop side.
+
+Let's make a branch and see what happens
+
+Ok I'm running into some more issues so I need to make the pi side synchronous as well
+
+Ok I think I figured out the problem. The rpi receives a new state vector and then send the old control input because it happens right away.
+
+What we need to do is have the desktop side be asynchronous but the pi side be synchronous but a bit different.
+
+We need to pi to read the new state, compute control and then send the new control vector. That's a bit different than what we had.
+
+I will probably need to revert a bunch of stuff to get that to work properly 
+
+I think what I want to do is have a few routines
+
+DESKTOP SIDE
+0.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+1.) hilsend -> this sends data to rpi (state vector)
+2.) hilreceive -> we then wait for a response from the pi (control vector)
+3.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+4.) rk4 -> we run one timestep on the rk4 engine to get a new state vector
+
+Asynchronous option is to have 1-2 run asynchronously and 0 and 3 run synchronously around the rk4 call
+
+PI SIDE
+0.) hilupdate -> this will update the control vector and state vector just to be sure everything is up to date with the copies
+1.) hilreceive -> we wait for a response from the desktop (state vector)
+2.) controller -> we run the controller on the pi
+3.) hilsend -> this sends data to the desktop (control vector)
+
+So you see how this is a bit different than what we had before
+
+My suggestion is to work on this at home and then test this on hardware at work
+
 =====================12/2/2022============
 
 Plotted the data from the flight test yesterday and unfortunately 

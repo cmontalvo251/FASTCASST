@@ -4,5 +4,5 @@
 #define NUMTURNS 84
 #define AREA 0.02
 #define MAXCURRENT 0.12
-#define NUMTORQUERS 2 //X,Y no Z
+#define NUMTORQUERS 2 //X,Y no Z if set to 2 // Make sure to change Simulation.txt as well
 #endif 

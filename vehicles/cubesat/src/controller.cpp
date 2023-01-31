@@ -145,7 +145,7 @@ void controller::TwoStageLoop(MATLAB sense_matrix) {
   double p = pqr.get(1,1);
   double q = pqr.get(2,1);
   double r = pqr.get(3,1);
-  pqr.disp();
+  //pqr.disp();
   double Ixx = I.get(1,1);
   double Iyy = I.get(2,2);
   double Izz = I.get(3,3);

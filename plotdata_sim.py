@@ -15,7 +15,7 @@ except:
 
 ##TRUNCATION START AND END TIME (Set to negative to turn off)
 tstart = -99
-tend = -99
+tend = 10
 
 #Run code
 os.system('./clean_logs')
@@ -76,6 +76,8 @@ for x in range(1,numVars):
     plt.gcf().subplots_adjust(left=0.18)
     pp.savefig()
 
+
+###PLOT A X,Y GRAPH
 fig = plt.figure()    
 plti = fig.add_subplot(1,1,1)
 plti.plot(sense_data[istart_sense:iend_sense,1],sense_data[istart_sense:iend_sense,2],'b',label='Sense')
@@ -89,6 +91,8 @@ plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 
+
+###AND LAT/LON
 fig = plt.figure()    
 plti = fig.add_subplot(1,1,1)
 plti.plot(sense_data[istart_sense:iend_sense,16],sense_data[istart_sense:iend_sense,17],'b',label='Sense')
@@ -121,14 +125,14 @@ dOmega_max = 10.
 dPWM = (STICK_MAX-STICK_MIN)
 IpwmC = (dOmega_max/dPWM)
 try:
-    control_signals = model_data[istart_model:iend_model,31:34]
+    control_signals = model_data[istart_model:iend_model,35:38]
 except:
-    control_signals = model_data[istart_model:iend_model,31:33]
+    control_signals = model_data[istart_model:iend_model,35:37]
 moments = (control_signals - STICK_MID)*IpwmC
 fig = plt.figure()    
 plti = fig.add_subplot(1,1,1)
 #plti.plot(sense_time[istart_sense:iend_sense],control_signals)
-axis = ['X','Y','Z']
+axis = ['L','M','N']
 try:
     for i in range(0,3):
         plti.plot(model_time[istart_model:iend_model],moments[:,i],label=axis[i])

@@ -9,10 +9,10 @@
 0        !IMUTYPE (0=MPU,1=LSM)
 0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
 3 !Control System (3=two-stage,2=FL,1=PID,0=off)
-12.0	 !Mass (kg) // 1U - 2 // 2U - 4 // 6U - 12
-0.13  !Ixx (kg-m^2) // 1U - 0.00333 //2U,upright - 0.0167 // 2U,sideways - 0.0067 // 6U - 0.13
-0.1  !Iyy (kg-m^2) // 1U - 0.00333 //2U,upright - 0.0167 // 2U,sideways - 0.0167 // 6U - 0.10
-0.05  !Izz (kg-m^2) // 1U - 0.00333 //2U,upright - 0.0067 // 2U,sideways - 0.0167 // 6U - 0.05
+2.0	 !Mass (kg) // 1U - 2 // 2U - 4 // 6U - 12
+0.00333  !Ixx (kg-m^2) // 1U - 0.00333 //2U,upright - 0.0167 // 2U,sideways - 0.0067 // 6U - 0.13
+0.00333  !Iyy (kg-m^2) // 1U - 0.00333 //2U,upright - 0.0167 // 2U,sideways - 0.0167 // 6U - 0.10
+0.00333  !Izz (kg-m^2) // 1U - 0.00333 //2U,upright - 0.0067 // 2U,sideways - 0.0167 // 6U - 0.05
 0.000    !Ixy (kg-m^2)
 0.000    !Ixz (kg-m^2)
 0.000    !Iyz (kg-m^2)

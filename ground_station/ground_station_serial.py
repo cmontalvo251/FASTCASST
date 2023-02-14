@@ -226,7 +226,7 @@ GND = WINDOW()
 print('Opening Serial port')
 print('All available serial ports...')
 os.system('ls /dev/ttyUSB*')
-ser = U(57600,"/dev/ttyUSB0",period=1.0) #Set the baudrate, port and period in seconds
+ser = U(57600,"/dev/ttyUSB1",period=1.0) #Set the baudrate, port and period in seconds
 ##Initialize Filenumber at zero
 i = 0
 while True:

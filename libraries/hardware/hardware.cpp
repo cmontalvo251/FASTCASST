@@ -182,7 +182,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
 
   //I then need to populate the pwm_array with the control signals as quickly as possible
   for (int i = 0;i<rc.out.NUMSIGNALS;i++) {
-    rc.out.pwm_array[i] = round(control_matrix.get(i+1,1));
+    rc.out.pwm_array[i] = int(control_matrix.get(i+1,1));
   }
   //However, the control routine is created by the user and doesn't necessarily have a
   //saturation filter built in so we need to do that here

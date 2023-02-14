@@ -26,12 +26,12 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
     pwmnames[i-1] = (char*)malloc((11)*sizeof(char));
     sprintf(pwmnames[i-1],"PWM Model %d",i);
   }
-  pwm_dynamics_array = (int *) calloc(NUMACTUATORS,sizeof(int));
 
   NUMINTEGRATIONSTATES=13+NUMACTUATORS; //Only integrating 13 states for a 6DOF system + actuators
   integration_matrix.zeros(NUMINTEGRATIONSTATES,1,"Integration Matrix");
   settling_time_matrix.zeros(NUMACTUATORS,1,"settling time matrix");
   actuatorStates.zeros(NUMACTUATORS,1,"actuatorStates");
+  pwm_out.zeros(NUMACTUATORS,1,"pwm out");
   //Set initial conditions of integration matrix
   for (int i = 1;i<=NUMINTEGRATIONSTATES-NUMACTUATORS;i++) {
     integration_matrix.set(i,1,in_simulation_matrix.get(i+2,1));
@@ -239,7 +239,7 @@ void modeling::SetGPS() {
 }
 
 ///Loop
-void modeling::loop(double currentTime,int pwm_array[],int rx_array[],MATLAB control_matrix) {
+void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix) {
 
   //Check to see if we're integrating too fast
   if (currentTime < integrationTime) {
@@ -262,9 +262,8 @@ void modeling::loop(double currentTime,int pwm_array[],int rx_array[],MATLAB con
 
   //Before we send the pwm_array to the integrator we need to add some bias
   //If IACTUATORERROR IS ON
-  if (IACTUATORERROR) {
+  if (IACTUATORERROR==2) {
     for (int i = 0;i<NUMACTUATORS;i++){
-      pwm_array[i]=pwm_array[i]*(100+pwm_error.get(i+1,1))/100;
       control_matrix.set(i+1,1,control_matrix.get(i+1,1)*(100+pwm_error.get(i+1,1))/100);
     }
   }
@@ -306,9 +305,11 @@ void modeling::loop(double currentTime,int pwm_array[],int rx_array[],MATLAB con
       logger.printint(rx_array[i]);
     }
     //Then output the pwm array
-    //logger.printarrayln(pwm_array,NUMACTUATORS);
+    //logger.printarrayln(pwm_out_array,NUMACTUATORS);
     //Actually log the actuator states instead
-    logger.println(actuatorStates);
+    //logger.println(actuatorStates);
+    //Actually I finally fixed this, log the pwm_out matrix
+    logger.println(pwm_out);
     nextLOGtime=currentTime+LOGRATE;
   }
 
@@ -332,12 +333,12 @@ void modeling::loop(double currentTime,int pwm_array[],int rx_array[],MATLAB con
   #endif
 
   //Run RK4 Loop
-  rk4step(currentTime,pwm_array,control_matrix);
+  rk4step(currentTime,control_matrix);
 
   //Reset the Integration matrix
   integration_matrix.overwrite(integrator.State);
   //Copy over actuators
-  if (IACTUATORERROR) {
+  if (IACTUATORERROR==2) {
     actuatorStates.vecset(1,NUMACTUATORS,integrator.State,14);
   }
 
@@ -345,42 +346,43 @@ void modeling::loop(double currentTime,int pwm_array[],int rx_array[],MATLAB con
   integrationTime+=TIMESTEP;
 }
 
-void modeling::rk4step(double currentTime,int pwm_array[],MATLAB control_matrix) {
+void modeling::rk4step(double currentTime,MATLAB control_matrix) {
   //Integrate one timestep by running a 4 step RK4 integrator
   ///printf("===========\n");
   for (int i = 1;i<=4;i++){    
-    Derivatives(currentTime,pwm_array,control_matrix);
+    Derivatives(currentTime,control_matrix);
     integrator.integrate(i);
   }
 }
 
-
-void modeling::Derivatives(double currentTime,int pwm_array[],MATLAB control_matrix) {
+void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
   //Actuator Dynamics
   double time_constant = 0;
   double settling_time = 0;
   double actuatorDot = 0;
   for (int i = 0;i<NUMACTUATORS;i++) {  
     settling_time = settling_time_matrix.get(i+1,1);
-    if ((settling_time == 0) || (IACTUATORERROR == 0)) {
-      //Pass through
-      #if defined (cubesat) || (satellite)
+    if ((settling_time == 0) || (IACTUATORERROR <= 1)) {
+      //Pass Through
       actuatorStates.set(i+1,1,control_matrix.get(i+1,1));
-      #else
-      actuatorStates.set(i+1,1,pwm_array[i]);
-      #endif
     } else {
       //Integrate
       time_constant = 4.0/settling_time;
-      #if defined (cubesat) || (satellite)
+      //actuatorDot = time_constant*(pwm_array[i] - actuatorStates.get(i+1,1));
+      //Quantize the signal no matter what
       actuatorDot = time_constant*(control_matrix.get(i+1,1) - actuatorStates.get(i+1,1));
-      #else
-      actuatorDot = time_constant*(pwm_array[i] - actuatorStates.get(i+1,1));
-      #endif
       //printf("i = %d, actuatorDot = %lf \n",actuatorDot);
       integrator.k.set(13+i+1,1,actuatorDot);
     }
-    pwm_dynamics_array[i] = actuatorStates.get(i+1,1);
+    //Copy actuator States to pwm_out but quantize if needed
+    double val = 0;
+    if (IACTUATORERROR >= 1) {
+      //Quantize
+      val = int(actuatorStates.get(i+1,1));
+    } else {
+      val = actuatorStates.get(i+1,1);
+    }
+    pwm_out.set(i+1,1,val);
   }
   //printf("pwm_array Derivatives = %d \n",pwm_array[2]);
   //printf("actuatorStates = %lf \n",actuatorStates.get(3,1));
@@ -437,12 +439,7 @@ void modeling::Derivatives(double currentTime,int pwm_array[],MATLAB control_mat
   //External Forces Model
   //Send the external forces model the actuator_state instead of the ctlcomms
   if (FORCES_FLAG) {
-    //printf("RUNNING FORCE MODEL \n");
-    #ifdef cubesat
-    extforces.ForceMoment(currentTime,integrator.StateDel,integrator.k,actuatorStates,env);
-    #else
-    extforces.ForceMoment(currentTime,integrator.StateDel,integrator.k,pwm_dynamics_array,env);
-    #endif
+    extforces.ForceMoment(currentTime,integrator.StateDel,integrator.k,pwm_out,env);
   } else {
     extforces.FB.mult_eq(0); //Zero these out just to make sure something is in here
     extforces.MB.mult_eq(0);

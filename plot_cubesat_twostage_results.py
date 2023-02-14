@@ -20,7 +20,7 @@ pp = PDF(0,plt)
 os.system('./clean_logs')
 
 #Loop Through CubeSAT Configurations
-configs = ['1U','2U_Upright','2U_Sideways','6U']
+configs = ['1U']#,'2U_Upright','2U_Sideways','6U']
 controlname = ['No_Control','PID','FL','TS']
 for config in configs:
     print('CONFIG = ',config)

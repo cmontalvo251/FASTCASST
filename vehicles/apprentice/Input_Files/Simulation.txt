@@ -34,7 +34,7 @@
 0.0	!Bias Magnetometer (Tesla)
 0.0	!Std of Magnetometer (Tesla)
 0.0	!Noise of Magnetometer (Tesla)
-0	!Actuator Dynamics and Errors (0=off,1=on)
+0	!Actuator Dynamics and Errors (0=off,1=quantization,2=on+quantization)
 5.0 	!Actuator Error Percent (ACTUATOR_FLAG must be set to 1 above)
 4	!Number of Actuators to Simulate (Must be the same as control signals)
 0.1	!Settling Time (sec) of first actuator

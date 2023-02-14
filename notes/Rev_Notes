@@ -1,3 +1,10 @@
+==================2/14/2023===============
+
+Working on this double to integer issue that I hacked for the CubeSat.
+My plan is to have the actuator flag be 0 for off, 1 for discretization, 2 for dynamics and errors. 
+
+I edited the simulation.txt file to reflect this but I have not edited the code yet. Will have to do that eventually. 
+
 ==================1/31/2023===============
 
 Shifting gears and working on some CubeSAT simulations

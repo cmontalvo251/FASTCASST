@@ -17,7 +17,7 @@ forces::forces() {
   MB.zeros(3,1,"Moment in Body Frame");
 }
 
-void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[],environment env) {
+void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out,environment env) {
   //The only thing this function needs to do is populate FAEROB and MAEROB. 
   //You can do whatever you want in here but you must create those two vectors.
   FB.mult_eq(0); //Zero these out just to make sure something is in here
@@ -52,10 +52,10 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   //Extract Controls
   //Extract Actuator Values
   //Remember that control is in PWM (us)
-  double mewt = pwm_array[0];
-  double delaUS = pwm_array[1];
-  double deleUS = pwm_array[2];
-  double delrUS = pwm_array[3];
+  double mewt = pwm_out.get(1,1);
+  double delaUS = pwm_out.get(2,1);
+  double deleUS = pwm_out.get(3,1);
+  double delrUS = pwm_out.get(4,1);
 
   //Convert US to degrees
   double dela = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(delaUS-OUTMID);

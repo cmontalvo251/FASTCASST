@@ -15,14 +15,14 @@ except:
 
 ##TRUNCATION START AND END TIME (Set to negative to turn off)
 tstart = -99
-tend = 10
+tend = -99
 
 #Run code
 os.system('./clean_logs')
 os.system('rm simonly.exe')
 #os.system('make clean')
-os.system('make simonly MODEL="cubesat"')
-os.system('./simonly.exe cubesat/')
+os.system('make simonly MODEL="airplane"')
+os.system('./simonly.exe airplane/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File

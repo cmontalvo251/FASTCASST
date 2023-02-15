@@ -44,6 +44,13 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
     settling_time_matrix.set(i-13,1,in_simulation_matrix.get(counter-NUMACTUATORS,1));
     counter = counter + 1;
   }
+  //Then copy actuatorStates over to pwm_out
+  pwm_out.overwrite(actuatorStates);
+  if (IACTUATORERROR >= 1) {
+    for (int i = 1;i<NUMACTUATORS;i++) {
+      pwm_out.set(i,1,int(pwm_out.get(i,1)));
+    }
+  }
 
   //Get log rate
   LOGRATE = in_configuration_matrix.get(2,1);
@@ -310,6 +317,7 @@ void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix) {
     //logger.println(actuatorStates);
     //Actually I finally fixed this, log the pwm_out matrix
     logger.println(pwm_out);
+    //pwm_out.disp();
     nextLOGtime=currentTime+LOGRATE;
   }
 
@@ -360,6 +368,7 @@ void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
   double time_constant = 0;
   double settling_time = 0;
   double actuatorDot = 0;
+  //control_matrix.disp();
   for (int i = 0;i<NUMACTUATORS;i++) {  
     settling_time = settling_time_matrix.get(i+1,1);
     if ((settling_time == 0) || (IACTUATORERROR <= 1)) {
@@ -384,6 +393,8 @@ void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
     }
     pwm_out.set(i+1,1,val);
   }
+  //pwm_out.disp();
+  //actuatorStates.disp();
   //printf("pwm_array Derivatives = %d \n",pwm_array[2]);
   //printf("actuatorStates = %lf \n",actuatorStates.get(3,1));
 

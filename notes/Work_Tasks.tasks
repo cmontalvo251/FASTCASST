@@ -214,7 +214,7 @@ SATELLITE:
 
   ☐ Verify that barometer altitude is working since pressure currently assumes a Z coordinate for altitude
 
-  ☐ Double check that the magnetic field model is working
+  ✔ Double check that the magnetic field model is working @done (23-02-15 08:05)
 
   ☐ Double check that the simulation runs with OpenGL around a Planet
 

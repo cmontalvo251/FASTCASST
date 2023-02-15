@@ -45,13 +45,13 @@
 0.1	!Settling Time (sec) of 2 actuator
 0.1	!Settling Time (sec) of 3 actuator
 0.1	!Settling Time (sec) of 4 actuator
-1100.0  !Initial Condition of Actuator 1 (Throttle)
-1100.0  !Initial Condition of Actuator 2 (Aileron)
-1100.0  !Initial Condition of Actuator 3 (Elevator)
-1100.0  !Initial Condition of Actuator 4 (Rudder)
-1100.0  !Initial Condition of Actuator 1 (Throttle)
-1100.0  !Initial Condition of Actuator 2 (Aileron)
-1100.0  !Initial Condition of Actuator 3 (Elevator)
-1100.0  !Initial Condition of Actuator 4 (Rudder)
+992.0  !Initial Condition of Actuator 1 (Throttle)
+992.0  !Initial Condition of Actuator 2 (Aileron)
+992.0  !Initial Condition of Actuator 3 (Elevator)
+992.0  !Initial Condition of Actuator 4 (Rudder)
+992.0  !Initial Condition of Actuator 1 (Throttle)
+992.0  !Initial Condition of Actuator 2 (Aileron)
+992.0  !Initial Condition of Actuator 3 (Elevator)
+992.0  !Initial Condition of Actuator 4 (Rudder)
 
 ##Everything related to the simulation including sensor errors

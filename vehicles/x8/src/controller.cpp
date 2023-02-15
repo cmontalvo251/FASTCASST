@@ -109,6 +109,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     dyaw = CONSTRAIN(dyaw,-500,500);
     //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);
     //printf(" Roll Command = %lf ",roll_command);
+    throttle = 1500.0; // Just for debugging. Don't yell at your past self.
     motor_upper_left_top = throttle - droll - dpitch - dyaw;
     motor_upper_right_top = throttle + droll - dpitch + dyaw;
     motor_lower_left_top = throttle - droll + dpitch + dyaw;

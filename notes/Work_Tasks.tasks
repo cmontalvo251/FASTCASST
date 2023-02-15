@@ -6,7 +6,7 @@ Cleaning up FASTCASST ON PI:
 
   ✔ Change the name to FASTCASST - Configurable Autopilot and Simulation Software Tool @done (23-01-30 16:13)
 
-  ☐ Fix the double to integer numerical precision issue by adding a quantization flag to the Simulation.txt file. I added a terrible hack where the control_matrix and the pwm_array is sent to every routine and a #ifdef cubesat is there to switch between the two. That's terrible. What we need to do is send the double array to all routines and then somewhere in the model we quantize the array if the flag is set
+  ✔ Fix the double to integer numerical precision issue by adding a quantization flag to the Simulation.txt file. I added a terrible hack where the control_matrix and the pwm_array is sent to every routine and a #ifdef cubesat is there to switch between the two. That's terrible. What we need to do is send the double array to all routines and then somewhere in the model we quantize the array if the flag is set @done (23-02-15 10:32)
 
   ☐ Try running the integrator on the pi and send data to computer for rendering and create a new mode called RENDER
 

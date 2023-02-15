@@ -1,4 +1,4 @@
-2000.0 !Final Integration time
+100.0 !Final Integration time
 0.0001 !Integration rate // seconds
 2.0	!Initial X Position (m) ///Sixdof Model with quaternions
 0.0	!Initial Y Position (m)
@@ -39,6 +39,6 @@
 2	!Number of Actuators to Simulate (Must be the same as control signals)
 0.1	!Settling Time (sec) of first actuator
 0.1	!Settling Time (sec) of 2 actuator
-1100.0  !Initial Condition of Actuator 1 (Motor 1)
-1100.0  !Initial Condition of Actuator 2 (Motor 2)
+1500.0  !Initial Condition of Actuator 1 (Motor 1)
+1500.0  !Initial Condition of Actuator 2 (Motor 2)
  

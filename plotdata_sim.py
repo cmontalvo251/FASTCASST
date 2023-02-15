@@ -21,8 +21,8 @@ tend = -99
 os.system('./clean_logs')
 os.system('rm simonly.exe')
 #os.system('make clean')
-os.system('make simonly MODEL="car"')
-os.system('./simonly.exe car/')
+os.system('make simonly MODEL="meta"')
+os.system('./simonly.exe meta/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File

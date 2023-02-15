@@ -192,11 +192,11 @@ void environment::init(MATLAB in_simulation_matrix) {
   rSun2Sat.zeros(3,1,"Sun 2 Satellite");
   gSun.zeros(3,1,"Sun Gravity Acceleration");
 
-  #ifdef USEHILPATH
-  sprintf(COEFFFILENAME,"%s","../../GeographicLib/EGM_EMM");
-  #else
-  sprintf(COEFFFILENAME,"%s","modeling/GeographicLib/EGM_EMM");
-  #endif
+  //#ifdef USEHILPATH
+  sprintf(COEFFFILENAME,"%s","libraries/GeographicLib/EGM_EMM");
+  //#else
+  //sprintf(COEFFFILENAME,"%s","modeling/GeographicLib/EGM_EMM");
+  //#endif
 
   if (Gravity_Flag == 1) {
     #ifdef __linux__

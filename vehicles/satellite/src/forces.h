@@ -23,6 +23,7 @@ class forces {
   //You can put any private functions or vars in here that you like but it 
   //must adhere to the standards below
   MATLAB MMTVEC;
+  double dOmega_max = 10,dPWM = (STICK_MAX-STICK_MIN),IpwmC = (dOmega_max/dPWM);
  public:
   //These are 3x1 MATLAB vectors that must be in units of Newtons
   //and in the body frame
@@ -34,7 +35,7 @@ class forces {
   //time is in seconds
   //state is a 13x1 using quaternions and using standard aerospace convention
   //statedot is the derivatives of the state vector
-  void ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[],environment env); 
+  void ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out,environment env); 
   //Constructor
   forces();
 };

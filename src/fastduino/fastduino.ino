@@ -9,7 +9,7 @@
 void setup() {
   //Setup Serial Std Out
   Serial.begin(115200);
-  Serial.print("FASTKit Software Version 42.0 \n");
+  Serial.print("FASTCASST Software Version 42.0 \n");
 
   String root_folder_name = "vehicles/airplane/";
 

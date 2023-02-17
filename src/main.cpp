@@ -75,7 +75,7 @@ int main(int argc,char* argv[]) {
   srand(time(NULL));
 
   //Print name of software
-  printf("FASTKit Software version 42.0 \n");
+  printf("FASTCASST Software version 42.0 \n");
 
   ////////////////////??CHECK FOR SUDO IF RUNNING IN AUTO MODE/////////
   #ifdef AUTO

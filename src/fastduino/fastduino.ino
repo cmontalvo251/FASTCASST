@@ -4,18 +4,22 @@
 #define ARDUINO
 #define AUTO
 
-#include <timer.h>
+#include "timer.h"
+TIMER watch;
 
 void setup() {
   //Setup Serial Std Out
   Serial.begin(115200);
   Serial.print("FASTKit Software Version 42.0 \n");
-
-  String root_folder_name = "vehicles/airplane/";
-
+  Serial.print("Initiailizing Timer...\n");
+  watch.init(0);
+  Serial.print("Timer Initialized \n");
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
+  //Update Timer
+  watch.updateTime();
+  Serial.print("T = ");
+  Serial.print(watch.currentTime);
+  cross_sleep(1.0);
 }

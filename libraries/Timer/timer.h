@@ -6,7 +6,9 @@
 
 #include <time.h>
 #ifndef _WIN32
+#ifndef ARDUINO
 #include <unistd.h>
+#endif
 #endif
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,7 +38,7 @@ class TIMER {
   #ifndef ARDUINO
   struct timespec ts;
   #else
-  float ts;
+  double ts;
   #endif
  public:
   double currentTime,elapsedTime;

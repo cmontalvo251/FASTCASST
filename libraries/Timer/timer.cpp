@@ -33,7 +33,7 @@ void cross_sleep(double length) {
   Sleep(length*1000);
   #else
   #ifdef ARDUINO
-  delay(length);
+  delay(length*1000);
   #else
   usleep(length*1000000);
   #endif

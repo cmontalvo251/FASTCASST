@@ -7,6 +7,9 @@
 //Furthermore, you can't import text files on an Arduino so everything
 //in Simulation.txt and Config.txt must be placed in here
 
+//Note when setting this up for the first time. 
+//Install the Due board by going to the board manager
+//Go to preferences and change the location of the libraries to ~/FASTCASST
 
 //Timer.h for realtime clock
 #include "timer.h"
@@ -19,7 +22,10 @@ TIMER watch;
 #include "mathp.h"
 //Need MATLAB.h for Matrices
 #include "MATLAB.h"
-
+//RCIO is inside hardware.h
+//#include "RCIO.h"
+//RCInput is inside RCIO.h
+//#include "RCInput.h"
 
 void setup() {
   //Setup Serial Std Out
@@ -29,7 +35,6 @@ void setup() {
   Serial.print("FASTKit Software Version 42.0 \n");
 
   //Hardware init
-  
   
   ///Initialize the timer
   Serial.print("Initiailizing Timer...\n");
@@ -43,5 +48,6 @@ void loop() {
   watch.updateTime();
   Serial.print("T = ");
   Serial.print(watch.currentTime);
+  Serial.print("\n");
   cross_sleep(1.0);
 }

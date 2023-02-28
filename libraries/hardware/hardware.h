@@ -1,26 +1,28 @@
 #ifndef HARDWARE_H
 #define HARDWARE_H
 
+#ifdef ARDUINO
+#include "MATLAB.h"
+#include "Datalogger.h"
+#include "RCIO.h"
+#include "timer.h"
+#else
 //Helper Modules
 #include <MATLAB/MATLAB.h>
-
 //Datalogger class
 //Need datalogger to log data to disk
 //and import data files
 #include <Datalogger/Datalogger.h>
-
 //RCIO will take care of the receiver and pwm signals
 #include <RCIO/RCIO.h>
-
 //Need Sensors class to read all sensors
 #include <sensors/sensors.h>
-
 //Time for pause function
 #include <Timer/timer.h>
-
 //UART for HIL and Telemetry (Telemetry is always on so this is always include)
 //Eventually I'm going to get Telemetry working in SIL and SIMONLY modes
 #include <UART/uart.h>
+#endif
 
 //In order to get this to work on linux you need to run sudo apt-get install libboost-all-dev
 //You need boost to run the hil functions because the serial read/write must run as fast as possible 

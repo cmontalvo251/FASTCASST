@@ -11,6 +11,7 @@
 
 #ifdef ARDUINO
 #include <mathp.h>
+#include <SD.h>  //These SD card functions really need to be moved to Datalogger
 #else
 #include <string.h>
 #include <math.h>
@@ -133,6 +134,10 @@ class MATLAB {
 
   void vecfprintf(FILE*);
   void vecfprintfln(FILE*);
+  #ifdef ARDUINO
+  void vecfprintf(File);
+  void vecfprintfln(File);
+  #endif
 
   void dlmread(char*,MATLAB*,char*);
   void dlmread(char*);

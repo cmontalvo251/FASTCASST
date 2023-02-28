@@ -17,11 +17,17 @@ void Datalogger::findfile(char* directory) {
     if (echo) {
       printf("%s%s \n","Attempting to check for file: ",filename);
     }
+    #ifdef ARDUINO
+    found = SD.exists(filename);
+    #else
     fileout = fopen(filename,"r");
     if (!fileout) {
       found = 1;
     } else {
       fclose(fileout);
+    }    
+    #endif
+    if (found) {
       if (echo) {
         printf("File exists. Skipping \n");
       }
@@ -34,11 +40,15 @@ void Datalogger::findfile(char* directory) {
   //return number
 }
 
-void Datalogger::open() {
+void Datalogger::openfile() {
   if (echo) {
     printf("Attempting to open: %s \n",filename);
   }
+  #ifdef ARDUINO
+  outfile = SD.open(filename,FILE_WRITE);
+  #else
   outfile = fopen(filename,"wb");
+  #endif
   //printf("Attempting to open %s \n",filename);
   if (echo) {
   if (!outfile) {
@@ -50,21 +60,28 @@ void Datalogger::open() {
 }
 
 void Datalogger::init(char* directory,int num) {
+  #ifdef ARDUINO
+  pinMode(44,OUTPUT);
+  if (!SD.begin(44)) { 
+    Serial.println("initialization failed!");
+    exit(1);
+  }
+  #endif
   //Find a file in the desired directory
   findfile(directory);
   //open said file
-  open();
+  openfile();
   //Set size of variables
   setLogVars(num);  
 }
 
 void Datalogger::reopen(char* directory) {
   //close currently open file
-  close();
+  closefile();
   //find a new file
   findfile(directory);
   //Open file
-  open();
+  openfile();
 }
 
 void Datalogger::setLogVars(int num) {
@@ -93,13 +110,12 @@ void Datalogger::printheaders() {
   headerctr = 0;
   printf("Logging Headers to Data File \n");
   for (int i = 0;i<total_length;i++) {
-    fprintf(outfile,"%s ",logheader[i]);
+    printchar(logheader[i]);
     //printf("%s ",logheader[i]);
     if (i < total_length - 1) {
-      fprintf(outfile,"%s",",");
+      writecomma();
     }
   }
-  fprintf(outfile,"%s ","\n");
   IsHeader = 1;
   flush();
 }
@@ -113,27 +129,52 @@ void Datalogger::append(MATLAB in) {
 
 //Print functions
 void Datalogger::printvar(double var) {
+  #ifdef ARDUINO
+  outfile.write(var);
+  #else
   fprintf(outfile,"%lf,",var);
+  #endif
   flush();
 }
 
 void Datalogger::printint(int var) {
+  #ifdef ARDUINO
+  outfile.write(var);
+  #else
   fprintf(outfile,"%d,",var);
+  #endif
   flush();
 }
 
 void Datalogger::print(MATLAB out) {
   logctr = 1;
   out.vecfprintf(outfile);
-  fprintf(outfile,",");
+  writecomma();
   flush();
 }
 
 void Datalogger::print() {
   logctr = 1;
   logvars.vecfprintf(outfile);
-  fprintf(outfile,",");
+  writecomma();
   flush();
+}
+
+void Datalogger::writenewline() {
+  #ifdef ARDUINO
+  outfile.write("\n");
+  #else
+  fprintf(outfile,"%s ","\n");
+  #endif
+}
+
+
+void Datalogger::writecomma() {
+  #ifdef ARDUINO
+  outfile.write(",");
+  #else
+  fprintf(outfile,",");
+  #endif
 }
 
 void Datalogger::println(MATLAB out) {
@@ -150,9 +191,9 @@ void Datalogger::println() {
 
 void Datalogger::printarray(int array[],int num) {
   for (int i = 0;i<num;i++) {
-    fprintf(outfile,"%d",array[i]);
+    printint(array[i]);
     if (i != num-1) {
-      fprintf(outfile,",");
+      writecomma();
     }
   }
   flush();
@@ -160,29 +201,41 @@ void Datalogger::printarray(int array[],int num) {
 
 void Datalogger::printarrayln(int array[],int num) {
   printarray(array,num);
-  fprintf(outfile,"\n");
+  writenewline();
   flush();
 }
 
 //Print char*
 void Datalogger::printchar(char* msg) {
+  #ifdef ARDUINO
+  outfile.write(msg);
+  #else
   fprintf(outfile,"%s ",msg);
+  #endif
   flush();
 }
 
 //Print a single character
 void Datalogger::printc(char c) {
+  #ifdef ARDUINO
+  outfile.write(c);
+  #else
   fprintf(outfile,"%c",c);
+  #endif
   flush();
 }
 
 //Close function
-void Datalogger::close() {
+void Datalogger::closefile() {
   flush();
   if (echo) {
     printf("Closing File \n");
   }
+  #ifdef ARDUINO
+  outfile.close();
+  #else
   fclose(outfile);
+  #endif
   if (echo) {
     printf("File closed \n");
   }
@@ -190,9 +243,14 @@ void Datalogger::close() {
 
 //Flush function
 void Datalogger::flush() {
+  #ifdef ARDUINO
+  outfile.flush();
+  #else
   fflush(outfile);
+  #endif
 }
 
+#ifndef ARDUINO //you can't import files on Arduino
 int Datalogger::ImportFile(char* filename,MATLAB* data,char* name,int length) {
   //cout << "Reading " << filename << endl;
   //Gonna open this file the old school way
@@ -238,4 +296,4 @@ int Datalogger::ImportFile(char* filename,MATLAB* data,char* name,int length) {
   //If everything checks out we just return 1
   return 1;
 }
-
+#endif

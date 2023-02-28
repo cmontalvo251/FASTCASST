@@ -229,6 +229,24 @@ void MATLAB::dlmread(char* filename,MATLAB* data,char* name) {
 }
 #endif
 
+#ifdef ARDUINO
+void MATLAB::vecfprintf(File outfile) {
+  for (int idx = 0;idx<row_;idx++) {
+    outfile.write(get(idx+1,1));
+    if (idx<row_-1) {
+      outfile.write(",");
+    }
+  }
+}
+
+void MATLAB::vecfprintfln(File outfile) {
+  //Print the contents like normal
+  vecfprintf(outfile);
+  //only different is we print a newline at the end
+  outfile.write("\n");
+}
+#endif
+
 void MATLAB::vecfprintf(FILE* outfile) {
   for (int idx = 0;idx<row_;idx++) {
     fprintf(outfile,"%lf",get(idx+1,1));

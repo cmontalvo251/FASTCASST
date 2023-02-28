@@ -1,12 +1,21 @@
 #ifndef DATALOGGER_H //HEADER GUARD - It makes sure that you only import this header file once
 #define DATALOGGER_H
 
+#ifdef ARDUINO
+#include "MATLAB.h"
+#include <SD.h>
+#else
 #include <MATLAB/MATLAB.h>
 #include <iostream>
+#endif
 
 class Datalogger {
  private:
+  #ifdef ARDUINO
+  File outfile;
+  #else
   FILE* outfile;
+  #endif
   int number = 0;
   int total_length = 0;
   char filename[256];
@@ -17,6 +26,8 @@ class Datalogger {
   void findfile(char* directory);
   void print(MATLAB);
   void printvar(double);
+  void writecomma();
+  void writenewline();
   void printint(int);
   void print();
   void println(MATLAB);
@@ -24,9 +35,9 @@ class Datalogger {
   void printarray(int[],int);
   void printarrayln(int[],int);
   void printchar(char*);
-  void close();
+  void closefile();
   void flush();
-  void open();
+  void openfile();
   void reopen(char*);
   void printc(char);
   void printheaders();

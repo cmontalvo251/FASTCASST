@@ -16,17 +16,27 @@ TIMER watch;
 
 ///DEBUG HEADER FILES
 #include "mathp.h"
+
 //Need MATLAB.h for Matrices
 #include "MATLAB.h"
+
+//Datalogger is inside hardware.h
+#include "Datalogger.h"
+Datalogger logger;
+
 //RCIO is inside hardware.h
 #include "RCIO.h"
 RCIO rc;
+
 //RCInput is inside RCIO.h
 //#include "RCInput.h"
+
 //RCInput rin;
 //RCOutput is inside RCIO.h
+
 //#include "RCOutput.h"
 //RCOutput rout;
+
 //PWMSIGNALS.h is inside RCIO.h
 //#include "PWMSIGNALS.h"
 
@@ -45,6 +55,8 @@ void setup() {
   //Hardware init
 
   //DEBUGGING
+  //Initialize Datalogger
+  logger.init("data/",1+RECV_N_CHANNEL); //Time plus the receiver signals - Remember the SD card on the arduino needs to have a data folder
   rc.outInit(RECV_N_CHANNEL);
   //rin.initialize();
   //rout.initialize(RECV_N_CHANNEL);

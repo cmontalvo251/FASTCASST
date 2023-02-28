@@ -1,14 +1,17 @@
 #ifndef RCIN_H
 #define RCIN_H
 
+#ifndef ARDUINO
 #include <cstdio>
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdlib>
-#ifndef ARDUINO
 #include <err.h>
 #include <sys/ioctl.h>
 #include <iostream>
+#else
+#include <Arduino.h>
+#include <stdio.h>
 #endif
 #include <stdlib.h>
 
@@ -21,6 +24,8 @@
 ////    Desktop - Joystick 
 
 ///Running SIL/HIL/AUTO on RPI - Use Receiver
+//You don't need these hooks or Arduino
+#ifndef ARDUINO
 #if defined (SIL) || (HIL) || (AUTO)
 #ifdef RPI
 #define RECEIVER
@@ -32,14 +37,13 @@
 #if defined (SIL) && (DESKTOP)
 #ifndef KEYBOARD
 #define JOYSTICK
-#endif
-#endif
+#endif //KEYBOARD
+#endif //SIL DESKTOP
+#endif //ARDUINO
 
 #ifdef RECEIVER
-#ifdef RPI
 //Using a receiver on the Raspberry Pi
 #include <Util/Util.h>
-#endif
 #endif
 
 #ifdef JOYSTICK
@@ -63,32 +67,54 @@
 #define BIT_RANGE 32768
 #endif
 
+#ifdef ARDUINO
+#define RECV_N_CHANNEL 	6
+#define RECV_CHAN0PIN 	2
+#define RECV_CHAN1PIN 	3
+#define RECV_CHAN2PIN 	4
+#define RECV_CHAN3PIN 	5
+#define RECV_CHAN4PIN 	6
+#define RECV_CHAN5PIN 	7
+#endif
+
 class RCInput {
 public:
-    void initialize();
-    void readRCstate();
-    void printRCstate(int);
-    void setStick(int val);
-    void setStickNeutral();
-    int bit2PWM(int val);
-    void mapjoy2rx();
-    void saturation_block();
-    void RangeCheck();
-    int invert(int);
-    //Constructor
-    RCInput();
-    //Destructor
-    ~RCInput();
-    int joy_fd=-1,*joycomm=NULL,*rx_array=NULL,*axis_id=NULL,num_of_axis=0,num_of_buttons=0,x;
-    char *button = NULL,name_of_joystick[NAME_LENGTH];
-    double keyboard[8]; //do max 8 just in case
-    #ifdef JOYSTICK
-    struct js_event js;
-    #endif
+  void initialize();
+  void readRCstate();
+  void printRCstate(int);
+  void setStick(int val);
+  void setStickNeutral();
+  int bit2PWM(int val);
+  void mapjoy2rx();
+  void saturation_block();
+  void RangeCheck();
+  int invert(int);
+  //Constructor
+  RCInput();
+  //Destructor
+  ~RCInput();
+  int joy_fd=-1,*joycomm=NULL,*rx_array=NULL,*axis_id=NULL,num_of_axis=0,num_of_buttons=0,x;
+  char *button = NULL,name_of_joystick[NAME_LENGTH];
+  double keyboard[8]; //do max 8 just in case
+  #ifdef JOYSTICK
+  struct js_event js;
+  #endif
 private:
-    int open_axis(int ch);
-    int read_axis(int ch);
-    void LostCommCheck();
+  int open_axis(int ch);
+  int read_axis(int ch);
+  void LostCommCheck();
+  // interrupt handlers
+  static void ch0Handler();
+  void ch1Handler();
+  void ch2Handler();
+  void ch3Handler();
+  void ch4Handler();
+  void ch5Handler();
+  static void pwmHandler(int chann, int pin);
+  static int getRXvalue(int chann);
 };
+
+static volatile int timeLastChange[RECV_N_CHANNEL];
+static volatile int rx_array_static[RECV_N_CHANNEL];
 
 #endif

@@ -26,6 +26,7 @@ TIMER watch;
 //#include "RCIO.h"
 //RCInput is inside RCIO.h
 #include "RCInput.h"
+RCInput rin;
 
 void setup() {
   //Setup Serial Std Out
@@ -33,21 +34,31 @@ void setup() {
 
   ///Print dummy version number
   Serial.print("FASTKit Software Version 42.0 \n");
-
-  //Hardware init
   
   ///Initialize the timer
   Serial.print("Initiailizing Timer...\n");
   watch.init(0);
   Serial.print("Timer Initialized \n");
+
+  
+  //Hardware init
+
+  //DEBUGGING
+  rin.initialize();
   
 }
 
 void loop() {
   //Update Timer
   watch.updateTime();
+  //Update RC Signals
+  rin.readRCstate();
+
+  //Print Everything
   Serial.print("T = ");
   Serial.print(watch.currentTime);
+  Serial.print("RX = ");
+  rin.printRCstate(-5);
   Serial.print("\n");
-  cross_sleep(1.0);
+  cross_sleep(0.1);
 }

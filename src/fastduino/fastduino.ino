@@ -1,10 +1,14 @@
 //These #defines would normally go in the makefile
 //but I don't want to learn Makefiles so they will go in here 
 //instead
+
+//Version 1.0 of the Arduino Version just has the ARDUINO and AUTO flags
+//To see if it compiles
 #define ARDUINO
 #define AUTO
 
-#include <timer.h>
+//Version 2.0 - Adding the timer
+//#include <timer.h>
 
 void setup() {
   //Setup Serial Std Out

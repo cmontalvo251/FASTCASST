@@ -36,8 +36,15 @@ void RCInput::initialize() {
   }
   #endif
 
+  #ifdef ARDUINO
+  Serial.print("Allocating Axes \n");
+  Serial.print("Number of Axes = ");
+  Serial.print(num_of_axis);
+  Serial.print("\n");
+  #else
   printf("Allocating Axes \n");
   printf("Number of axes = %d \n",num_of_axis);
+  #endif
   rx_array = (int *) calloc(num_of_axis,sizeof(int));
   joycomm = (int *) calloc(num_of_axis,sizeof(int));
   axis_id = (int *) calloc(num_of_axis,sizeof(int));
@@ -67,11 +74,11 @@ void RCInput::initialize() {
   // connect pins and handlers
   //ch0Handler();
   attachInterrupt(RECV_CHAN0PIN, &ch0Handler, CHANGE);
-  //attachInterrupt(RECV_CHAN1PIN, &ch1Handler, CHANGE);
-  //attachInterrupt(RECV_CHAN2PIN, &ch2Handler, CHANGE);
-  //attachInterrupt(RECV_CHAN3PIN, &ch3Handler, CHANGE);
-  //attachInterrupt(RECV_CHAN4PIN, &ch4Handler, CHANGE);
-  //attachInterrupt(RECV_CHAN5PIN, &ch5Handler, CHANGE);
+  attachInterrupt(RECV_CHAN1PIN, &ch1Handler, CHANGE);
+  attachInterrupt(RECV_CHAN2PIN, &ch2Handler, CHANGE);
+  attachInterrupt(RECV_CHAN3PIN, &ch3Handler, CHANGE);
+  attachInterrupt(RECV_CHAN4PIN, &ch4Handler, CHANGE);
+  attachInterrupt(RECV_CHAN5PIN, &ch5Handler, CHANGE);
   #endif
 }
 
@@ -83,6 +90,9 @@ void RCInput::setStick(int val) {
 }
 
 void RCInput::LostCommCheck() {
+  #ifdef ARDUINO
+  Serial.print("Running lost comms \n");
+  #endif
   int lostcomms = 0;
   for (int idx = 0;idx<4;idx++) {
     if (rx_array[idx] == 0) {
@@ -107,6 +117,7 @@ void RCInput::RangeCheck() {
 }
 
 void RCInput::saturation_block() {
+  printf("Running Saturation Block!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
   //First run a lost comms check
   LostCommCheck();
   //Then run a range check
@@ -155,7 +166,6 @@ void RCInput::readRCstate()
     rx_array[idx] = getRXvalue(idx);
   }
   #endif
-  
 
   #ifdef JOYSTICK
   if (joy_fd != -1) {
@@ -272,7 +282,12 @@ void RCInput::printRCstate(int all) {
     val = -all;
   }
   for (x = 0;x<val;x++){
+    #ifdef ARDUINO
+    Serial.print(rx_array[x]);
+    Serial.print(" ");
+    #else
     printf("%d ",rx_array[x]);
+    #endif
   }
   #ifdef JOYSTICK
   if (all == 1) {
@@ -321,6 +336,11 @@ void RCInput::pwmHandler(int chann,int pin){
     {
       // clock runs at 42MHz therefore divide with 42 to get us
       rx_array_static[chann] = (timeCurrentChange - timeLastChange[chann])/42;
+      //Serial.print("Channel = ");
+      //Serial.print(chann);
+      //Serial.print(" ");
+      //Serial.print(rx_array_static[chann]);
+      //Serial.print("\n");
     }
 }
 #endif

@@ -107,11 +107,11 @@ private:
   void LostCommCheck();
   // interrupt handlers
   static void ch0Handler();
-  void ch1Handler();
-  void ch2Handler();
-  void ch3Handler();
-  void ch4Handler();
-  void ch5Handler();
+  static void ch1Handler();
+  static void ch2Handler();
+  static void ch3Handler();
+  static void ch4Handler();
+  static void ch5Handler();
   static void pwmHandler(int chann, int pin);
   static int getRXvalue(int chann);
 };

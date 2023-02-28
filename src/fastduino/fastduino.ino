@@ -7,7 +7,7 @@
 //Install the Due board by going to the board manager
 //Go to preferences and change the location of the libraries to ~/FASTCASST
 
-//Timer.h for realtime clock
+//Timer.h for realtime clock - Tested on 2/28/2023 and it compiles and runs
 #include "timer.h"
 TIMER watch;
 
@@ -15,25 +15,24 @@ TIMER watch;
 //#include "hardware.h"
 
 ///DEBUG HEADER FILES
-#include "mathp.h"
+//#include "mathp.h"
 
 //Need MATLAB.h for Matrices
-#include "MATLAB.h"
+//#include "MATLAB.h"
 
 //Datalogger is inside hardware.h
-#include "Datalogger.h"
-Datalogger logger;
+//#include "Datalogger.h"
+//Datalogger logger;
 
 //RCIO is inside hardware.h
-#include "RCIO.h"
-RCIO rc;
+//#include "RCIO.h"
+//RCIO rc;
 
-//RCInput is inside RCIO.h
-//#include "RCInput.h"
+//RCInput is inside RCIO.h - Compiles on 2/28/2023 and Runs on 2/28/2023
+#include "RCInput.h"
+RCInput rin;
 
-//RCInput rin;
 //RCOutput is inside RCIO.h
-
 //#include "RCOutput.h"
 //RCOutput rout;
 
@@ -56,9 +55,9 @@ void setup() {
 
   //DEBUGGING
   //Initialize Datalogger
-  logger.init("data/",1+RECV_N_CHANNEL); //Time plus the receiver signals - Remember the SD card on the arduino needs to have a data folder
-  rc.outInit(RECV_N_CHANNEL);
-  //rin.initialize();
+  //logger.init("data/",1+RECV_N_CHANNEL); //Time plus the receiver signals - Remember the SD card on the arduino needs to have a data folder
+  //rc.outInit(RECV_N_CHANNEL);
+  rin.initialize();
   //rout.initialize(RECV_N_CHANNEL);
   
 }
@@ -67,15 +66,17 @@ void loop() {
   //Update Timer
   watch.updateTime();
   //Update RC Signals
-  rc.read();  
+  rin.readRCstate();
+  //rc.read();  
   
   //Print Everything
   Serial.print("T = ");
   Serial.print(watch.currentTime);
-  Serial.print("RX = ");
-  rc.in.printRCstate(-5);
-  Serial.print("PWM = ");
-  rc.out.print();
+  Serial.print(" RX = ");
+  rin.printRCstate(-6);
+  //rc.in.printRCstate(-5);
+  Serial.print(" PWM = ");
+  //rc.out.print();
   Serial.print("\n");
   cross_sleep(0.1);
 }

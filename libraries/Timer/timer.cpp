@@ -29,15 +29,19 @@ void PAUSE()
 }
 
 void cross_sleep(double length) {
-  #ifdef _WIN32
+  #if defined (_WIN32)
   Sleep(length*1000);
   #else
   #ifdef ARDUINO
   delay(length);
   #else
+  #ifdef __unix__
+  sleep(length*1000000);
+  #else
   usleep(length*1000000);
-  #endif
-  #endif
+  #endif //__unix__
+  #endif //ARDUINO
+  #endif //_WIN32
 }
 
 TIMER::TIMER() {

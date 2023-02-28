@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import matplotlib
+matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 plt.rcParams.update({'figure.max_open_warning': 0})
 plt.rcParams.update({'font.size': 14})
@@ -7,19 +9,9 @@ import sys
 import os
 import numpy as np
 
-try:
-    from pdf import *
-    #import sixdof as dof
-except:
-    print('You need pdf and sixdof from Python.git This is on my Github just git clone that repo and put pdf.py and sixdof.py in this root or add to pythonpath')
-    sys.exit()
-
 ##TRUNCATION START AND END TIME (Set to negative to turn off)
 tstart = -99
 tend = 10.0
-
-##Create PDF Handle
-pp = PDF(0,plt)
 
 ##Create plot handles
 figPQR = plt.figure()
@@ -68,7 +60,7 @@ for filenamei in files:
     model_data = []
     for line in logfile:
         row = line.split(',')
-        numarray = [np.float(x) for x in row]
+        numarray = [np.float64(x) for x in row]
         model_data.append(numarray)
     model_data = np.array(model_data)
     #Plot everything

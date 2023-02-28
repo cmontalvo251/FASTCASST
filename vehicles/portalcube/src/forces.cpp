@@ -17,7 +17,7 @@ forces::forces() {
   MB.zeros(3,1,"Moment in Body Frame");
 }
 
-void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[],environment env) {
+void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out,environment env) {
   //The only thing this function needs to do is populate FB and MB. 
   //You can do whatever you want in here but you must create those two vectors.
   FB.mult_eq(0); //Zero these out just to make sure something is in here
@@ -25,10 +25,10 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
 
   //Extract Actuator Values
   //Remember that control is in PWM (us)
-  double throttleUS = pwm_array[0];
-  double aileronUS = pwm_array[1];
-  double elevatorUS = pwm_array[2];
-  double rudderUS = pwm_array[3];
+  double throttleUS = pwm_out.get(1,1);
+  double aileronUS = pwm_out.get(2,1);
+  double elevatorUS = pwm_out.get(3,1);
+  double rudderUS = pwm_out.get(4,1);
 	
   //Convert throttle signals to thruster value
   double TMAX = 1000;

@@ -59,9 +59,9 @@ forces::forces() {
   rz = 0.0;
 }
 
-void forces::compute_thrust_and_torque(int pwm_array[]) {
+void forces::compute_thrust_and_torque(MATLAB pwm_out) {
   for (int i = 1;i<=4;i++) {
-    double omega = spin_slope*(pwm_array[i-1] - OUTMIN);
+    double omega = spin_slope*(pwm_out.get(i,1) - OUTMIN);
     double thrust = 0.5*RHOSLSI*AREA*pow(omega*Rrotor,2.0)*ct;
     double torque = 0.5*RHOSLSI*AREA*pow(omega*Rrotor,2.0)*Rrotor*cq;
     thrust_motors.set(i,1,thrust);
@@ -71,7 +71,7 @@ void forces::compute_thrust_and_torque(int pwm_array[]) {
   //torque_motors.disp();
 }
 
-void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[],environment env) {
+void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out,environment env) {
   //The only thing this function needs to do is populate FB and MB. 
   //You can do whatever you want in here but you must create those two vectors.
   FB.mult_eq(0); //Zero these out just to make sure something is in here
@@ -80,7 +80,7 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[
   //ctlcomms.disp();
 
   //First we need to convert the microsecond pulse to Newtons
-  compute_thrust_and_torque(pwm_array);
+  compute_thrust_and_torque(pwm_out);
 
   //Thrust on the body is simply the total thrust
   double thrust = thrust_motors.sum();

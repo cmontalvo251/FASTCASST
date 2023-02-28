@@ -1,0 +1,43 @@
+20.0	!Final Integration time 
+0.0001 	!Integration rate // seconds
+6871393	!Initial X Position (m) (Radius of Earth = 6371393)
+0.0	!Initial Y Position (m) ///Sixdof Model with quaternions
+0.0	!Initial Z Position (m) 
+1.0	!Quaternion 0
+0.0	!Quaternion 1
+0.0	!Quaternion 2
+0.0	!Quaternion 3
+0.0	!Initial Xbody Velocity (m/s) 
+7616.18	!Initial Ybody Velocity (m/s) (For eq circular orbit = v = sqrt(mu/r))
+0.0	!Initial Zbody Velocity (m/s) (500 km is 7,616.18 m/s)
+0.2	!Initial Roll Rate (rad/s)
+0.2	!Initial Pitch Rate (rad/s)
+0.2	!Initial Yaw Rate (rad/s)
+1	!External Force Model (0=off,1=on) - 16
+0	!Gravity Flag (-1=off,0=point mass, 1=egm2008,2=point mass + sun,3=flat earth)
+0	!Magnetic Field Model (0=off, 1=emm2015)
+-99	!Update Rate of Magnetic Field Model (sec) (-99=update once,0=everytimestep)
+2022	!Year
+0	!Sensor Errors (0=off,1=on)
+2.0 	!Bias Pos (m) 
+0.5 	!Std Pos (m)
+1.0 	!Noise Pos (m)
+0.5	!Bias Angle (deg) (Bias + std + noise)
+0.5	!Std of Angle (deg)
+0.5	!Noise Angle (deg)
+2.0 	!Bias Pressure Altitude (m)
+2.0 	!Std Pressure Altitude (m)
+0.5 	!Noise Pressure Altitude (m)
+0.05	!Bias Gyro (rad/s)
+0.1 	!Std of Gyro Bias (rad/s)
+0.1 	!Noise Gyro (rad/s)
+0.0	!Bias Magnetometer (Tesla)
+0.0	!Std of Magnetometer (Tesla)
+0.0	!Noise of Magnetometer (Tesla)
+0	!Actuator Dynamics and Errors (0=off,1=quantization,2=on+quantization)
+5.0 	!Actuator Error Percent (ACTUATOR_FLAG must be set to 1 above)
+2	!Number of Actuators to Simulate (Must be the same as control signals)
+0.1	!Settling Time (sec) of 1 magT
+0.1	!Settling Time (sec) of 2 magT
+1500  	!Initial Condition of Actuator 1 magT
+1500  	!Initial Condition of Actuator 2 magT

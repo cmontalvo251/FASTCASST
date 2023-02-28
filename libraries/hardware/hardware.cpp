@@ -182,7 +182,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
 
   //I then need to populate the pwm_array with the control signals as quickly as possible
   for (int i = 0;i<rc.out.NUMSIGNALS;i++) {
-    rc.out.pwm_array[i] = round(control_matrix.get(i+1,1));
+    rc.out.pwm_array[i] = int(control_matrix.get(i+1,1));
   }
   //However, the control routine is created by the user and doesn't necessarily have a
   //saturation filter built in so we need to do that here
@@ -203,8 +203,11 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     //RC Out Channels
     logger.printarrayln(rc.out.pwm_array,rc.out.NUMSIGNALS);
     //DEBUG PRINT
+    //printf(" Ail RX Out = %d \n",rc.out.pwm_array[1]);
+    //printf(" Throttle RX Out = %d \n",rc.out.pwm_array[0]);
+    //printf(" Ail RX Out = %d \n",rc.out.pwm_array[1]);
+    //printf(" Elev RX Out = %d \n",rc.out.pwm_array[2]);
     /*printf("Ail RX Ch = %d ",rc.in.rx_array[1]);
-    printf(" Ail RX Out = %d ",rc.out.pwm_array[1]);
     int aileron = rc.in.rx_array[1];
     double roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
     printf(" Phi_c from RX Ch = %lf ",roll_command);

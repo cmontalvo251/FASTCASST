@@ -33,7 +33,7 @@ void cross_sleep(double length) {
   Sleep(length*1000);
   #else
   #ifdef ARDUINO
-  delay(length);
+  delay(length*1000);
   #else
   #ifdef __unix__
   sleep(length*1000000);
@@ -57,7 +57,11 @@ void TIMER::resetStartTime() {
 
 double TIMER::getSeconds() {
   //http://linux.die.net/man/3/clock_gettime
+  #ifndef ARDUINO
   double sec = ptm_->tm_sec + (ptm_->tm_min)*60 + ((ptm_->tm_hour-4)%24)*3600 + (ptm_->tm_mday)*24*3600 + (double)ts.tv_nsec*pow(10,-9);
+  #else
+  double sec = ts;  
+  #endif
   //double sec = 20*((double)t_)/CLOCKS_PER_SEC;
   //printf("Current Time = %lf \n",start_sec_);
   return sec;
@@ -65,13 +69,17 @@ double TIMER::getSeconds() {
 
 void TIMER::getCurrentTime() {
   //t_ = clock();
-#ifdef _WIN32
+  #ifdef _WIN32
   time(&rawtime_);
   ptm_ = gmtime(&rawtime_);
-#else
+  #else
+  #ifdef ARDUINO
+  ts = millis()/1000.0;
+  #else
   clock_gettime(CLOCK_MONOTONIC,&ts);
   ptm_ = gmtime(&ts.tv_sec);
-#endif
+  #endif
+  #endif
 }
 
 double TIMER::getTimeElapsed() {

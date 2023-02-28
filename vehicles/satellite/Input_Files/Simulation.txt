@@ -25,21 +25,21 @@
 0.0	!Bias Angle (deg) (Bias + std + noise)
 0.0	!Std of Angle (deg)
 0.0	!Noise Angle (deg)
-0.0 !Bias Velocity (m/s)
-0.0 !Std Velocity (m/s)
-0.0 !Noise Velocity (m/s)
-0.1	!Bias Gyro (rad/s)
-0.0 	!Std of Gyro (rad/s)
-0.05 	!Noise Gyro (rad/s)
+2.0 	!Bias Pressure Altitude (m)
+2.0 	!Std Pressure Altitude (m)
+0.5 	!Noise Pressure Altitude (m)
+0.05	!Bias Gyro (rad/s)
+0.1 	!Std of Gyro Bias (rad/s)
+0.1 	!Noise Gyro (rad/s)
 0.0	!Bias Magnetometer (Tesla)
 0.0	!Std of Magnetometer (Tesla)
 0.0	!Noise of Magnetometer (Tesla)
-0	!Actuator Dynamics and Errors (0=off,1=on)
-1.0 	!Actuator Error Percent (ACTUATOR_FLAG must be set above)
+0	!Actuator Dynamics and Errors (0=off,1=quantization,2=on+quantization)
+5.0 	!Actuator Error Percent (ACTUATOR_FLAG must be set to 1 above)
 2	!Number of Actuators to Simulate (Must be the same as control signals)
-0.1	!Settling Time (sec) of first magT
+0.1	!Settling Time (sec) of 1 magT
 0.1	!Settling Time (sec) of 2 magT
-0.0  !Initial Condition of Actuator 1 magT
-0.0  !Initial Condition of Actuator 2 magT
+1500  	!Initial Condition of Actuator 1 magT
+1500  	!Initial Condition of Actuator 2 magT
 
 ##Everything related to the simulation including sensor errors

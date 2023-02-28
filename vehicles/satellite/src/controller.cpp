@@ -19,8 +19,8 @@ void controller::init(MATLAB in_configuration_matrix) {
 }
 
 void controller::set_defaults() {
-  control_matrix.set(1,1,0);
-  control_matrix.set(2,1,0);
+  control_matrix.set(1,1,STICK_MID);
+  control_matrix.set(2,1,STICK_MID);
 }
 
 void controller::print() {
@@ -87,18 +87,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     desired_moments.mult_eq(KMAG);
     //Convert to currents
     desired_moments.mult_eq(1.0/(NUMTURNS*AREA));
+    desired_moments.plus_eq(STICK_MID);
     //send to ctlcomms (but might not be 3 actuators)
     for (int i = 0;i<NUMSIGNALS;i++) {
       control_matrix.set(i+1,1,desired_moments.get(i+1,1));
-    }
-    //Saturation on current
-    double sum = control_matrix.abssum();
-    if (sum > MAXCURRENT) {
-      control_matrix.mult_eq(MAXCURRENT/sum);
-      // for (int i = 0;i<3;i++) {
-      //   double val = ctlcomms.get(i+1,1);
-      //   ctlcomms.set(i+1,val/sum*maxcurrent);
-      // }
     }
   } 
   //control_matrix.disp();

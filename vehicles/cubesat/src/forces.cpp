@@ -26,7 +26,7 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB actuato
 
   //state.disp();
   pqr_PWM.mult_eq(0);
-  pqr_PWM.plus_eq(STICK_MID);
+  //pqr_PWM.plus_eq(STICK_MID);
   //actuatorStates.disp();
   for (int i = 0;i<NUMTORQUERS;i++){
     pqr_PWM.set(i+1,1,actuatorStates.get(i+1,1));

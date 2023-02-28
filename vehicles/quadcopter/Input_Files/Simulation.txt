@@ -34,16 +34,16 @@
 0.0	!Bias Magnetometer (Tesla)
 0.0	!Std of Magnetometer (Tesla)
 0.0	!Noise of Magnetometer (Tesla)
-0	!Actuator Dynamics and Errors (0=off,1=on)
+1	!Actuator Dynamics and Errors (0=off,1=quantization,2=on+quantization)
 0.0 	!Actuator Error Percent (ACTUATOR_FLAG must be set above)
 4	!Number of Actuators to Simulate (Must be the same as control signals)
 0.1	!Settling Time (sec) of first actuator
 0.1	!Settling Time (sec) of 2 actuator
 0.1	!Settling Time (sec) of 3 actuator
 0.1	!Settling Time (sec) of 4 actuator
-1100.0  !Initial Condition of Actuator 1 (Throttle)
-1100.0  !Initial Condition of Actuator 2 (Aileron)
-1100.0  !Initial Condition of Actuator 3 (Elevator)
-1100.0  !Initial Condition of Actuator 4 (Rudder)
+992.0  !Initial Condition of Actuator 1 (Throttle)
+992.0  !Initial Condition of Actuator 2 (Aileron)
+992.0  !Initial Condition of Actuator 3 (Elevator)
+992.0  !Initial Condition of Actuator 4 (Rudder)
 
 ##Everything related to the simulation including sensor errors

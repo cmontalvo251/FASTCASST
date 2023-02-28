@@ -3,16 +3,23 @@
 
 #ifdef __linux__ || __APPLE
 #include <cmath> //only for g++
+#ifndef ARDUINO
 #include <iostream> //only for g++
+#endif
 #include <string> //only for g++
 #endif
 
+#ifdef ARDUINO
+#include <mathp.h>
+#else
+#include <string.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <Mathp/mathp.h>
 #include <fstream>
+#endif
+
 #include "nrutils.h"
 #define NRANSI
 #define NR_END 1

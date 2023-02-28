@@ -23,7 +23,7 @@ class forces {
   //must adhere to the standards below
   double Rrotor,cq,ct,kt,rx,ry,rz,AREA,spin_slope;
   MATLAB thrust_motors,torque_motors;
-  void compute_thrust_and_torque(int pwm_array[]);
+  void compute_thrust_and_torque(MATLAB pwm_out);
   int NUMMOTORS = 8;
  public:
   //These are 3x1 MATLAB vectors that must be in units of Newtons
@@ -36,7 +36,7 @@ class forces {
   //time is in seconds
   //state is a 13x1 using quaternions and using standard aerospace convention
   //statedot is the derivatives of the state vector
-  void ForceMoment(double time,MATLAB state,MATLAB statedot,int pwm_array[],environment env);
+  void ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out,environment env);
   //Constructor
   forces();
 };

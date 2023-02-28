@@ -16,10 +16,10 @@ void controller::init(MATLAB in_configuration_matrix) {
 }
 
 void controller::set_defaults() {
-  control_matrix.set(1,1,OUTMID);
-  control_matrix.set(2,1,OUTMID);
-  control_matrix.set(3,1,OUTMID);
-  control_matrix.set(4,1,OUTMID);
+  control_matrix.set(1,1,OUTMIN);
+  control_matrix.set(2,1,OUTMIN);
+  control_matrix.set(3,1,OUTMIN);
+  control_matrix.set(4,1,OUTMIN);
 }
 
 void controller::print() {

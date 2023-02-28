@@ -42,9 +42,8 @@ class modeling {
   int NUMACTUATORS;
   int IACTUATORERROR;
   double ACTUATORPERCENTERROR;
-  MATLAB pwm_error;
+  MATLAB pwm_error,pwm_out;
   char** headernames;
-  int *pwm_dynamics_array=NULL;
   char** pwmnames;
   char** rcnames;
   Datalogger logger;
@@ -59,8 +58,8 @@ class modeling {
   environment env;
   forces extforces;
   //double ACTUATOR_ERROR_PERCENT;
-  void rk4step(double time,int pwm_array[],MATLAB control_matrix);
-  void Derivatives(double,int[],MATLAB);
+  void rk4step(double time,MATLAB control_matrix);
+  void Derivatives(double time,MATLAB control_matrix);
   double integrationTime=0;
   MATLAB output_matrix;
   //GPS - origin set in Mathp.h
@@ -83,7 +82,7 @@ class modeling {
   //initialization routine
   void init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB in_configuration_matrix,int argc,char** argv);
   //Loop
-  void loop(double currentTime,int pwm_array[],int rx_array[],MATLAB control_matrix);
+  void loop(double currentTime,int rx_array[],MATLAB control_matrix);
 };
 
 //Render Loop function

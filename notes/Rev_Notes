@@ -1,3 +1,30 @@
+==================2/15/2023===============
+
+Still trying to fix this quantization issues.
+
+Testing the apprentice folder right now. Ok apprentice works so we need to test
+all vehicles now
+
+1.) Airplane - check
+2.) Apprentice - check
+3.) car - check
+4.) cubesat - check
+5.) meta - check
+6.) portalcube - check
+7.) quadcopter - check
+8.) satellite - check (Magnetorquer code is not working but it's already a work task)
+9.) tank - check
+10.) x8 - check
+
+Alright that means everything works and we can move on to the next step.
+
+==================2/14/2023===============
+
+Working on this double to integer issue that I hacked for the CubeSat.
+My plan is to have the actuator flag be 0 for off, 1 for discretization, 2 for dynamics and errors. 
+
+I edited the simulation.txt file to reflect this but I have not edited the code yet. Will have to do that eventually. 
+
 ==================1/31/2023===============
 
 Shifting gears and working on some CubeSAT simulations

@@ -75,7 +75,7 @@ int main(int argc,char* argv[]) {
   srand(time(NULL));
 
   //Print name of software
-  printf("FASTKit Software version 42.0 \n");
+  printf("FASTCASST Software version 42.0 \n");
 
   ////////////////////??CHECK FOR SUDO IF RUNNING IN AUTO MODE/////////
   #ifdef AUTO
@@ -216,7 +216,7 @@ void loop() {
 
     ///////////MODELING LOOP/////////////////
     #ifdef MODELING
-    model.loop(watch.currentTime,hw.rc.out.pwm_array,hw.rc.in.rx_array,control.control_matrix);
+    model.loop(watch.currentTime,hw.rc.in.rx_array,control.control_matrix);
     #endif
     /////////////////////////////////////////
 
@@ -238,7 +238,7 @@ void loop() {
       //LAT LON PRESSURE ALTITUDE
       //#ifdef AUTO
       printf("LL(B)H %lf %lf %lf ",hw.sense.satellites.latitude,hw.sense.satellites.longitude,hw.sense.atm.altitude);
-      printf("Head,Comp %lf %lf ",hw.sense.satellites.heading,hw.sense.compass);
+      //printf("Head,Comp %lf %lf ",hw.sense.satellites.heading,hw.sense.compass);
       //#else
       //XYZ
       //printf(" %lf %lf %lf ",hw.sense.satellites.X,hw.sense.satellites.Y,hw.sense.atm.altitude);

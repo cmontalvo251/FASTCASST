@@ -33,8 +33,8 @@ TIMER watch;
 RCInput rin;
 
 //RCOutput is inside RCIO.h
-//#include "RCOutput.h"
-//RCOutput rout;
+#include "RCOutput.h"
+RCOutput rout;
 
 //PWMSIGNALS.h is inside RCIO.h
 //#include "PWMSIGNALS.h"
@@ -58,7 +58,7 @@ void setup() {
   //logger.init("data/",1+RECV_N_CHANNEL); //Time plus the receiver signals - Remember the SD card on the arduino needs to have a data folder
   //rc.outInit(RECV_N_CHANNEL);
   rin.initialize();
-  //rout.initialize(RECV_N_CHANNEL);
+  rout.initialize(RECV_N_CHANNEL);
   
 }
 
@@ -66,8 +66,11 @@ void loop() {
   //Update Timer
   watch.updateTime();
   //Update RC Signals
+  //rc.read();
+
+  //DEBUGGING
   rin.readRCstate();
-  //rc.read();  
+  //Copy rin.rx_array to rout.pwm_array
   
   //Print Everything
   Serial.print("T = ");

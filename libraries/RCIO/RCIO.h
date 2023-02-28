@@ -9,8 +9,8 @@
 // 1 - rx_array (double array)
 // 2 - pwm_array (double array)
 
-#include <RCIO/RCInput.h>
-#include <RCIO/RCOutput.h>
+#include <RCInput/RCInput.h>
+#include <RCOutput/RCOutput.h>
 
 class RCIO {
  private:

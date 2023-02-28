@@ -1,7 +1,7 @@
 #ifndef RCOUTPUT_H
 #define RCOUTPUT_H
 
-#include "PWM.h"
+#include <PWM/PWM.h>
 #include <unistd.h> //This is for sleep()
 #include <cstdio>
 #include <stdio.h>

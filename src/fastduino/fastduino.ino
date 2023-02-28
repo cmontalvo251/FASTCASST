@@ -1,9 +1,5 @@
-//These #defines would normally go in the makefile
-//but I don't want to learn Makefiles so they will go in here 
-//instead
-#define ARDUINO
-#define AUTO
-
+//Note that you can't define #defines in this ino script to make everything Arduino specific
+//You do have access to ARDUINO so just use #ifdef ARDUINO if you want to do something ARDUINO specific
 //Furthermore, you can't import text files on an Arduino so everything
 //in Simulation.txt and Config.txt must be placed in here
 
@@ -49,9 +45,9 @@ void setup() {
   //Hardware init
 
   //DEBUGGING
-  rc.outInit(6);
+  rc.outInit(RECV_N_CHANNEL);
   //rin.initialize();
-  //rout.initialize(6);
+  //rout.initialize(RECV_N_CHANNEL);
   
 }
 
@@ -66,6 +62,8 @@ void loop() {
   Serial.print(watch.currentTime);
   Serial.print("RX = ");
   rc.in.printRCstate(-5);
+  Serial.print("PWM = ");
+  rc.out.print();
   Serial.print("\n");
   cross_sleep(0.1);
 }

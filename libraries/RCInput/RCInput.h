@@ -12,6 +12,7 @@
 #else
 #include <Arduino.h>
 #include <stdio.h>
+#include "PWMSIGNALS.h"
 #endif
 #include <stdlib.h>
 
@@ -68,7 +69,6 @@
 #endif
 
 #ifdef ARDUINO
-#define RECV_N_CHANNEL 	6
 #define RECV_CHAN0PIN 	2
 #define RECV_CHAN1PIN 	3
 #define RECV_CHAN2PIN 	4

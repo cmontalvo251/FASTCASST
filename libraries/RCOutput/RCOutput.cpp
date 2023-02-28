@@ -17,8 +17,8 @@ void RCOutput::initialize(int num) {
 	//Initialize channels
 	for (int i = 0;i<NUMSIGNALS;i++) { 
 	  printf("Initializing PWM Output = %d \n",i);
-	  #if defined AUTO || HIL
-	  #ifdef RPI
+	  #if defined AUTO || HIL || ARDUINO
+	  #if defined RPI || ARDUINO
 	  if(!(pwmsignals.init(i))) {
 	    exit(1);
 	  }
@@ -53,8 +53,8 @@ void RCOutput::write() {
   for (int i = 0;i<NUMSIGNALS;i++) {
     float us = pwm_array[i];
     //printf("Sending PWM signal to channel = %d \n",i);
-    #if defined AUTO || HIL
-    #ifdef RPI
+    #if defined AUTO || HIL || ARDUINO
+    #if defined RPI || ARDUINO
     pwmsignals.set_duty_cycle(i,us/1000.0);
     #endif
     #endif
@@ -62,16 +62,16 @@ void RCOutput::write() {
 }
 
 void RCOutput::backup() {
-	for (int i = 0;i<NUMSIGNALS;i++) {
-		pwm_array_prev[i] = pwm_array[i];
-	}
+  for (int i = 0;i<NUMSIGNALS;i++) {
+    pwm_array_prev[i] = pwm_array[i];
+  }
 }
 
 void RCOutput::revert() {
-	//printf("Reverting \n");
-	for (int i = 0;i<NUMSIGNALS;i++) {
-		pwm_array[i] = pwm_array_prev[i];
-	}	
+  //printf("Reverting \n");
+  for (int i = 0;i<NUMSIGNALS;i++) {
+    pwm_array[i] = pwm_array_prev[i];
+  }	
 }
 
 int RCOutput::RangeCheck() {

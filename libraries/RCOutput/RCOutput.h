@@ -5,8 +5,8 @@
 #include "PWMSIGNALS.h"
 #else
 #include "PWMSIGNALS/PWMSIGNALS.h"
-#endif
 #include <unistd.h> //This is for sleep()
+#endif
 #include <cstdio>
 #include <stdio.h>
 #include <stdlib.h>

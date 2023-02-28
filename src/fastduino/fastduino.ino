@@ -23,14 +23,16 @@ TIMER watch;
 //Need MATLAB.h for Matrices
 #include "MATLAB.h"
 //RCIO is inside hardware.h
-//#include "RCIO.h"
+#include "RCIO.h"
+RCIO rc;
 //RCInput is inside RCIO.h
-#include "RCInput.h"
-RCInput rin;
+//#include "RCInput.h"
+//RCInput rin;
 //RCOutput is inside RCIO.h
 //#include "RCOutput.h"
+//RCOutput rout;
 //PWMSIGNALS.h is inside RCIO.h
-#include "PWMSIGNALS.h"
+//#include "PWMSIGNALS.h"
 
 void setup() {
   //Setup Serial Std Out
@@ -43,12 +45,13 @@ void setup() {
   Serial.print("Initiailizing Timer...\n");
   watch.init(0);
   Serial.print("Timer Initialized \n");
-
   
   //Hardware init
 
   //DEBUGGING
-  rin.initialize();
+  rc.outInit(6);
+  //rin.initialize();
+  //rout.initialize(6);
   
 }
 
@@ -56,13 +59,13 @@ void loop() {
   //Update Timer
   watch.updateTime();
   //Update RC Signals
-  rin.readRCstate();
-
+  rc.read();  
+  
   //Print Everything
   Serial.print("T = ");
   Serial.print(watch.currentTime);
   Serial.print("RX = ");
-  rin.printRCstate(-5);
+  rc.in.printRCstate(-5);
   Serial.print("\n");
   cross_sleep(0.1);
 }

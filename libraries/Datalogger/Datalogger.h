@@ -9,6 +9,9 @@
 #include <iostream>
 #endif
 
+void printstdout(char* msg);
+void printstdoutint(int);
+
 class Datalogger {
  private:
   #ifdef ARDUINO

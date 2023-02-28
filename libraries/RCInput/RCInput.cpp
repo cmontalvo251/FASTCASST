@@ -90,9 +90,6 @@ void RCInput::setStick(int val) {
 }
 
 void RCInput::LostCommCheck() {
-  #ifdef ARDUINO
-  Serial.print("Running lost comms \n");
-  #endif
   int lostcomms = 0;
   for (int idx = 0;idx<4;idx++) {
     if (rx_array[idx] == 0) {
@@ -100,7 +97,21 @@ void RCInput::LostCommCheck() {
     }
   }
   if (lostcomms == 1) {
+    printstdout("Lost Communications Setting to Neutral!!!\n");
     setStickNeutral();
+  }
+}
+
+void RCInput::saturationCheck() {
+  for (int idx = 0;idx<num_of_axis;idx++) {
+    if (rx_array[idx] < STICK_MIN) {
+      printstdout("REC Clipped \n");
+      rx_array[idx] = STICK_MIN;
+    }
+    if (rx_array[idx] > STICK_MAX) {
+      rx_array[idx] = STICK_MAX;
+      printstdout("REC Clipped \n");
+    }
   }
 }
 
@@ -117,11 +128,13 @@ void RCInput::RangeCheck() {
 }
 
 void RCInput::saturation_block() {
-  printf("Running Saturation Block!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+  //printf("Running Saturation Block!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
   //First run a lost comms check
   LostCommCheck();
   //Then run a range check
-  RangeCheck();
+  //RangeCheck();
+  //Saturation Check
+  saturationCheck();
 }
 
 void RCInput::setStickNeutral() {
@@ -194,7 +207,8 @@ void RCInput::readRCstate()
   setStickNeutral();
   #endif
 
-  LostCommCheck();
+  //LostCommCheck();
+  saturation_block();
 
   //printf("TTTT ");
   //printRCstate(-4);
@@ -282,13 +296,9 @@ void RCInput::printRCstate(int all) {
     val = -all;
   }
   for (x = 0;x<val;x++){
-    #ifdef ARDUINO
-    Serial.print(rx_array[x]);
-    Serial.print(" ");
-    #else
-    printf("%d ",rx_array[x]);
-    #endif
+    printstdoutint(rx_array[x]);
   }
+  
   #ifdef JOYSTICK
   if (all == 1) {
     //printf(" Button State = ");

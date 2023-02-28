@@ -9,10 +9,13 @@
 #include <err.h>
 #include <sys/ioctl.h>
 #include <iostream>
+#include <Timer/timer.h>
+#include <Datalogger/Datalogger.h>
 #else
 #include <Arduino.h>
 #include <stdio.h>
 #include "PWMSIGNALS.h"
+#include "Datalogger.h"
 #endif
 #include <stdlib.h>
 
@@ -89,6 +92,7 @@ public:
   int bit2PWM(int val);
   void mapjoy2rx();
   void saturation_block();
+  void saturationCheck();
   void RangeCheck();
   int invert(int);
   //Constructor

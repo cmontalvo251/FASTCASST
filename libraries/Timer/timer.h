@@ -14,7 +14,6 @@
 #include <stdio.h>
 #include <math.h>
 
-
 void cross_sleep(double);
 void PAUSE();
 void error(char *);

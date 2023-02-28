@@ -1,5 +1,22 @@
 #include "Datalogger.h"
 
+void printstdout(char* msg) {
+  #ifdef ARDUINO
+  Serial.print(msg);
+  #else
+  printf("%s ",msg);
+  #endif
+}
+
+void printstdoutint(int var) {
+    #ifdef ARDUINO
+    Serial.print(var);
+    Serial.print(" ");
+    #else
+    printf("%d ",var);
+    #endif
+}
+
 //Constructor
 Datalogger::Datalogger() {
 }

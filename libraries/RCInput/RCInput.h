@@ -75,6 +75,8 @@
 #define RECV_CHAN3PIN 	5
 #define RECV_CHAN4PIN 	6
 #define RECV_CHAN5PIN 	7
+static volatile int timeLastChange[RECV_N_CHANNEL];
+static volatile int rx_array_static[RECV_N_CHANNEL];
 #endif
 
 class RCInput {
@@ -113,8 +115,5 @@ private:
   static void pwmHandler(int chann, int pin);
   static int getRXvalue(int chann);
 };
-
-static volatile int timeLastChange[RECV_N_CHANNEL];
-static volatile int rx_array_static[RECV_N_CHANNEL];
 
 #endif

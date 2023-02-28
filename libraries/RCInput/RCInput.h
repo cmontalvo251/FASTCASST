@@ -5,10 +5,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <cstdlib>
+#ifndef ARDUINO
 #include <err.h>
 #include <sys/ioctl.h>
-#include <stdlib.h>
 #include <iostream>
+#endif
+#include <stdlib.h>
 
 //////////Here are the iterations
 
@@ -34,8 +36,10 @@
 #endif
 
 #ifdef RECEIVER
+#ifdef RPI
 //Using a receiver on the Raspberry Pi
 #include <Util/Util.h>
+#endif
 #endif
 
 #ifdef JOYSTICK

@@ -25,7 +25,7 @@ TIMER watch;
 //RCIO is inside hardware.h
 //#include "RCIO.h"
 //RCInput is inside RCIO.h
-//#include "RCInput.h"
+#include "RCInput.h"
 
 void setup() {
   //Setup Serial Std Out

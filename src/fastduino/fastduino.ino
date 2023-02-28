@@ -27,6 +27,10 @@ TIMER watch;
 //RCInput is inside RCIO.h
 #include "RCInput.h"
 RCInput rin;
+//RCOutput is inside RCIO.h
+//#include "RCOutput.h"
+//PWMSIGNALS.h is inside RCIO.h
+#include "PWMSIGNALS.h"
 
 void setup() {
   //Setup Serial Std Out

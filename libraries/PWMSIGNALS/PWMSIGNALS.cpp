@@ -1,11 +1,11 @@
-#include "PWM.h"
-#include <Util/Util.h>
+#include "PWMSIGNALS.h"
 
-PWM::PWM()
+PWMSIGNALS::PWMSIGNALS()
 {
 }
 
-bool PWM::init(unsigned int channel)
+#ifndef ARDUINO
+bool PWMSIGNALS::init(unsigned int channel)
 {
     int err;
     err = write_file("/sys/class/pwm/pwmchip0/export", "%u", channel);
@@ -21,7 +21,7 @@ bool PWM::init(unsigned int channel)
     return true;
 }
 
-bool PWM::enable(unsigned int channel)
+bool PWMSIGNALS::enable(unsigned int channel)
 {
     char path[60] = "/sys/class/pwm/pwmchip0";
     char path_ch[20];
@@ -36,7 +36,7 @@ bool PWM::enable(unsigned int channel)
     return true;
 }
 
-bool PWM::set_period(unsigned int channel, unsigned int freq)
+bool PWMSIGNALS::set_period(unsigned int channel, unsigned int freq)
 {
     int period_ns;
     char path[60] = "/sys/class/pwm/pwmchip0";
@@ -53,7 +53,7 @@ bool PWM::set_period(unsigned int channel, unsigned int freq)
     return true;
 }
 
-bool PWM::set_duty_cycle(unsigned int channel, float period)
+bool PWMSIGNALS::set_duty_cycle(unsigned int channel, float period)
 {
     int period_ns;
     char path[60] = "/sys/class/pwm/pwmchip0";
@@ -69,3 +69,4 @@ bool PWM::set_duty_cycle(unsigned int channel, float period)
     }
     return true;
 }
+#endif

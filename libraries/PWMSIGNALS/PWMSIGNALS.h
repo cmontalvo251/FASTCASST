@@ -1,15 +1,17 @@
-#ifndef _PWD_H_
-#define _PWD_H_
+#ifndef _PWDSIGNALS_H_
+#define _PWDSIGNALS_H_
 
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
+#ifndef ARDUINO
+#include <Util/Util.h>
+#endif
 
-
-class PWM {
+class PWMSIGNALS {
 public:
-    PWM();
+    PWMSIGNALS();
 
     bool init(unsigned int channel);
     bool enable(unsigned int channel);

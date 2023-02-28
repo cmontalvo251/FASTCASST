@@ -36,19 +36,14 @@ void RCInput::initialize() {
   }
   #endif
 
-  #ifdef ARDUINO
-  Serial.print("Allocating Axes \n");
-  Serial.print("Number of Axes = ");
-  Serial.print(num_of_axis);
-  Serial.print("\n");
-  #else
-  printf("Allocating Axes \n");
-  printf("Number of axes = %d \n",num_of_axis);
-  #endif
+  printstdout("Allocating Axes \n");
+  printstdout("Number of Axes = ");
+  printstdoutint(num_of_axis);
+  printstdout("\n");
   rx_array = (int *) calloc(num_of_axis,sizeof(int));
   joycomm = (int *) calloc(num_of_axis,sizeof(int));
   axis_id = (int *) calloc(num_of_axis,sizeof(int));
-  printf("Done \n");
+  printstdout("Done \n");
 
   //Extra stuff on RPi using a Receiver
   #ifdef RECEIVER
@@ -105,12 +100,12 @@ void RCInput::LostCommCheck() {
 void RCInput::saturationCheck() {
   for (int idx = 0;idx<num_of_axis;idx++) {
     if (rx_array[idx] < STICK_MIN) {
-      printstdout("REC Clipped \n");
+      //printstdout("REC Clipped \n");
       rx_array[idx] = STICK_MIN;
     }
     if (rx_array[idx] > STICK_MAX) {
       rx_array[idx] = STICK_MAX;
-      printstdout("REC Clipped \n");
+      //printstdout("REC Clipped \n");
     }
   }
 }
@@ -298,7 +293,7 @@ void RCInput::printRCstate(int all) {
   for (x = 0;x<val;x++){
     printstdoutint(rx_array[x]);
   }
-  
+
   #ifdef JOYSTICK
   if (all == 1) {
     //printf(" Button State = ");

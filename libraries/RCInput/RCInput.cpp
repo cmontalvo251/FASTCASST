@@ -7,8 +7,12 @@ RCInput::RCInput() {
 void RCInput::initialize() {
   //Receiver on Raspberry Pi
   //Or running as fast as possible
+  #ifdef ARDUINO
+  num_of_axis = RECV_N_CHANNEL; //Default to this number for arduino
+  #else
   num_of_axis = 8; //default num_of_axis to 8 no matter what.
   //It might change if you have a joystick but at least it's initialized to 8
+  #endif
 
   ///Joystick on Desktop
   #ifdef JOYSTICK
@@ -48,6 +52,26 @@ void RCInput::initialize() {
       perror("open");
     }
   }
+  #endif
+
+  //Extra stuff for Arduino
+  #ifdef ARDUINO
+  // tell the Power Management Controller to disable the write protection of the (Timer/Counter) registers
+  pmc_set_writeprotect(false);
+  // enable external clock for counter TC2, channel 2
+  pmc_enable_periph_clk(ID_TC8);
+  // set clock tp 84MHz/2 = 42MHz
+  TC_Configure(TC2, 2, TC_CMR_TCCLKS_TIMER_CLOCK1);
+  // start timer
+  TC_Start(TC2,2);
+  // connect pins and handlers
+  //ch0Handler();
+  attachInterrupt(RECV_CHAN0PIN, &ch0Handler, CHANGE);
+  //attachInterrupt(RECV_CHAN1PIN, &ch1Handler, CHANGE);
+  //attachInterrupt(RECV_CHAN2PIN, &ch2Handler, CHANGE);
+  //attachInterrupt(RECV_CHAN3PIN, &ch3Handler, CHANGE);
+  //attachInterrupt(RECV_CHAN4PIN, &ch4Handler, CHANGE);
+  //attachInterrupt(RECV_CHAN5PIN, &ch5Handler, CHANGE);
   #endif
 }
 
@@ -124,6 +148,14 @@ void RCInput::readRCstate()
     rx_array[idx] = read_axis(idx);
   }
   #endif
+
+  //Arduino uses interrupts to capture the data
+  #ifdef ARDUINO
+  for (int idx = 0;idx<num_of_axis;idx++) {
+    rx_array[idx] = getRXvalue(idx);
+  }
+  #endif
+  
 
   #ifdef JOYSTICK
   if (joy_fd != -1) {
@@ -253,6 +285,47 @@ void RCInput::printRCstate(int all) {
   //printf("\n");
 }
 
+//This is where the interrupts happen on the Arduino
+#ifdef ARDUINO
+void RCInput::ch0Handler() {
+  pwmHandler(0, RECV_CHAN0PIN);
+}
+void RCInput::ch1Handler(){
+  pwmHandler(1, RECV_CHAN1PIN);
+}
+void RCInput::ch2Handler(){
+  pwmHandler(2, RECV_CHAN2PIN);
+}
+void RCInput::ch3Handler(){
+  pwmHandler(3, RECV_CHAN3PIN);
+}
+void RCInput::ch4Handler(){
+  pwmHandler(4, RECV_CHAN4PIN);
+}
+void RCInput::ch5Handler(){
+  pwmHandler(5, RECV_CHAN5PIN);
+}
+
+int RCInput::getRXvalue(int chann) {
+  return rx_array_static[chann];
+}
+
+void RCInput::pwmHandler(int chann,int pin){
+  unsigned int timeCurrentChange = TC2->TC_CHANNEL[2].TC_CV;
+  // true if pins just went high
+  if(digitalRead(pin))
+    {
+      timeLastChange[chann] = timeCurrentChange;
+    }
+  else
+    {
+      // clock runs at 42MHz therefore divide with 42 to get us
+      rx_array_static[chann] = (timeCurrentChange - timeLastChange[chann])/42;
+    }
+}
+#endif
+
+//Raspberry Pi specific codes
 #ifdef RECEIVER
 int RCInput::open_axis(int channel)
 {

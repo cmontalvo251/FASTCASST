@@ -1,25 +1,81 @@
-//These #defines would normally go in the makefile
-//but I don't want to learn Makefiles so they will go in here 
-//instead
+//Note that you can't define #defines in this ino script to make everything Arduino specific
+//You do have access to ARDUINO so just use #ifdef ARDUINO if you want to do something ARDUINO specific
+//Furthermore, you can't import text files on an Arduino so everything
+//in Simulation.txt and Config.txt must be placed in here
 
-//Version 1.0 of the Arduino Version just has the ARDUINO and AUTO flags
-//To see if it compiles
-#define ARDUINO
-#define AUTO
+//Note when setting this up for the first time. 
+//Install the Due board by going to the board manager
+//Go to preferences and change the location of the libraries to ~/FASTCASST
 
-//Version 2.0 - Adding the timer
-//#include <timer.h>
+//Timer.h for realtime clock
+#include "timer.h"
+TIMER watch;
+
+//Include the hardware environment
+//#include "hardware.h"
+
+///DEBUG HEADER FILES
+#include "mathp.h"
+
+//Need MATLAB.h for Matrices
+#include "MATLAB.h"
+
+//Datalogger is inside hardware.h
+#include "Datalogger.h"
+Datalogger logger;
+
+//RCIO is inside hardware.h
+#include "RCIO.h"
+RCIO rc;
+
+//RCInput is inside RCIO.h
+//#include "RCInput.h"
+
+//RCInput rin;
+//RCOutput is inside RCIO.h
+
+//#include "RCOutput.h"
+//RCOutput rout;
+
+//PWMSIGNALS.h is inside RCIO.h
+//#include "PWMSIGNALS.h"
 
 void setup() {
   //Setup Serial Std Out
   Serial.begin(115200);
-  Serial.print("FASTCASST Software Version 42.0 \n");
 
-  String root_folder_name = "vehicles/airplane/";
+  ///Print dummy version number
+  Serial.print("FASTKit Software Version 42.0 \n");
+  
+  ///Initialize the timer
+  Serial.print("Initiailizing Timer...\n");
+  watch.init(0);
+  Serial.print("Timer Initialized \n");
+  
+  //Hardware init
 
+  //DEBUGGING
+  //Initialize Datalogger
+  logger.init("data/",1+RECV_N_CHANNEL); //Time plus the receiver signals - Remember the SD card on the arduino needs to have a data folder
+  rc.outInit(RECV_N_CHANNEL);
+  //rin.initialize();
+  //rout.initialize(RECV_N_CHANNEL);
+  
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
+  //Update Timer
+  watch.updateTime();
+  //Update RC Signals
+  rc.read();  
+  
+  //Print Everything
+  Serial.print("T = ");
+  Serial.print(watch.currentTime);
+  Serial.print("RX = ");
+  rc.in.printRCstate(-5);
+  Serial.print("PWM = ");
+  rc.out.print();
+  Serial.print("\n");
+  cross_sleep(0.1);
 }

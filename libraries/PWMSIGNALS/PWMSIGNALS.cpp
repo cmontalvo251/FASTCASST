@@ -1,13 +1,16 @@
-#include "PWM.h"
-#include <Util/Util.h>
+#include "PWMSIGNALS.h"
 
-PWM::PWM()
+PWMSIGNALS::PWMSIGNALS()
 {
 }
 
-bool PWM::init(unsigned int channel)
+bool PWMSIGNALS::init(unsigned int channel)
 {
     int err;
+    #ifdef ARDUINO
+    outservo[channel].attach(13-channel);
+    return true;
+    #else
     err = write_file("/sys/class/pwm/pwmchip0/export", "%u", channel);
     if (err >= 0 || err == -EBUSY)
     {
@@ -19,9 +22,11 @@ bool PWM::init(unsigned int channel)
         return false;
     }
     return true;
+    #endif
 }
 
-bool PWM::enable(unsigned int channel)
+#ifndef ARDUINO
+bool PWMSIGNALS::enable(unsigned int channel)
 {
     char path[60] = "/sys/class/pwm/pwmchip0";
     char path_ch[20];
@@ -36,7 +41,7 @@ bool PWM::enable(unsigned int channel)
     return true;
 }
 
-bool PWM::set_period(unsigned int channel, unsigned int freq)
+bool PWMSIGNALS::set_period(unsigned int channel, unsigned int freq)
 {
     int period_ns;
     char path[60] = "/sys/class/pwm/pwmchip0";
@@ -52,20 +57,26 @@ bool PWM::set_period(unsigned int channel, unsigned int freq)
     }
     return true;
 }
+#endif
 
-bool PWM::set_duty_cycle(unsigned int channel, float period)
+bool PWMSIGNALS::set_duty_cycle(unsigned int channel, float period)
 {
-    int period_ns;
-    char path[60] = "/sys/class/pwm/pwmchip0";
-    char path_ch[20];
-    sprintf(path_ch, "/pwm%u/duty_cycle", channel);
-    strcat(path, path_ch);
-
-    period_ns = period * 1e6;
-    if (write_file(path, "%u", period_ns) < 0)
+  #ifdef ARDUINO
+  outservo[channel].writeMicroseconds(period*1000);
+  return true;
+  #else
+  int period_ns;
+  char path[60] = "/sys/class/pwm/pwmchip0";
+  char path_ch[20];
+  sprintf(path_ch, "/pwm%u/duty_cycle", channel);
+  strcat(path, path_ch);
+  
+  period_ns = period * 1e6;
+  if (write_file(path, "%u", period_ns) < 0)
     {
-        printf("Can't set duty cycle to channel %u\n", channel);
-        return false;
+      printf("Can't set duty cycle to channel %u\n", channel);
+      return false;
     }
-    return true;
+  return true;
+  #endif
 }

@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import matplotlib
+matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 plt.rcParams.update({'figure.max_open_warning': 0})
 plt.rcParams.update({'font.size': 14})
@@ -113,7 +115,7 @@ for config in configs:
         model_data = []
         for line in logfile:
             row = line.split(',')
-            numarray = [np.float(x) for x in row]
+            numarray = [np.float(x) for x in row] #windows may need to use float64()
             model_data.append(numarray)
         model_data = np.array(model_data)
         #Plot everything
@@ -167,4 +169,4 @@ for config in configs:
 
     #Show plots
     #plt.show()
-pp.close()
+pp.close()  

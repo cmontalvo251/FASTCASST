@@ -16,7 +16,7 @@ int MATLAB::find(MATLAB vec,double vi) {
     out+=1;
   }
   if (out > row_) {
-    cout << "find() assumes vi is in b/t min(vec) and max(vec)" << endl;
+    printf("find() assumes vi is in b/t min(vec) and max(vec) \n");
     exit(1);
   }
   return out;
@@ -48,12 +48,14 @@ double MATLAB::interp(MATLAB T,double tstar,int debug) {
   double tslope = (outUpper-outLower)/(T.get(tr,1)-T.get(tl,1));
   double out = tslope*(tstar-T.get(tl,1))+outLower;
 
+  #ifndef ARDUINO //cout doesn't work on Arduino
   if (debug) {
     cout << tstar << " " << tmin << " " << tmax << "  " << trange << endl;
     cout << tr << " " << tl << endl;
     cout << tslope << " " << out << endl;
     disp();
   }
+  #endif
 
   return out;
 }
@@ -119,12 +121,14 @@ double MATLAB::interp2(MATLAB X,MATLAB Y,double xstar,double ystar,int WRAP) {
   // if (xstar > 7118) {
   //   debug = 1;
   // }
+  #ifndef ARDUINO // cout and endl don't work on arduino
   if (debug) {
     cout << xstar << " " << xmin << " " << xmax << "  " << xrange << endl;
     cout << xr << " " << xl << endl;
     cout << ystar << " " << ymin << " " << ymax << "  " << yrange << endl;
     cout << yr << " " << yl << endl;
   }
+  #endif
   
   //We start with 4 points
   double four[4];
@@ -143,6 +147,7 @@ double MATLAB::interp2(MATLAB X,MATLAB Y,double xstar,double ystar,int WRAP) {
   double xslope = (outUpper-outLower)/(X.get(xr,1)-X.get(xl,1));
   double out = xslope*(xstar-X.get(xl,1))+outLower;
 
+  #ifndef ARDUINO
   if (debug) {
     for (int idx = 0;idx<4;idx++) {
       cout << idx << " " << four[idx] << " ";
@@ -154,12 +159,14 @@ double MATLAB::interp2(MATLAB X,MATLAB Y,double xstar,double ystar,int WRAP) {
     X.disp();
     Y.disp();
   }
+  #endif
 
   return out;
 }
 
 //Overloaded function. Use this when you already
 //have the matrix allocated
+#ifndef ARDUINO //Arduino has no nead for this function
 void MATLAB::dlmread(char* filename) {
   cout << "Reading " << filename << endl;
   //Gonna open this file the old school way
@@ -220,6 +227,25 @@ void MATLAB::dlmread(char* filename,MATLAB* data,char* name) {
     cout << "File not found = " << filename << endl;
   }
 }
+#endif
+
+#ifdef ARDUINO
+void MATLAB::vecfprintf(File outfile) {
+  for (int idx = 0;idx<row_;idx++) {
+    outfile.write(get(idx+1,1));
+    if (idx<row_-1) {
+      outfile.write(",");
+    }
+  }
+}
+
+void MATLAB::vecfprintfln(File outfile) {
+  //Print the contents like normal
+  vecfprintf(outfile);
+  //only different is we print a newline at the end
+  outfile.write("\n");
+}
+#endif
 
 void MATLAB::vecfprintf(FILE* outfile) {
   for (int idx = 0;idx<row_;idx++) {

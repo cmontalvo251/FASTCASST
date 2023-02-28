@@ -9,8 +9,13 @@
 // 1 - rx_array (double array)
 // 2 - pwm_array (double array)
 
-#include <RCIO/RCInput.h>
-#include <RCIO/RCOutput.h>
+#ifdef ARDUINO
+#include <RCInput.h>
+#include <RCOutput.h>
+#else
+#include <RCInput/RCInput.h>
+#include <RCOutput/RCOutput.h>
+#endif
 
 class RCIO {
  private:

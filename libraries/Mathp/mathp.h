@@ -2,7 +2,9 @@
 #define MATHP_H
 
 #include <math.h>
+#ifndef ARDUINO
 #include <iostream>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 

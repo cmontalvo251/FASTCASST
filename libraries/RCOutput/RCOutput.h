@@ -1,8 +1,12 @@
 #ifndef RCOUTPUT_H
 #define RCOUTPUT_H
 
-#include "PWM.h"
+#ifdef ARDUINO
+#include "PWMSIGNALS.h"
+#else
+#include "PWMSIGNALS/PWMSIGNALS.h"
 #include <unistd.h> //This is for sleep()
+#endif
 #include <cstdio>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +30,7 @@ public:
     void backup();
     void revert();
 private:
-    PWM pwm;
+    PWMSIGNALS pwmsignals;
 };
 
 #endif // RCOUTPUT_H

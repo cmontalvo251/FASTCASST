@@ -32,7 +32,7 @@ void RCOutput::initialize(int num) {
 	for (int i = 0;i<NUMSIGNALS;i++) { 
 	  printf("Setting Frequency of %d Servo \n",i);
 	  pwmsignals.set_period(i, 50);
-	  if (!(pwm.enable(i))) {
+	  if (!(pwmsignals.enable(i))) {
 	    exit(1);
 	  }
 	}

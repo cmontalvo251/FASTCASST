@@ -184,9 +184,20 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   for (int i = 0;i<rc.out.NUMSIGNALS;i++) {
     rc.out.pwm_array[i] = int(control_matrix.get(i+1,1));
   }
+  //And then send the pwm_array to the servos and ESCs as quickly as possible
+  //The write function has a built in saturation block no need to worry there
+  //Right now we have to shut this off when using the satellite because
+  //Satellites don't use servos
+  #ifndef satellite
+  //printf("WRITING SIGNALS \n");
+  rc.out.write();
+  #else
+  //The RCOutput::write() function has the saturation_block built in.
+  //If you don't use the write function you need to at least run the saturation block
   //However, the control routine is created by the user and doesn't necessarily have a
   //saturation filter built in so we need to do that here
   rc.out.saturation_block();
+  #endif
   //printf("ELEVATOR ARRAY = %d \n",rc.out.pwm_array[2]);
 
   //Check to see if it's time to log
@@ -253,15 +264,6 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     serTelem.sendTelemetry(telemetry_matrix,0);
     nextTELEMtime=currentTime+TELEMRATE;
   }
-
-  //And then send the pwm_array to the servos and ESCs as quickly as possible
-  //The write function has a built in saturation block no need to worry there
-  //Right now we have to shut this off when using the satellite because
-  //Satellites don't use servos
-  #ifndef satellite
-  //printf("WRITING SIGNALS \n");
-  rc.out.write();
-  #endif
 
 }
 

@@ -71,6 +71,11 @@ void loop() {
   //DEBUGGING
   rin.readRCstate();
   //Copy rin.rx_array to rout.pwm_array
+  for (int idx = 0;idx<RECV_N_CHANNEL;idx++) {
+    rout.pwm_array[idx] = rin.rx_array[idx];
+  }
+  //Send signals to PWM channels
+  rout.write();
   
   //Print Everything
   Serial.print("T = ");
@@ -79,6 +84,7 @@ void loop() {
   rin.printRCstate(-6);
   //rc.in.printRCstate(-5);
   Serial.print(" PWM = ");
+  rout.print();
   //rc.out.print();
   Serial.print("\n");
   cross_sleep(0.1);

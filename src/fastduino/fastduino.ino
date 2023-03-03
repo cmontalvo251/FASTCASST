@@ -21,8 +21,8 @@ TIMER watch;
 //#include "MATLAB.h"
 
 //Datalogger is inside hardware.h
-//#include "Datalogger.h"
-//Datalogger logger;
+#include "Datalogger.h"
+Datalogger logger;
 
 //RCIO is inside hardware.h
 //#include "RCIO.h"
@@ -63,9 +63,13 @@ void setup() {
 
   //DEBUGGING
   //Initialize Datalogger
-  //logger.init("data/",1+RECV_N_CHANNEL); //Time plus the receiver signals - Remember the SD card on the arduino needs to have a data folder
+  logger.init("data/",1+RECV_N_CHANNEL*2+3); //Time plus the receiver signals and the PWM out signal and 3 LLH signals
+  //Remember the SD card on the arduino needs to have a data/ folder
+  
   //rc.outInit(RECV_N_CHANNEL);
+  //Initialize RCInput
   rin.initialize();
+  //Initialize RCOutputr
   rout.initialize(RECV_N_CHANNEL);
   
 }
@@ -84,6 +88,7 @@ void loop() {
   }
   //Send signals to PWM channels
   rout.write();
+  
   //Poll GPS
   satellites.poll(watch.currentTime);
   
@@ -99,5 +104,14 @@ void loop() {
   Serial.print(" LLH = ");
   satellites.printLLH();
   Serial.print("\n");
+
+  //Log Everything
+  logger.printvar(watch.currentTime);
+  logger.printvar(satellites.latitude);
+  logger.printvar(satellites.longitude);
+  logger.printvar(satellites.altitude);
+  logger.printarray(rin.rx_array,RECV_N_CHANNEL);
+  logger.printarrayln(rout.pwm_array,RECV_N_CHANNEL);
+  
   cross_sleep(0.1);
 }

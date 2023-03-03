@@ -92,7 +92,7 @@ void RCInput::LostCommCheck() {
     }
   }
   if (lostcomms == 1) {
-    printstdout("Lost Communications Setting to Neutral!!!\n");
+    //printstdout("Lost Communications Setting to Neutral!!!\n");
     setStickNeutral();
   }
 }

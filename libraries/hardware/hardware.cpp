@@ -17,6 +17,9 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //Initialize the RCIO
   rc.outInit(NUMSIGNALS);
 
+  //Initialize GPS
+  satellites.init();
+
   //The hardware initialization needs to import the Simulation.txt file
   //and the config.txt file
   //This will create the in_configuration_matrix and in_simulation_matrix

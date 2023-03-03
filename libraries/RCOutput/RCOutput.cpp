@@ -121,6 +121,7 @@ void RCOutput::saturation_block() {
 
 void RCOutput::print() {
   for (int idx = 0;idx<NUMSIGNALS;idx++) {
-    printf("%d ",pwm_array[idx]);
+  	printstdoutint(pwm_array[idx]);
+    //printf("%d ",pwm_array[idx]);
   }
 }

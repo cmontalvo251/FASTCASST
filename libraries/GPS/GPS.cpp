@@ -1,9 +1,14 @@
 #include "GPS.h"
-#include <math.h>
 
 
 ///CONSTRUCTOR
 GPS::GPS() {
+}
+///END OF CONSTRUCTOR
+
+void GPS::init() {
+  printstdout("Initializing GPS...\n");
+
   if (headingFilterConstant < 0) {
     headingFilterConstant = 0;
   }
@@ -13,7 +18,6 @@ GPS::GPS() {
 
   #ifndef DESKTOP
   #ifdef ARDUINO
-  Serial.print("Initializing GPS on Arduino....\n");
   AdaGPS = new Adafruit_GPS(&Serial1);
   AdaGPS->begin(9600);
   Serial1.begin(9600);
@@ -28,14 +32,13 @@ GPS::GPS() {
   } else {
     printf("GPS Test failed \n");
   }
+  dist_vec.zeros(NGPS,1,"dist_vec");
+  time_vec.zeros(NGPS,1,"time_vec");
   #endif
   #else
   printf("Using Fictitious GPS Block For Simulation \n");
   #endif
-  dist_vec.zeros(NGPS,1,"dist_vec");
-  time_vec.zeros(NGPS,1,"time_vec");
 }
-///END OF CONSTRUCTOR
 
 void GPS::printLLH() {
   printstdoutdbl(latitude);
@@ -97,6 +100,7 @@ void GPS::processGPSCoordinates(double currentTime) {
   if (AdaGPS->newNMEAreceived()) {
     sizeofvector = 5;
     AdaGPS->parse(AdaGPS->lastNMEA());
+    printstdout("GPS NMEA Sentence Received \n");
   }
   #else
   sizeofvector = pos_data.size()

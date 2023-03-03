@@ -3,6 +3,26 @@
 //Furthermore, you can't import text files on an Arduino so everything
 //in Simulation.txt and Config.txt must be placed in here
 
+//Config.txt
+#define PRINTRATE 0.2    //!Standard Out Print Rate // seconds (set to negative)
+///10.0     !Data logging rate // seconds (numbers if you want)
+//0.1  !RC Rate // seconds (to run as fast as possible)
+//1.0      !Telemetry Rate (seconds)
+//1.0    !GPS Rate (seconds)
+//-99      !IMU Rate (seconds) (does not work at the moment)
+//0.1      !Analog Rate (seconds)
+//1  !Poll Barometer (0=off,1=on)
+//0        !IMUTYPE (0=MPU,1=LSM)
+//0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
+//2 !Control System (3=two-stage,2=FL,1=PID,0=off)
+//2.0  !Mass (kg) // 1U - 2 // 2U - 4 // 6U - 12
+//0.00333  !Ixx (kg-m^2) // 1U - 0.00333 //2U,upright - 0.0167 // 2U,sideways - 0.0067 // 6U - 0.13
+//0.00333  !Iyy (kg-m^2) // 1U - 0.00333 //2U,upright - 0.0167 // 2U,sideways - 0.0167 // 6U - 0.10
+//0.00333  !Izz (kg-m^2) // 1U - 0.00333 //2U,upright - 0.0067 // 2U,sideways - 0.0167 // 6U - 0.05
+//0.000    !Ixy (kg-m^2)
+//0.000    !Ixz (kg-m^2)
+//0.000    !Iyz (kg-m^2)
+
 //Note when setting this up for the first time. 
 //Install the Due board by going to the board manager
 //Go to preferences and change the location of the libraries to ~/FASTCASST
@@ -21,8 +41,8 @@ TIMER watch;
 //#include "MATLAB.h"
 
 //Datalogger is inside hardware.h
-#include "Datalogger.h"
-Datalogger logger;
+//#include "Datalogger.h"
+//Datalogger logger;
 
 //RCIO is inside hardware.h
 //#include "RCIO.h"
@@ -45,7 +65,10 @@ RCOutput rout;
 //Sensors has a lot of sensors. We're going to need to add them in one at a time
 //Let's start with GPS
 #include "GPS.h"
-GPS satellites;
+GPS satellites; 
+
+//Create Loop Variables
+double lastPRINTtime = 0;
 
 void setup() {
   //Setup Serial Std Out
@@ -55,7 +78,7 @@ void setup() {
   Serial.print("FASTKit Software Version 42.0 \n");
   
   ///Initialize the timer
-  Serial.print("Initiailizing Timer...\n");
+  Serial.print("Initializing Timer...\n");
   watch.init(0);
   Serial.print("Timer Initialized \n");
   
@@ -63,7 +86,7 @@ void setup() {
 
   //DEBUGGING
   //Initialize Datalogger
-  logger.init("data/",1+RECV_N_CHANNEL*2+3); //Time plus the receiver signals and the PWM out signal and 3 LLH signals
+  //logger.init("data/",1+RECV_N_CHANNEL*2+3); //Time plus the receiver signals and the PWM out signal and 3 LLH signals
   //Remember the SD card on the arduino needs to have a data/ folder
   
   //rc.outInit(RECV_N_CHANNEL);
@@ -71,6 +94,8 @@ void setup() {
   rin.initialize();
   //Initialize RCOutputr
   rout.initialize(RECV_N_CHANNEL);
+  //initialize GPS
+  satellites.init();
   
 }
 
@@ -93,25 +118,30 @@ void loop() {
   satellites.poll(watch.currentTime);
   
   //Print Everything
-  Serial.print("T = ");
-  Serial.print(watch.currentTime);
-  Serial.print(" RX = ");
-  rin.printRCstate(-6);
-  //rc.in.printRCstate(-5);
-  Serial.print(" PWM = ");
-  rout.print();
-  //rc.out.print();
-  Serial.print(" LLH = ");
-  satellites.printLLH();
-  Serial.print("\n");
+  if (lastPRINTtime <= watch.currentTime) {
+      lastPRINTtime+=PRINTRATE;
+      Serial.print("T = ");
+      Serial.print(watch.currentTime);
+      Serial.print(" ");
+      Serial.print(watch.elapsedTime);
+      Serial.print(" RX = ");
+      rin.printRCstate(-6);
+      //rc.in.printRCstate(-5);
+      Serial.print(" PWM = ");
+      rout.print();
+      //rc.out.print();
+      Serial.print(" LLH = ");
+      satellites.printLLH();
+      Serial.print("\n");
+  }
 
   //Log Everything
-  logger.printvar(watch.currentTime);
-  logger.printvar(satellites.latitude);
-  logger.printvar(satellites.longitude);
-  logger.printvar(satellites.altitude);
-  logger.printarray(rin.rx_array,RECV_N_CHANNEL);
-  logger.printarrayln(rout.pwm_array,RECV_N_CHANNEL);
+  //logger.printvar(watch.currentTime);
+  //logger.printvar(satellites.latitude);
+  //logger.printvar(satellites.longitude);
+  //logger.printvar(satellites.altitude);
+  //logger.printarray(rin.rx_array,RECV_N_CHANNEL);
+  //logger.printarrayln(rout.pwm_array,RECV_N_CHANNEL);
   
-  cross_sleep(0.1);
+  //cross_sleep(0.1);
 }

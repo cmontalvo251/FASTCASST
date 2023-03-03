@@ -14,6 +14,7 @@
 #include "timer.h"
 #include "Datalogger.h"
 #endif
+#include <math.h>
 
 #define GPSPERIOD 0.5
 #define NGPS 25
@@ -28,6 +29,7 @@ class GPS {
     double X_origin=GPSORIGINX,Y_origin=GPSORIGINY; //These are set in mathp.h
  public:
   void printLLH();
+  void init();
   #ifndef ARDUINO
   std::vector<double> pos_data,nav_data;
   Ublox sensor;

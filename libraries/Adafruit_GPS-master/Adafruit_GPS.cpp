@@ -32,6 +32,7 @@ volatile boolean inStandbyMode;
 
 boolean Adafruit_GPS::parse(char *nmea) {
   // do checksum check
+  Serial.println(nmea);
 
   // first look if we even have one
   if (nmea[strlen(nmea)-4] == '*') {

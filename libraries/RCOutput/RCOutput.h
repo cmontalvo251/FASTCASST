@@ -3,9 +3,11 @@
 
 #ifdef ARDUINO
 #include "PWMSIGNALS.h"
+#include "Datalogger.h"
 #else
 #include "PWMSIGNALS/PWMSIGNALS.h"
 #include <unistd.h> //This is for sleep()
+#include <Datalogger/Datalogger.h>
 #endif
 #include <cstdio>
 #include <stdio.h>

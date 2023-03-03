@@ -39,6 +39,14 @@ RCOutput rout;
 //PWMSIGNALS.h is inside RCIO.h
 //#include "PWMSIGNALS.h"
 
+//Hardware has sensors.h
+//#include "sensors.h"
+
+//Sensors has a lot of sensors. We're going to need to add them in one at a time
+//Let's start with GPS
+#include "GPS.h"
+GPS satellites;
+
 void setup() {
   //Setup Serial Std Out
   Serial.begin(115200);
@@ -76,6 +84,8 @@ void loop() {
   }
   //Send signals to PWM channels
   rout.write();
+  //Poll GPS
+  satellites.poll(watch.currentTime);
   
   //Print Everything
   Serial.print("T = ");
@@ -86,6 +96,8 @@ void loop() {
   Serial.print(" PWM = ");
   rout.print();
   //rc.out.print();
+  Serial.print(" LLH = ");
+  satellites.printLLH();
   Serial.print("\n");
   cross_sleep(0.1);
 }

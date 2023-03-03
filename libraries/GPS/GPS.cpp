@@ -1,6 +1,8 @@
 #include "GPS.h"
 #include <math.h>
 
+
+///CONSTRUCTOR
 GPS::GPS() {
   if (headingFilterConstant < 0) {
     headingFilterConstant = 0;
@@ -10,6 +12,14 @@ GPS::GPS() {
   }
 
   #ifndef DESKTOP
+  #ifdef ARDUINO
+  Serial.print("Initializing GPS on Arduino....\n");
+  AdaGPS = new Adafruit_GPS(&Serial1);
+  AdaGPS->begin(9600);
+  Serial1.begin(9600);
+  AdaGPS->sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  AdaGPS->sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
+  #else
   if(sensor.testConnection()){
     printf("Ublox test OK\n");
     if(!sensor.configureSolutionRate(1000)){
@@ -18,11 +28,19 @@ GPS::GPS() {
   } else {
     printf("GPS Test failed \n");
   }
+  #endif
   #else
   printf("Using Fictitious GPS Block For Simulation \n");
   #endif
   dist_vec.zeros(NGPS,1,"dist_vec");
   time_vec.zeros(NGPS,1,"time_vec");
+}
+///END OF CONSTRUCTOR
+
+void GPS::printLLH() {
+  printstdoutdbl(latitude);
+  printstdoutdbl(longitude);
+  printstdoutdbl(altitude);
 }
 
 void GPS::decodeXYZ() {
@@ -47,7 +65,15 @@ void GPS::decodeXYZ() {
 void GPS::poll(float currentTime) {
   lastTime = currentTime;
   #ifndef DESKTOP
+  #ifdef ARDUINO
+  //Put code here to poll GPS
+  char c = 1;
+  while (c != 0) {
+    c = AdaGPS->read();
+  }
+  #else
   sensor.decodeSingleMessage(Ublox::NAV_POSLLH, pos_data);
+  #endif
   #else
   //USE SOFTWARE TO CREATE GPS COORDINATES
   decodeXYZ();
@@ -65,14 +91,34 @@ void GPS::poll(float currentTime) {
 }
 
 void GPS::processGPSCoordinates(double currentTime) {
-    //This runs no matter what
-  if (pos_data.size() > 4) {
+  //This runs no matter what
+  int sizeofvector=0;
+  #ifdef ARDUINO
+  if (AdaGPS->newNMEAreceived()) {
+    sizeofvector = 5;
+    AdaGPS->parse(AdaGPS->lastNMEA());
+  }
+  #else
+  sizeofvector = pos_data.size()
+  #endif
+  if (sizeofvector > 4) {
+    #ifdef ARDUINO
+    //Get GPS LLH on Arduino
+    latitude = AdaGPS->latitudeDegrees;
+    longitude = AdaGPS->longitudeDegrees;
+    altitude = AdaGPS->altitude;
+    #else
     latitude = pos_data[2]/10000000.0; //lon - Maxwell says it may be lon lat
     longitude = pos_data[1]/10000000.0; //lat - It really is lon lat
     altitude = pos_data[3]/1000.0; ///height above ellipsoid 1984?
+    #endif
     //If the measurement is good
     if (VALIDGPS) {
+      #ifdef ARDUINO
+      speed = AdaGPS->speed;
+      #else
       computeCOG(currentTime);
+      #endif
     } else {
       printf("GPS Coordinate initialized. Resetting GPS Vals \n");
       VALIDGPS = 1;
@@ -108,6 +154,7 @@ void GPS::setXYZ(double Xin,double Yin,double Zin) {
   //printf("XYZ Set to = %lf %lf %lf \n",X,Y,Z);
 }
 
+#ifndef ARDUINO
 int GPS::status() {
   #ifdef PRINTSEVERYWHERE
   printf("Checking GPS Health \n");
@@ -124,6 +171,7 @@ int GPS::status() {
   }
   return ok;
 }
+#endif
 
 void GPS::ConvertGPS2XY()  {
   if ((latitude == -99) || (longitude == -99) || (altitude == -99)) {

@@ -11,6 +11,7 @@
 
 void printstdout(char* msg);
 void printstdoutint(int);
+void printstdoutdbl(double);
 
 class Datalogger {
  private:

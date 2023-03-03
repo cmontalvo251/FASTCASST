@@ -24,6 +24,7 @@ HELPERSOURCES=libraries/Datalogger/Datalogger.cpp libraries/MATLAB/MATLAB.cpp li
 ###HARDWARE
 IMUSOURCES=$(wildcard libraries/IMU/*.cpp)
 GPSSOURCES=$(wildcard libraries/GPS/*.cpp)
+UBLOXSOURCES=$(wildcard libraries/Ublox/*.cpp)
 BAROTEMPSOURCES=$(wildcard libraries/BaroTemp/*.cpp)
 RCIOSOURCES=$(wildcard libraries/RCIO/*.cpp)
 RCINPUTSOURCES=$(wildcard libraries/RCInput/*.cpp)
@@ -33,7 +34,7 @@ UARTSOURCES=$(wildcard libraries/UART/*.cpp)
 ADCSOURCES=$(wildcard libraries/ADC/*.cpp)
 UTILSOURCES=$(wildcard libraries/Util/*.cpp)
 HWSOURCES=libraries/sensors/sensors.cpp libraries/hardware/hardware.cpp
-HARDWARESOURCES=$(RCINPUTSOURCES) $(RCOUTPUTSOURCES) $(PWMSOURCES) $(IMUSOURCES) $(GPSSOURCES) $(BAROTEMPSOURCES) $(RCIOSOURCES) $(UARTSOURCES) $(ADCSOURCES) $(HWSOURCES) $(UTILSOURCES)
+HARDWARESOURCES=$(RCINPUTSOURCES) $(RCOUTPUTSOURCES) $(PWMSOURCES) $(IMUSOURCES) $(GPSSOURCES) $(BAROTEMPSOURCES) $(RCIOSOURCES) $(UARTSOURCES) $(ADCSOURCES) $(HWSOURCES) $(UTILSOURCES) $(UBLOXSOURCES)
 ##MODELING
 ENVSOURCES=$(wildcard libraries/Environment/*.cpp)
 GEOSOURCES=$(wildcard libraries/GeographicLib/*.cpp)

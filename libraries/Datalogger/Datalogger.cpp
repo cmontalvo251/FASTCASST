@@ -17,6 +17,15 @@ void printstdoutint(int var) {
     #endif
 }
 
+void printstdoutdbl(double var) {
+    #ifdef ARDUINO
+    Serial.print(var);
+    Serial.print(" ");
+    #else
+    printf("%lf ",var);
+    #endif
+}
+
 //Constructor
 Datalogger::Datalogger() {
 }

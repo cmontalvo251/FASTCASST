@@ -1,3 +1,11 @@
+==================3/2/2023================
+
+So for the past few days I've been switching gears yet again and 
+making progress on the wooden arduino drone in the lab. This is for the
+rocket launch team. They are using a Arduino DUE + Betaflight controller
+which means I can finally start working on this. It's about 4 years since
+I've touched this. 
+
 ==================2/15/2023===============
 
 Still trying to fix this quantization issues.

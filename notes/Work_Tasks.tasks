@@ -75,27 +75,40 @@ WOODEN DRONE:
 
   ✔ From here I'd like to start editing the sensor routines to include Arduino hooks. The sensor.h file should work at the moment on both desktop and Rpi so it's time to get it to work on Arduino hooks. Edit the Sensor routine to use the newly formed folders. Think a bit more on how you want to have this sensor block. I'm assuming you'll just be importing all the sensors? Pitot, IMU, GPS, etc??? What if those sensors are not connected? Is there a way for the controller to ignore erroneous data? Or maybe just turn them on and off in the controller? @done (22-05-18 06:55)
 
-  ☐ I then would like you to make an INO routine that logs all sensor data IMU, MPL, GPS (I think those are all the sensors). I'd like there to be a SIMONLY version of this as well where the computer just fakes the sensors. Might need to call this DESKTOP since that's what all the hooks are. Make all of the sensor specific items happen inside the sensor class. In order for this to work, the datlogger routine is going to need to get updated to work for an SD breakout board. Using this log routine I want you to log like an hour of data to disk and then save it for later processing of noise and bias. This routine needs to be general enough to work on Navio as well. 
-  ☐ Add code for MPL115
-  ☐ Add BNO055 to Arduino and read/send those signals
-  ☐ Datalogger routine will need to be augmented to hangle RPi, DESKTOP and ARDUINO
+  ✔ I'd like there to be a SIMONLY version of this as well where the computer just fakes the sensors. Might need to call this DESKTOP since that's what all the hooks are. @done (23-03-02 20:45)
+
+  ✔ Make all of the sensor specific items happen inside the sensor class. @done (23-03-02 20:46)
+
+  ✔ In order for this to work, the datlogger routine is going to need to get updated to work for an SD breakout board. @done (23-03-02 20:46)
+
+  ☐ INO routine logs IMU data
+
+  ☐ INO routine logs MPL (Baro) data
+
+  ✔ INO routine logs GPS data @done (23-03-02 20:46)
+
+  ☐ I then would like you to make an INO routine that logs all sensor data IMU, MPL, GPS (I think those are all the sensors). 
+
+  ☐ Using this log routine I want you to log like an hour of data to disk and then save it for later processing of noise and bias. This routine needs to be general enough to work on Navio as well. 
+
+  ✔ Datalogger routine will need to be augmented to hangle RPi, DESKTOP and ARDUINO @done (23-03-02 20:46)
 
   ☐ Start analyzing the data you obtained in from the hour of logging. See if you can get bias, std dev, noise, etc and then add that to the Sensors routine when you're using DESKTOP and POLLUTED sensor mode.
 
- ☐ Once the Arduino hooks are in I would like one more Arduino Routine that reads the RCInput and then feeds them (pass through) to RCOutput. This will require you to use the RCInput and RCOutput routines which hopefully got combined between Navio and Arduino at which point you'll also need hooks in there for the JOYSTICK as well. Again these need to be general enough that just changing the Makefile will compile the routine onto different architectures
+ ✔ Once the Arduino hooks are in I would like one more Arduino Routine that reads the RCInput and then feeds them (pass through) to RCOutput. This will require you to use the RCInput and RCOutput routines which hopefully got combined between Navio and Arduino at which point you'll also need hooks in there for the JOYSTICK as well. Again these need to be general enough that just changing the Makefile will compile the routine onto different architectures @done (23-03-02 20:47)
 
  ☐ Using this routine log back in to betaflight and make sure you have everything set up properly for the on board Flight controller. Again remember that the autopilot (non-PID) is the only thing that's going to go on Gitlab so for now you can make a pass through just like above and make sure the receiver is sending appropriate signals to the servos
 
- ☐ You should also be able to fly the drone at this point. So it would be good to go ahead and fly the drone - REV 1, 2, and 5
+ ☐ You should also be able to fly the drone at this point. So it would be good to go ahead and fly the drone
+
+ ☐ Plot data from this flight test
 
  ☐ Add telemetry when in AUTO mode on Arduino. Use Serial class and add Arduino Hooks. Note that Telemetry will default to sending different signals when in HIL mode
  
- ☐ Plot data from this flight test - GPS, IMU, etc - REV 7
-
  ☐ Using a scale and the pass through Arduino routine get the thrust of the motor as a function of microsend pulse and add that to the aerodynamics routine for the quadcopter. While you're doing this experiment figure out how long it takes to go from full throttle on your control stick to full throttle on the drone. That is the amount of delay we need to introduce into our actuators.
 
  ☐ Wooden Drone waypoint flights - Can focus on outerloop control laws (Make sure to update blog for this one)
-    ☐ Attempt to code altitude hold for drone using deltaP and Az - REV 6 
+    ☐ Attempt to code altitude hold for drone using deltaP and Az
     ☐ Station keeping
     ☐ Point to a desired heading
     ☐ Waypoint controller

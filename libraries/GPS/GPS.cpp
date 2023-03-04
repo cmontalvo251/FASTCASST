@@ -100,7 +100,7 @@ void GPS::processGPSCoordinates(double currentTime) {
   if (AdaGPS->newNMEAreceived()) {
     sizeofvector = 5;
     AdaGPS->parse(AdaGPS->lastNMEA());
-    printstdout("GPS NMEA Sentence Received \n");
+    //printstdout("GPS NMEA Sentence Received \n");
   }
   #else
   sizeofvector = pos_data.size()
@@ -111,6 +111,13 @@ void GPS::processGPSCoordinates(double currentTime) {
     latitude = AdaGPS->latitudeDegrees;
     longitude = AdaGPS->longitudeDegrees;
     altitude = AdaGPS->altitude;
+    //Sanity check
+    if (abs(latitude-IRVX) > 2.0) {
+      latitude = 0.0;
+    }
+    if (abs(longitude-IRVY) > 2.0) {
+      longitude = 0.0;
+    }
     #else
     latitude = pos_data[2]/10000000.0; //lon - Maxwell says it may be lon lat
     longitude = pos_data[1]/10000000.0; //lat - It really is lon lat

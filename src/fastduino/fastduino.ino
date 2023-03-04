@@ -67,6 +67,9 @@ RCOutput rout;
 #include "GPS.h"
 GPS satellites; 
 
+//Now let's get the barometer working
+#include "BaroTemp.h"
+
 //Create Loop Variables
 double lastPRINTtime = 0;
 

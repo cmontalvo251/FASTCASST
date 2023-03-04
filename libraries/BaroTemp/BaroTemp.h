@@ -1,11 +1,15 @@
 #ifndef BAROTEMP_H
 #define BAROTEMP_H
 
+#ifdef ARDUINO
+#include "mathp.h"
+#else
 #include <Mathp/mathp.h>
-#include <BaroTemp/MS5611.h>
+#include <MS5611/MS5611.h>
 #include <Util/Util.h>
 #include <unistd.h>
 #include <stdio.h>
+#endif
 
 #define SLEEP_TIME 0.01 //seconds
 #define LOOP_TIME 1.0 //seconds
@@ -13,7 +17,12 @@
 
 class BaroTemp {
  private:
+  #ifdef ARDUINO
+  //Use the MPL155A2
+  #else
+  //Raspberry Pi uses the MPL155A2
   MS5611 barometer;
+  #endif
   int CALIBRATE = 0;
   int CALIBRATE_FLAG = 1;
   double pressure0=0;

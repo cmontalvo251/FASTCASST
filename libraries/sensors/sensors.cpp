@@ -74,6 +74,12 @@ void sensors::init(MATLAB in_configuration_matrix,MATLAB in_simulation_matrix) {
   //Set the Filter Constant
   orientation.FilterConstant = in_configuration_matrix.get(10,1);
 
+  //Initialize GPS
+  satellites.init();
+
+  //Initialize Barometer
+  atm.init();
+
   //Initialize q0123 and ptp
   q0123.zeros(4,1,"Sense Quaternions");
   ptp.zeros(3,1,"Sense Roll Pitch Yaw");

@@ -4,14 +4,14 @@
 //in Simulation.txt and Config.txt must be placed in here
 
 //Config.txt
-#define PRINTRATE 1    //!Standard Out Print Rate // seconds (set to negative)
+#define PRINTRATE 0.2    //!Standard Out Print Rate // seconds (set to negative)
 ///10.0     !Data logging rate // seconds (numbers if you want)
 //0.1  !RC Rate // seconds (to run as fast as possible)
 //1.0      !Telemetry Rate (seconds)
-//1.0    !GPS Rate (seconds)
+//1.0      !GPS Rate (seconds)
 //-99      !IMU Rate (seconds) (does not work at the moment)
 //0.1      !Analog Rate (seconds)
-//1  !Poll Barometer (0=off,1=on)
+//1        !Poll Barometer (0=off,1=on)
 //0        !IMUTYPE (0=MPU,1=LSM)
 //0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
 //2 !Control System (3=two-stage,2=FL,1=PID,0=off)
@@ -64,11 +64,12 @@ RCOutput rout;
 
 //Sensors has a lot of sensors. We're going to need to add them in one at a time
 //Let's start with GPS
-#include "GPS.h"
-GPS satellites; 
+//#include "GPS.h"
+//GPS satellites; 
 
 //Now let's get the barometer working
-//#include "BaroTemp.h"
+#include "BaroTemp.h"
+BaroTemp atm;
 
 //Create Loop Variables
 double lastPRINTtime = 0;
@@ -98,7 +99,9 @@ void setup() {
   //Initialize RCOutputr
   rout.initialize(RECV_N_CHANNEL);
   //initialize GPS
-  satellites.init();
+  //satellites.init();
+  //Initialize Barometer
+  atm.init();
   
 }
 
@@ -118,7 +121,10 @@ void loop() {
   rout.write();
   
   //Poll GPS
-  satellites.poll(watch.currentTime);
+  //satellites.poll(watch.currentTime);
+
+  //Poll Barometer
+  atm.poll(watch.currentTime);
   
   //Print Everything
   if (lastPRINTtime <= watch.currentTime) {
@@ -133,8 +139,10 @@ void loop() {
       Serial.print(" PWM = ");
       rout.print();
       //rc.out.print();
-      Serial.print(" LLH = ");
-      satellites.printLLH();
+      //Serial.print(" LLH = ");
+      //satellites.printLLH();
+      Serial.print(" PTAlt = ");
+      atm.print();
       Serial.print("\n");
   }
 

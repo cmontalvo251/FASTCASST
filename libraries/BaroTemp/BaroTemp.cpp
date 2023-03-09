@@ -2,15 +2,34 @@
 #include "BaroTemp.h"
 
 BaroTemp::BaroTemp() {
+}
+
+void BaroTemp::init() {
   #ifndef DESKTOP
+  #ifdef ARDUINO
+  barometer.begin();
+  #else
   barometer.initialize();
+  #endif
   #else
   printf("Running Fictitious Barometer on Desktop \n");
   #endif
 }
 
+void BaroTemp::print() {
+  printstdoutdbl(pressure);
+  printstdout(" ");
+  printstdoutdbl(temperature);
+  printstdout(" ");
+  printstdoutdbl(altitude);
+}
+
 void BaroTemp::poll(double currentTime) {
   #ifndef DESKTOP //This below only runs on RPI when not in HIL mode
+
+  #ifdef ARDUINO
+  PHASE = 2; //On the Arduino the phase is always 2
+  #else
   if (PHASE == 0) {
     if ((currentTime - updatetime) > LOOP_TIME) {
       barometer.refreshPressure();
@@ -26,10 +45,14 @@ void BaroTemp::poll(double currentTime) {
       updatetime = currentTime;
     }
   }
+  #endif
+
   if (PHASE == 2) {
     if ((currentTime - updatetime) > SLEEP_TIME) {
+      #ifndef ARDUINO
       barometer.readTemperature();
       barometer.calculatePressureAndTemperature();
+      #endif
       temperature = barometer.getTemperature();
       pressure = barometer.getPressure();
       updatetime = currentTime;
@@ -68,7 +91,7 @@ void BaroTemp::SendZ(double Zin) {
 }
 
 void BaroTemp::ConvertPressure2Altitude() {
-  //pressure0 = 1010; //Going to have to Hardcode this.MOVED TO CALIBRATION
+  //pressure0 = 1010; //Going to have to Hardcode this. MOVED TO CALIBRATION
   double pascals = pressure/0.01;
   altitude = (1.0-pow((pascals/pressure0),1.0/5.25588))/(2.2557*pow(10,-5.0));
   //printf("\n Pressure = %lf ",pressure);

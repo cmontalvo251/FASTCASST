@@ -85,7 +85,7 @@ WOODEN DRONE:
 
   ☐ INO routine logs IMU data
 
-  ☐ INO routine logs MPL (Baro) data
+  ✔ INO routine logs MPL (Baro) data @done (23-03-09 12:05)
 
   ✔ INO routine logs GPS data @done (23-03-02 20:46)
 
@@ -99,9 +99,9 @@ WOODEN DRONE:
 
  ✔ Once the Arduino hooks are in I would like one more Arduino Routine that reads the RCInput and then feeds them (pass through) to RCOutput. This will require you to use the RCInput and RCOutput routines which hopefully got combined between Navio and Arduino at which point you'll also need hooks in there for the JOYSTICK as well. Again these need to be general enough that just changing the Makefile will compile the routine onto different architectures @done (23-03-02 20:47)
 
- ☐ Using this routine log back in to betaflight and make sure you have everything set up properly for the on board Flight controller. Again remember that the autopilot (non-PID) is the only thing that's going to go on Gitlab so for now you can make a pass through just like above and make sure the receiver is sending appropriate signals to the servos
+ ✔ Using this routine log back in to betaflight and make sure you have everything set up properly for the on board Flight controller. Again remember that the autopilot (non-PID) is the only thing that's going to go on Gitlab so for now you can make a pass through just like above and make sure the receiver is sending appropriate signals to the servos @done (23-03-09 12:06)
 
- ☐ You should also be able to fly the drone at this point. So it would be good to go ahead and fly the drone
+ ✔ You should also be able to fly the drone at this point. So it would be good to go ahead and fly the drone @done (23-03-09 12:06)
 
  ☐ Plot data from this flight test
 

@@ -41,7 +41,7 @@ TIMER watch;
 //#include "MATLAB.h" - Tested and compiles 3/9/2023
 
 //Datalogger is inside hardware.h
-#include "Datalogger.h" - Compiles but does not work yet
+#include "Datalogger.h" //Compiles but does not work yet - Keep getting SD card init failed
 Datalogger logger; //Remember that you need to have a data/ folder on the SD card
 
 //RCIO is inside hardware.h

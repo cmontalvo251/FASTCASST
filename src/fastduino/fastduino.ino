@@ -35,13 +35,13 @@ TIMER watch;
 //#include "hardware.h"
 
 ///DEBUG HEADER FILES
-//#include "mathp.h"
+//#include "mathp.h" - Tested and compiles 3/9/2023
 
-//Need MATLAB.h for Matrices
-//#include "MATLAB.h"
+//Need MATLAB.h for Matrices 
+//#include "MATLAB.h" - Tested and compiles 3/9/2023
 
 //Datalogger is inside hardware.h
-//#include "Datalogger.h"
+//#include "Datalogger.h" - Compiles but does not work yet
 //Datalogger logger;
 
 //RCIO is inside hardware.h
@@ -52,11 +52,11 @@ TIMER watch;
 #include "RCInput.h"
 RCInput rin;
 
-//RCOutput is inside RCIO.h
+//RCOutput is inside RCIO.h - Compiles and runs 2/28/2023
 #include "RCOutput.h"
 RCOutput rout;
 
-//PWMSIGNALS.h is inside RCIO.h
+//PWMSIGNALS.h is inside RCIO.h - Compiles and runs 2/28/2023
 //#include "PWMSIGNALS.h"
 
 //Hardware has sensors.h
@@ -64,11 +64,11 @@ RCOutput rout;
 
 //Sensors has a lot of sensors. We're going to need to add them in one at a time
 //Let's start with GPS
-#include "GPS.h"
+#include "GPS.h" // Compiles, runs and gets a GPS fix - 3/9/2023
 GPS satellites; 
 
 //Now let's get the barometer working
-//#include "BaroTemp.h"
+//#include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
 //BaroTemp atm;
 
 //Create Loop Variables

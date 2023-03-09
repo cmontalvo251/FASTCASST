@@ -520,10 +520,10 @@ int Ublox::decodeSingleMessage(message_t msg, std::vector<double>& position_data
                             // printf("GPS Millisecond Time of Week: %lf\n", position_data[0]/1000);
                             // printf("Longitude: %lf\n", position_data[1]/10000000);
                             // printf("Latitude: %lf\n", position_data[2]/10000000);
-                            // printf("Height above Ellipsoid: %.3lf m\n", pos_data[3]/1000);
-                            // printf("Height above mean sea level: %.3lf m\n", pos_data[4]/1000);
-                            // printf("Horizontal Accuracy Estateimate: %.3lf m\n", pos_data[5]/1000);
-                            // printf("Vertical Accuracy Estateimate: %.3lf m\n", pos_data[6]/1000);
+                            // printf("Height above Ellipsoid: %.3lf m\n", position_data[3]/1000);
+                            // printf("Height above mean sea level: %.3lf m\n", position_data[4]/1000);
+                            // printf("Horizontal Accuracy Estateimate: %.3lf m\n", position_data[5]/1000);
+                            // printf("Vertical Accuracy Estateimate: %.3lf m\n", position_data[6]/1000);
 
 
                             // You can see ubx message structure in ublox reference manual

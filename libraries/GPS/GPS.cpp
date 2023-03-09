@@ -56,7 +56,10 @@ void GPS::decodeXYZ() {
   #if defined (satellite) || (cubesat) 
   ConvertXYZ2LLHSPHERICAL(XYZ,LLH);
   #else
-  ConvertXYZ2LLH(XYZ,LLH,X_origin,Y_origin);
+  //Note we need to use the simulation coordinates so we know where we are on the planet
+  //Probably need an overhaul where we set the GPS origin coordinates in Simulation.txt
+  //But I don't want to do that right now.
+  ConvertXYZ2LLH(XYZ,LLH,X_origin_SIMULATION,Y_origin_SIMULATION);
   #endif
   latitude = LLH[0];
   longitude = LLH[1];
@@ -73,6 +76,10 @@ void GPS::poll(float currentTime) {
   char c = 1;
   while (c != 0) {
     c = AdaGPS->read();
+  }
+  if (AdaGPS->newNMEAreceived()) {
+    AdaGPS->parse(AdaGPS->lastNMEA());
+    //printstdout("GPS NMEA Sentence Received \n");
   }
   #else
   sensor.decodeSingleMessage(Ublox::NAV_POSLLH, pos_data);
@@ -94,45 +101,29 @@ void GPS::poll(float currentTime) {
 }
 
 void GPS::processGPSCoordinates(double currentTime) {
-  //This runs no matter what
-  int sizeofvector=0;
-  #ifdef ARDUINO
-  if (AdaGPS->newNMEAreceived()) {
-    sizeofvector = 5;
-    AdaGPS->parse(AdaGPS->lastNMEA());
-    //printstdout("GPS NMEA Sentence Received \n");
-  }
-  #else
-  sizeofvector = pos_data.size()
-  #endif
-  if (sizeofvector > 4) {
+  VALIDGPS = status();
+  if (VALIDGPS) {
     #ifdef ARDUINO
     //Get GPS LLH on Arduino
     latitude = AdaGPS->latitudeDegrees;
     longitude = AdaGPS->longitudeDegrees;
     altitude = AdaGPS->altitude;
-    //Sanity check
-    if (abs(latitude-IRVX) > 2.0) {
-      latitude = 0.0;
-    }
-    if (abs(longitude-IRVY) > 2.0) {
-      longitude = 0.0;
-    }
     #else
     latitude = pos_data[2]/10000000.0; //lon - Maxwell says it may be lon lat
     longitude = pos_data[1]/10000000.0; //lat - It really is lon lat
     altitude = pos_data[3]/1000.0; ///height above ellipsoid 1984?
     #endif
-    //If the measurement is good
-    if (VALIDGPS) {
+
+    if (GPSORIGINSET) {
+      //Get Speed
       #ifdef ARDUINO
       speed = AdaGPS->speed;
       #else
       computeCOG(currentTime);
       #endif
     } else {
+      GPSORIGINSET = 1;
       printf("GPS Coordinate initialized. Resetting GPS Vals \n");
-      VALIDGPS = 1;
       //Set the origin
       setOrigin(latitude,longitude);
       //Convert to XYZ
@@ -165,24 +156,42 @@ void GPS::setXYZ(double Xin,double Yin,double Zin) {
   //printf("XYZ Set to = %lf %lf %lf \n",X,Y,Z);
 }
 
-#ifndef ARDUINO
 int GPS::status() {
   #ifdef PRINTSEVERYWHERE
-  printf("Checking GPS Health \n");
+  printstdout("Checking GPS Health \n");
   #endif
   //if (timeSinceStart > 10) {
+  int ok = 0;
+  #ifdef ARDUINO
+  ////ARDUINO
+  ok = AdaGPS->fixquality;
+  //Serial.print("Fix Quality = ");
+  //Serial.print(ok);
+  #else
+
+  #if defined (SIMONLY) || (SIL) 
+  return 1; //Assume GPS is always working in SIMONLY / SIL Modes
+  #endif
+
+  ///RASPBERRY PI
   sensor.decodeSingleMessage(Ublox::NAV_STATUS, nav_data);
   int size = nav_data.size();
   #ifdef PRINTSEVERYWHERE
-  printf("Size of Nav_Data = %d \n",size);
+  printstdout("Size of Nav_Data = %d \n",size);
   #endif
-  ok = 1;
   if (size > 0) {
     ok = (int(nav_data[0]) == 0x00);
   }
+  //Also need to check for pos_data size
+  int sizepos_data = pos_data.size();
+  if (sizepos_data < 5) { 
+    ok = 0;
+  }
+  #endif
+
+  //printstdout("Returning Ok \n");
   return ok;
 }
-#endif
 
 void GPS::ConvertGPS2XY()  {
   if ((latitude == -99) || (longitude == -99) || (altitude == -99)) {

@@ -25,6 +25,8 @@ Cleaning up FASTCASST ON PI:
   ☐ We can try systemd which is apparently what Arducopter uses
 
   ☐ Another option is we write our own embedded software for the Pi
+
+  ☐ Have GPS origin point for simulation set inside Simulation.txt
   
   ✔ We can also upgrade from the Pi3 to the Pi4 with lots of RAM @done (22-12-02 09:49)
 

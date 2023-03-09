@@ -25,8 +25,10 @@ class GPS {
     double GPSnextTime = 0; //Assume you always start at zero
     double GPSupdateRate = 4.0; //every 4 seconds
     int VALIDGPS = 0;
+    int GPSORIGINSET = 0;
     double XYZ[3],LLH[3];
-    double X_origin=GPSORIGINX,Y_origin=GPSORIGINY; //These are set in mathp.h
+    double X_origin=-99,Y_origin=-99; 
+    double X_origin_SIMULATION=GPSORIGINX,Y_origin_SIMULATION=GPSORIGINY; //These are set in mathp.h
  public:
   void printLLH();
   void init();
@@ -35,9 +37,13 @@ class GPS {
   Ublox sensor;
   #endif
   //X AND Y are Hardcoded to be zero initially and the origin point
-  //is roughly set to Mobile
+  //is roughly set to Mobile but this isn't a good idea
+  //So the latitude and longitude are set to -99
+  //This is because we don't know where we are until we have
+  //a valid GPS coordinate
+  //In all modes except AUTO the origin is set automatically
   //Origin is set in mathp.h
-  double latitude=GPSORIGINX,longitude=GPSORIGINY,altitude=0.0,X=0,Y=0,Z=0;
+  double latitude=-99,longitude=-99,altitude=0.0,X=0,Y=0,Z=0;
   double xprev=0,yprev=0,zprev=0,prev_time=0;
   double headingFilterConstant = 0.0;
   double heading;

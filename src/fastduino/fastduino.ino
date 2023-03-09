@@ -91,7 +91,7 @@ void setup() {
 
   //DEBUGGING
   //Initialize Datalogger
-  logger.init("data/",1+RECV_N_CHANNEL*2+3); //Time plus the receiver signals and the PWM out signal and 3 LLH signals
+  //logger.init("data/",1+RECV_N_CHANNEL*2+3); //Time plus the receiver signals and the PWM out signal and 3 LLH signals
   //Remember the SD card on the arduino needs to have a data/ folder
   
   //rc.outInit(RECV_N_CHANNEL);

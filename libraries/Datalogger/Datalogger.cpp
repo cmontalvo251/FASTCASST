@@ -89,7 +89,7 @@ void Datalogger::init(char* directory,int num) {
   #ifdef ARDUINO
   pinMode(44,OUTPUT);
   if (!SD.begin(44)) { 
-    Serial.println("initialization failed!");
+    Serial.println("SD Card Arduino initialization failed!");
     exit(1);
   }
   #endif

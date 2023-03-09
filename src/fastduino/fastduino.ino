@@ -5,7 +5,7 @@
 
 //Config.txt
 #define PRINTRATE 1.0    //!Standard Out Print Rate // seconds (set to negative)
-///10.0     !Data logging rate // seconds (numbers if you want)
+#define LOGRATE 10.0     //!Data logging rate // seconds (numbers if you want)
 //0.1  !RC Rate // seconds (to run as fast as possible)
 //1.0      !Telemetry Rate (seconds)
 //1.0      !GPS Rate (seconds)
@@ -41,8 +41,8 @@ TIMER watch;
 //#include "MATLAB.h" - Tested and compiles 3/9/2023
 
 //Datalogger is inside hardware.h
-//#include "Datalogger.h" - Compiles but does not work yet
-//Datalogger logger;
+#include "Datalogger.h" - Compiles but does not work yet
+Datalogger logger; //Remember that you need to have a data/ folder on the SD card
 
 //RCIO is inside hardware.h
 //#include "RCIO.h"
@@ -73,6 +73,7 @@ GPS satellites;
 
 //Create Loop Variables
 double lastPRINTtime = 0;
+double lastLOGtime = 0;
 
 void setup() {
   //Setup Serial Std Out
@@ -90,7 +91,7 @@ void setup() {
 
   //DEBUGGING
   //Initialize Datalogger
-  //logger.init("data/",1+RECV_N_CHANNEL*2+3); //Time plus the receiver signals and the PWM out signal and 3 LLH signals
+  logger.init("data/",1+RECV_N_CHANNEL*2+3); //Time plus the receiver signals and the PWM out signal and 3 LLH signals
   //Remember the SD card on the arduino needs to have a data/ folder
   
   //rc.outInit(RECV_N_CHANNEL);
@@ -147,12 +148,14 @@ void loop() {
   }
 
   //Log Everything
-  //logger.printvar(watch.currentTime);
-  //logger.printvar(satellites.latitude);
-  //logger.printvar(satellites.longitude);
-  //logger.printvar(satellites.altitude);
-  //logger.printarray(rin.rx_array,RECV_N_CHANNEL);
-  //logger.printarrayln(rout.pwm_array,RECV_N_CHANNEL);
-  
+  if (lastLOGtime <= watch.currentTime) {
+    lastLOGtime+=LOGRATE;
+    logger.printvar(watch.currentTime);
+    logger.printarray(rin.rx_array,RECV_N_CHANNEL);
+    logger.printarrayln(rout.pwm_array,RECV_N_CHANNEL);
+    logger.printvar(satellites.latitude);
+    logger.printvar(satellites.longitude);
+    logger.printvar(satellites.altitude);
+  }
   //cross_sleep(0.1);
 }

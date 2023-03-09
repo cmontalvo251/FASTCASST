@@ -1,3 +1,11 @@
+===================3/9/2023==============
+
+Currently making progress on Wooden drone
+RCINput,RCOUput,GPS, and BaroTemp all work. 
+Unfortunately I can't get the SD card logging to work
+Going to need to perform some rigorous hardware and 
+software testing for that one.
+
 ==================3/2/2023================
 
 So for the past few days I've been switching gears yet again and 

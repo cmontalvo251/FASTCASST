@@ -157,7 +157,7 @@ boolean Adafruit_GPS::parse(char *nmea) {
       geoidheight = atof(p);
     }
 
-    Serial.print("PARSED: ");
+    /*Serial.print("PARSED: ");
     Serial.print(hour);
     Serial.print(",");
     Serial.print(minute);
@@ -179,7 +179,7 @@ boolean Adafruit_GPS::parse(char *nmea) {
     Serial.print(altitude);
     Serial.print(",");
     Serial.print(geoidheight);
-    Serial.print("\n");
+    Serial.print("\n");*/
 
     return true;
   }

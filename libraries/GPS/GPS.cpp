@@ -123,7 +123,7 @@ void GPS::processGPSCoordinates(double currentTime) {
       #endif
     } else {
       GPSORIGINSET = 1;
-      printf("GPS Coordinate initialized. Resetting GPS Vals \n");
+      printstdout("GPS Coordinate initialized. Resetting GPS Vals \n");
       //Set the origin
       setOrigin(latitude,longitude);
       //Convert to XYZ
@@ -144,9 +144,13 @@ void GPS::reset() {
 }
 
 void GPS::setOrigin(double latitude,double longitude) {
-  //X_origin = latitude;
-  //Y_origin = longitude;
-  printf("Origin Set = %lf %lf \n",X_origin,Y_origin);
+  X_origin = latitude; //These were originally commented out. 
+  Y_origin = longitude; //Why? I have a new status() function. Hopefully that fixed it
+  printstdout("Origin Set = ");
+  printstdoutdbl(X_origin);
+  printstdout(" ");
+  printstdoutdbl(Y_origin);
+  printstdout("\n");
 }
 
 void GPS::setXYZ(double Xin,double Yin,double Zin) {

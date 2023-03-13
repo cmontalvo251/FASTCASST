@@ -35,35 +35,53 @@ void Datalogger::findfile(char* directory) {
   //char filename[256];
   FILE* fileout;
   while (!found) {
+
+    ////////////CREATE FILENAME///////////////////
     if (filetype == 0) {
       sprintf(filename,"%s%d%s",directory,number,".txt");
     } else {
       sprintf(filename,"%s%d%s",directory,number,".csv");
     }
-    if (echo) {
-      printf("%s%s \n","Attempting to check for file: ",filename);
-    }
+
+    //////NOTIFY USER/////////////////////
+    printstdout("Attempting to check for file: ");
+    printstdout(filename);
+    printstdout("\n");
+    
+    /////////CHECK TO SEE IF FILE EXISTS///////
     #ifdef ARDUINO
-    found = SD.exists(filename);
+    int sdexist = SD.exists(filename); 
+    found = 1-sdexist; //If SD.exists throws a 0 it means the file doesn't exist. But our found 
+    //flag needs to have the indication of hey we found a file that doesn't exist. Make sense? 
+    Serial.print("SD Exist = ");
+    Serial.print(sdexist);
+    Serial.print(" File found flag = ");
+    Serial.println(found);
     #else
     fileout = fopen(filename,"r");
     if (!fileout) {
+      //File doesn't exist so set found to 1
       found = 1;
     } else {
+      //Otherwise close the file we just opened since it exists
       fclose(fileout);
     }    
     #endif
+
+    ////NOTIFY USER/////////////
     if (found) {
-      if (echo) {
-        printf("File exists. Skipping \n");
-      }
+      printstdout("File does not exist. Exiting loop \n");
+    } else {
+      printstdout("File exists. Skipping and adding 1 \n");
+      number+=1; //Number is global in header file
     }
-    number+=1; //Number is global in header file
-  }
-  if (echo) {
-    printf("File found for writing = %s \n",filename);
-  }
-  //return number
+
+  } //END OF WHILE LOOP
+
+  ///NOTIFY USER///
+  printstdout("File found for writing = ");
+  printstdout(filename);
+  printstdout("\n");
 }
 
 void Datalogger::openfile() {
@@ -134,14 +152,16 @@ void Datalogger::appendheaders(char **headers,int length){
 
 void Datalogger::printheaders() {
   headerctr = 0;
-  printf("Logging Headers to Data File \n");
+  printstdout("Logging Headers to Data File \n");
   for (int i = 0;i<total_length;i++) {
     printchar(logheader[i]);
-    //printf("%s ",logheader[i]);
+    printstdout(logheader[i]);
+    printstdout("\n");
     if (i < total_length - 1) {
       writecomma();
     }
   }
+  writenewline();
   IsHeader = 1;
   flush();
 }
@@ -156,7 +176,7 @@ void Datalogger::append(MATLAB in) {
 //Print functions
 void Datalogger::printvar(double var) {
   #ifdef ARDUINO
-  outfile.write(var);
+  outfile.print(var);
   #else
   fprintf(outfile,"%lf,",var);
   #endif
@@ -165,7 +185,7 @@ void Datalogger::printvar(double var) {
 
 void Datalogger::printint(int var) {
   #ifdef ARDUINO
-  outfile.write(var);
+  outfile.print(var);
   #else
   fprintf(outfile,"%d,",var);
   #endif
@@ -188,7 +208,7 @@ void Datalogger::print() {
 
 void Datalogger::writenewline() {
   #ifdef ARDUINO
-  outfile.write("\n");
+  outfile.print("\n");
   #else
   fprintf(outfile,"%s ","\n");
   #endif
@@ -197,7 +217,7 @@ void Datalogger::writenewline() {
 
 void Datalogger::writecomma() {
   #ifdef ARDUINO
-  outfile.write(",");
+  outfile.print(",");
   #else
   fprintf(outfile,",");
   #endif
@@ -234,7 +254,7 @@ void Datalogger::printarrayln(int array[],int num) {
 //Print char*
 void Datalogger::printchar(char* msg) {
   #ifdef ARDUINO
-  outfile.write(msg);
+  outfile.print(msg);
   #else
   fprintf(outfile,"%s ",msg);
   #endif
@@ -244,7 +264,7 @@ void Datalogger::printchar(char* msg) {
 //Print a single character
 void Datalogger::printc(char c) {
   #ifdef ARDUINO
-  outfile.write(c);
+  outfile.print(c);
   #else
   fprintf(outfile,"%c",c);
   #endif

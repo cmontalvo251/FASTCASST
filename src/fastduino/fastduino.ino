@@ -5,7 +5,7 @@
 
 //Config.txt
 #define PRINTRATE 1.0    //!Standard Out Print Rate // seconds (set to negative)
-#define LOGRATE 10.0     //!Data logging rate // seconds (numbers if you want)
+#define LOGRATE 1.0     //!Data logging rate // seconds (numbers if you want)
 //0.1  !RC Rate // seconds (to run as fast as possible)
 //1.0      !Telemetry Rate (seconds)
 //1.0      !GPS Rate (seconds)
@@ -91,8 +91,26 @@ void setup() {
 
   //DEBUGGING
   //Initialize Datalogger
-  //logger.init("data/",1+RECV_N_CHANNEL*2+3); //Time plus the receiver signals and the PWM out signal and 3 LLH signals
+  logger.init("data/",1+RECV_N_CHANNEL*2+3); //Time plus the receiver signals and the PWM out signal and 3 LLH signals
   //Remember the SD card on the arduino needs to have a data/ folder
+  //Append the headers
+  logger.appendheader("Time (sec)");
+  char** rinnames = (char**)malloc((RECV_N_CHANNEL)*sizeof(char*));
+  for (int i = 0;i<RECV_N_CHANNEL;i++) {
+    rinnames[i] = (char*)malloc((18)*sizeof(char));
+    sprintf(rinnames[i],"%s%d%s","RXIN ",i," (us)");
+    logger.appendheader(rinnames[i]);
+  }
+  char** routnames = (char**)malloc((RECV_N_CHANNEL)*sizeof(char*));
+  for (int i = 0;i<RECV_N_CHANNEL;i++) {
+    routnames[i] = (char*)malloc((18)*sizeof(char));
+    sprintf(routnames[i],"%s%d%s","PWMOUT ",i," (us)");
+    logger.appendheader(routnames[i]);
+  }
+  logger.appendheader("Latitude (deg)");
+  logger.appendheader("Longitude (deg)");
+  logger.appendheader("Altitude (m)");  
+  logger.printheaders();
   
   //rc.outInit(RECV_N_CHANNEL);
   //Initialize RCInput
@@ -151,11 +169,17 @@ void loop() {
   if (lastLOGtime <= watch.currentTime) {
     lastLOGtime+=LOGRATE;
     logger.printvar(watch.currentTime);
+    logger.writecomma();
     logger.printarray(rin.rx_array,RECV_N_CHANNEL);
-    logger.printarrayln(rout.pwm_array,RECV_N_CHANNEL);
+    logger.writecomma();
+    logger.printarray(rout.pwm_array,RECV_N_CHANNEL);
+    logger.writecomma();
     logger.printvar(satellites.latitude);
+    logger.writecomma();
     logger.printvar(satellites.longitude);
+    logger.writecomma();
     logger.printvar(satellites.altitude);
+    logger.writenewline();
   }
   //cross_sleep(0.1);
 }

@@ -1,3 +1,16 @@
+===================3/13/2023=============
+
+I was able to get the datalogger to work. On the Arduino DUE you need to use Pin 44
+as the CS pin but you need to use the SPI interface on the middle of the board
+for MISO, MOSI, and CLK.
+
+I also had to edit the datalogger.cpp routine pretty heavily but finally
+got it all working. 
+
+Next step according to the calendar is to get the Telemetry to work.
+This one will be tough. We need to get both receive and transmit to 
+function appropriately. 
+
 ===================3/9/2023==============
 
 Currently making progress on Wooden drone

@@ -4,7 +4,7 @@ import time
 import random
 import numpy as np
 
-class UART():
+class Comms():
   def __init__(self,BaudRate=57600,port="/dev/ttyAMA0",period=1.0):
     self.lastTime = 0.0
     self.period = period #in seconds

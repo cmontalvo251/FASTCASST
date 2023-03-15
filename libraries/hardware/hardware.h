@@ -19,9 +19,9 @@
 #include <sensors/sensors.h>
 //Time for pause function
 #include <Timer/timer.h>
-//UART for HIL and Telemetry (Telemetry is always on so this is always include)
+//Comms class for communication via HIL and Telemetry (Telemetry is always on so this is always include)
 //Eventually I'm going to get Telemetry working in SIL and SIMONLY modes
-#include <UART/UART.h>
+#include <Comms/Comms.h>
 #endif
 
 //In order to get this to work on linux you need to run sudo apt-get install libboost-all-dev
@@ -36,15 +36,15 @@ extern boost::mutex HILmutex; //Mutex for passing data b/t HIL asynchronous thre
 //Externs are to avoid multiple declaration errors during module compilation
 
 //Asynchronous HIL thread -- Moved to class and synchronous function call
-//void hil(UART,double);
+//void hil(comms,double);
 //Global vars to pass info back and forth
-extern MATLAB uart_sense_matrix,uart_ctl_matrix,uart_sense_matrix_copy,uart_ctl_matrix_copy;
+extern MATLAB comms_sense_matrix,comms_ctl_matrix,comms_sense_matrix_copy,comms_ctl_matrix_copy;
 
 ///////////Inputs to Hardware Class///////////////
 // 1 - Root Folder name (char*)
 // 2 - Control Matrix (MATLAB)
-// 3 - UART Control Matrix (MATLAB) - HIL
-// 4 - UART Sense Matrix (MATLAB) - HIL
+// 3 - comms Control Matrix (MATLAB) - HIL
+// 4 - comms Sense Matrix (MATLAB) - HIL
 
 //////////Outputs to From Hardware Class//////////////
 // 1 - Telemetry Matrix to Ground Station (MATLAB)
@@ -52,8 +52,8 @@ extern MATLAB uart_sense_matrix,uart_ctl_matrix,uart_sense_matrix_copy,uart_ctl_
 // 3 - Sense Matrix to System Controller (MATLAB)
 // 4 - Configuration Matrix to System Controller (MATLAB)
 // 5 - Simulation Matrix to Modeling (MATLAB)
-// 6 - UART Control Matrix (MATLAB) - HIL (x2 - One to Modeling and one to System Controller)
-// 7 - UART Sense Matrix (MATLAB) - HIL
+// 6 - comms Control Matrix (MATLAB) - HIL (x2 - One to Modeling and one to System Controller)
+// 7 - comms Sense Matrix (MATLAB) - HIL
 
 class hardware {
  private:
@@ -66,7 +66,7 @@ class hardware {
   MATLAB telemetry_matrix;
   MATLAB q0123,ptp;
   Datalogger logger;
-  UART serTelem,serHIL;
+  Comms serTelem,serHIL;
   //Unfortunately telemetry values are going to be hardcoded
   //Rather than use input files you'll have to edit the code
   //in the init() and loop() functions

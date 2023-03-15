@@ -10,7 +10,7 @@ import struct
 import datetime
 import sys
 sys.path.append('../libraries/')
-from UART.uart import UART as U
+from Comms.Comms import Comms as U
 
 fastkit_packet = np.zeros(8)
 

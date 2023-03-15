@@ -2,8 +2,8 @@
 
 #ifdef HIL
 boost::mutex HILmutex; //Mutex for passing data b/t HIL asynchronous threads
-//Global variables for uart_sense matrix and uart_ctl_matrix
-MATLAB uart_sense_matrix,uart_ctl_matrix,uart_sense_matrix_copy,uart_ctl_matrix_copy;
+//Global variables for comms_sense matrix and comms_ctl_matrix
+MATLAB comms_sense_matrix,comms_ctl_matrix,comms_sense_matrix_copy,comms_ctl_matrix_copy;
 #endif
 
 //Constructor
@@ -122,10 +122,10 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //NUMSENSE = 3; //For tank RPY
   NUMSENSE = 4; //For apprentice innerloop RP GXGY
   NUMCTL = NUMSIGNALS; //Same as control signals
-  uart_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
-  uart_sense_matrix_copy.zeros(NUMSENSE,1,"Serial Sense Matrix Copy");
-  uart_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
-  uart_ctl_matrix_copy.zeros(NUMCTL,1,"Serial Control Matrix Copy");
+  comms_sense_matrix.zeros(NUMSENSE,1,"Serial Sense Matrix");
+  comms_sense_matrix_copy.zeros(NUMSENSE,1,"Serial Sense Matrix Copy");
+  comms_ctl_matrix.zeros(NUMCTL,1,"Serial Control Matrix");
+  comms_ctl_matrix_copy.zeros(NUMCTL,1,"Serial Control Matrix Copy");
   serHIL.HILInit(NUMSENSE,NUMCTL);
   //In this branch, rather than kicking off the hil routine as a thread we're going to call it in
   //the actual function call
@@ -275,42 +275,42 @@ void hardware::hil(double currentTime,int mode){
     #ifdef DESKTOP
     //For Apprentice Inner loop
     //Roll
-    uart_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
+    comms_sense_matrix.set(1,1,sense.sense_matrix.get(4,1));
     /*if (currentTime < 10) {
-      uart_sense_matrix.set(1,1,50);
+      comms_sense_matrix.set(1,1,50);
     } else {
-      uart_sense_matrix.set(1,1,-50);
+      comms_sense_matrix.set(1,1,-50);
       }*/
     //Pitch
-    uart_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
+    comms_sense_matrix.set(2,1,sense.sense_matrix.get(5,1));
     //Roll Rate
-    //uart_sense_matrix.set(3,1,2);
-    uart_sense_matrix.set(3,1,sense.sense_matrix.get(10,1));
+    //comms_sense_matrix.set(3,1,2);
+    comms_sense_matrix.set(3,1,sense.sense_matrix.get(10,1));
     //Pitch Rate
-    uart_sense_matrix.set(4,1,sense.sense_matrix.get(11,1));
+    comms_sense_matrix.set(4,1,sense.sense_matrix.get(11,1));
 
     //Then we copy the matrix over
     //HILmutex.lock(); -- No need for lock anymore in synchronous function calls
-    uart_sense_matrix_copy.overwrite(uart_sense_matrix);
+    comms_sense_matrix_copy.overwrite(comms_sense_matrix);
     //HILmutex.unlock();
     #endif
 
     #ifdef RPI
     //Put the state vector copy into the state vector
     //HILmutex.lock(); -- moving to synchronous
-    uart_sense_matrix.overwrite(uart_sense_matrix_copy);
+    comms_sense_matrix.overwrite(comms_sense_matrix_copy);
     //HILmutex.unlock();
     //For Apprentice Innerloop
-    sense.sense_matrix.set(4,1,uart_sense_matrix.get(1,1));
+    sense.sense_matrix.set(4,1,comms_sense_matrix.get(1,1));
     sense.orientation.roll = sense.sense_matrix.get(4,1);
     // 5 - pitch
-    sense.sense_matrix.set(5,1,uart_sense_matrix.get(2,1));
+    sense.sense_matrix.set(5,1,comms_sense_matrix.get(2,1));
     sense.orientation.pitch = sense.sense_matrix.get(5,1);
     // 8 - gx
-    sense.sense_matrix.set(10,1,uart_sense_matrix.get(3,1));
+    sense.sense_matrix.set(10,1,comms_sense_matrix.get(3,1));
     sense.orientation.roll_rate = sense.sense_matrix.get(10,1);
     // 9 - gy
-    sense.sense_matrix.set(11,1,uart_sense_matrix.get(3,1));
+    sense.sense_matrix.set(11,1,comms_sense_matrix.get(3,1));
     sense.orientation.pitch_rate = sense.sense_matrix.get(11,1);
     #endif
   }
@@ -318,10 +318,10 @@ void hardware::hil(double currentTime,int mode){
   //These are the send routines.
   if (mode == 1) {
     #ifdef DESKTOP
-    serHIL.sendSense(uart_sense_matrix_copy);
+    serHIL.sendSense(comms_sense_matrix_copy);
     #endif
     #ifdef RPI
-    serHIL.sendControl(uart_ctl_matrix_copy);
+    serHIL.sendControl(comms_ctl_matrix_copy);
     #endif
   }
 
@@ -329,27 +329,27 @@ void hardware::hil(double currentTime,int mode){
   if (mode == 2) {
     #ifdef DESKTOP
     //printf("READING... \n");
-    serHIL.readControl(uart_ctl_matrix_copy);
+    serHIL.readControl(comms_ctl_matrix_copy);
     //printf("ANYTHING? \n");
     #endif
     #ifdef RPI
-    serHIL.readSense(uart_sense_matrix_copy);
+    serHIL.readSense(comms_sense_matrix_copy);
     #endif
   }
 
   //Mode 3 is where we put the control vector into the appropriate arrays
   if (mode == 3) {
     #ifdef DESKTOP
-    uart_ctl_matrix.overwrite(uart_ctl_matrix_copy);
+    comms_ctl_matrix.overwrite(comms_ctl_matrix_copy);
     rc.out.backup();
     for (int i = 1;i<=NUMCTL;i++) {
-      rc.out.pwm_array[i-1] = uart_ctl_matrix.get(i,1); //don't we just need the rcoutputs?
+      rc.out.pwm_array[i-1] = comms_ctl_matrix.get(i,1); //don't we just need the rcoutputs?
     }
     //We then will run the RangeCheck and it will return an error code
     int err = rc.out.RangeCheck(); //This is a bit more robust to Serial errors than just the saturation block
     if (err) {
       //This means that the rangecheck through an error which means the values received from
-      //uart were invalid and we need to revert back to our previous values
+      //comms were invalid and we need to revert back to our previous values
       rc.out.revert();
     }
     #endif
@@ -357,9 +357,9 @@ void hardware::hil(double currentTime,int mode){
     //We also need to populate the rc out matrices
     for (int i = 1;i<=rc.out.NUMSIGNALS;i++) {
       //control matrix - i
-      uart_ctl_matrix.set(i,1,rc.out.pwm_array[i-1]);
+      comms_ctl_matrix.set(i,1,rc.out.pwm_array[i-1]);
     }
-    uart_ctl_matrix_copy.overwrite(uart_ctl_matrix);
+    comms_ctl_matrix_copy.overwrite(comms_ctl_matrix);
     #endif
   }
 

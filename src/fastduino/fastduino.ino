@@ -60,7 +60,7 @@ RCOutput rout;
 //#include "PWMSIGNALS.h"
 
 //Hardware also has the telemetry UART class
-#include "uart.h"
+#include "UART.h"
 
 //Hardware has sensors.h
 //#include "sensors.h"

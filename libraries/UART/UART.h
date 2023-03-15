@@ -15,14 +15,16 @@
 // 3 - uart_sense_array (double*) - For HIL
 //////////////////////////////////////////////
 
+#ifdef ARDUINO
+#include "MATLAB.h"
+#else
 //Helper Modules
 #include <MATLAB/MATLAB.h>
-
 //Serial Module
-#include "Serial.h"
-
+#include <Serial/Serial.h>
 //Timer for Pause
 #include <Timer/timer.h>
+#endif
 
 class UART {
  private:

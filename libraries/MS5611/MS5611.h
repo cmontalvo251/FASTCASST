@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef MS5611_HPP
 #define MS5611_HPP
 
-#include <UART/I2Cdev.h>
+#include <I2Cdev/I2Cdev.h>
 #include <math.h>
 #include <unistd.h>
 #include <string>

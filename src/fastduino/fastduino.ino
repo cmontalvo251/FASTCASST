@@ -59,6 +59,9 @@ RCOutput rout;
 //PWMSIGNALS.h is inside RCIO.h - Compiles and runs 2/28/2023
 //#include "PWMSIGNALS.h"
 
+//Hardware also has the telemetry UART class
+#include "uart.h"
+
 //Hardware has sensors.h
 //#include "sensors.h"
 

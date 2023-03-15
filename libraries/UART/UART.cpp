@@ -1,4 +1,4 @@
-#include "uart.h"
+#include "UART.h"
 
 //Constructor
 UART::UART() {

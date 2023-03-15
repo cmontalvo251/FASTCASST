@@ -17,9 +17,6 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //Initialize the RCIO
   rc.outInit(NUMSIGNALS);
 
-  //Initialize GPS
-  satellites.init();
-
   //The hardware initialization needs to import the Simulation.txt file
   //and the config.txt file
   //This will create the in_configuration_matrix and in_simulation_matrix
@@ -46,6 +43,7 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //are updated. The serial hil loop runs as fast as possible to read data and not miss anything  
   //HILRATE = in_configuration_matrix.get(4,1); 
 
+  //INITIALIZE THE SENSOR CLASS
   sense.init(in_configuration_matrix,in_simulation_matrix);
 
   //Extract Number of SIGNALS and set headers
@@ -105,7 +103,6 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix HW");
   //Telemetry is always on an working in some sort of configuration
   serTelem.TelemInit(NUMTELEMETRY);
-
 
   /////////////////////////HIL/////////////////////////////
   #ifdef HIL

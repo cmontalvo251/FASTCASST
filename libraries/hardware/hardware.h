@@ -21,7 +21,7 @@
 #include <Timer/timer.h>
 //UART for HIL and Telemetry (Telemetry is always on so this is always include)
 //Eventually I'm going to get Telemetry working in SIL and SIMONLY modes
-#include <UART/uart.h>
+#include <UART/UART.h>
 #endif
 
 //In order to get this to work on linux you need to run sudo apt-get install libboost-all-dev

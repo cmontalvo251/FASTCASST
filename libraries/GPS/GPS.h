@@ -2,7 +2,7 @@
 #define GPS_H
 
 #ifndef ARDUINO
-#include <GPS/Ublox.h>
+#include <Ublox/Ublox.h>
 #include <Mathp/mathp.h>
 #include <MATLAB/MATLAB.h>
 #include <Timer/timer.h>
@@ -21,14 +21,16 @@
 
 class GPS {
  private:
-    Adafruit_GPS *AdaGPS;
-    double GPSnextTime = 0; //Assume you always start at zero
-    double GPSupdateRate = 4.0; //every 4 seconds
-    int VALIDGPS = 0;
-    int GPSORIGINSET = 0;
-    double XYZ[3],LLH[3];
-    double X_origin=-99,Y_origin=-99; 
-    double X_origin_SIMULATION=GPSORIGINX,Y_origin_SIMULATION=GPSORIGINY; //These are set in mathp.h
+   #ifdef ARDUINO
+   Adafruit_GPS *AdaGPS;
+   #endif
+   double GPSnextTime = 0; //Assume you always start at zero
+   double GPSupdateRate = 4.0; //every 4 seconds
+   int VALIDGPS = 0;
+   int GPSORIGINSET = 0;
+   double XYZ[3],LLH[3];
+   double X_origin=-99,Y_origin=-99; 
+   double X_origin_SIMULATION=GPSORIGINX,Y_origin_SIMULATION=GPSORIGINY; //These are set in mathp.h
  public:
   void printLLH();
   void init();

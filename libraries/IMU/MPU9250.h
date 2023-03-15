@@ -6,7 +6,7 @@ Adapted for Raspberry Pi by Mikhail Avkhimenia (mikhail.avkhimenia@emlid.com)
 #ifndef _MPU9250_H
 #define _MPU9250_H
 
-#include <UART/SPIdev.h>
+#include <I2Cdev/SPIdev.h>
 #include <IMU/InertialSensor.h>
 
 class MPU9250 : public InertialSensor

@@ -19,7 +19,7 @@ void Comms::TelemInit(int numtelem) {
   printf("SETTING UP TELEMETRY \n");
   #ifdef RPI
   //Telemetry happens here
-  comms.SerialInitWireless("/dev/ttyAMA0",baudRateWireless);
+  uart.SerialInitWireless("/dev/ttyAMA0",baudRateWireless);
   #endif
 
   #ifdef DESKTOP
@@ -28,7 +28,7 @@ void Comms::TelemInit(int numtelem) {
   //running in SIMONLY or SIL mode
   //Run default init function which has the txt file bindings
   //There are #define in the Serial.cpp file that makes that happen
-  comms.InitSerialPort(); 
+  uart.InitSerialPort(); 
   #endif
   
 }
@@ -47,14 +47,14 @@ void Comms::HILInit(int numsens,int numc) {
   printf("SETTING UP HIL COMMS \n");
   #ifdef RPI
   //HIL comms happens here
-  hilcomms.SerialInit("/dev/ttyUSB0",baudRate);
-  //hilcomms.SerialInit("/dev/ttyAMA0",baudRate);
+  hiluart.SerialInit("/dev/ttyUSB0",baudRate);
+  //hiluart.SerialInit("/dev/ttyAMA0",baudRate);
   #endif
 
   #ifdef DESKTOP
   //This means we are on the desktop.
   //Hardware in the loop communication happens via USB0
-  hilcomms.SerialInit("/dev/ttyUSB0",baudRate);
+  hiluart.SerialInit("/dev/ttyUSB0",baudRate);
   #endif
   
 }
@@ -66,14 +66,14 @@ void Comms::sendSense(MATLAB comms_sense_matrix) {
     comms_sense_array[i-1] = comms_sense_matrix.get(i,1);
   }
   //Then send it over comms
-  hilcomms.SerialSendArray(comms_sense_array,comms_sense_matrix.len(),0);
+  hiluart.SerialSendArray(comms_sense_array,comms_sense_matrix.len(),0);
   //PAUSE();
 }
 
 
 void Comms::readSense(MATLAB comms_sense_matrix) {
   //This function will read the sense array over UART
-  hilcomms.SerialGetArray(comms_sense_array,comms_sense_matrix.len(),0);
+  hiluart.SerialGetArray(comms_sense_array,comms_sense_matrix.len(),0);
   //It will then overwrite the sense matrix for use elsewhere
   for (int i = 1;i<=comms_sense_matrix.len();i++) {
     comms_sense_matrix.set(i,1,comms_sense_array[i-1]);
@@ -86,12 +86,12 @@ void Comms::sendControl(MATLAB comms_ctl_matrix) {
     comms_ctl_array[i-1] = comms_ctl_matrix.get(i,1);
   }
   //Then send it over UART
-  hilcomms.SerialSendArray(comms_ctl_array,comms_ctl_matrix.len(),0);
+  hiluart.SerialSendArray(comms_ctl_array,comms_ctl_matrix.len(),0);
 }
 
 int Comms::readControl(MATLAB comms_ctl_matrix) {
   //This function will read the ctl array over UART
-  hilcomms.SerialGetArray(comms_ctl_array,comms_ctl_matrix.len(),0);
+  hiluart.SerialGetArray(comms_ctl_array,comms_ctl_matrix.len(),0);
   //comms_ctl_matrix.disp();
   //PAUSE();
   //It will then overwrite the ctl matrix for use elsewhere
@@ -110,5 +110,5 @@ void Comms::sendTelemetry(MATLAB comms_telemetry_matrix,int echo) {
     comms_telemetry_array[i-1] = comms_telemetry_matrix.get(i,1);
   }
   //Then send it over UART
-  comms.SerialSendArray(comms_telemetry_array,comms_telemetry_matrix.len(),echo);
+  uart.SerialSendArray(comms_telemetry_array,comms_telemetry_matrix.len(),echo);
 }

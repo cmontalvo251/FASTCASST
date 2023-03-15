@@ -16,11 +16,12 @@
 
 #ifdef ARDUINO
 #include "MATLAB.h"
+#include "SerialComms.h"
 #else
 //Helper Modules
 #include <MATLAB/MATLAB.h>
 //Serial Module
-#include <Serial/Serial.h>
+#include <SerialComms/SerialComms.h>
 //Timer for Pause
 #include <Timer/timer.h>
 #endif
@@ -29,8 +30,8 @@ class Comms {
  private:
   float *comms_ctl_array=NULL,*comms_sense_array=NULL,*comms_telemetry_array=NULL;
   int NUMTELEMETRY,NUMCTL,NUMSENSE;
-  Serial comms;
-  Serial hilcomms;
+  SerialComms uart;
+  SerialComms hiluart;
   int baudRateWireless; //Hardcode. I don't think we ever need to change
   int baudRate; //Dr. Russ told me to change the baudrate to 115200
  public:

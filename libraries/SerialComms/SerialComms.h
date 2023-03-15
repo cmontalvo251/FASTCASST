@@ -1,6 +1,9 @@
 #ifndef SERIAL_H
 #define SERIAL_H
 
+#ifdef ARDUINO
+#include "Datalogger.h"
+#else
 #include <stdio.h>
 #include <iostream>
 #include <sys/types.h>
@@ -11,6 +14,7 @@
 #include <termios.h> // Contains POSIX terminal control definitions
 #include <unistd.h> // write(), read(), close()
 #include <Datalogger/Datalogger.h>
+#endif
 
 #ifdef RPI
 //sudo apt-get install wiringpi
@@ -32,7 +36,7 @@ union inparser {
 #define MAXFLOATS 10
 #define MAXLINE 120
 
-class Serial {
+class SerialComms {
     private:
     	int hComm;
     	Datalogger tlogger;
@@ -118,6 +122,5 @@ class Serial {
 		//The Arduino then sends 1 hex \r using it's own Arduino functions and of course we then just
 		//use SerialGetArray to decode 1 hex \r format. Big sigh. Cmontalvo 10/13/2020
 };
-
 
 #endif

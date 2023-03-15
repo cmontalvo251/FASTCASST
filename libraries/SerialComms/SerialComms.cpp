@@ -1,15 +1,16 @@
-#include "Serial.h"
+#include "SerialComms.h"
 
 //Call this for defaults
-void Serial::InitSerialPort(void)
+void SerialComms::InitSerialPort(void)
 {
   // VERY IMPORTANT: Edit this line of code to designate which COM port 
   int BaudRate = 115200; //Default Baud Rate
+  char *port = "";
   #ifdef __WIN32__
-    char *port = "\\\\.\\COM12";
+    port = "\\\\.\\COM12";
   #endif
   #if defined __linux__ || __APPLE__ || RPI
-    char *port = "/dev/ttyUSB0";
+    port = "/dev/ttyUSB0";
   #endif
   #if defined (SIMONLY) || (SIL)
   //Note that in SIMONLY the functions below are initialized but 
@@ -30,7 +31,7 @@ void Serial::InitSerialPort(void)
   #endif
 }
 
-void Serial::SerialInitWireless(char *ComPortName, int BaudRate) {
+void SerialComms::SerialInitWireless(char *ComPortName, int BaudRate) {
   #ifdef RPI
   printf("Opening Wireless Com %s Port on Raspberry Pi with Baud Rate %d \n",ComPortName,BaudRate);
   if(wiringPiSetup() == -1) {
@@ -45,7 +46,7 @@ void Serial::SerialInitWireless(char *ComPortName, int BaudRate) {
 }
 
 //Call this for higher level control
-void Serial::SerialInit(char *ComPortName, int BaudRate) 
+void SerialComms::SerialInit(char *ComPortName, int BaudRate) 
 {
   printf("Opening Com Port %s port with Baud Rate %d \n",ComPortName,BaudRate);
   #ifdef RPI
@@ -107,7 +108,7 @@ void Serial::SerialInit(char *ComPortName, int BaudRate)
   fflush(stdout);
 } 
  
-char Serial::SerialGetc()
+char SerialComms::SerialGetc()
 {
   char rxchar;
 
@@ -141,7 +142,7 @@ char Serial::SerialGetc()
 
 }
  
-void Serial::SerialPutc(char txchar)
+void SerialComms::SerialPutc(char txchar)
 {
   #ifdef RPI
   serialPutchar(hComm,txchar);
@@ -161,7 +162,7 @@ void Serial::SerialPutc(char txchar)
   #endif
 }
 
-void Serial::SerialPutString(char *string,int len) {
+void SerialComms::SerialPutString(char *string,int len) {
   char outchar;
   outchar = *string++;
   for (int idx = 0;idx<len;idx++){
@@ -171,7 +172,7 @@ void Serial::SerialPutString(char *string,int len) {
   }
 }
 
-void Serial::SerialPutString(char *string)
+void SerialComms::SerialPutString(char *string)
 {
   char outchar;
   outchar = *string++;
@@ -187,11 +188,11 @@ void Serial::SerialPutString(char *string)
   }
 }
 
-void Serial::SerialSendArray(float number_array[],int num) {
+void SerialComms::SerialSendArray(float number_array[],int num) {
   SerialSendArray(number_array,num,1);
 }
 
-void Serial::SerialSendArray(float number_array[],int num,int echo) {
+void SerialComms::SerialSendArray(float number_array[],int num,int echo) {
   union inparser inputvar;
   char outline[20];
   for (int i = 0;i<num;i++) {
@@ -235,11 +236,11 @@ void Serial::SerialSendArray(float number_array[],int num,int echo) {
 //and HIL members in the room together and have a coding party I suggest we change everything to 1 hex \r
 //format but for now we will leave this here. CMontalvo 10/13/2020 (This was a Tuesday. Not a Friday)
 
-void Serial::SerialPutArray(float number_array[],int num) {
+void SerialComms::SerialPutArray(float number_array[],int num) {
   SerialPutArray(number_array,num,1);
 }
 
-void Serial::SerialPutArray(float number_array[],int num,int echo) {
+void SerialComms::SerialPutArray(float number_array[],int num,int echo) {
   union inparser inputvar;
   char outline[20];
   int slashr = 0;
@@ -267,7 +268,7 @@ void Serial::SerialPutArray(float number_array[],int num,int echo) {
 }
 
 //This function will just read everything from the Serial monitor and print it to screen
-void Serial::SerialGetAll() {
+void SerialComms::SerialGetAll() {
   char inchar = '\0';
   printf("Waiting for characters \n");
   int i = 0;
@@ -282,11 +283,11 @@ void Serial::SerialGetAll() {
   printf("Response received \n");
 }
 
-int Serial::SerialGetNumber(float number_array[],int num) {
+int SerialComms::SerialGetNumber(float number_array[],int num) {
   return SerialGetNumber(number_array,num,1);
 }
 
-int Serial::SerialGetNumber(float number_array[],int num,int echo) {
+int SerialComms::SerialGetNumber(float number_array[],int num,int echo) {
   int position = -1;
   union inparser inputvar;
   char inLine[MAXLINE];
@@ -320,11 +321,11 @@ int Serial::SerialGetNumber(float number_array[],int num,int echo) {
   return position;
 }
 
-void Serial::SerialGetArray(float number_array[],int num) {
+void SerialComms::SerialGetArray(float number_array[],int num) {
   SerialGetArray(number_array,num,1);
 }
 
-void Serial::SerialGetArray(float number_array[],int num,int echo) {
+void SerialComms::SerialGetArray(float number_array[],int num,int echo) {
   union inparser inputvar;
   int j = 0;
   for (int d = 0;d<num;d++) {
@@ -377,11 +378,11 @@ void Serial::SerialGetArray(float number_array[],int num,int echo) {
   }
 }
 
-void Serial::SerialPutHello() {
+void SerialComms::SerialPutHello() {
   SerialPutHello(1); //echo is on by default unless you turn it off
 }
 
-void Serial::SerialPutHello(int echo) {
+void SerialComms::SerialPutHello(int echo) {
   if (echo) {
     printf("Sending w slash r \n");
   }
@@ -392,7 +393,7 @@ void Serial::SerialPutHello(int echo) {
   }
 }
 
-int Serial::SerialGetHello(int echo) {
+int SerialComms::SerialGetHello(int echo) {
   //Consume w\r\n
   if (echo) {
     printf("Reading the Serial Buffer for w slash r slash n \n");
@@ -410,11 +411,11 @@ int Serial::SerialGetHello(int echo) {
   return err;
 }
 
-int Serial::SerialListen() {
+int SerialComms::SerialListen() {
   return SerialListen(1); //default to having echo on
 }
 
-int Serial::SerialListen(int echo) {
+int SerialComms::SerialListen(int echo) {
   //Listen implies that this is a drone/UAV/robot that is simply
   //listening on the airwaves for anyone sending out w \r
   //Listen w\r
@@ -459,14 +460,14 @@ int Serial::SerialListen(int echo) {
   return ok;
 }
 
-void Serial::SerialDebug() {
+void SerialComms::SerialDebug() {
   char inchar;
   inchar = SerialGetc();
   int val = int(inchar);
   printf("Character Received = %c ASCII Code = %d \n",inchar,val);
 }
 
-void Serial::SerialRespond() {
+void SerialComms::SerialRespond() {
   //overloaded function just calls the echo on version by default
   SerialRespond(1);
 }
@@ -475,7 +476,7 @@ void Serial::SerialRespond() {
 //board side so this implies that a drone/uav/robot is responding
 //to a groundstation computer saying hi.
 //the response to hello (w\r) is hello, sir (w\r\n)
-void Serial::SerialRespond(int echo) {
+void SerialComms::SerialRespond(int echo) {
 
   /* THIS WORKS DO NOT TOUCH (RPI ONLY)
   char dat;

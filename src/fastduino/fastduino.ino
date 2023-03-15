@@ -44,7 +44,7 @@ TIMER watch;
 #include "Datalogger.h" //Compiles but does not work yet - Keep getting SD card init failed
 Datalogger logger; //Remember that you need to have a data/ folder on the SD card
 
-//RCIO is inside hardware.h
+//RCIO is inside hardware.h 
 //#include "RCIO.h"
 //RCIO rc;
 

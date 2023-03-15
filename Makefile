@@ -35,7 +35,7 @@ COMMSSOURCES=$(wildcard libraries/Comms/*.cpp)
 ADCSOURCES=$(wildcard libraries/ADC/*.cpp)
 UTILSOURCES=$(wildcard libraries/Util/*.cpp)
 I2CSOURCES=$(wildcard libraries/I2Cdev/*.cpp)
-SERIALSOURCES=$(wildcard libraries/Serial/*.cpp)
+SERIALSOURCES=$(wildcard libraries/SerialComms/*.cpp)
 HWSOURCES=libraries/sensors/sensors.cpp libraries/hardware/hardware.cpp
 HARDWARESOURCES=$(I2CSOURCES) $(SERIALSOURCES) $(RCINPUTSOURCES) $(RCOUTPUTSOURCES) $(PWMSOURCES) $(IMUSOURCES) $(GPSSOURCES) $(BAROTEMPSOURCES) $(RCIOSOURCES) $(COMMSSOURCES) $(ADCSOURCES) $(HWSOURCES) $(UTILSOURCES) $(UBLOXSOURCES) $(MS5611SOURCES)
 ##MODELING

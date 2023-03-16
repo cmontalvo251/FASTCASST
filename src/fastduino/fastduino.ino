@@ -98,7 +98,7 @@ void setup() {
 
   //DEBUGGING
   //Initialize Datalogger
-  logger.init("data/",1+RECV_N_CHANNEL*2+3); //Time plus the receiver signals and the PWM out signal and 3 LLH signals
+  logger.init("data/",1+RECV_N_CHANNEL*2+6); //Time plus the receiver signals and the PWM out signal and 3 LLH signals and 3 barometer values (pressure,temp,alt)
   //Remember the SD card on the arduino needs to have a data/ folder
   //Append the headers
   logger.appendheader("Time (sec)");
@@ -117,6 +117,9 @@ void setup() {
   logger.appendheader("Latitude (deg)");
   logger.appendheader("Longitude (deg)");
   logger.appendheader("Altitude (m)");  
+  logger.appendheader("Pressure (Pa)"); 
+  logger.appendheader("Temperature (C)");
+  logger.appendheader("Pressure Altitude (m)"); 
   logger.printheaders();
 
   //Initialize Telemetry
@@ -171,7 +174,7 @@ void loop() {
       //rc.out.print();
       Serial.print(" LLH = ");
       satellites.printLLH();
-      //Serial.print(" PTAlt = ");
+      Serial.print(" PTAlt = ");
       atm.print();
       Serial.print("\n");
   }
@@ -200,6 +203,12 @@ void loop() {
     logger.printvar(satellites.longitude);
     logger.writecomma();
     logger.printvar(satellites.altitude);
+    logger.writecomma();
+    logger.printvar(atm.pressure);
+    logger.writecomma();
+    logger.printvar(atm.temperature);
+    logger.writecomma();
+    logger.printvar(atm.altitude);
     logger.writenewline();
   }
   //cross_sleep(0.1);

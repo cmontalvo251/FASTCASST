@@ -22,7 +22,7 @@
 //0.000    !Ixy (kg-m^2)
 //0.000    !Ixz (kg-m^2)
 //0.000    !Iyz (kg-m^2)
-int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent. 
+//int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent. 
 
 //Note when setting this up for the first time. 
 //Install the Due board by going to the board manager
@@ -42,40 +42,40 @@ TIMER watch;
 //#include "MATLAB.h" - Tested and compiles 3/9/2023
 
 //Datalogger is inside hardware.h
-#include "Datalogger.h" //Compiles but does not work yet - Keep getting SD card init failed
-Datalogger logger; //Remember that you need to have a data/ folder on the SD card
+//#include "Datalogger.h" //Compiles but does not work yet - Keep getting SD card init failed
+//Datalogger logger; //Remember that you need to have a data/ folder on the SD card
 
 //RCIO is inside hardware.h 
 //#include "RCIO.h"
 //RCIO rc;
 
 //RCInput is inside RCIO.h - Compiles on 2/28/2023 and Runs on 2/28/2023
-#include "RCInput.h"
-RCInput rin;
+//#include "RCInput.h"
+//RCInput rin;
 
 //RCOutput is inside RCIO.h - Compiles and runs 2/28/2023
-#include "RCOutput.h"
-RCOutput rout;
+//#include "RCOutput.h"
+//RCOutput rout;
 
 //PWMSIGNALS.h is inside RCIO.h - Compiles and runs 2/28/2023
 //#include "PWMSIGNALS.h"
 
 //Hardware also has the Comms class for wired and wireless communication
-#include "Comms.h"
-Comms serTelem;
-MATLAB telemetry_matrix;
+//#include "Comms.h"
+//Comms serTelem;
+//MATLAB telemetry_matrix;
 
 //Hardware has sensors.h
 //#include "sensors.h"
 
 //Sensors has a lot of sensors. We're going to need to add them in one at a time
 //Let's start with GPS
-#include "GPS.h" // Compiles, runs and gets a GPS fix - 3/9/2023
-GPS satellites; 
+//#include "GPS.h" // Compiles, runs and gets a GPS fix - 3/9/2023
+//GPS satellites; 
 
 //Now let's get the barometer working
-#include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
-BaroTemp atm;
+//#include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
+//BaroTemp atm;
 
 //Create Loop Variables
 double lastPRINTtime = 0;
@@ -96,6 +96,7 @@ void setup() {
   
   //Hardware init
 
+  /*
   //DEBUGGING
   //Initialize Datalogger
   logger.init("data/",1+RECV_N_CHANNEL*2+6); //Time plus the receiver signals and the PWM out signal and 3 LLH signals and 3 barometer values (pressure,temp,alt)
@@ -121,20 +122,21 @@ void setup() {
   logger.appendheader("Temperature (C)");
   logger.appendheader("Pressure Altitude (m)"); 
   logger.printheaders();
+  */
 
   //Initialize Telemetry
-  telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix");
-  serTelem.TelemInit(NUMTELEMETRY);
+  //telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix");
+  //serTelem.TelemInit(NUMTELEMETRY);
   
   //rc.outInit(RECV_N_CHANNEL);
   //Initialize RCInput
-  rin.initialize();
+  //rin.initialize();
   //Initialize RCOutputr
-  rout.initialize(RECV_N_CHANNEL);
+  //rout.initialize(RECV_N_CHANNEL);
   //initialize GPS
-  satellites.init();
+  //satellites.init();
   //Initialize Barometer
-  atm.init();
+  //atm.init();
   
 }
 
@@ -145,7 +147,7 @@ void loop() {
   //rc.read();
 
   //DEBUGGING
-  rin.readRCstate();
+  /*rin.readRCstate();
   //Copy rin.rx_array to rout.pwm_array
   for (int idx = 0;idx<RECV_N_CHANNEL;idx++) {
     rout.pwm_array[idx] = rin.rx_array[idx];
@@ -158,6 +160,7 @@ void loop() {
 
   //Poll Barometer
   atm.poll(watch.currentTime);
+  */
   
   //Print Everything
   if (lastPRINTtime <= watch.currentTime) {
@@ -166,7 +169,7 @@ void loop() {
       Serial.print(watch.currentTime);
       Serial.print(" ");
       Serial.print(watch.elapsedTime);
-      Serial.print(" RX = ");
+      /*Serial.print(" RX = ");
       rin.printRCstate(-6);
       //rc.in.printRCstate(-5);
       Serial.print(" PWM = ");
@@ -176,10 +179,11 @@ void loop() {
       satellites.printLLH();
       Serial.print(" PTAlt = ");
       atm.print();
-      Serial.print("\n");
+      Serial.print("\n");*/
   }
 
   //Send data via telemetry
+  /*
   if (lastTELEMtime <= watch.currentTime) {
     telemetry_matrix.set(1,1,watch.currentTime);
     telemetry_matrix.set(2,1,satellites.latitude);
@@ -187,9 +191,10 @@ void loop() {
     telemetry_matrix.set(4,1,satellites.altitude);
     serTelem.sendTelemetry(telemetry_matrix,0);
     lastTELEMtime+=TELEMRATE;
-  }
+  }*/
 
   //Log Everything
+  /*
   if (lastLOGtime <= watch.currentTime) {
     lastLOGtime+=LOGRATE;
     logger.printvar(watch.currentTime);
@@ -211,5 +216,6 @@ void loop() {
     logger.printvar(atm.altitude);
     logger.writenewline();
   }
-  //cross_sleep(0.1);
+  */
+  cross_sleep(0.1);
 }

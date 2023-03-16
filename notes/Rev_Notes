@@ -1,3 +1,10 @@
+===================3/15/2023==========
+
+All the hooks for telemetry is working and the code compiles.
+Need to actually test and see if it works. Starting to worry that
+this whole thing is absurdly ambitious. Still lots to do.
+Let's see if we can meet the goal.
+
 ===================3/13/2023=============
 
 I was able to get the datalogger to work. On the Arduino DUE you need to use Pin 44

@@ -7,7 +7,7 @@
 #define PRINTRATE 1.0    //!Standard Out Print Rate // seconds (set to negative)
 #define LOGRATE 1.0     //!Data logging rate // seconds (numbers if you want)
 //0.1  !RC Rate // seconds (to run as fast as possible)
-//1.0      !Telemetry Rate (seconds)
+#define TELEMRATE 1.0      //!Telemetry Rate (seconds)
 //1.0      !GPS Rate (seconds)
 //-99      !IMU Rate (seconds) (does not work at the moment)
 //0.1      !Analog Rate (seconds)
@@ -22,6 +22,7 @@
 //0.000    !Ixy (kg-m^2)
 //0.000    !Ixz (kg-m^2)
 //0.000    !Iyz (kg-m^2)
+int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent. 
 
 //Note when setting this up for the first time. 
 //Install the Due board by going to the board manager
@@ -61,6 +62,8 @@ RCOutput rout;
 
 //Hardware also has the Comms class for wired and wireless communication
 #include "Comms.h"
+Comms serTelem;
+MATLAB telemetry_matrix;
 
 //Hardware has sensors.h
 //#include "sensors.h"
@@ -77,6 +80,7 @@ GPS satellites;
 //Create Loop Variables
 double lastPRINTtime = 0;
 double lastLOGtime = 0;
+double lastTELEMtime = 0;
 
 void setup() {
   //Setup Serial Std Out
@@ -114,6 +118,10 @@ void setup() {
   logger.appendheader("Longitude (deg)");
   logger.appendheader("Altitude (m)");  
   logger.printheaders();
+
+  //Initialize Telemetry
+  telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix");
+  serTelem.TelemInit(NUMTELEMETRY);
   
   //rc.outInit(RECV_N_CHANNEL);
   //Initialize RCInput
@@ -166,6 +174,16 @@ void loop() {
       //Serial.print(" PTAlt = ");
       //atm.print();
       Serial.print("\n");
+  }
+
+  //Send data via telemetry
+  if (lastTELEMtime <= watch.currentTime) {
+    telemetry_matrix.set(1,1,watch.currentTime);
+    telemetry_matrix.set(2,1,satellites.latitude);
+    telemetry_matrix.set(3,1,satellites.longitude);
+    telemetry_matrix.set(4,1,satellites.altitude);
+    serTelem.sendTelemetry(telemetry_matrix,0);
+    lastTELEMtime+=TELEMRATE;
   }
 
   //Log Everything

@@ -5,7 +5,9 @@ void SerialComms::InitSerialPort(void)
 {
   // VERY IMPORTANT: Edit this line of code to designate which COM port 
   int BaudRate = 115200; //Default Baud Rate
-  char *port = "";
+  #ifdef ARDUINO
+  char *port = "Serial2";
+  #endif
   #ifdef __WIN32__
     port = "\\\\.\\COM12";
   #endif
@@ -49,11 +51,17 @@ void SerialComms::SerialInitWireless(char *ComPortName, int BaudRate) {
 void SerialComms::SerialInit(char *ComPortName, int BaudRate) 
 {
   printf("Opening Com Port %s port with Baud Rate %d \n",ComPortName,BaudRate);
+  #ifdef ARDUINO
+  if (ComPortName == "Serial2") {
+    mySerial->begin(BaudRate);
+  }
+  #endif
+
   #ifdef RPI
   printf("Checking Wiring Pi \n");
   if(wiringPiSetup() == -1) {
       fprintf(stdout, "Unable to start wiringPi: %s\n", strerror (errno));
-    }  
+  }  
   #endif
   
   //On linux you need to open the tty port
@@ -105,8 +113,16 @@ void SerialComms::SerialInit(char *ComPortName, int BaudRate)
   #endif
 
   //Flush the serial port
-  fflush(stdout);
+  Serialflush();
 } 
+
+void SerialComms::Serialflush() {
+  #ifdef ARDUINO
+  mySerial->flush();
+  #else  
+  fflush(stdout);
+  #endif
+}
  
 char SerialComms::SerialGetc()
 {
@@ -119,6 +135,12 @@ char SerialComms::SerialGetc()
       fflush(stdout);
     }
   return rxchar;
+  #endif
+
+  #ifdef ARDUINO
+  if (mySerial->available()) {
+    rxchar = mySerial->read();
+  }
   #endif
   
   #if defined __linux__ || __APPLE__ || RPI
@@ -144,6 +166,9 @@ char SerialComms::SerialGetc()
  
 void SerialComms::SerialPutc(char txchar)
 {
+  #ifdef ARDUINO
+  mySerial->print(txchar);
+  #endif
   #ifdef RPI
   serialPutchar(hComm,txchar);
   fflush(stdout);

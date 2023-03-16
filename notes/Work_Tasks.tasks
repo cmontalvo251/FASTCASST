@@ -27,6 +27,8 @@ Cleaning up FASTCASST ON PI:
   ☐ Another option is we write our own embedded software for the Pi
 
   ☐ Have GPS origin point for simulation set inside Simulation.txt
+
+  ☐ Furtheremore, there are a ton of variables hardcoded for Telemetry. Either those variable need to be added into Config.txt or a new file must be added like Serial.txt or something. My vote is for Config.txt but we have to be careful because the mass matrix is in there. At the same time does it really matter?
   
   ✔ We can also upgrade from the Pi3 to the Pi4 with lots of RAM @done (22-12-02 09:49)
 

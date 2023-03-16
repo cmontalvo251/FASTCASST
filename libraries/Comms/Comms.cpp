@@ -2,8 +2,13 @@
 
 //Constructor
 Comms::Comms() {
+  #ifdef ARDUINO
+  baudRateWireless = 9600;
+  baudRate = 9600; //Every example online shows 9600 but we just need to try 57600
+  #else
   baudRateWireless = 57600;
   baudRate = 57600; //115200 on rpi3 did not work
+  #endif
 }
 
 //The Comms class needs to know how big the send array is
@@ -17,7 +22,7 @@ void Comms::TelemInit(int numtelem) {
 
   //We now set up communications depending on the type of comms we want
   printf("SETTING UP TELEMETRY \n");
-  #ifdef RPI
+  #if defined (RPI) || (ARDUINO)
   //Telemetry happens here
   uart.SerialInitWireless("/dev/ttyAMA0",baudRateWireless);
   #endif

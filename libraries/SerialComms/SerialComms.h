@@ -38,8 +38,12 @@ union inparser {
 
 class SerialComms {
     private:
+    	#ifdef ARDUINO
+    	HardwareSerial* mySerial;
+    	#endif
     	int hComm;
     	Datalogger tlogger;
+    	void Serialflush();
 	public:
 		float lastTime = 0.0;
 		float period = 1.0; //Default is second

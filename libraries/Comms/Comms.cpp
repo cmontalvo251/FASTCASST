@@ -21,10 +21,16 @@ void Comms::TelemInit(int numtelem) {
   comms_telemetry_array = (float *) calloc(NUMTELEMETRY,sizeof(float));
 
   //We now set up communications depending on the type of comms we want
-  printf("SETTING UP TELEMETRY \n");
+  printstdout("SETTING UP TELEMETRY \n");
   #if defined (RPI) || (ARDUINO)
   //Telemetry happens here
-  uart.SerialInitWireless("/dev/ttyAMA0",baudRateWireless);
+  #ifdef RPI
+  char* portName = "/dev/ttyAMA0";
+  #endif
+  #ifdef ARDUINO
+  char* portName = "Serial2";
+  #endif
+  uart.SerialInitWireless(portName,baudRateWireless);
   #endif
 
   #ifdef DESKTOP

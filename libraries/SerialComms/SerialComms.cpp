@@ -45,17 +45,19 @@ void SerialComms::SerialInitWireless(char *ComPortName, int BaudRate) {
   }
   return;
   #endif
+
+  #ifdef ARDUINO
+  if (ComPortName == "Serial2") {
+    mySerial = &Serial2;
+    mySerial->begin(BaudRate);
+  }
+  #endif
 }
 
 //Call this for higher level control
 void SerialComms::SerialInit(char *ComPortName, int BaudRate) 
 {
   printf("Opening Com Port %s port with Baud Rate %d \n",ComPortName,BaudRate);
-  #ifdef ARDUINO
-  if (ComPortName == "Serial2") {
-    mySerial->begin(BaudRate);
-  }
-  #endif
 
   #ifdef RPI
   printf("Checking Wiring Pi \n");

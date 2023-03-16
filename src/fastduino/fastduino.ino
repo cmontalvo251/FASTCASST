@@ -74,8 +74,8 @@ MATLAB telemetry_matrix;
 GPS satellites; 
 
 //Now let's get the barometer working
-//#include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
-//BaroTemp atm;
+#include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
+BaroTemp atm;
 
 //Create Loop Variables
 double lastPRINTtime = 0;
@@ -131,7 +131,7 @@ void setup() {
   //initialize GPS
   satellites.init();
   //Initialize Barometer
-  //atm.init();
+  atm.init();
   
 }
 
@@ -154,7 +154,7 @@ void loop() {
   satellites.poll(watch.currentTime);
 
   //Poll Barometer
-  //atm.poll(watch.currentTime);
+  atm.poll(watch.currentTime);
   
   //Print Everything
   if (lastPRINTtime <= watch.currentTime) {
@@ -172,7 +172,7 @@ void loop() {
       Serial.print(" LLH = ");
       satellites.printLLH();
       //Serial.print(" PTAlt = ");
-      //atm.print();
+      atm.print();
       Serial.print("\n");
   }
 

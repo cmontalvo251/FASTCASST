@@ -4,7 +4,7 @@
 Comms::Comms() {
   #ifdef ARDUINO
   baudRateWireless = 9600;
-  baudRate = 9600; //Every example online shows 9600 but we just need to try 57600
+  baudRate = 9600; //Every example online shows 9600 but we may need to try 57600
   #else
   baudRateWireless = 57600;
   baudRate = 57600; //115200 on rpi3 did not work

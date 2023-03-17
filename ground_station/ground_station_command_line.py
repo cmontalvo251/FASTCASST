@@ -18,7 +18,8 @@ fastkit_packet = np.zeros(8)
 print('Opening Serial port')
 print('All available serial ports...')
 os.system('ls /dev/ttyUSB*')
-ser = U(57600,"/dev/ttyUSB0",period=1.0) #Set the baudrate, port and period in seconds
+#ser = U(57600,"/dev/ttyUSB0",period=1.0) #Set the baudrate, port and period in seconds
+ser = U(9600,"/dev/ttyUSB0",period=1.0) #Serial for Arduino
 ##Initialize Filenumber at zero
 outfilename = 'logs/Ground_Station_'+datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")+'.csv'
 outfile = open(outfilename,'w')

@@ -60,7 +60,7 @@ RCOutput rout;
 //PWMSIGNALS.h is inside RCIO.h - Compiles and runs 2/28/2023
 //#include "PWMSIGNALS.h"
 
-//Hardware also has the Comms class for wired and wireless communication
+//Hardware also has the Comms class for wired and wireless communication - Compiled and tested on 3/17/2023
 #include "Comms.h"
 Comms serTelem;
 MATLAB telemetry_matrix;
@@ -181,10 +181,11 @@ void loop() {
 
   //Send data via telemetry
   if (lastTELEMtime <= watch.currentTime) {
+    Serial.print("Sending Telemetry \n");
     telemetry_matrix.set(1,1,watch.currentTime);
-    telemetry_matrix.set(2,1,satellites.latitude);
-    telemetry_matrix.set(3,1,satellites.longitude);
-    telemetry_matrix.set(4,1,satellites.altitude);
+    telemetry_matrix.set(2,1,atm.pressure);
+    telemetry_matrix.set(3,1,atm.temperature);
+    telemetry_matrix.set(4,1,atm.altitude);
     serTelem.sendTelemetry(telemetry_matrix,0);
     lastTELEMtime+=TELEMRATE;
   }

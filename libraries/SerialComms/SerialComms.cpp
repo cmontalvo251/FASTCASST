@@ -4,7 +4,9 @@
 void SerialComms::InitSerialPort(void)
 {
   // VERY IMPORTANT: Edit this line of code to designate which COM port 
-  int BaudRate = 115200; //Default Baud Rate
+  //If you run this InitSerialPort function you will automatically default
+  //to the baudRate below
+  int localBaudRateSerialComms = 57600; //Default Baud Rate
   #ifdef ARDUINO
   char *port = "Serial2";
   #endif
@@ -28,7 +30,7 @@ void SerialComms::InitSerialPort(void)
   #ifdef HIL
   printf("You must run the ground station software on another computer \n");
   #else
-  SerialInit(port,BaudRate);
+  SerialInit(port,localBaudRateSerialComms);
   #endif
   #endif
 }
@@ -48,6 +50,10 @@ void SerialComms::SerialInitWireless(char *ComPortName, int BaudRate) {
 
   #ifdef ARDUINO
   if (ComPortName == "Serial2") {
+    Serial.print("Initializing Arduino Telemetry on Port = ");
+    Serial.print(ComPortName);
+    Serial.print(" BaudRate = ");
+    Serial.println(BaudRate);
     mySerial = &Serial2;
     mySerial->begin(BaudRate);
   }

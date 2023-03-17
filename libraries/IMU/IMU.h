@@ -4,9 +4,9 @@
 #ifdef ARDUINO
 #include "MPU9250.h"
 #else
-#include <IMU/MPU9250.h>
-#include <IMU/LSM9DS1.h>
-#include <IMU/AHRS.h>
+#include <MPU9250/MPU9250.h>
+#include <LSM9DS1/LSM9DS1.h>
+#include <AHRS/AHRS.h>
 #include <Mathp/mathp.h>
 #endif
 

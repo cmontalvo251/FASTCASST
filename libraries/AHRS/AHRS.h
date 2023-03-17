@@ -10,11 +10,15 @@ twitter.com/emlidtech || www.emlid.com || info@emlid.com
 #ifndef AHRS_H
 #define AHRS_H
 
+#ifdef ARDUINO
+#include "mathp.h"
+#else
 #include <cmath>
 #include <stdio.h>
 #include <memory>
 #include <IMU/InertialSensor.h>
 #include <Mathp/mathp.h>
+#endif
 
 class AHRS {
  private:

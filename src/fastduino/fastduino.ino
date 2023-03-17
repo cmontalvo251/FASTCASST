@@ -6,13 +6,13 @@
 //Config.txt
 #define PRINTRATE 1.0    //!Standard Out Print Rate // seconds (set to negative)
 #define LOGRATE 1.0     //!Data logging rate // seconds (numbers if you want)
-//0.1  !RC Rate // seconds (to run as fast as possible)
+#define RCRATE 0.1  //!RC Rate // seconds (to run as fast as possible)
 #define TELEMRATE 1.0      //!Telemetry Rate (seconds)
-//1.0      !GPS Rate (seconds)
-//-99      !IMU Rate (seconds) (does not work at the moment)
-//0.1      !Analog Rate (seconds)
-//1        !Poll Barometer (0=off,1=on)
-//0        !IMUTYPE (0=MPU,1=LSM)
+// --- GPS ON THE ARDUINO NEEDS TO RUN AS FAST AS POSSIBLE #define GPSRATE 1.0      //!GPS Rate (seconds)
+// ---- IMU RUNS AS FAST AS POSSIBLE ON EVERY PLATFORM -99      !IMU Rate (seconds) 
+// ---- ANALOG RATE IS NOT NEEDED IN FASTDUINO 0.1      !Analog Rate (seconds)
+#define POLLBAROMETER 1        //!Poll Barometer (0=off,1=on)
+#define IMUTYPE 0        //!IMUTYPE (0=MPU,1=LSM,3=BNO)
 //0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
 //2 !Control System (3=two-stage,2=FL,1=PID,0=off)
 //2.0  !Mass (kg) // 1U - 2 // 2U - 4 // 6U - 12
@@ -77,10 +77,16 @@ GPS satellites;
 #include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
 BaroTemp atm;
 
+//And finally it's time for the IMU
+//#include "IMU.h"
+//IMU orientation;
+
 //Create Loop Variables
 double lastPRINTtime = 0;
 double lastLOGtime = 0;
 double lastTELEMtime = 0;
+double lastRCtime = 0;
+double lastGPStime = 0;
 
 void setup() {
   //Setup Serial Std Out
@@ -145,10 +151,12 @@ void loop() {
   //rc.read();
 
   //DEBUGGING
-  rin.readRCstate();
-  //Copy rin.rx_array to rout.pwm_array
-  for (int idx = 0;idx<RECV_N_CHANNEL;idx++) {
-    rout.pwm_array[idx] = rin.rx_array[idx];
+  if (lastRCtime <= watch.currentTime) {
+    rin.readRCstate();  
+    //Copy rin.rx_array to rout.pwm_array
+    for (int idx = 0;idx<RECV_N_CHANNEL;idx++) {
+      rout.pwm_array[idx] = rin.rx_array[idx];
+    }
   }
   //Send signals to PWM channels
   rout.write();
@@ -157,7 +165,9 @@ void loop() {
   satellites.poll(watch.currentTime);
 
   //Poll Barometer
-  atm.poll(watch.currentTime);
+  if (POLLBAROMETER) {
+    atm.poll(watch.currentTime);
+  }
   
   //Print Everything
   if (lastPRINTtime <= watch.currentTime) {

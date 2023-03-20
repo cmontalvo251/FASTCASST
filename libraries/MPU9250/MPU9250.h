@@ -6,9 +6,14 @@ Adapted for Raspberry Pi by Mikhail Avkhimenia (mikhail.avkhimenia@emlid.com)
 #ifndef _MPU9250_H
 #define _MPU9250_H
 
-#ifndef ARDUINO
+#ifdef ARDUINO
+#include "InertialSensor.h"
+#include "timer.h"
+#include "stdint.h"
+#else
 #include <I2Cdev/SPIdev.h>
 #include <IMU/InertialSensor.h>
+#include <Timer/timer.h>
 #endif
 
 class MPU9250 : public InertialSensor
@@ -21,12 +26,12 @@ public:
     void update();
 
 private:
+    unsigned int set_gyro_scale(int scale);
+    unsigned int set_acc_scale(int scale);   
+    
     unsigned int WriteReg(uint8_t WriteAddr, uint8_t WriteData);
     unsigned int ReadReg(uint8_t ReadAddr);
     void ReadRegs(uint8_t ReadAddr, uint8_t *ReadBuf, unsigned int Bytes);
-
-    unsigned int set_gyro_scale(int scale);
-    unsigned int set_acc_scale(int scale);
 
     void calib_acc();
     void calib_mag();

@@ -6,8 +6,14 @@
 #define _LSM9DS1_H
 
 #include <stdint.h>
+#ifdef ARDUINO
+#include "InertialSensor.h"
+#include "timer.h"
+#else
 #include <I2Cdev/SPIdev.h>
 #include <IMU/InertialSensor.h>
+#include <Timer/timer.h>
+#endif
 
 class LSM9DS1 : public InertialSensor
 {

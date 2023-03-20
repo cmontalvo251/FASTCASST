@@ -26,7 +26,9 @@ unsigned int LSM9DS1::WriteReg(const char *dev, uint8_t WriteAddr, uint8_t Write
 {
     unsigned char tx[2] = {WriteAddr, WriteData};
     unsigned char rx[2] = {0};
+    #ifndef ARDUINO
     SPIdev::transfer(dev, tx, rx, 2);
+    #endif
     return rx[1];
 }
 
@@ -41,14 +43,15 @@ void LSM9DS1::ReadRegs(const char *dev, uint8_t ReadAddr, uint8_t *ReadBuf, unsi
     unsigned char rx[255] = {0};
 
     tx[0] = ReadAddr | READ_FLAG;
+    #ifndef ARDUINO
     if (!strcmp(dev, DEVICE_MAGNETOMETER)) tx[0] |= MULTIPLE_READ;
-
     SPIdev::transfer(dev, tx, rx, Bytes + 1);
+    #endif
 
     for (uint i = 0; i < Bytes; i++)
         ReadBuf[i] = rx[i + 1];
 
-    usleep(50);
+    cross_sleep(50);
 }
 
 /*-----------------------------------------------------------------------------------------------
@@ -78,7 +81,7 @@ bool LSM9DS1::initialize()
     // configure the gyroscope
     WriteReg(DEVICE_ACC_GYRO, LSM9DS1XG_CTRL_REG1_G, BITS_ODR_G_952HZ |
                                                   BITS_FS_G_2000DPS);
-    usleep(200);
+    cross_sleep(200);
 
     // enable the three axes of the accelerometer
     WriteReg(DEVICE_ACC_GYRO, LSM9DS1XG_CTRL_REG5_XL, BITS_XEN_XL |
@@ -87,7 +90,7 @@ bool LSM9DS1::initialize()
     // configure the accelerometer-specify bandwidth selection with Abw
     WriteReg(DEVICE_ACC_GYRO, LSM9DS1XG_CTRL_REG6_XL, BITS_ODR_XL_952HZ |
                                                    BITS_FS_XL_16G);
-    usleep(200);
+    cross_sleep(200);
 
     //------------Magnetometer----------------
     WriteReg(DEVICE_MAGNETOMETER, LSM9DS1M_CTRL_REG1_M, BITS_TEMP_COMP |
@@ -98,7 +101,7 @@ bool LSM9DS1::initialize()
     WriteReg(DEVICE_MAGNETOMETER, LSM9DS1M_CTRL_REG3_M, BITS_MD_CONTINUOUS);
     WriteReg(DEVICE_MAGNETOMETER, LSM9DS1M_CTRL_REG4_M, BITS_OMZ_HIGH);
     WriteReg(DEVICE_MAGNETOMETER, LSM9DS1M_CTRL_REG5_M, 0x00 );
-    usleep(200);
+    cross_sleep(200);
 
     set_gyro_scale(BITS_FS_G_2000DPS);
     set_acc_scale(BITS_FS_XL_16G);

@@ -12,7 +12,7 @@
 // ---- IMU RUNS AS FAST AS POSSIBLE ON EVERY PLATFORM -99      !IMU Rate (seconds) 
 // ---- ANALOG RATE IS NOT NEEDED IN FASTDUINO 0.1      !Analog Rate (seconds)
 #define POLLBAROMETER 1        //!Poll Barometer (0=off,1=on)
-#define IMUTYPE 0        //!IMUTYPE (0=MPU,1=LSM,3=BNO)
+#define IMUTYPE 3        //!IMUTYPE (0=MPU,1=LSM,3=BNO)
 //0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
 //2 !Control System (3=two-stage,2=FL,1=PID,0=off)
 //2.0  !Mass (kg) // 1U - 2 // 2U - 4 // 6U - 12
@@ -77,9 +77,9 @@ GPS satellites;
 #include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
 BaroTemp atm;
 
-//And finally it's time for the IMU
-//#include "IMU.h"
-//IMU orientation;
+//And finally it's time for the IMU -- Compiles 3/20/2023 - Does it work?
+#include "IMU.h"
+IMU orientation;
 
 //Create Loop Variables
 double lastPRINTtime = 0;
@@ -104,7 +104,7 @@ void setup() {
 
   //DEBUGGING
   //Initialize Datalogger
-  logger.init("data/",1+RECV_N_CHANNEL*2+6); //Time plus the receiver signals and the PWM out signal and 3 LLH signals and 3 barometer values (pressure,temp,alt)
+  logger.init("data/",1+RECV_N_CHANNEL*2+12); //Time plus the receiver signals and the PWM out signal and 3 LLH signals and 3 barometer values (pressure,temp,alt) and 3 Euler angles and 3 rates
   //Remember the SD card on the arduino needs to have a data/ folder
   //Append the headers
   logger.appendheader("Time (sec)");
@@ -126,11 +126,20 @@ void setup() {
   logger.appendheader("Pressure (Pa)"); 
   logger.appendheader("Temperature (C)");
   logger.appendheader("Pressure Altitude (m)"); 
+  logger.appendheader("Roll (deg)");
+  logger.appendheader("Pitch (deg)");
+  logger.appendheader("Yaw (deg)");
+  logger.appendheader("Roll Rate (rad/s)");
+  logger.appendheader("Pitch Rate (rad/s)");
+  logger.appendheader("Yaw Rate (rad/s)");
   logger.printheaders();
 
   //Initialize Telemetry
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix");
   serTelem.TelemInit(NUMTELEMETRY);
+
+  //Initialize the IMU
+  orientation.init(IMUTYPE);
   
   //rc.outInit(RECV_N_CHANNEL);
   //Initialize RCInput
@@ -168,6 +177,9 @@ void loop() {
   if (POLLBAROMETER) {
     atm.poll(watch.currentTime);
   }
+
+  //Poll IMU
+  orientation.loop(watch.elapsedTime);
   
   //Print Everything
   if (lastPRINTtime <= watch.currentTime) {
@@ -186,6 +198,8 @@ void loop() {
       satellites.printLLH();
       Serial.print(" PTAlt = ");
       atm.print();
+      Serial.print(" Euler = ");
+      orientation.printALL();      
       Serial.print("\n");
   }
 
@@ -220,6 +234,18 @@ void loop() {
     logger.printvar(atm.temperature);
     logger.writecomma();
     logger.printvar(atm.altitude);
+    logger.writecomma();
+    logger.printvar(orientation.roll);
+    logger.writecomma();
+    logger.printvar(orientation.pitch);
+    logger.writecomma();
+    logger.printvar(orientation.yaw);
+    logger.writecomma();
+    logger.printvar(orientation.roll_rate);
+    logger.writecomma();
+    logger.printvar(orientation.pitch_rate);
+    logger.writecomma();
+    logger.printvar(orientation.yaw_rate);
     logger.writenewline();
   }
   //cross_sleep(0.1);

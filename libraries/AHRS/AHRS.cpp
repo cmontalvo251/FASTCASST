@@ -201,6 +201,13 @@ void AHRS::setGyroOffset(float offx,float offy,float offz)
   gyroOffset[2] = offz;
 }
 
+void AHRS::setQuaternions(float _q0,float _q1,float _q2,float _q3) {
+  q0 = _q0;
+  q1 = _q1;
+  q2 = _q2;
+  q3 = _q3;
+}
+
 void AHRS::getEuler(double *roll,double *pitch,double *yaw)
 {
   //printf("Q = %lf %lf %lf %lf ",q0,q1,q2,q3);

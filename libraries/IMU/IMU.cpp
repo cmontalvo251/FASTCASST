@@ -4,27 +4,33 @@
 IMU::IMU() {
 }
 
-void IMU::init(int sensor_type){
+void IMU::init(int sensor_type_in){
+  sensor_type = sensor_type_in;
   #ifndef DESKTOP
   if (sensor_type == 0) {
-    printf("Selected: MPU9250\n");
-    mpulsm = new MPU9250();
+    printstdout("Selected: MPU9250\n");
+    imu_sensor = new MPU9250();
     TEMP_SCALE = 1.0;
   }
   if (sensor_type == 1) {
-    printf("Selected: LSM9DS1\n");
-    mpulsm = new LSM9DS1();
+    printstdout("Selected: LSM9DS1\n");
+    imu_sensor = new LSM9DS1();
     TEMP_SCALE = 10.0;
   }
+  if (sensor_type == 2) {
+    printstdout("Selected: BNO055\n");
+    imu_sensor = new BNO055();
+    TEMP_SCALE = 1.0;
+  }
 
-  if (!mpulsm->probe()) {
+  if (!imu_sensor->probe()) {
     printf("Sensor not enabled. Exiting prematurely \n");
     return;
   } else {
     printf("Sensor enabled properly \n");
     printf("Running initialization procedure.....\n");
   }
-  mpulsm->initialize();
+  imu_sensor->initialize();
   printf("Beginning Gyro calibration...\n");
   offset[0] = 0;
   offset[1] = 0;
@@ -32,12 +38,12 @@ void IMU::init(int sensor_type){
   int N = 100;
   for(int i = 0; i<N; i++)
     {
-      mpulsm->update();
-      mpulsm->read_gyroscope(&gx, &gy, &gz);
+      imu_sensor->update();
+      imu_sensor->read_gyroscope(&gx, &gy, &gz);
       offset[0] += gx;
       offset[1] += gy;
       offset[2] += gz;
-      usleep(10000);
+      cross_sleep(10000);
       //printf("Counter = %d \n",i);
     }
   offset[0]/=N;
@@ -65,14 +71,14 @@ void IMU::setTemperature(double tempin) {
 void IMU::loop(double elapsedTime){
   #ifndef DESKTOP
   //This routine reads the accelerometer, magnetometer and rate_gyro
-  mpulsm->update();
+  imu_sensor->update();
   //These functions here just put them into local memory. Really they should be name get_accelerometer
   //And the update routine above should be read();
-  mpulsm->read_accelerometer(&ax, &ay, &az);
-  mpulsm->read_gyroscope(&gx, &gy, &gz);
-  mpulsm->read_magnetometer(&mx ,&my ,&mz);
+  imu_sensor->read_accelerometer(&ax, &ay, &az);
+  imu_sensor->read_gyroscope(&gx, &gy, &gz);
+  imu_sensor->read_magnetometer(&mx ,&my ,&mz);
   //Comment out temperature to save time.
-  //temperature = mpulsm->read_temperature()/TEMP_SCALE;
+  //temperature = imu_sensor->read_temperature()/TEMP_SCALE;
 
   ///SUBSTRACT OFFSETS HERE
   gx-=offset[0];
@@ -86,7 +92,13 @@ void IMU::loop(double elapsedTime){
   #ifndef DESKTOP
   //printf(" gx,gy,gz B = %lf %lf %lf ",gx,gy,gz);
   //ahrs.update(ax,ay,az,gx,gy,gz,mx,my,mz,elapsedTime);
-  ahrs.updateNOMAG(ax,ay,az,gx,gy,gz,elapsedTime);
+  if (sensor_type == 2) {
+    //BNO already has quaternions
+    imu_sensor->read_quaternion(&q0,&q1,&q2,&q3);
+    ahrs.setQuaternions(q0,q1,q2,q3);
+  } else {
+    ahrs.updateNOMAG(ax,ay,az,gx,gy,gz,elapsedTime);
+  }
   #endif
 
   //Convert Quaternions to Euler Angles
@@ -150,9 +162,19 @@ void IMU::printALL() {
 }
 
 void IMU::printEuler() {
-  printf("%lf %lf %lf ",roll,pitch,yaw);
+  printstdoutdbl(roll);
+  printstdout(" ");
+  printstdoutdbl(pitch);
+  printstdout(" ");
+  printstdoutdbl(yaw);
+  printstdout(" ");
 }
 
 void IMU::printRates() {
-  printf("%lf %lf %lf ",roll_rate,pitch_rate,yaw_rate);
+  printstdoutdbl(roll_rate);
+  printstdout(" ");
+  printstdoutdbl(pitch_rate);
+  printstdout(" ");
+  printstdoutdbl(yaw_rate);
+  printstdout(" "); 
 }

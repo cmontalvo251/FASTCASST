@@ -29,10 +29,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef MS5611_HPP
 #define MS5611_HPP
 
+#ifdef ARDUINO
+#include "PTHSensor.h"
+#else
+#include <PTH/PTHSensor.h>
 #include <I2Cdev/I2Cdev.h>
 #include <math.h>
 #include <unistd.h>
 #include <string>
+#endif
 
 #define MS5611_ADDRESS_CSB_LOW  0x76
 #define MS5611_ADDRESS_CSB_HIGH 0x77
@@ -62,31 +67,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MS5611_RA_D2_OSR_2048   0x56
 #define MS5611_RA_D2_OSR_4096   0x58
 
-class MS5611 {
-    public:
-	    MS5611(uint8_t address = MS5611_DEFAULT_ADDRESS);
+class MS5611 : public PTHSensor {
+ public:
+  //Functions required for PTHSensor.h
+  MS5611(uint8_t address = MS5611_DEFAULT_ADDRESS);
+  bool initialize();
+  bool update(double);
 
-        void initialize();
-        bool testConnection();
-
-	    void refreshPressure(uint8_t OSR = MS5611_RA_D1_OSR_4096);
-	    void readPressure();
-
-	    void refreshTemperature(uint8_t OSR = MS5611_RA_D2_OSR_4096);
-	    void readTemperature();
-
-	    void calculatePressureAndTemperature();
-	    void update();
-
-	    float getTemperature();
-	    float getPressure();
-
-    private:
-	    uint8_t devAddr; // I2C device adress
-	    uint16_t C1, C2, C3, C4, C5, C6; // Calibration data
-	    uint32_t D1, D2; // Raw measurement data
-	    float TEMP; // Calculated temperature
-	    float PRES; // Calculated pressure
+  ///Function specific to MS5611
+  bool testConnection();
+  void refreshPressure(uint8_t OSR = MS5611_RA_D1_OSR_4096);
+  void readPressure();
+  void refreshTemperature(uint8_t OSR = MS5611_RA_D2_OSR_4096);
+  void readTemperature();
+  void calculatePressureAndTemperature();
+  float getTemperature();
+  float getPressure();
+  
+ private:
+  uint8_t devAddr; // I2C device adress
+  uint16_t C1, C2, C3, C4, C5, C6; // Calibration data
+  uint32_t D1, D2; // Raw measurement data
+  float TEMP; // Calculated temperature
+  float PRES; // Calculated pressure
+  float HUM=0; //This sensor doesn't have humidity
 };
 
 #endif // MS5611_HPP

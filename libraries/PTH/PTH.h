@@ -6,7 +6,9 @@
 #include "mathp.h"
 #include "Datalogger.h"
 #include "timer.h"
+#include "MS5611.h"
 #else
+#include <MS5611/MS5611.h>
 #include <Timer/timer.h>
 #include <Mathp/mathp.h>
 #include <Datalogger/Datalogger.h>

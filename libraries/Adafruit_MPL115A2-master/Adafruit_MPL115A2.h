@@ -49,7 +49,7 @@
     #define MPL115A2_REGISTER_STARTCONVERSION      (0x12)
 /*=========================================================================*/
 
-class Adafruit_MPL115A2{
+class Adafruit_MPL115A2 {
  public:
   Adafruit_MPL115A2();
   void begin(void);

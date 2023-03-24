@@ -11,6 +11,7 @@
 #include "timer.h"
 #include "BNO055.h"
 #else
+#include <IMU/InertialSensor.h>
 #include <Timer/timer.h>
 #include <MPU9250/MPU9250.h>
 #include <LSM9DS1/LSM9DS1.h>

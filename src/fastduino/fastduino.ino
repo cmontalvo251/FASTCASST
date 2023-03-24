@@ -11,7 +11,7 @@
 // --- GPS ON THE ARDUINO NEEDS TO RUN AS FAST AS POSSIBLE #define GPSRATE 1.0      //!GPS Rate (seconds)
 // ---- IMU RUNS AS FAST AS POSSIBLE ON EVERY PLATFORM -99      !IMU Rate (seconds) 
 // ---- ANALOG RATE IS NOT NEEDED IN FASTDUINO 0.1      !Analog Rate (seconds)
-#define POLLBAROMETER 1        //!Poll Barometer (0=off,1=on)
+#define PTHTYPE 0        //!PTHTYPE (0=off,1=MS,2=MPL,3=BME)
 #define IMUTYPE 3        //!IMUTYPE (0=MPU,1=LSM,3=BNO)
 //0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
 //2 !Control System (3=two-stage,2=FL,1=PID,0=off)
@@ -74,8 +74,11 @@ MATLAB telemetry_matrix;
 GPS satellites; 
 
 //Now let's get the barometer working
-#include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
-BaroTemp atm;
+//#include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
+//BaroTemp atm;
+//Switched to new PTH class
+#include "PTH.h"
+PTH atm;
 
 //And finally it's time for the IMU -- Compiles 3/20/2023 - Does it work?
 #include "IMU.h"
@@ -149,7 +152,7 @@ void setup() {
   //initialize GPS
   satellites.init();
   //Initialize Barometer
-  atm.init();
+  atm.init(PTHTYPE);
   
 }
 
@@ -174,7 +177,7 @@ void loop() {
   satellites.poll(watch.currentTime);
 
   //Poll Barometer
-  if (POLLBAROMETER) {
+  if (IMUTYPE) {
     atm.poll(watch.currentTime);
   }
 

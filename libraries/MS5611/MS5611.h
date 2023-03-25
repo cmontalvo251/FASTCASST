@@ -31,13 +31,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef ARDUINO
 #include "PTHSensor.h"
+#include "timer.h"
 #else
 #include <PTH/PTHSensor.h>
 #include <I2Cdev/I2Cdev.h>
-#include <math.h>
 #include <unistd.h>
+#include <Timer/timer.h>
 #include <string>
 #endif
+#include <math.h>
 
 #define MS5611_ADDRESS_CSB_LOW  0x76
 #define MS5611_ADDRESS_CSB_HIGH 0x77
@@ -67,27 +69,43 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MS5611_RA_D2_OSR_2048   0x56
 #define MS5611_RA_D2_OSR_4096   0x58
 
+#define SLEEP_TIME 0.01
+#define LOOP_TIME 1.0 //seconds
+
 class MS5611 : public PTHSensor {
  public:
-  //Functions required for PTHSensor.h
-  MS5611(uint8_t address = MS5611_DEFAULT_ADDRESS);
+  //Functions required for PTHSensor.h  
   bool initialize();
   bool update(double);
 
   ///Function specific to MS5611
+  void first_run();
   bool testConnection();
-  void refreshPressure(uint8_t OSR = MS5611_RA_D1_OSR_4096);
   void readPressure();
+  #ifdef ARDUINO
+  MS5611(int address = MS5611_DEFAULT_ADDRESS);
+  void refreshPressure(int OSR = MS5611_RA_D1_OSR_4096);
+  void refreshTemperature(int OSR = MS5611_RA_D2_OSR_4096);
+  #else
+  MS5611(uint8_t address = MS5611_DEFAULT_ADDRESS);
+  void refreshPressure(uint8_t OSR = MS5611_RA_D1_OSR_4096);
   void refreshTemperature(uint8_t OSR = MS5611_RA_D2_OSR_4096);
+  #endif
   void readTemperature();
   void calculatePressureAndTemperature();
   float getTemperature();
   float getPressure();
   
  private:
+  #ifdef ARDUINO
+  int devAddr,C1,C2,C3,C4,C5,C6,D1,D2;
+  #else
   uint8_t devAddr; // I2C device adress
   uint16_t C1, C2, C3, C4, C5, C6; // Calibration data
   uint32_t D1, D2; // Raw measurement data
+  #endif
+  double updatetime = 0;
+  int PHASE=0;
   float TEMP; // Calculated temperature
   float PRES; // Calculated pressure
   float HUM=0; //This sensor doesn't have humidity

@@ -22,9 +22,9 @@
 //0.000    !Ixy (kg-m^2)
 //0.000    !Ixz (kg-m^2)
 //0.000    !Iyz (kg-m^2)
-//int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent. 
+//int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent.
 
-//Note when setting this up for the first time. 
+//Note when setting this up for the first time.
 //Install the Due board by going to the board manager
 //Go to preferences and change the location of the libraries to ~/FASTCASST
 
@@ -36,16 +36,16 @@ TIMER watch;
 //#include "hardware.h"
 
 ///DEBUG HEADER FILES
-//#include "mathp.h" - Tested and compiles 3/9/2023
+#include "mathp.h" //- Tested and compiles 3/9/2023
 
-//Need MATLAB.h for Matrices 
-//#include "MATLAB.h" - Tested and compiles 3/9/2023
+//Need MATLAB.h for Matrices
+//#include "MATLAB.h" //- Tested and compiles 3/9/2023
 
 //Datalogger is inside hardware.h
 //#include "Datalogger.h" //Compiles but does not work yet - Keep getting SD card init failed
 //Datalogger logger; //Remember that you need to have a data/ folder on the SD card
 
-//RCIO is inside hardware.h 
+//RCIO is inside hardware.h
 //#include "RCIO.h"
 //RCIO rc;
 
@@ -71,7 +71,7 @@ TIMER watch;
 //Sensors has a lot of sensors. We're going to need to add them in one at a time
 //Let's start with GPS
 //#include "GPS.h" // Compiles, runs and gets a GPS fix - 3/9/2023
-//GPS satellites; 
+//GPS satellites;
 
 //Now let's get the barometer working
 //#include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
@@ -88,46 +88,46 @@ void setup() {
 
   ///Print dummy version number
   Serial.print("FASTKit Software Version 42.0 \n");
-  
+
   ///Initialize the timer
   Serial.print("Initializing Timer...\n");
   watch.init(0);
   Serial.print("Timer Initialized \n");
-  
+
   //Hardware init
 
   /*
-  //DEBUGGING
-  //Initialize Datalogger
-  logger.init("data/",1+RECV_N_CHANNEL*2+6); //Time plus the receiver signals and the PWM out signal and 3 LLH signals and 3 barometer values (pressure,temp,alt)
-  //Remember the SD card on the arduino needs to have a data/ folder
-  //Append the headers
-  logger.appendheader("Time (sec)");
-  char** rinnames = (char**)malloc((RECV_N_CHANNEL)*sizeof(char*));
-  for (int i = 0;i<RECV_N_CHANNEL;i++) {
+    //DEBUGGING
+    //Initialize Datalogger
+    logger.init("data/",1+RECV_N_CHANNEL*2+6); //Time plus the receiver signals and the PWM out signal and 3 LLH signals and 3 barometer values (pressure,temp,alt)
+    //Remember the SD card on the arduino needs to have a data/ folder
+    //Append the headers
+    logger.appendheader("Time (sec)");
+    char** rinnames = (char**)malloc((RECV_N_CHANNEL)*sizeof(char*));
+    for (int i = 0;i<RECV_N_CHANNEL;i++) {
     rinnames[i] = (char*)malloc((18)*sizeof(char));
     sprintf(rinnames[i],"%s%d%s","RXIN ",i," (us)");
     logger.appendheader(rinnames[i]);
-  }
-  char** routnames = (char**)malloc((RECV_N_CHANNEL)*sizeof(char*));
-  for (int i = 0;i<RECV_N_CHANNEL;i++) {
+    }
+    char** routnames = (char**)malloc((RECV_N_CHANNEL)*sizeof(char*));
+    for (int i = 0;i<RECV_N_CHANNEL;i++) {
     routnames[i] = (char*)malloc((18)*sizeof(char));
     sprintf(routnames[i],"%s%d%s","PWMOUT ",i," (us)");
     logger.appendheader(routnames[i]);
-  }
-  logger.appendheader("Latitude (deg)");
-  logger.appendheader("Longitude (deg)");
-  logger.appendheader("Altitude (m)");  
-  logger.appendheader("Pressure (Pa)"); 
-  logger.appendheader("Temperature (C)");
-  logger.appendheader("Pressure Altitude (m)"); 
-  logger.printheaders();
+    }
+    logger.appendheader("Latitude (deg)");
+    logger.appendheader("Longitude (deg)");
+    logger.appendheader("Altitude (m)");
+    logger.appendheader("Pressure (Pa)");
+    logger.appendheader("Temperature (C)");
+    logger.appendheader("Pressure Altitude (m)");
+    logger.printheaders();
   */
 
   //Initialize Telemetry
   //telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix");
   //serTelem.TelemInit(NUMTELEMETRY);
-  
+
   //rc.outInit(RECV_N_CHANNEL);
   //Initialize RCInput
   //rin.initialize();
@@ -137,7 +137,7 @@ void setup() {
   //satellites.init();
   //Initialize Barometer
   //atm.init();
-  
+
 }
 
 void loop() {
@@ -148,28 +148,28 @@ void loop() {
 
   //DEBUGGING
   /*rin.readRCstate();
-  //Copy rin.rx_array to rout.pwm_array
-  for (int idx = 0;idx<RECV_N_CHANNEL;idx++) {
+    //Copy rin.rx_array to rout.pwm_array
+    for (int idx = 0;idx<RECV_N_CHANNEL;idx++) {
     rout.pwm_array[idx] = rin.rx_array[idx];
-  }
-  //Send signals to PWM channels
-  rout.write();
-  
-  //Poll GPS
-  satellites.poll(watch.currentTime);
+    }
+    //Send signals to PWM channels
+    rout.write();
 
-  //Poll Barometer
-  atm.poll(watch.currentTime);
+    //Poll GPS
+    satellites.poll(watch.currentTime);
+
+    //Poll Barometer
+    atm.poll(watch.currentTime);
   */
-  
+
   //Print Everything
   if (lastPRINTtime <= watch.currentTime) {
-      lastPRINTtime+=PRINTRATE;
-      Serial.print("T = ");
-      Serial.print(watch.currentTime);
-      Serial.print(" ");
-      Serial.print(watch.elapsedTime);
-      /*Serial.print(" RX = ");
+    lastPRINTtime += PRINTRATE;
+    Serial.print("T = ");
+    Serial.print(watch.currentTime);
+    Serial.print(" ");
+    Serial.print(watch.elapsedTime);
+    /*Serial.print(" RX = ");
       rin.printRCstate(-6);
       //rc.in.printRCstate(-5);
       Serial.print(" PWM = ");
@@ -184,18 +184,18 @@ void loop() {
 
   //Send data via telemetry
   /*
-  if (lastTELEMtime <= watch.currentTime) {
+    if (lastTELEMtime <= watch.currentTime) {
     telemetry_matrix.set(1,1,watch.currentTime);
     telemetry_matrix.set(2,1,satellites.latitude);
     telemetry_matrix.set(3,1,satellites.longitude);
     telemetry_matrix.set(4,1,satellites.altitude);
     serTelem.sendTelemetry(telemetry_matrix,0);
     lastTELEMtime+=TELEMRATE;
-  }*/
+    }*/
 
   //Log Everything
   /*
-  if (lastLOGtime <= watch.currentTime) {
+    if (lastLOGtime <= watch.currentTime) {
     lastLOGtime+=LOGRATE;
     logger.printvar(watch.currentTime);
     logger.writecomma();
@@ -215,7 +215,7 @@ void loop() {
     logger.writecomma();
     logger.printvar(atm.altitude);
     logger.writenewline();
-  }
+    }
   */
   cross_sleep(0.1);
 }

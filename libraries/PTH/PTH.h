@@ -27,12 +27,12 @@ class PTH {
   void SendZ(double);
   void print();
  private:
-  bool IPTH;
-  int CALIBRATE=0;
-  bool CALIBRATE_FLAG = 1;
-  double pressure0=0;
-  int sensor_type = 0;
-  PTHSensor *pth_sensor;  
+    double pressure0=0;
+    bool IPTH;
+    int CALIBRATE=0;
+    bool CALIBRATE_FLAG = 1;
+    int sensor_type = 0;
+    PTHSensor *pth_sensor;  
 };
 
 #endif

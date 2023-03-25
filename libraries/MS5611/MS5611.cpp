@@ -32,15 +32,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param address I2C address
  * @see MS5611_DEFAULT_ADDRESS
  */
+#ifdef ARDUINO
+MS5611::MS5611(int address) {
+    this->devAddr = address;
+}
+#else
 MS5611::MS5611(uint8_t address) {
     this->devAddr = address;
 }
+#endif
 
 /** Power on and prepare for general usage.
  * This method reads coefficients stored in PROM.
  */
-void MS5611::initialize() {
+bool MS5611::initialize() {
     // Reading 6 calibration data values
+    #ifndef ARDUINO
     uint8_t buff[2];
     I2Cdev::readBytes(devAddr, MS5611_RA_C1, 2, buff);
     C1 = buff[0]<<8 | buff[1];
@@ -54,53 +61,79 @@ void MS5611::initialize() {
     C5 = buff[0]<<8 | buff[1];
     I2Cdev::readBytes(devAddr, MS5611_RA_C6, 2, buff);
     C6 = buff[0]<<8 | buff[1];
-
-    update();
+    first_run(); //On the first go we run the original update function that I've now called 
+    //first_run
+    #endif
+    return 1;
 }
 
 /** Verify the I2C connection.
  * @return True if connection is valid, false otherwise
  */
 bool MS5611::testConnection() {
+    #ifdef ARDUINO
+    return false;
+    #else
     uint8_t data;
     int8_t status = I2Cdev::readByte(devAddr, MS5611_RA_C0, &data);
-    if (status > 0)
+    if (status > 0) {
         return true;
-    else
+    } else {
         return false;
+    }
+    #endif
 }
 
 /** Initiate the process of pressure measurement
  * @param OSR value
  * @see MS5611_RA_D1_OSR_4096
  */
+#ifdef ARDUINO
+void MS5611::refreshPressure(int OSR) {
+    //I2Cdev::writeBytes(devAddr, OSR, 0, 0);
+}
+#else
 void MS5611::refreshPressure(uint8_t OSR) {
     I2Cdev::writeBytes(devAddr, OSR, 0, 0);
 }
+#endif
 
 /** Read pressure value
  */
 void MS5611::readPressure() {
     //
+    #ifdef ARDUINO
+    return;
+    #else
     uint8_t buffer[3];
     I2Cdev::readBytes(devAddr, MS5611_RA_ADC, 3, buffer);
     D1 = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
+    #endif
 }
 
 /** Initiate the process of temperature measurement
  * @param OSR value
  * @see MS5611_RA_D2_OSR_4096
  */
+#ifdef ARDUINO
+void MS5611::refreshTemperature(int OSR) {
+    //I2Cdev::writeBytes(devAddr, OSR, 0, 0);
+    return;
+}
+#else
 void MS5611::refreshTemperature(uint8_t OSR) {
 	I2Cdev::writeBytes(devAddr, OSR, 0, 0);
 }
+#endif
 
 /** Read temperature value
  */
 void MS5611::readTemperature() {
+    #ifndef ARDUINO
 	uint8_t buffer[3];
 	I2Cdev::readBytes(devAddr, MS5611_RA_ADC, 3, buffer);
 	D2 = (buffer[0] << 16) | (buffer[1] << 8) | buffer[2];
+    #endif
 }
 
 /** Calculate temperature and pressure calculations and perform compensation
@@ -141,16 +174,46 @@ void MS5611::calculatePressureAndTemperature() {
     TEMP = TEMP / 100;
 }
 
+bool MS5611::update(double currentTime) {
+  if (PHASE == 0) {
+    if ((currentTime - updatetime) > LOOP_TIME) {
+      refreshPressure();
+      PHASE = 1;
+      updatetime = currentTime;
+    }
+  }
+  if (PHASE == 1) {
+    if ((currentTime - updatetime) > SLEEP_TIME) {
+      readPressure();
+      refreshTemperature();
+      PHASE = 2;
+      updatetime = currentTime;
+    }
+  }
+  if (PHASE == 2) {
+    if ((currentTime - updatetime) > SLEEP_TIME) {
+      readTemperature();
+      calculatePressureAndTemperature();
+      _temperature = getTemperature();
+      _pressure = getPressure();
+      updatetime = currentTime;
+      PHASE = 0;
+      return 1;
+    }
+  }
+  return 0;
+}
+
 /** Perform pressure and temperature reading and calculation at once.
  *  Contains sleeps, better perform operations separately.
  */
-void MS5611::update() {
+void MS5611::first_run() {
     refreshPressure();
-    usleep(10000); // Waiting for pressure data ready
+    cross_sleep(10000); // Waiting for pressure data ready
     readPressure();
 
     refreshTemperature();
-    usleep(10000); // Waiting for temperature data ready
+    cross_sleep(10000); // Waiting for temperature data ready
     readTemperature();
 
     calculatePressureAndTemperature();

@@ -1,10 +1,10 @@
 #ifndef MATHP_H
 #define MATHP_H
 
-#include <math.h>
 #ifndef ARDUINO
 #include <iostream>
 #endif
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 

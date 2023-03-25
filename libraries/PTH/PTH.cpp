@@ -58,10 +58,10 @@ void PTH::poll(double currentTime) {
       pressure0 += pressure/0.01;
     } else {
       if (CALIBRATE_FLAG) {
-	pressure0 /= 5;
-	printstdout("BAROMETER CALIBRATED !!! Presure0 = ");
-	printstdoutdbl(pressure0);
-	CALIBRATE_FLAG = 0;
+        pressure0 /= 5;
+        printstdout("BAROMETER CALIBRATED !!! Presure0 = ");
+        printstdoutdbl(pressure0);
+        CALIBRATE_FLAG = 0;
       }
     }
     temperature = pth_sensor->read_temperature();

@@ -6,6 +6,7 @@
 
 #include <MATLAB/MATLAB.h>
 #include <RCIO/RCIO.h> //this is for STICK values
+#include <guidance/guidance.h>
 
 class controller {
 private:
@@ -14,6 +15,7 @@ private:
   double roll_command,pitch_command,yaw_rate_command,altitude_command;
   double altitude_prev = -999,droll=0,dyaw=0,dthrottle=0,dpitch=0;
   double altitude_int = 0;
+  guidance guid;
   void AltitudeLoop(MATLAB);
   void YawRateLoop(MATLAB);
   void InnerLoop(MATLAB);

@@ -13,6 +13,10 @@ void controller::init(MATLAB in_configuration_matrix) {
   //in_configuration_matrix.disp();
   CONTROLLER_FLAG = in_configuration_matrix.get(11,1);
   printf("Controller Setup \n");
+  //Setup guidance module
+  if abs(CONTROLLER_FLAG) >= 10 {
+    guid.init(in_configuration_matrix);
+  }
 }
 
 void controller::set_defaults() {
@@ -47,17 +51,23 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   double elevator = rx_array[2];
   double rudder = rx_array[3];
   double autopilot = rx_array[4];
-  int icontrol = 0;
+  int icontrol = 0,iguidance = 0;
 
   //Check for user controlled
-  if (CONTROLLER_FLAG == -1) {
+  if (CONTROLLER_FLAG < 0) {
     if (autopilot > STICK_MID) {
-      icontrol = 2;
+      icontrol = -CONTROLLER_FLAG;
     } else {
-      icontrol = 0; 
+      icontrol = 0;
     }
   } else {
     icontrol = CONTROLLER_FLAG;
+  }
+
+  if (icontrol >= 10){ 
+    iguidance = 1;
+  } else {
+    iguidance = 0;
   }
 
   //Quadcopter Control cases
@@ -71,12 +81,17 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   roll_command = -99;
   pitch_command = -99;
   yaw_rate_command = -99;
-  altitude_command = 100; //Hardcode to 100?
+  altitude_command = 100; //Hardcode to 100 but eventually will need to update with telemetry
   //And controls
   droll = 0;
   dpitch = 0;
   dyaw = 0;
   dthrottle = 0;
+
+  if (iguidance == 1) {
+    //Guidance Loop is on we need to compute the guidance commands
+    
+  }
 
   switch (icontrol) {
   case 4:

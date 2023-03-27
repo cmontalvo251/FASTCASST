@@ -1,30 +1,28 @@
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
+#ifndef GUIDANCE_H
+#define GUIDANCE_H
 
-//This is another class that is craft dependent as as such
-//must adhere to specific standards
-
+#ifdef ARDUINO
+#include "MATLAB.h"
+#include "RCIO.h" //this is for STICK values
+#else
 #include <MATLAB/MATLAB.h>
 #include <RCIO/RCIO.h> //this is for STICK values
+#endif
 
-class controller {
-private:
-  double elapsedTime = 0,lastTime=0; //These are used to keep track of time elapsed.
-  double throttle,aileron,elevator,rudder,arm_switch;
-  double roll_command,pitch_command,yaw_rate_command,altitude_command;
-  double altitude_prev = -999,droll=0,dyaw=0,dthrottle=0,dpitch=0;
-  double altitude_int = 0;
-  void AltitudeLoop(MATLAB); // Altitude
-  void InnerLoop(MATLAB); // Roll,pitch,yaw
-  int CONTROLLER_FLAG = -99;
-  void set_defaults();
+class guidance {
 public:
-  int NUMSIGNALS=5; //TAER(AS)
-  MATLAB control_matrix; //This is a vector of TAERA1A2 in PWM signals
+  int GUIDANCE_FLAG=0;
+  int NUMSIGNALS=6; //roll,pitch,yaw,vel,alt,armswitch
+  MATLAB guidance_matrix; //This is a vector of TAERA1A2 in PWM signals
   void loop(double currentTime,int rx_array[],MATLAB sense_matrix);
   void init(MATLAB in_configuration_matrix);
   void print();
-  controller(); //constructor
+  guidance(); //constructor
+private:
+  double elapsedTime = 0,lastTime=0; //These are used to keep track of time elapsed.
+  double throttle_rx,aileron_rx,elevator_rx,rudder_rx,arm_switch_rx;
+  double roll_command,pitch_command,yaw_rate_command,altitude_command,velocity_command;
+  void set_defaults();
 };
 
 #endif

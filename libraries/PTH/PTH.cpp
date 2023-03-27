@@ -24,7 +24,7 @@ void PTH::init(int sensor_type_in) {
   }
   if (sensor_type == 3) {
     printstdout("Selected: BME280 \n");
-    //pth_sensor = new BME280();
+    pth_sensor = new BME280();
   }
   if (IPTH) {
     pth_sensor->initialize();
@@ -50,8 +50,10 @@ void PTH::poll(double currentTime) {
   bool status = pth_sensor->update(currentTime);
   //Get results
   if (status) {
+    pressure = pth_sensor->read_pressure();
+    temperature = pth_sensor->read_temperature();
+    humidity = pth_sensor->read_humidity();
     if (CALIBRATE < 5) {
-      pressure = pth_sensor->read_pressure();
       printstdout("CALIBRATING BAROMETER !!! Pressure = ");
       printstdoutdbl(pressure/0.01);
       CALIBRATE+=1;
@@ -64,8 +66,6 @@ void PTH::poll(double currentTime) {
         CALIBRATE_FLAG = 0;
       }
     }
-    temperature = pth_sensor->read_temperature();
-    humidity = pth_sensor->read_humidity();
   }
   #else
   //This below runs on desktop

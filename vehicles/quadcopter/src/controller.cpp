@@ -90,7 +90,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
   if (iguidance == 1) {
     //Guidance Loop is on we need to compute the guidance commands
-    
+    //I don't like this being in here since I will have to copy it like
+    //20 times.
+    //I need the main.cpp to differentiate between guidance and controller
   }
 
   switch (icontrol) {

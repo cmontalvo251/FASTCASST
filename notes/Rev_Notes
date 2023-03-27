@@ -1,3 +1,33 @@
+===================3/26/2023==============
+
+All sensors are now logging. Telemetry works. Time to move to 
+the flight control algorithm.
+
+My idea is to have the guidance/ folder have a flag for the vehicle 
+you want. So what changes is the physics engine?
+The only problem with that is that we have all the forcemoment models in different
+folders and I won't want to copy and paste.
+
+So I think we'll have to put the guidance laws in a library since it will run for all vehicle.
+Yea that's it. so perhaps move the guidance folder into the libraries folder and then select the 
+quadcopter as the inner loop control law but set it to pass through or something yea that will work
+or in simulation you'll have to turn on the innerloop controller since it's running on different hardware
+but in AUTO mode you'll turn it off and just pass the signals to the FC.
+
+Alright that's the plan. Here we go. 
+
+Since we're moving straight to AUTO mode we'll just get the guidance module to run
+on Arduino and put it into the libraries folder.
+
+For simulating we'll just have to see if we have time for it.
+
+I still want to do a:
+
+1.) one hour logging of data and plotting for post-processing
+2.) A flight test where I fly 10 feet off the ground (using telemetry) for 30 seconds and then increment up to like 100 feet and then bring her back down or do whatever I'm comfortable with.
+3.) Program the guidance module in the nighttime
+4.) Simulate the altitude hold algorithm using realistic sensor errors.
+
 ===================3/15/2023==========
 
 All the hooks for telemetry is working and the code compiles.

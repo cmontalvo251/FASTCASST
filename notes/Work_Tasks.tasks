@@ -85,13 +85,13 @@ WOODEN DRONE:
 
   ✔ In order for this to work, the datlogger routine is going to need to get updated to work for an SD breakout board. @done (23-03-02 20:46)
 
-  ☐ INO routine logs IMU data
+  ✔ INO routine logs IMU data @done (23-03-26 21:15)
 
   ✔ INO routine logs MPL (Baro) data @done (23-03-09 12:05)
 
   ✔ INO routine logs GPS data @done (23-03-02 20:46)
 
-  ☐ I then would like you to make an INO routine that logs all sensor data IMU, MPL, GPS (I think those are all the sensors). 
+  ✔ I then would like you to make an INO routine that logs all sensor data IMU, MPL, GPS (I think those are all the sensors). @done (23-03-26 21:15)
 
   ☐ Using this log routine I want you to log like an hour of data to disk and then save it for later processing of noise and bias. This routine needs to be general enough to work on Navio as well. 
 

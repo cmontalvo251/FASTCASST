@@ -20,7 +20,7 @@ void PTH::init(int sensor_type_in) {
   }
   if (sensor_type == 2) {
     printstdout("Selected: Adafruit_MPL115A2 \n");
-    //pth_sensor = new Adafruit_MPL115A2();
+    pth_sensor = new Adafruit_MPL115A2();
   }
   if (sensor_type == 3) {
     printstdout("Selected: BME280 \n");

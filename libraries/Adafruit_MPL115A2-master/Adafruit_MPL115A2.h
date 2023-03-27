@@ -23,6 +23,12 @@
  #include "WProgram.h"
 #endif
 
+#ifdef ARDUINO
+#include "PTHSensor.h"
+#else
+#include <PTH/PTHSensor.h>
+#endif
+
 #include <Wire.h>
 
 /*=========================================================================
@@ -49,8 +55,13 @@
     #define MPL115A2_REGISTER_STARTCONVERSION      (0x12)
 /*=========================================================================*/
 
-class Adafruit_MPL115A2 {
+class Adafruit_MPL115A2 : public PTHSensor {
  public:
+  //Functions required for PTHSensor.h
+  bool initialize();
+  bool update(double); //this function needs to set _temperature, _pressure, _humidity
+
+  //Functions specific to MPL115A2
   Adafruit_MPL115A2();
   void begin(void);
   float getPressure(void);

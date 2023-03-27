@@ -175,5 +175,19 @@ void Adafruit_MPL115A2::getPT(float *P, float *T) {
   
 }
 
+bool Adafruit_MPL115A2::initialize() {
+  begin();
+  return 1;
+}
+
+bool Adafruit_MPL115A2::update(double currentTime) {
+  float fpressure,ftemperature;
+  getPT(&fpressure, &ftemperature);
+  _pressure = fpressure;
+  _temperature = ftemperature;
+  return 1;
+}
+
+
 
 

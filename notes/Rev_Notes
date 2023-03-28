@@ -31,7 +31,7 @@ Alright so the 1777a53 commit works but whatever I did on 49e3d3d broke it
 
 Ok found the issue in timer.cpp. The sleep function was running and causing the code to wait forever
 
-a.) Fully manual acro mode no guidance - 
+a.) Fully manual acro mode no guidance - check
 b.) Inner Loop mode no guidance - have a toggle switch for autopilot
 c.) Yaw rate mode no guidance - have a toggle switch for autopilot
 d.) Guidance is on but fully manual acro mode - again toggle switch

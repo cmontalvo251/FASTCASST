@@ -230,7 +230,7 @@ void loop() {
       printf("T,dt %lf %lf ",watch.currentTime,watch.elapsedTime);
       //First 5 RX signals
       printf("RX ");
-      hw.rc.in.printRCstate(-5);
+      hw.rc.in.printRCstate(-6);
       //Roll Pitch Yaw
       printf("RPY %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
       //PQR

@@ -45,7 +45,12 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   elapsedTime = currentTime - lastTime;
   lastTime = currentTime;
 
-  //Extract the autopilot flag
+  //Extract the autopilot flag -- autopilot is only used for controller.cpp
+  //throttle = rx_array[0];
+  //aileron = rx_array[1];
+  //elevator = rx_array[2];
+  //rudder = rx_array[3];
+  //arm_switch = rx_array[4];
   double autopilot = rx_array[5];
   int icontrol = 0,iguidance = 0;
 
@@ -177,9 +182,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
 void controller::YawRateLoop(MATLAB sense_matrix) {
   double yaw_rate = sense_matrix.get(12,1); //Check IMU.cpp to see for HIL
-  double kyaw = 5.0;
+  double kyaw = 50.0;
   dyaw = kyaw*(yaw_rate-yaw_rate_command);
-  dyaw = CONSTRAIN(dyaw,-500,500);
+  dyaw = -CONSTRAIN(dyaw,-500,500);
 }
 
 void controller::InnerLoop(MATLAB sense_matrix) {
@@ -193,7 +198,7 @@ void controller::InnerLoop(MATLAB sense_matrix) {
   double kp = 2.0;
   double kd = 10.0;
   droll = kp*(roll-roll_command) + kd*(roll_rate);
-  droll = CONSTRAIN(droll,-500,500);
+  droll = -CONSTRAIN(droll,-500,500);
   dpitch = kp*(pitch-pitch_command) + kd*(pitch_rate);
   dpitch = CONSTRAIN(dpitch,-500,500);    
   //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);

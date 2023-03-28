@@ -45,6 +45,18 @@ This works!!
 
 Now it's time to see if I can get the guidance and control module to compile on the arduino and if so it's time to flight test!!!
 
+Wait. There's still a lot to do.
+
+1.) Compile code on arduino
+2.) Flash code to arduino
+2.) Log 1 hour of data on arduino to get sensor noise
+3.) Fly drone manually up to altitude and log data
+4.) Plot and post process data - get sensor noise readings
+5.) Run code in SIMONLY mode with realistic sensor noise and see if you can get altitude hold to work.
+6.) Edit telemetry to read altitude data from another drone.
+7.) Flight test again and have a ground station send it altitude commands
+^^If #7 works Zach will just need to recreate what I've done 3 times and test each one
+
 ===================3/26/2023==============
 
 All sensors are now logging. Telemetry works. Time to move to 

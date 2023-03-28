@@ -136,6 +136,7 @@ void loop() {
   //Enter into while loop while hardware and the model are ok
   int system_ok = system_check();
   double lastPRINTtime = 0;
+  double lastControltime = 0;
   printf("Main Loop Begin \n");
 
   //Initialize the Timer if we're running in Software mode
@@ -200,7 +201,15 @@ void loop() {
       //as quickly as possible
       //Here's where things get weird though. If we're running in HIL mode
       //and we're on the desktop we don't run control.loop()
-      control.loop(watch.currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
+      #ifndef AUTO //If we're running on hardware we run as fast as possible
+      //but if not we need to throttle the control loop
+      if (watch.currentTime > lastControltime) {
+        lastControltime = watch.currentTime + model.TIMESTEP; //Run as fast as the timestep
+      #endif
+        control.loop(watch.currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
+      #ifndef AUTO
+      }
+      #endif
       /////////////////////////////////////////
     }
 

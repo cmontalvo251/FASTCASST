@@ -32,11 +32,18 @@ Alright so the 1777a53 commit works but whatever I did on 49e3d3d broke it
 Ok found the issue in timer.cpp. The sleep function was running and causing the code to wait forever
 
 a.) Fully manual acro mode no guidance - check
-b.) Inner Loop mode no guidance - have a toggle switch for autopilot
-c.) Yaw rate mode no guidance - have a toggle switch for autopilot
-d.) Guidance is on but fully manual acro mode - again toggle switch
-e.) Guidance is on but inner loop mode on - again toggle switch 
-f.) guidance is on and inner + yaw rate loop on - again toggle switch
+b.) Inner Loop mode no guidance - have a toggle switch for autopilot - Check
+c.) Yaw rate mode no guidance - have a toggle switch for autopilot - Check
+
+Alright time to test guidance finally
+
+d.) guidance is on and inner + yaw rate loop on
+in this case I want the inner loop and yaw rate loops to always be on to mimic
+the flight controller but then I want to be able to toggle guidance
+
+This works!!
+
+Now it's time to see if I can get the guidance and control module to compile on the arduino and if so it's time to flight test!!!
 
 ===================3/26/2023==============
 

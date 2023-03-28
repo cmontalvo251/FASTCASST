@@ -80,6 +80,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //control the flight controller logic and the guidance module
     if (autopilot > STICK_MID) {
       //This means we need to run the guidance module
+      //printstdout("Running guidance loop \n");
       guid.loop(rx_array,currentTime,sense_matrix);
     } else { 
       guid.anti_windup();
@@ -89,7 +90,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //Otherwise the loop above sets the receiver array to something different 
     //and then that is sent to the control_matrix  
     for (int i = 0;i<5;i++) {
-      control_matrix.set(i+1,1,rx_array[0]);
+      control_matrix.set(i+1,1,rx_array[i]);
     }  
   }
 

@@ -12,7 +12,8 @@ private:
   double altitude_prev = -999;
   double altitude_command = 0;
   double altitude_int = 0;
-  void AltitudeLoop(MATLAB);
+  double altitude_dot = 0;
+  void AltitudeLoop(double,MATLAB);
  public:
   guidance();
   void loop(int[],double,MATLAB);

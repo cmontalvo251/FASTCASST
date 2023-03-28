@@ -158,17 +158,17 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       dthrottle = 1480-992;
     }
     #endif
-    motor_upper_left = throttle + dthrottle - droll - dpitch - dyaw;
-    motor_upper_right = throttle + dthrottle + droll - dpitch + dyaw;
-    motor_lower_left = throttle + dthrottle - droll + dpitch + dyaw;
-    motor_lower_right = throttle + dthrottle + droll + dpitch - dyaw;
+    motor_lower_right = throttle + dthrottle - droll + dpitch + dyaw;
+    motor_upper_right = throttle + dthrottle - droll - dpitch - dyaw;
+    motor_lower_left = throttle + dthrottle + droll + dpitch - dyaw;
+    motor_upper_left = throttle + dthrottle + droll - dpitch + dyaw;
     break;
   }
  //Send the motor commands to the control_matrix values
- control_matrix.set(1,1,motor_upper_left);
+ control_matrix.set(1,1,motor_lower_right);
  control_matrix.set(2,1,motor_upper_right);
  control_matrix.set(3,1,motor_lower_left);
- control_matrix.set(4,1,motor_lower_right);
+ control_matrix.set(4,1,motor_upper_left);
  control_matrix.set(5,1,arm_switch);
  //control_matrix.disp();
 

@@ -94,15 +94,15 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
 
   //Then we extract the four forces
   //From the controller - us signals
-  //ctlcomms.set(1,1,motor_upper_left);
+  //ctlcomms.set(1,1,motor_lower_right);
   //ctlcomms.set(2,1,motor_upper_right);
   //ctlcomms.set(3,1,motor_lower_left);
-  //ctlcomms.set(4,1,motor_lower_right);
+  //ctlcomms.set(4,1,motor_upper_left);
   //thrust_motors.disp();
-  double motor_upper_left = thrust_motors.get(1,1);
+  double motor_lower_right = thrust_motors.get(1,1);
   double motor_upper_right = thrust_motors.get(2,1);
   double motor_lower_left = thrust_motors.get(3,1);
-  double motor_lower_right = thrust_motors.get(4,1);
+  double motor_upper_left = thrust_motors.get(4,1);
   
   //Now we compute torque on roll and pitch
   double roll_torque = (motor_upper_left+motor_lower_left)*ry - (motor_upper_right+motor_lower_right)*ry;

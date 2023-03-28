@@ -154,10 +154,11 @@ void RenderControl::loop(int argc,char** argv,char fileroot[],int inFarplane,int
         glutReshapeFunc(&ResizeGLScene);
         //Setup Keyboard Control
         keyboard.Initialize();
-        printf("Starting Visualizer \n");
+        printf("Starting Visualizer (glutMainLoop) \n");
         ready = 1; //this tells everyone else that you're working
       	//Kick Off Program
 	      glutMainLoop(); 
+        printf("Anything here? \n");
       } else {
         sprintf(err,"%s","StateHistory Error");
       }

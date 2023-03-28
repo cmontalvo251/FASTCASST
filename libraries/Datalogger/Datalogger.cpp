@@ -44,9 +44,11 @@ void Datalogger::findfile(char* directory) {
     }
 
     //////NOTIFY USER/////////////////////
-    printstdout("Attempting to check for file: ");
-    printstdout(filename);
-    printstdout("\n");
+    if (echo) {
+      printstdout("Attempting to check for file: ");
+      printstdout(filename);
+      printstdout("\n");
+    }
     
     /////////CHECK TO SEE IF FILE EXISTS///////
     #ifdef ARDUINO
@@ -70,18 +72,24 @@ void Datalogger::findfile(char* directory) {
 
     ////NOTIFY USER/////////////
     if (found) {
+      if (echo) {
       printstdout("File does not exist. Exiting loop \n");
+    }
     } else {
+      if (echo) {
       printstdout("File exists. Skipping and adding 1 \n");
+    }
       number+=1; //Number is global in header file
     }
 
   } //END OF WHILE LOOP
 
   ///NOTIFY USER///
+  if (echo) {
   printstdout("File found for writing = ");
   printstdout(filename);
   printstdout("\n");
+  }
 }
 
 void Datalogger::openfile() {
@@ -111,10 +119,14 @@ void Datalogger::init(char* directory,int num) {
     exit(1);
   }
   #endif
+  //Set echo to 1
+  echo = 1;
   //Find a file in the desired directory
   findfile(directory);
   //open said file
   openfile();
+  //Also set echo to 0
+  echo = 0;
   //Set size of variables
   setLogVars(num);  
 }

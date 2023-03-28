@@ -103,13 +103,16 @@ int main(int argc,char* argv[]) {
   //The Hardware block needs the root filename to run it's
   //initialization routine. Also send the number of signals to 
   //connect to PWM servos/ESCs
+  printf("Hardware Initialization \n");
   hw.init(root_folder_name,control.NUMSIGNALS);
 
   //Initialize Controller
+  printf("Controller Initialization \n");
   control.init(hw.in_configuration_matrix);
 
   //Initialize Model if it's on
   #ifdef MODELING
+  printf("Model Initialization \n");
   model.init(root_folder_name,hw.in_simulation_matrix,hw.in_configuration_matrix,argc,argv);
   #endif
 

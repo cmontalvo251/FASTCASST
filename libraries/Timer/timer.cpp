@@ -29,17 +29,20 @@ void PAUSE()
 }
 
 void cross_sleep(double length) {
-  #if defined (_WIN32)
+  #ifdef _WIN32
+  //Code for Windows
   Sleep(length*1000);
   #else
+  //Not on windows
   #ifdef ARDUINO
+  //If on Arduino
   delay(length*1000);
   #else
-  #ifdef __unix__
-  sleep(length*1000000);
-  #else
+  //Otherwise you're probably on linux
+  //#ifdef __unix__
+  //sleep(length*1000000); 
+  //#else
   usleep(length*1000000);
-  #endif //__unix__
   #endif //ARDUINO
   #endif //_WIN32
 }

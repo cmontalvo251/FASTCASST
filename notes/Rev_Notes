@@ -3,9 +3,32 @@
 Ok so I think I've got the guidance module where I want it.
 The problem is it's totally untested and there's a lot to test
 
-1.) Does the code compile in SIMONLY mode?
-2.) Does the code compile in SIL mode?
-3.) Run the code in a variety of scenarios
+1.) Does the code compile in SIMONLY mode? - Yes
+2.) Does the code compile in SIL mode? - Yes
+3.) Run the code in a variety of scenarios - Will not run right now
+
+I have no idea what's going on so I'm backtracking on my code to see what's going on
+Jan 6 - SIL works
+Jan 30 - SIL works
+Feb 15 - SIL works
+Feb 17th - SIL works
+Feb 25 - SIL works
+Feb 27 - SIL does not work
+
+Between the 25th and the 27th there were 7 commits
+
+Newest
+ba55597 - SIL dnw
+97ea2b7
+a8a4a50
+15513f0 - won't even compile
+d4407e8 - SIL dnw
+49e3d3d - SIL dnw
+1777a53 - SIL works
+Oldest
+
+Alright so the 1777a53 commit works but whatever I did on 49e3d3d broke it
+
 a.) Fully manual acro mode no guidance 
 b.) Inner Loop mode no guidance - have a toggle switch for autopilot
 c.) Yaw rate mode no guidance - have a toggle switch for autopilot

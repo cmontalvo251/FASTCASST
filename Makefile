@@ -20,7 +20,7 @@ THREAD=-lpthread -lboost_system -lboost_thread -lboost_date_time
 MODELPATH=vehicles/$(MODEL)/src
 INCLUDE=-Ilibraries/ -I${MODELPATH} -I./
 ###HELPER
-HELPERSOURCES=libraries/Datalogger/Datalogger.cpp libraries/MATLAB/MATLAB.cpp libraries/Mathp/mathp.cpp libraries/Timer/timer.cpp libraries/guidance/guidance.cpp
+HELPERSOURCES=libraries/Datalogger/Datalogger.cpp libraries/MATLAB/MATLAB.cpp libraries/Mathp/mathp.cpp libraries/Timer/timer.cpp
 ###HARDWARE
 IMUSOURCES=$(wildcard libraries/IMU/*.cpp)
 MPUSOURCES=$(wildcard libraries/MPU9250/*.cpp)

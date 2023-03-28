@@ -1,3 +1,18 @@
+=================3/28/2023================
+
+Ok so I think I've got the guidance module where I want it.
+The problem is it's totally untested and there's a lot to test
+
+1.) Does the code compile in SIMONLY mode?
+2.) Does the code compile in SIL mode?
+3.) Run the code in a variety of scenarios
+a.) Fully manual acro mode no guidance 
+b.) Inner Loop mode no guidance - have a toggle switch for autopilot
+c.) Yaw rate mode no guidance - have a toggle switch for autopilot
+d.) Guidance is on but fully manual acro mode - again toggle switch
+e.) Guidance is on but inner loop mode on - again toggle switch 
+f.) guidance is on and inner + yaw rate loop on - again toggle switch
+
 ===================3/26/2023==============
 
 All sensors are now logging. Telemetry works. Time to move to 

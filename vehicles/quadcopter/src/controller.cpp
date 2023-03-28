@@ -9,13 +9,12 @@ controller::controller() {
 void controller::init(MATLAB in_configuration_matrix) {
   control_matrix.zeros(NUMSIGNALS,1,"Control Signals"); //The standards must be TAERA1A2A3A4
   set_defaults();
-  printf("Controller Received Configuration Matrix \n");
+  printstdou("Controller Received Configuration Matrix \n");
   //in_configuration_matrix.disp();
   CONTROLLER_FLAG = in_configuration_matrix.get(11,1);
-  printf("Controller Setup \n");
-  //Setup guidance module
-  if abs(CONTROLLER_FLAG) >= 10 {
-    guid.init(in_configuration_matrix);
+  printstdout("Controller Setup \n");
+  if (abs(CONTROLLER_FLAG) >= 10) {
+    guid.init();
   }
 }
 
@@ -24,6 +23,7 @@ void controller::set_defaults() {
   control_matrix.set(2,1,OUTMIN);
   control_matrix.set(3,1,OUTMIN);
   control_matrix.set(4,1,OUTMIN);
+  control_matrix.set(5,1,OUTMIN);
 }
 
 void controller::print() {
@@ -45,12 +45,13 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   elapsedTime = currentTime - lastTime;
   lastTime = currentTime;
 
-  //First extract the relavent commands from the receiver.
+  //Extract the relavent commands from the receiver.
   double throttle = rx_array[0];
   double aileron = rx_array[1];
   double elevator = rx_array[2];
   double rudder = rx_array[3];
-  double autopilot = rx_array[4];
+  double arm_switch = rx_array[4];
+  double autopilot = rx_array[5];
   int icontrol = 0,iguidance = 0;
 
   //Check for user controlled
@@ -64,44 +65,75 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     icontrol = CONTROLLER_FLAG;
   }
 
-  if (icontrol >= 10){ 
-    iguidance = 1;
-  } else {
-    iguidance = 0;
+  if (abs(CONTROLLER_FLAG) >= 10) {
+    iguidance=1;
+    if (icontrol >= 10) {
+      icontrol-=10;
+    }
   }
+
+  //At this point icontrol < 10 and iguidance is a 0 or a 1
+  if (iguidance == 1) {
+    //This means we need to run the guidance module
+    guid.loop(currenTime,sense_matrix);
+    //The guidance module will set the altitude
+    //command,aileron,elevator and rudder commands
+
+    //There are a couple scenarios here since guidance is on
+
+    //The autopilot switch is up (I want to be able to independtly
+    //control the flight controller logic and the guidance module
+    if (autopilot > STICK_MID) {
+      //In this case we need to use the guidance commands as receiver
+      //signals and send those to the flight controller
+      //Now we use the get() commands and set the rx_array for a few
+      //reasons. One because we need to reset the receiver commands
+      //In case we're in SIMONLY or SIL mode
+      //And then in the rx_array to take advantage of the pass_through function
+      throttle = guidance_matrix.get(1,1);
+      aileron = guidance_matrix.get(2,1);
+      elevator = guidance_matrix.get(3,1);
+      rudder = guidance_matrix.get(4,1);
+      //At this point these 4 controls need to run through to the
+      //flight controller. So we can use the pass_through function
+      //and populate the rx_array to do this
+      rx_array[0] = throttle;
+      rx_array[1] = aileron;
+      rx_array[2] = elevator;
+      rx_array[3] = rudder;
+    }
+    //Then we pass the signals through to the control matrix
+    guid.pass_through(rx_array,control_matrix);
+  }
+
+  //Now this is where things get weird. If we're running in SIMONLY or
+  //SIL mode, There is no flight controller. This means that the
+  //rx_array either altered or unaltered above needs to run through
+  //the flight control system below. So we need a #ifdef
+  //If we're running in AUTO or anything but SIMONLY or SIL the
+  //routine just breaks 
+  
+  #if defined (SIMONLY) || (SIL)
+
+  //Initialize commands
+  roll_command = -99;
+  pitch_command = -99;
+  yaw_rate_command = -99;
+  //And controls
+  droll = -99;
+  dpitch = -99;
+  dyaw = -99;
+  dthrottle = -99;
 
   //Quadcopter Control cases
   // 0 = fully manual (ACRO)
   // 1 = Inner loop on (roll and pitch on STAB)
   // 2 = Inner Loop + Yaw on RATE mode
-  // 3 = Altitude control
-  // 4 = Waypoint mode
-  
-  //Initialize commands
-  roll_command = -99;
-  pitch_command = -99;
-  yaw_rate_command = -99;
-  altitude_command = 100; //Hardcode to 100 but eventually will need to update with telemetry
-  //And controls
-  droll = 0;
-  dpitch = 0;
-  dyaw = 0;
-  dthrottle = 0;
-
-  if (iguidance == 1) {
-    //Guidance Loop is on we need to compute the guidance commands
-    //I don't like this being in here since I will have to copy it like
-    //20 times.
-    //I need the main.cpp to differentiate between guidance and controller
-  }
+  // Note that Altitude and waypoint loops moved to guidance
+  // 1X = This means we want the control module here to create
+  // commands to send to a betaflight/cleanflight flight controller
 
   switch (icontrol) {
-  case 4:
-    //Waypoint Mode
-    printf("Waypoint + ");
-  case 3:
-    //printf("Altitude + ");
-    AltitudeLoop(sense_matrix);
   case 2:
     //printf("YawRateLoop + ");
     if (yaw_rate_command == -99) {
@@ -111,7 +143,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   case 1:
     //printf("Inner Loop + ");
     //Run the Innerloop
-    //Check to see if you need inner loop guidance or not
+    //Check to see if you need inner loop control or not
     if (roll_command == -99) {
       roll_command = (aileron-STICK_MID)*30.0/((STICK_MAX-STICK_MIN)/2.0);
     }
@@ -122,18 +154,18 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   case 0:
     //printf("Motor Mixing \n");
     //Acro mode if controls not set
-    if (droll == 0) {
+    if (droll == -99) {
       droll = (aileron-STICK_MID);
     }
-    if (dpitch == 0) {
+    if (dpitch == -99) {
       dpitch = (elevator-STICK_MID);
     }
-    if (dyaw == 0) {
+    if (dyaw == -99) {
       dyaw = (rudder-STICK_MID);
     }
     //This means control is off but we need a bit of thrust to stay in the air
     #ifndef SIL
-    if (dthrottle == 0) {
+    if (dthrottle == -99) {
       dthrottle = 1480-992;
     }
     #endif
@@ -148,7 +180,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
  control_matrix.set(2,1,motor_upper_right);
  control_matrix.set(3,1,motor_lower_left);
  control_matrix.set(4,1,motor_lower_right);
+ control_matrix.set(5,1,arm_switch);
  //control_matrix.disp();
+
+ #endif //SIMONLY or SIL
 }
 
 void controller::YawRateLoop(MATLAB sense_matrix) {
@@ -156,40 +191,6 @@ void controller::YawRateLoop(MATLAB sense_matrix) {
   double kyaw = 5.0;
   dyaw = kyaw*(yaw_rate-yaw_rate_command);
   dyaw = CONSTRAIN(dyaw,-500,500);
-}
-
-void controller::AltitudeLoop(MATLAB sense_matrix) {
-    //Throttle controller on climb rate
-  /*double climb_rate_command = (throttle-STICK_MID)*10/((STICK_MAX-STICK_MIN/2.0));
-  //printf("Climb Rate Command = %lf \n",climb_rate_command);
-  double climb_rate = sense_matrix.get(9,1);
-  double kpt = 100.0;
-  double dthrottle = -kpt*(climb_rate_command - climb_rate);*/
-  //printf("dthrottle = %lf zdot = %lf \n",dthrottle,climb_rate);
-  double altitude  = sense_matrix.get(28,1);
-
-  //Initialize altitude_dot to zero
-  double altitude_dot = 0;
-  //If altitude_prev has been set compute a first order derivative
-  if (altitude_prev != -999) {
-    altitude_dot = (altitude - altitude_prev) / elapsedTime;
-  }
-  //Then set the previous value
-  altitude_prev = altitude;
-
-  double kpt = -10.0;
-  double kdt = -10.0;
-  double kit = -1.0;
-  double altitude_error = (altitude-altitude_command);
-  dthrottle = kpt*altitude_error + kdt*(altitude_dot) + kit*altitude_int;
-
-  //Integrate but prevent integral windup
-  if ((dthrottle < (STICK_MAX-STICK_MIN)) && (dthrottle > 0)) {
-    altitude_int += elapsedTime*altitude_error;
-  }
-  dthrottle = CONSTRAIN(dthrottle,-(STICK_MAX-STICK_MIN),(STICK_MAX-STICK_MIN));
-  //dthrottle = 0;
-  //printf("Altitude = %lf Altitude Dot = %lf dthrottle = %lf \n",altitude,altitude_dot,dthrottle);
 }
 
 void controller::InnerLoop(MATLAB sense_matrix) {

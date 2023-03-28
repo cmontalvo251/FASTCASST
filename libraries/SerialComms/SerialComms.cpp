@@ -11,10 +11,10 @@ void SerialComms::InitSerialPort(void)
   char *port = "Serial2";
   #endif
   #ifdef __WIN32__
-    port = "\\\\.\\COM12";
+  char *port = "\\\\.\\COM12";
   #endif
   #if defined __linux__ || __APPLE__ || RPI
-    port = "/dev/ttyUSB0";
+  char *port = "/dev/ttyUSB0";
   #endif
   #if defined (SIMONLY) || (SIL)
   //Note that in SIMONLY the functions below are initialized but 

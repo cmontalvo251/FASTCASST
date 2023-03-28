@@ -16,8 +16,8 @@
 //Hardware
 //Analog Signals
 #include <ADC/ADC.h>
-//Barometer and Thermometer
-#include <BaroTemp/BaroTemp.h>
+//PTH Sensor
+#include <PTH/PTH.h>
 //IMU
 #include <IMU/IMU.h>
 //GPS
@@ -48,7 +48,7 @@ class sensors {
   //Public variables and classes
   IMU orientation;
   GPS satellites;
-  BaroTemp atm;
+  PTH atm;
   MATLAB sense_matrix,sense_matrix_dot;
   char** headernames,headernames_dot;
   double Heading_Mag,x_tilt,y_tilt,Hm,compass=0.0;

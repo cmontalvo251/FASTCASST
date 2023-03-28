@@ -9,7 +9,7 @@ controller::controller() {
 void controller::init(MATLAB in_configuration_matrix) {
   control_matrix.zeros(NUMSIGNALS,1,"Control Signals"); //The standards must be TAERA1A2A3A4
   set_defaults();
-  printstdou("Controller Received Configuration Matrix \n");
+  printstdout("Controller Received Configuration Matrix \n");
   //in_configuration_matrix.disp();
   CONTROLLER_FLAG = in_configuration_matrix.get(11,1);
   printstdout("Controller Setup \n");
@@ -45,12 +45,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   elapsedTime = currentTime - lastTime;
   lastTime = currentTime;
 
-  //Extract the relavent commands from the receiver.
-  double throttle = rx_array[0];
-  double aileron = rx_array[1];
-  double elevator = rx_array[2];
-  double rudder = rx_array[3];
-  double arm_switch = rx_array[4];
+  //Extract the autopilot flag
   double autopilot = rx_array[5];
   int icontrol = 0,iguidance = 0;
 
@@ -74,36 +69,23 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
   //At this point icontrol < 10 and iguidance is a 0 or a 1
   if (iguidance == 1) {
-    //This means we need to run the guidance module
-    guid.loop(currenTime,sense_matrix);
-    //The guidance module will set the altitude
-    //command,aileron,elevator and rudder commands
-
     //There are a couple scenarios here since guidance is on
 
     //The autopilot switch is up (I want to be able to independtly
     //control the flight controller logic and the guidance module
     if (autopilot > STICK_MID) {
-      //In this case we need to use the guidance commands as receiver
-      //signals and send those to the flight controller
-      //Now we use the get() commands and set the rx_array for a few
-      //reasons. One because we need to reset the receiver commands
-      //In case we're in SIMONLY or SIL mode
-      //And then in the rx_array to take advantage of the pass_through function
-      throttle = guidance_matrix.get(1,1);
-      aileron = guidance_matrix.get(2,1);
-      elevator = guidance_matrix.get(3,1);
-      rudder = guidance_matrix.get(4,1);
-      //At this point these 4 controls need to run through to the
-      //flight controller. So we can use the pass_through function
-      //and populate the rx_array to do this
-      rx_array[0] = throttle;
-      rx_array[1] = aileron;
-      rx_array[2] = elevator;
-      rx_array[3] = rudder;
+      //This means we need to run the guidance module
+      guid.loop(rx_array,currentTime,sense_matrix);
+    } else { 
+      guid.anti_windup();
     }
     //Then we pass the signals through to the control matrix
-    guid.pass_through(rx_array,control_matrix);
+    //If the autopilot is down the rx_array just goes straight to the control_matrix
+    //Otherwise the loop above sets the receiver array to something different 
+    //and then that is sent to the control_matrix  
+    for (int i = 0;i<5;i++) {
+      control_matrix.set(i+1,1,rx_array[0]);
+    }  
   }
 
   //Now this is where things get weird. If we're running in SIMONLY or
@@ -124,6 +106,13 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   dpitch = -99;
   dyaw = -99;
   dthrottle = -99;
+
+  //Extract the relavent commands from the receiver.
+  double throttle = rx_array[0];
+  double aileron = rx_array[1];
+  double elevator = rx_array[2];
+  double rudder = rx_array[3];
+  double arm_switch = rx_array[4];
 
   //Quadcopter Control cases
   // 0 = fully manual (ACRO)

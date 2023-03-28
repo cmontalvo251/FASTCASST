@@ -4,25 +4,16 @@ guidance::guidance() {
   //Constructor
 }
 
-guidance::init() {
-  guidance_matrix.zeros(4,1,"Guidance Matrix");
+void guidance::init() {
+  //guidance_matrix.zeros(4,1,"Guidance Matrix");
   printstdout("Guidance Module Initialized \n");
 }
 
-guidance::pass_through(int rx_array,MATLAB control_matrix) {
-  //Signals are
-  // 0 = throttle
-  // 1 = aileron
-  // 2 = elevator
-  // 3 = rudder
-  // 4 = arm switch
-  // 5 = autopilot which is not used by the flight controller
-  for (int i = 0;i<5;i++) {
-    control_matrix.set(i+1,1,rx_array[0]);
-  }
+void guidance::anti_windup() {
+  altitude_int = 0;
 }
 
-guidance::loop(double currentTime,MATLAB sense_matrix) {
+void guidance::loop(int rx_array[],double currentTime,MATLAB sense_matrix) {
   //I want to keep track of timeElapsed so that I can run integrators
   //and compute derivates
   elapsedTime = currentTime - lastTime;
@@ -33,7 +24,7 @@ guidance::loop(double currentTime,MATLAB sense_matrix) {
   double roll_command = 0;
   double pitch_command = 0;
   double yaw_rate_command = 0;
-  double altitude_command = 100; //eventually will need to update with telemetry
+  altitude_command = 100; //eventually will need to update with telemetry
 
   //But we need to convert that to a dthrottle command
   //So we run the Altitude Command Loop
@@ -41,16 +32,21 @@ guidance::loop(double currentTime,MATLAB sense_matrix) {
   //When Guidance is on we actually need to pass through controls
   //rather than sending motor commands.
   //First command is throttle augmented with dthrottle
-  guidance_matrix.set(1,1,throttle + dthrottle);
+  //guidance_matrix.set(1,1,throttle + dthrottle);
+  double throttle = rx_array[0];
+  rx_array[0] = throttle + dthrottle;
   //Second command is aileron
   double aileron = roll_command*((STICK_MAX-STICK_MIN)/2.0)/30.0+STICK_MID;
-  guidance_matrix.set(2,1,aileron);
+  //guidance_matrix.set(2,1,aileron);
+  rx_array[1] = aileron;
   //Third command is elevator
   double elevator = pitch_command*((STICK_MAX-STICK_MIN)/2.0)/30.0+STICK_MID;
-  guidance_matrix.set(3,1,elevator);
+  //guidance_matrix.set(3,1,elevator);
+  rx_array[2] = elevator;
   //Fourth command is rudder
   double rudder = yaw_rate_command*((STICK_MAX-STICK_MIN)/2.0)/50.0+STICK_MID;
-  guidance_matrix.set(4,1,rudder);
+  //guidance_matrix.set(4,1,rudder);
+  rx_array[3] = rudder;
 }
 
 void guidance::AltitudeLoop(MATLAB sense_matrix) {

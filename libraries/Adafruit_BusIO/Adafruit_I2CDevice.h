@@ -1,8 +1,10 @@
 #ifndef Adafruit_I2CDevice_h
 #define Adafruit_I2CDevice_h
 
+#ifdef ARDUINO
 #include <Arduino.h>
 #include <Wire.h>
+#endif
 
 ///< The class which defines how we will talk to this device over I2C
 class Adafruit_I2CDevice {

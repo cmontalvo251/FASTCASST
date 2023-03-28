@@ -18,6 +18,7 @@ void PTH::init(int sensor_type_in) {
     printstdout("Selected: MS5611 \n");
     pth_sensor = new MS5611();
   }
+  #ifdef ARDUINO
   if (sensor_type == 2) {
     printstdout("Selected: Adafruit_MPL115A2 \n");
     pth_sensor = new Adafruit_MPL115A2();
@@ -26,6 +27,7 @@ void PTH::init(int sensor_type_in) {
     printstdout("Selected: BME280 \n");
     pth_sensor = new BME280();
   }
+  #endif
   if (IPTH) {
     pth_sensor->initialize();
   }

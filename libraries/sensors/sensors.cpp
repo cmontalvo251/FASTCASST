@@ -78,7 +78,7 @@ void sensors::init(MATLAB in_configuration_matrix,MATLAB in_simulation_matrix) {
   satellites.init();
 
   //Initialize Barometer
-  atm.init();
+  atm.init(IBARO);
 
   //Initialize q0123 and ptp
   q0123.zeros(4,1,"Sense Quaternions");

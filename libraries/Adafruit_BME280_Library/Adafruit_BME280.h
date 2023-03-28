@@ -21,11 +21,14 @@
 #ifndef __BME280_H__
 #define __BME280_H__
 
+#ifdef ARDUINO
 #include "Arduino.h"
-
 #include <Adafruit_I2CDevice.h>
 #include <Adafruit_SPIDevice.h>
 #include <Adafruit_Sensor.h>
+#else
+#endif
+
 
 /*!
  *  @brief  default I2C address

@@ -31,6 +31,11 @@ volatile boolean inStandbyMode;
 
 
 boolean Adafruit_GPS::parse(char *nmea) {
+  /*Serial.println("^^^^^^^^^^^^^^^^^^^^^^^");
+  Serial.print(nmea);
+  Serial.print("\n");
+  Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^");*/
+  //Serial.print("Parsing...\n");
   // first look if we even have one
   if (nmea[strlen(nmea)-4] == '*') {
     uint16_t sum = parseHex(nmea[strlen(nmea)-3]) * 16;
@@ -54,10 +59,33 @@ boolean Adafruit_GPS::parse(char *nmea) {
 
   if (strstr(nmea, "$GPGGA")) {
     // do checksum check
-    //Serial.print("Found GPGGA Sentence \n");
-    //Serial.println(nmea);
     // found GGA
     char *p = nmea;
+    /*Serial.print("============\n");
+    Serial.print("Found GPGGA Sentence = ");
+    Serial.print(nmea);
+    Serial.print("\n");
+    //Serial.print("p[4]=");
+    //Serial.print(p[4]);
+    Serial.print("\n=============\n");*/
+    //strstr only checks to see if $GPGGA is in the string but not where it is
+    //Move to GPGGA
+    if (p[4]=='R') {  //$GPRMC 1234
+      //It means there's an erroneous GPRMC in here
+      //Serial.print("\n");
+      //Serial.print("Double Stacked Sentence \n");
+      //First move up 
+      p = strchr(p,',')+1;
+      //Then move to the next P
+      p = strchr(p,'P')-2;
+      //Serial.println("^^^^^^^");
+      //Serial.print(p);
+      //Serial.println("\n^^^^^^^^^");
+    }
+    /*Serial.print("================\n");
+    Serial.print("Found GPGGA Sentence = ");
+    Serial.print(p);
+    Serial.print("\n================\n");*/
     // get time
     p = strchr(p, ',')+1;
     float timef = atof(p);
@@ -157,7 +185,8 @@ boolean Adafruit_GPS::parse(char *nmea) {
       geoidheight = atof(p);
     }
 
-    /*Serial.print("PARSED: ");
+    /*
+    Serial.print("PARSED: ");
     Serial.print(hour);
     Serial.print(",");
     Serial.print(minute);
@@ -179,7 +208,7 @@ boolean Adafruit_GPS::parse(char *nmea) {
     Serial.print(altitude);
     Serial.print(",");
     Serial.print(geoidheight);
-    Serial.print("\n");*/
+    Serial.print("\n"); */
 
     return true;
   }
@@ -188,7 +217,14 @@ boolean Adafruit_GPS::parse(char *nmea) {
 
   if (strstr(nmea, "$GPRMC")) {
    // found RMC
+    //Serial.print("Found GPRMC File \n");
     char *p = nmea;
+
+    /*Serial.print("^^^^^^^^^^^^^^^^^^\n");
+    Serial.print("Found GPRMC Sentence = ");
+    Serial.print(p);
+    Serial.print("\n");
+    Serial.print("^^^^^^^^^^^^^^^^^^\n");*/
 
     // get time
     p = strchr(p, ',')+1;
@@ -197,22 +233,33 @@ boolean Adafruit_GPS::parse(char *nmea) {
     hour = time / 10000;
     minute = (time % 10000) / 100;
     seconds = (time % 100);
-
     milliseconds = fmod(timef, 1.0) * 1000;
 
+    /*Serial.print("HMS = ");
+    Serial.print(hour);
+    Serial.print(",");
+    Serial.print(minute);
+    Serial.print(",");
+    Serial.print(seconds);
+    Serial.print(",");
+    Serial.print(milliseconds);*/
+
     p = strchr(p, ',')+1;
-    // Serial.println(p);
-    if (p[0] == 'A') 
+    //Serial.print(p);
+    if (p[0] == 'A')  {
       fix = true;
-    else if (p[0] == 'V')
+      //Serial.print(",Valid Fix,");
+    }
+    else if (p[0] == 'V') {
       fix = false;
-    else
+    } else {
       return false;
+    }
+
 
     // parse out latitude
     p = strchr(p, ',')+1;
-    if (',' != *p)
-    {
+    if (',' != *p) {
       strncpy(degreebuff, p, 2);
       p += 2;
       degreebuff[2] = '\0';
@@ -227,6 +274,10 @@ boolean Adafruit_GPS::parse(char *nmea) {
       latitudeDegrees = (latitude-100*int(latitude/100))/60.0;
       latitudeDegrees += int(latitude/100);
     }
+    /*Serial.print(latitude);
+    Serial.print(",");
+    Serial.print(latitudeDegrees,8);
+    Serial.print(",");*/
     
     p = strchr(p, ',')+1;
     if (',' != *p)

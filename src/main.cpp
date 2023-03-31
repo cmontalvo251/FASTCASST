@@ -103,13 +103,16 @@ int main(int argc,char* argv[]) {
   //The Hardware block needs the root filename to run it's
   //initialization routine. Also send the number of signals to 
   //connect to PWM servos/ESCs
+  printf("Hardware Initialization \n");
   hw.init(root_folder_name,control.NUMSIGNALS);
 
   //Initialize Controller
+  printf("Controller Initialization \n");
   control.init(hw.in_configuration_matrix);
 
   //Initialize Model if it's on
   #ifdef MODELING
+  printf("Model Initialization \n");
   model.init(root_folder_name,hw.in_simulation_matrix,hw.in_configuration_matrix,argc,argv);
   #endif
 
@@ -133,6 +136,7 @@ void loop() {
   //Enter into while loop while hardware and the model are ok
   int system_ok = system_check();
   double lastPRINTtime = 0;
+  double lastControltime = 0;
   printf("Main Loop Begin \n");
 
   //Initialize the Timer if we're running in Software mode
@@ -197,7 +201,15 @@ void loop() {
       //as quickly as possible
       //Here's where things get weird though. If we're running in HIL mode
       //and we're on the desktop we don't run control.loop()
-      control.loop(watch.currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
+      #ifndef AUTO //If we're running on hardware we run as fast as possible
+      //but if not we need to throttle the control loop
+      if (watch.currentTime > lastControltime) {
+        lastControltime = watch.currentTime + model.TIMESTEP; //Run as fast as the timestep
+      #endif
+        control.loop(watch.currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
+      #ifndef AUTO
+      }
+      #endif
       /////////////////////////////////////////
     }
 
@@ -227,7 +239,7 @@ void loop() {
       printf("T,dt %lf %lf ",watch.currentTime,watch.elapsedTime);
       //First 5 RX signals
       printf("RX ");
-      hw.rc.in.printRCstate(-5);
+      hw.rc.in.printRCstate(-6);
       //Roll Pitch Yaw
       printf("RPY %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
       //PQR

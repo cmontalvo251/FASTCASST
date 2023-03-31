@@ -1,3 +1,62 @@
+=================3/28/2023================
+
+Ok so I think I've got the guidance module where I want it.
+The problem is it's totally untested and there's a lot to test
+
+1.) Does the code compile in SIMONLY mode? - Yes
+2.) Does the code compile in SIL mode? - Yes
+3.) Run the code in a variety of scenarios - Will not run right now
+
+I have no idea what's going on so I'm backtracking on my code to see what's going on
+Jan 6 - SIL works
+Jan 30 - SIL works
+Feb 15 - SIL works
+Feb 17th - SIL works
+Feb 25 - SIL works
+Feb 27 - SIL does not work
+
+Between the 25th and the 27th there were 7 commits
+
+Newest
+ba55597 - SIL dnw
+97ea2b7
+a8a4a50
+15513f0 - won't even compile
+d4407e8 - SIL dnw
+49e3d3d - SIL dnw
+1777a53 - SIL works
+Oldest
+
+Alright so the 1777a53 commit works but whatever I did on 49e3d3d broke it
+
+Ok found the issue in timer.cpp. The sleep function was running and causing the code to wait forever
+
+a.) Fully manual acro mode no guidance - check
+b.) Inner Loop mode no guidance - have a toggle switch for autopilot - Check
+c.) Yaw rate mode no guidance - have a toggle switch for autopilot - Check
+
+Alright time to test guidance finally
+
+d.) guidance is on and inner + yaw rate loop on
+in this case I want the inner loop and yaw rate loops to always be on to mimic
+the flight controller but then I want to be able to toggle guidance
+
+This works!!
+
+Now it's time to see if I can get the guidance and control module to compile on the arduino and if so it's time to flight test!!!
+
+Wait. There's still a lot to do.
+
+1.) Compile code on arduino
+2.) Flash code to arduino
+2.) Log 1 hour of data on arduino to get sensor noise
+3.) Fly drone manually up to altitude and log data
+4.) Plot and post process data - get sensor noise readings
+5.) Run code in SIMONLY mode with realistic sensor noise and see if you can get altitude hold to work.
+6.) Edit telemetry to read altitude data from another drone.
+7.) Flight test again and have a ground station send it altitude commands
+^^If #7 works Zach will just need to recreate what I've done 3 times and test each one
+
 ===================3/26/2023==============
 
 All sensors are now logging. Telemetry works. Time to move to 

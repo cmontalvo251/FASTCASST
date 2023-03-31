@@ -20,16 +20,17 @@
 #if ARDUINO >= 100
  #include "Arduino.h"
 #else
+#ifdef ARDUINO
  #include "WProgram.h"
+#endif
 #endif
 
 #ifdef ARDUINO
 #include "PTHSensor.h"
+#include <Wire.h>
 #else
 #include <PTH/PTHSensor.h>
 #endif
-
-#include <Wire.h>
 
 /*=========================================================================
     I2C ADDRESS/BITS

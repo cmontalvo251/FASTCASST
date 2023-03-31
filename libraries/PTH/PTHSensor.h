@@ -4,8 +4,8 @@
 class PTHSensor {
  public:
   ///Virtual Functions
-  virtual bool initialize();
-  virtual bool update(double);
+  virtual bool initialize() = 0;
+  virtual bool update(double) = 0;
   
   //Read Functions
   double read_temperature() {return _temperature;};

@@ -10,13 +10,15 @@
 #include "Adafruit_MPL115A2.h"
 #include "BME280.h"
 #else
-#include <MS5611/MS5611.h>
 #include <Timer/timer.h>
 #include <Mathp/mathp.h>
 #include <Datalogger/Datalogger.h>
 #include <PTH/PTHSensor.h>
-#include <Adafruit_MPL115A2-master/Adafruit_MPL115A2.h>
-#include <Adafruit_BME280_Library/BME280.h>
+//Right now these sensors only work on Arduino
+//#include <Adafruit_MPL115A2-master/Adafruit_MPL115A2.h>
+//#include <Adafruit_BME280_Library/BME280.h>
+//This is the only one that works in AUTO mode on RPI
+#include <MS5611/MS5611.h>
 #endif
 
 class PTH {

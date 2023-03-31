@@ -1,0 +1,6 @@
+echo 'compile main.cpp'
+g++ -c main.cpp
+echo 'compile timer.cpp'
+g++ -c ../../libraries/Timer/timer.cpp
+echo 'compile script'
+g++ main.o ../../libraries/Timer/timer.o

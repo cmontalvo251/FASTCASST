@@ -20,27 +20,36 @@ THREAD=-lpthread -lboost_system -lboost_thread -lboost_date_time
 MODELPATH=vehicles/$(MODEL)/src
 INCLUDE=-Ilibraries/ -I${MODELPATH} -I./
 ###HELPER
-HELPERSOURCES=libraries/Datalogger/Datalogger.cpp libraries/MATLAB/MATLAB.cpp libraries/Mathp/mathp.cpp libraries/Timer/timer.cpp libraries/guidance/guidance.cpp
-###HARDWARE
-IMUSOURCES=$(wildcard libraries/IMU/*.cpp)
-MPUSOURCES=$(wildcard libraries/MPU9250/*.cpp)
-LSMSOURCES=$(wildcard libraries/LSM9DS1/*.cpp)
+HELPERSOURCES=libraries/Datalogger/Datalogger.cpp libraries/MATLAB/MATLAB.cpp libraries/Mathp/mathp.cpp libraries/Timer/timer.cpp
+###ALGORITHMS OR SENSOR HELPERS
 AHRSSOURCES=$(wildcard libraries/AHRS/*.cpp)
-GPSSOURCES=$(wildcard libraries/GPS/*.cpp)
 UBLOXSOURCES=$(wildcard libraries/Ublox/*.cpp)
-PTHSOURCES=$(wildcard libraries/PTH/*.cpp)
-MS5611SOURCES=$(wildcard libraries/MS5611/*.cpp)
+UTILSOURCES=$(wildcard libraries/Util/*.cpp)
+ALGSOURCES=$(AHRSSOURCES) $(UBLOXSOURCES) $(UTILSOURCES)
+
+##RCSOURCES
 RCIOSOURCES=$(wildcard libraries/RCIO/*.cpp)
 RCINPUTSOURCES=$(wildcard libraries/RCInput/*.cpp)
 RCOUTPUTSOURCES=$(wildcard libraries/RCOutput/*.cpp)
 PWMSOURCES=$(wildcard libraries/PWMSIGNALS/*.cpp)
+RCSOURCES=$(RCIOSOURCES) $(RCINPUTSOURCES) $(RCOUTPUTSOURCES) $(PWMSOURCES)
+
+##COMMS
 COMMSSOURCES=$(wildcard libraries/Comms/*.cpp)
-ADCSOURCES=$(wildcard libraries/ADC/*.cpp)
-UTILSOURCES=$(wildcard libraries/Util/*.cpp)
-I2CSOURCES=$(wildcard libraries/I2Cdev/*.cpp)
 SERIALSOURCES=$(wildcard libraries/SerialComms/*.cpp)
+I2CSOURCES=$(wildcard libraries/I2Cdev/*.cpp)
+COMMSOURCES=$(COMMSSOURCES) $(SERIALSOURCES) $(I2CSOURCES)
+
+###SENSORS
+IMUSOURCES=$(wildcard libraries/IMU/*.cpp)
+MPUSOURCES=$(wildcard libraries/MPU9250/*.cpp)
+LSMSOURCES=$(wildcard libraries/LSM9DS1/*.cpp)
+GPSSOURCES=$(wildcard libraries/GPS/*.cpp)
+PTHSOURCES=$(wildcard libraries/PTH/*.cpp)
+MS5611SOURCES=$(wildcard libraries/MS5611/*.cpp)
+ADCSOURCES=$(wildcard libraries/ADC/*.cpp)
 HWSOURCES=libraries/sensors/sensors.cpp libraries/hardware/hardware.cpp
-HARDWARESOURCES=$(MPUSOURCES) $(LSMSOURCES) $(AHRSSOURCES) $(I2CSOURCES) $(SERIALSOURCES) $(RCINPUTSOURCES) $(RCOUTPUTSOURCES) $(PWMSOURCES) $(IMUSOURCES) $(GPSSOURCES) $(PTHSOURCES) $(RCIOSOURCES) $(COMMSSOURCES) $(ADCSOURCES) $(HWSOURCES) $(UTILSOURCES) $(UBLOXSOURCES) $(MS5611SOURCES)
+HARDWARESOURCES=$(MPUSOURCES) $(LSMSOURCES) $(IMUSOURCES) $(GPSSOURCES) $(PTHSOURCES) $(ADCSOURCES) $(HWSOURCES) $(MS5611SOURCES)
 ##MODELING
 ENVSOURCES=$(wildcard libraries/Environment/*.cpp)
 GEOSOURCES=$(wildcard libraries/GeographicLib/*.cpp)
@@ -51,7 +60,7 @@ MODELINGSOURCES=$(ENVSOURCES) $(GEOSOURCES) $(RK4SOURCES) $(ROTSOURCES) librarie
 MODELSOURCES=$(wildcard vehicles/$(MODEL)/src/*.cpp)
 
 ###COMBINE ALL SOURCES
-SOURCES=$(HELPERSOURCES) $(HARDWARESOURCES) $(MODELSOURCES) $(OPENGLSOURCES) $(MODELINGSOURCES)
+SOURCES=$(ALGSOURCES) $(RCSOURCES) $(COMMSOURCES) $(HELPERSOURCES) $(HARDWARESOURCES) $(MODELSOURCES) $(OPENGLSOURCES) $(MODELINGSOURCES)
 OBJECTS=$(SOURCES:.cpp=.o)
 
 ##Logger SIL is on DESKTOP and basically takes and logs fictitious data

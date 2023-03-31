@@ -199,9 +199,10 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //Wait for the opengl routine to actually start
   while (glhandle_g.ready == 0) {
     cross_sleep(1);
+    printf("Waiting for glhandle to be ready....");
   }
   #endif
-
+  printf("Modeling Routine initialized \n");
 }
 
 ///render loop if OPENGL is on
@@ -210,6 +211,7 @@ void renderloop(char* root_folder_name,int argc,char** argv) {
   int Farplane = 10000;
   int width = 600;
   int height = 600;
+  printf("OPENGL Loop \n");
   glhandle_g.loop(argc,argv,root_folder_name,Farplane,width,height);
 }
 #endif

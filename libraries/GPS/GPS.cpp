@@ -20,7 +20,7 @@ void GPS::init() {
   #ifdef ARDUINO
   AdaGPS = new Adafruit_GPS(&Serial1);
   AdaGPS->begin(9600);
-  Serial1.begin(9600);
+  Serial1.begin(9600); //Do I need this?? This should already happen in AdaGPS->begin()
   AdaGPS->sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
   AdaGPS->sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
   #else

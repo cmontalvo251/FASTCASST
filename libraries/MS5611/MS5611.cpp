@@ -209,11 +209,11 @@ bool MS5611::update(double currentTime) {
  */
 void MS5611::first_run() {
     refreshPressure();
-    cross_sleep(10000); // Waiting for pressure data ready
+    cross_sleep(10000,6); // Waiting for pressure data ready
     readPressure();
 
     refreshTemperature();
-    cross_sleep(10000); // Waiting for temperature data ready
+    cross_sleep(10000,6); // Waiting for temperature data ready
     readTemperature();
 
     calculatePressureAndTemperature();

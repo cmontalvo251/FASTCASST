@@ -19,9 +19,16 @@ void IMU::init(int sensor_type_in){
   }
   if (sensor_type == 2) {
     printstdout("Selected: BNO055\n");
+    #ifdef ARDUINO
     imu_sensor = new BNO055();
+    #else
+    printf("BNO055 Currently only supported on Arduino. You need to select a different IMUTYPE\n");
+    exit(1);
+    #endif
     TEMP_SCALE = 1.0;
   }
+
+  printstdout("Probing Sensor....\n");
 
   if (!imu_sensor->probe()) {
     printf("Sensor not enabled. Exiting prematurely \n");
@@ -43,7 +50,7 @@ void IMU::init(int sensor_type_in){
       offset[0] += gx;
       offset[1] += gy;
       offset[2] += gz;
-      cross_sleep(10000);
+      cross_sleep(10000,6);
       //printf("Counter = %d \n",i);
     }
   offset[0]/=N;

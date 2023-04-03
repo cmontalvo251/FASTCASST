@@ -54,7 +54,8 @@ void MPU9250::ReadRegs(uint8_t ReadAddr, uint8_t *ReadBuf, unsigned int Bytes)
     for(i=0; i<Bytes; i++)
         ReadBuf[i] = rx[i + 1];
 
-    cross_sleep(50);
+    //This code originally said usleep(50);
+    cross_sleep(50,6); //the 6 means -6 and I created an overloaded function for it
 }
 
 /*-----------------------------------------------------------------------------------------------
@@ -67,6 +68,8 @@ bool MPU9250::probe()
 {
     uint8_t responseXG, responseM;
 
+    printf("ReadReg \n");
+
     responseXG = ReadReg(MPUREG_WHOAMI | READ_FLAG);
 
     WriteReg(MPUREG_USER_CTRL, 0x20);  // I2C Master mode
@@ -74,7 +77,13 @@ bool MPU9250::probe()
     WriteReg(MPUREG_I2C_SLV0_ADDR, AK8963_I2C_ADDR | READ_FLAG); //Set the I2C slave addres of AK8963 and set for read.
     WriteReg(MPUREG_I2C_SLV0_REG, AK8963_WIA); //I2C slave 0 register address from where to begin data transfer
     WriteReg(MPUREG_I2C_SLV0_CTRL, 0x81); //Read 1 byte from the magnetometer
-    cross_sleep(10000);
+
+    printf("WriteReg. Sleeping now... \n");
+
+    cross_sleep(10000,6);
+
+    printf("Wake up \n");
+    
     responseM = ReadReg(MPUREG_EXT_SENS_DATA_00);
 
     if (responseXG == 0x71 && responseM == 0x48)
@@ -136,7 +145,7 @@ bool MPU9250::initialize()
 
     for(i=0; i<MPU_InitRegNum; i++) {
         WriteReg(MPU_Init_Data[i][1], MPU_Init_Data[i][0]);
-        cross_sleep(100000);  //I2C must slow down the write speed, otherwise it won't work
+        cross_sleep(100000,6);  //I2C must slow down the write speed, otherwise it won't work
     }
 
     calib_mag();
@@ -280,7 +289,7 @@ void MPU9250::calib_mag()
     WriteReg(MPUREG_I2C_SLV0_CTRL, 0x83); //Read 3 bytes from the magnetometer
 
     //WriteReg(MPUREG_I2C_SLV0_CTRL, 0x81);    //Enable I2C and set bytes
-    cross_sleep(10000);
+    cross_sleep(10000,6);
     //response[0]=WriteReg(MPUREG_EXT_SENS_DATA_01 | READ_FLAG, 0x00);    //Read I2C
     ReadRegs(MPUREG_EXT_SENS_DATA_00, response, 3);
 

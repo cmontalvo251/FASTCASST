@@ -38,13 +38,28 @@ void cross_sleep(double length) {
   //If on Arduino
   delay(length*1000);
   #else
-  //Otherwise you're probably on linux
+  //Otherwise you're probably on linux or unix
   //#ifdef __unix__
   //sleep(length*1000000); 
   //#else
   usleep(length*1000000);
+  //#endif
   #endif //ARDUINO
   #endif //_WIN32
+}
+
+void cross_sleep(double length,int val) {
+  if (val == 6) {
+    //This means you want to run usleep at the actual value
+    //The problem is that usleep only works on linux computers
+    #ifdef ARDUINO
+    cross_sleep(length);
+    #else
+    usleep(length);
+    #endif
+  } else {
+    cross_sleep(length);
+  }
 }
 
 TIMER::TIMER() {

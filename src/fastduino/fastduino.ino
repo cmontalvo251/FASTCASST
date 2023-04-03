@@ -87,9 +87,7 @@ PTH atm;
 IMU orientation;
 
 //The other part we need is the quadcopter autopilot class
-//Right now you need to put in the full path of the controller file which is pretty 
-//ridiculous but I can't find a better way to do it right now.
-#include "controller.h"
+#include "quadcopter_controller.h"
 controller control;
 
 //Create Loop Variables

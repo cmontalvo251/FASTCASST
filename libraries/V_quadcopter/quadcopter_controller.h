@@ -14,7 +14,7 @@
 #include <Datalogger/Datalogger.h>
 #endif
 
-#include "guidance.h"
+#include "quadcopter_guidance.h"
 
 class controller {
 private:

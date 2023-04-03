@@ -11,11 +11,18 @@ functions otherwise the software will completely break.
 
 */
 
+#ifdef ARDUINO
+#include "MATLAB.h"
+#include "mathp.h"
+#include "timer.h"
+#include "RCIO.h"
+#else
 #include <Environment/environment.h>
 #include <MATLAB/MATLAB.h> //This is needed for variable length arrays as inputs
 #include <Mathp/mathp.h> //this is for density at sea-level
 #include <Timer/timer.h> //for pause function
 #include <RCIO/RCIO.h> //for stick min values
+#endif
 
 class forces {
  private:
@@ -35,7 +42,11 @@ class forces {
   //time is in seconds
   //state is a 13x1 using quaternions and using standard aerospace convention
   //statedot is the derivatives of the state vector
+  #ifdef ARDUINO
+  void Forcemoment(double,MATLAB,MATLAB,MATLAB,int);
+  #else
   void ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out,environment env);
+  #endif
   //Constructor
   forces();
 };

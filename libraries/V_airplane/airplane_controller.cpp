@@ -292,11 +292,11 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     double kr = 1.0;
     
     //Apprentice APPRENTICE apprentice
-    double kpa = 5.0;
+    /*double kpa = 5.0;
     double kda = 0.1;
     double kpe = 10.0;
     double kd = 0.5;
-    double kr = 0.1;
+    double kr = 0.1;*/
 
     aileron = kpa*(roll-roll_command) + kda*(roll_rate);
     elevator = kpe*(pitch-pitch_command) + kde*(pitch_rate);

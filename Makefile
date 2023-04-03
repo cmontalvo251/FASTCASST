@@ -17,7 +17,7 @@ FLAGS=-DDEBUG
 LIB=-L/usr/local/lib -L./
 #FAST is using boost for threading #sudo apt-get install libboost-all-dev
 THREAD=-lpthread -lboost_system -lboost_thread -lboost_date_time 
-MODELPATH=vehicles/$(MODEL)/src
+MODELPATH=libraries/V_$(MODEL)/
 INCLUDE=-Ilibraries/ -I${MODELPATH} -I./
 ###HELPER
 HELPERSOURCES=libraries/Datalogger/Datalogger.cpp libraries/MATLAB/MATLAB.cpp libraries/Mathp/mathp.cpp libraries/Timer/timer.cpp
@@ -57,7 +57,7 @@ RK4SOURCES=$(wildcard libraries/RK4/*.cpp)
 ROTSOURCES=$(wildcard libraries/Rotation/*.cpp)
 MODELINGSOURCES=$(ENVSOURCES) $(GEOSOURCES) $(RK4SOURCES) $(ROTSOURCES) libraries/modeling/modeling.cpp
 ###MODEL
-MODELSOURCES=$(wildcard vehicles/$(MODEL)/src/*.cpp)
+MODELSOURCES=$(wildcard libraries/V_$(MODEL)/*.cpp)
 
 ###COMBINE ALL SOURCES
 SOURCES=$(ALGSOURCES) $(RCSOURCES) $(COMMSOURCES) $(HELPERSOURCES) $(HARDWARESOURCES) $(MODELSOURCES) $(OPENGLSOURCES) $(MODELINGSOURCES)
@@ -130,5 +130,3 @@ clean:
 	rm src/*.o
 	echo ' ' > libraries/MATLAB/d.o
 	rm libraries/*/*.o
-	echo ' ' > vehicles/portalcube/src/d.o
-	rm vehicles/*/src/*.o

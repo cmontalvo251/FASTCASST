@@ -21,7 +21,9 @@
 #endif
 
 ///Specific header files for the vehicle being simulated
-#include "forces.h"
+#ifdef airplane
+#include "airplane_forces.h"
+#endif
 
 ///Headers required to simulate the virtual environment
 #include <RK4/RK4.h>

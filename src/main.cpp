@@ -17,7 +17,9 @@ TIMER watch;
 hardware hw;
 
 //Controller is always running
-#include "controller.h"
+#ifdef airplane
+#include "airplane_controller.h"
+#endif
 controller control;
 
 //If you're simulating the vehicle you have to turn on the 
@@ -90,11 +92,11 @@ int main(int argc,char* argv[]) {
   ////The main routine needs to grab the root file name//////
   char root_folder_name[256];
   if (argc > 1) {
-    sprintf(root_folder_name,"%s","vehicles/");
+    sprintf(root_folder_name,"%s","libraries/V_");
     strcat(root_folder_name,argv[1]);
   } else {
     printf("Using Default Root Folder Name\n");
-    sprintf(root_folder_name,"%s","vehicles/portalcube/");
+    sprintf(root_folder_name,"%s","libraries/V_portalcube/");
   }
   //strcat(root_folder_name,"/");
   //printf("Root Folder Name = %s \n",root_folder_name);

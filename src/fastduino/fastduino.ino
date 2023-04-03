@@ -11,7 +11,7 @@
 // --- GPS ON THE ARDUINO NEEDS TO RUN AS FAST AS POSSIBLE #define GPSRATE 1.0      //!GPS Rate (seconds)
 // ---- IMU RUNS AS FAST AS POSSIBLE ON EVERY PLATFORM -99      !IMU Rate (seconds) 
 // ---- ANALOG RATE IS NOT NEEDED IN FASTDUINO 0.1      !Analog Rate (seconds)
-#define PTHTYPE 0        //!PTHTYPE (0=off,1=MS,2=MPL,3=BME)
+#define PTHTYPE 2        //!PTHTYPE (0=off,1=MS,2=MPL,3=BME)
 #define IMUTYPE 3        //!IMUTYPE (0=MPU,1=LSM,3=BNO)
 //0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
 //2 !Control System (3=two-stage,2=FL,1=PID,0=off)
@@ -84,6 +84,9 @@ PTH atm;
 #include "IMU.h"
 IMU orientation;
 
+//The other part we need is the quadcopter autopilot class
+#include "../vehicles/quadcopter/src/controller.h"
+
 //Create Loop Variables
 double lastPRINTtime = 0;
 double lastLOGtime = 0;
@@ -107,7 +110,10 @@ void setup() {
 
   //DEBUGGING
   //Initialize Datalogger
-  logger.init("data/",1+RECV_N_CHANNEL*2+12); //Time plus the receiver signals and the PWM out signal and 3 LLH signals and 3 barometer values (pressure,temp,alt) and 3 Euler angles and 3 rates
+  //Time plus the receiver and PWM out signals
+  //3 LLH signals, 3 barometer values
+  //3 Euler Angles and 3 Euler rates
+  logger.init("data/",1+RECV_N_CHANNEL*2+3+3+6); 
   //Remember the SD card on the arduino needs to have a data/ folder
   //Append the headers
   logger.appendheader("Time (sec)");

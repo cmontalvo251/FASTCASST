@@ -15,6 +15,7 @@
 #include <math.h>
 
 void cross_sleep(double);
+void cross_sleep(double,int);
 void PAUSE();
 void error(char *);
 

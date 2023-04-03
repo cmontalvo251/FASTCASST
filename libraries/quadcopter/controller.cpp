@@ -4,18 +4,24 @@
 #include "controller.h"
 
 controller::controller() {
-};
+}
 
-void controller::init(MATLAB in_configuration_matrix) {
+void controller::init(int CONTROLLERTYPE_IN) {
+  CONTROLLER_FLAG = CONTROLLERTYPE_IN;
   control_matrix.zeros(NUMSIGNALS,1,"Control Signals"); //The standards must be TAERA1A2A3A4
   set_defaults();
   printstdout("Controller Received Configuration Matrix \n");
-  //in_configuration_matrix.disp();
-  CONTROLLER_FLAG = in_configuration_matrix.get(11,1);
   printstdout("Controller Setup \n");
   if (abs(CONTROLLER_FLAG) >= 10) {
     guid.init();
   }
+
+}
+
+void controller::init(MATLAB in_configuration_matrix) {
+  //in_configuration_matrix.disp();
+  int CONTROLLERTYPE_IN = in_configuration_matrix.get(11,1);
+  init(CONTROLLERTYPE_IN);
 }
 
 void controller::set_defaults() {

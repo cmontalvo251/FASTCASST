@@ -1,3 +1,19 @@
+=================4/2/2023===============
+
+Horribly hacked the controller/guidance module for quadcopter
+It compiles. Need to test on hardware.
+See tasks lists for more comments.
+
+2.) Flash code to arduino
+3.) Log 1 hour of data on arduino to get sensor noise
+4.) Fly drone manually up to altitude and log data
+5.) Plot and post process data - get sensor noise readings
+6.) Run code in SIMONLY mode with realistic sensor noise and see if you can get altitude hold to work.
+7.) Edit telemetry to read altitude data from another drone.
+8.) Flight test again and have a ground station send it altitude commands
+^^If #7 works Zach will just need to recreate what I've done 3 times and test each one
+
+
 =================3/28/2023================
 
 Ok so I think I've got the guidance module where I want it.

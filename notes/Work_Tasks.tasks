@@ -8,6 +8,8 @@ Cleaning up FASTCASST ON PI:
 
   ✔ Fix the double to integer numerical precision issue by adding a quantization flag to the Simulation.txt file. I added a terrible hack where the control_matrix and the pwm_array is sent to every routine and a #ifdef cubesat is there to switch between the two. That's terrible. What we need to do is send the double array to all routines and then somewhere in the model we quantize the array if the flag is set @done (23-02-15 10:32)
 
+  ☐ For whatever reason I couldn't get the Arduino IDE to accept the folder structure of the vehicles/ folder. So right now the forces.* is in here since Arduino doesn't need it and there is a quadcopter_controller/ folder that is imported by the Arduino IDE. It's possible you'll need to put all the control systems in the libraries folder and then the config and force models in the vehicles folder. Perhaps you can just put the entire vehicles/ folder in the libraries folder for consistency.
+
   ☐ Create a routine where you compile and run candidate codes to make sure everything operates as intended - Like compile simonly, sil and hil on desktop and make sure that simonly and sil runs properly
 
   ☐ Try running the integrator on the pi and send data to computer for rendering and create a new mode called RENDER
@@ -94,6 +96,8 @@ WOODEN DRONE:
   ✔ INO routine logs GPS data @done (23-03-02 20:46)
 
   ✔ I then would like you to make an INO routine that logs all sensor data IMU, MPL, GPS (I think those are all the sensors). @done (23-03-26 21:15)
+
+  ☐ Hey the FASTDuino code is horribly hacked together. Would be nice to actually streamline the code
 
   ☐ Using this log routine I want you to log like an hour of data to disk and then save it for later processing of noise and bias. This routine needs to be general enough to work on Navio as well. 
 

@@ -14,7 +14,7 @@
 #define PTHTYPE 2        //!PTHTYPE (0=off,1=MS,2=MPL,3=BME)
 #define IMUTYPE 3        //!IMUTYPE (0=MPU,1=LSM,3=BNO)
 //0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
-//2 !Control System (3=two-stage,2=FL,1=PID,0=off)
+#define CONTROLLERTYPE 12 //!Control System (-X=controlled by PIC,0=ACRO,1=Inner,2=yawrate,1X=turns on guidance)
 //2.0  !Mass (kg) // 1U - 2 // 2U - 4 // 6U - 12
 //0.00333  !Ixx (kg-m^2) // 1U - 0.00333 //2U,upright - 0.0167 // 2U,sideways - 0.0067 // 6U - 0.13
 //0.00333  !Iyy (kg-m^2) // 1U - 0.00333 //2U,upright - 0.0167 // 2U,sideways - 0.0167 // 6U - 0.10
@@ -67,6 +67,8 @@ MATLAB telemetry_matrix;
 
 //Hardware has sensors.h
 //#include "sensors.h"
+//For now we will just create a sense matrix
+MATLAB sense_matrix;
 
 //Sensors has a lot of sensors. We're going to need to add them in one at a time
 //Let's start with GPS
@@ -85,7 +87,10 @@ PTH atm;
 IMU orientation;
 
 //The other part we need is the quadcopter autopilot class
-#include "../vehicles/quadcopter/src/controller.h"
+//Right now you need to put in the full path of the controller file which is pretty 
+//ridiculous but I can't find a better way to do it right now.
+#include "controller.h"
+controller control;
 
 //Create Loop Variables
 double lastPRINTtime = 0;
@@ -159,7 +164,68 @@ void setup() {
   satellites.init();
   //Initialize Barometer
   atm.init(PTHTYPE);
-  
+  //Initialize the controller
+  control.init(CONTROLLERTYPE);
+  //Initialize Sense Matrix
+  sense_matrix.zeros(29,1,"Full State From Sensors");
+}
+
+void populate() {
+  //Initialize everything to -99
+  sense_matrix.mult_eq(0);
+  sense_matrix.plus_eq(-99);
+  //sense_matrix_dot.mult_eq(0);
+  //sense_matrix_dot.plus_eq(-99);
+
+  ///XYZ
+  sense_matrix.set(1,1,satellites.X);
+  sense_matrix.set(2,1,satellites.Y);
+  //sense_matrix.set(3,1,(satellites.Z-atm.altitude)/2.0);  //Average GPS and BARO?
+  sense_matrix.set(3,1,-atm.altitude); //Let's use Barometer as altitude sensor
+  //sense_matrix.set(3,1,-atm.altitude);
+
+  //Roll pitch Yaw
+  sense_matrix.set(4,1,orientation.roll);
+  sense_matrix.set(5,1,orientation.pitch);
+
+  ///Yaw Angle IS A COMBINATION OF IMU AND GPS
+  //getCompassHeading();
+  sense_matrix.set(6,1,orientation.yaw);
+
+  //UWV
+  //Assume that the vehicle is traveling straight so V and W are zero
+  sense_matrix.set(7,1,satellites.speed);
+  sense_matrix.set(8,1,0);
+  sense_matrix.set(9,1,0);
+
+  //PQR
+  sense_matrix.set(10,1,orientation.roll_rate);
+  sense_matrix.set(11,1,orientation.pitch_rate);
+  sense_matrix.set(12,1,orientation.yaw_rate);
+
+  //MXYZ
+  sense_matrix.set(13,1,orientation.mx);
+  sense_matrix.set(14,1,orientation.my);
+  sense_matrix.set(15,1,orientation.mz);
+  //sense_matrix.set(15,1,Heading_Mag);
+
+  //GPS
+  sense_matrix.set(16,1,satellites.latitude);
+  sense_matrix.set(17,1,satellites.longitude);
+  sense_matrix.set(18,1,satellites.altitude);
+  sense_matrix.set(19,1,satellites.heading); //THe GPS Heading
+
+  //IMU
+  sense_matrix.set(20,1,orientation.yaw); //IMU Heading
+
+  //Analog
+  //sense_matrix.vecset(21,26,analog.results,1);
+
+  //Barometer
+  sense_matrix.set(27,1,atm.pressure);
+  sense_matrix.set(28,1,atm.altitude);
+  sense_matrix.set(29,1,atm.temperature);
+
 }
 
 void loop() {
@@ -169,15 +235,11 @@ void loop() {
   //rc.read();
 
   //DEBUGGING
+
+  //Read the receiver
   if (lastRCtime <= watch.currentTime) {
     rin.readRCstate();  
-    //Copy rin.rx_array to rout.pwm_array
-    for (int idx = 0;idx<RECV_N_CHANNEL;idx++) {
-      rout.pwm_array[idx] = rin.rx_array[idx];
-    }
   }
-  //Send signals to PWM channels
-  rout.write();
   
   //Poll GPS
   satellites.poll(watch.currentTime);
@@ -189,6 +251,20 @@ void loop() {
 
   //Poll IMU
   orientation.loop(watch.elapsedTime);
+
+  //Populate Sense Matrix
+  populate();
+
+  //Run the Controller.
+  control.loop(watch.currentTime,rin.rx_array,sense_matrix);
+
+  //I then need to populate the pwm_array with the control signals as quickly as possible
+  for (int i = 0;i<rout.NUMSIGNALS;i++) {
+    rout.pwm_array[i] = int(control.control_matrix.get(i+1,1));
+  }
+  
+  //Send signals to PWM channels
+  rout.write();
   
   //Print Everything
   if (lastPRINTtime <= watch.currentTime) {

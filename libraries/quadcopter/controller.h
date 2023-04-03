@@ -4,10 +4,17 @@
 //This is another class that is craft dependent as as such
 //must adhere to specific standards
 
+#ifdef ARDUINO
+#include "MATLAB.h"
+#include "RCIO.h"
+#include "Datalogger.h"
+#else
 #include <MATLAB/MATLAB.h>
 #include <RCIO/RCIO.h> //this is for STICK values
-#include "guidance.h"
 #include <Datalogger/Datalogger.h>
+#endif
+
+#include "guidance.h"
 
 class controller {
 private:
@@ -27,6 +34,7 @@ public:
   MATLAB control_matrix; //This is a vector of TAERA1A2 in PWM signals
   void loop(double currentTime,int rx_array[],MATLAB sense_matrix);
   void init(MATLAB in_configuration_matrix);
+  void init(int);
   void print();
   controller(); //constructor
 };

@@ -8,7 +8,7 @@ functions otherwise the software will completely break.
 
 */
 
-#include "forces.h"
+#include "airplane_forces.h"
 
 //Constructor
 forces::forces() {

@@ -1,7 +1,7 @@
 //This is a portal cube template. You must adhere to these standards if you write your
 //own
 
-#include "controller.h"
+#include "airplane_controller.h"
 
 controller::controller() {
 };
@@ -44,6 +44,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //First extract the relavent commands from the receiver.
   throttle = rx_array[0];
   aileron = rx_array[1];
+  //printf("Ail RX Ch = %lf ",aileron);
   elevator = rx_array[2];
   rudder = rx_array[3];
   autopilot = rx_array[4];
@@ -53,6 +54,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   if (CONTROLLER_FLAG < 0) {
     if (autopilot > STICK_MID) {
       icontrol = -CONTROLLER_FLAG;
+      //printf("ICONTROL = %d \n",icontrol);
     } else {
       icontrol = 0;
     }
@@ -139,9 +141,20 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       }
       if (pitch_command == -99) {
         pitch_command = -(elevator-STICK_MID)*30.0/((STICK_MAX-STICK_MIN)/2.0);
+	//printf("Theta and Theta Command: %lf, %lf \n",elevator,pitch_command);
       }
       InnerLoop(sense_matrix);
     case 0:
+      //printf(" Ail RX Out = %lf ",aileron);
+      //printf(" Phi_c from RX Ch = %lf ",roll_command);
+      //double kpa = 2.5;
+      //double kda = 0.05;
+      //double roll_rate = sense_matrix.get(10,1);
+      //double roll = sense_matrix.get(4,1);
+      //double roll_command_out = roll - (-(aileron - OUTMID) - kda*roll_rate)/kpa;
+      //printf(" Phi_c from RX Out = %lf \n",roll_command_out);
+      //printf("time = %lf phi,p = %lf %lf aileron = %lf \n",currentTime,roll,roll_rate,aileron);
+      
       //printf("Passing signals \n");
       //Pass the receiver signals to the control_matrix and then break
       control_matrix.set(1,1,throttle);
@@ -176,9 +189,17 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
 }
 
 void controller::HeadingLoop(MATLAB sense_matrix) {
+  //Airplane AIRPLANE airplane
   double kp = 0.4;
   double kd = 0.25;
   double ki = 0.001;
+
+  //Apprentice APPRENTICE apprentice
+  /*double kp = 0.4;
+  double kd = 0.25;
+  double ki = 0.0;*/
+
+  
   double heading = sense_matrix.get(6,1);
   double yaw_rate = sense_matrix.get(12,1);
   //I think the wrap issue is here
@@ -249,15 +270,38 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     double roll_rate = sense_matrix.get(10,1); //For SIL/SIMONLY see Sensors.cpp
     double pitch_rate = sense_matrix.get(11,1); //These are already in deg/s
     //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
+
+    //ORIGINAL GAINS 
+    //kpa = 10.0;
+    //kda = 2.0;
+    //kpe = 25.0;
+    //kde = 1.0;
+    //kr = 1.0;
+    //SIMONLY GAINS
+    //kpa = 5.0
+    //kda = 0.1
+    //kpe = 10.0
+    //kde = 0.5
+    //kr = 0.1
+
+    //AIRPLANE Airplane airplane
     double kpa = 10.0;
     double kda = 2.0;
-    aileron = kpa*(roll-roll_command) + kda*(roll_rate);
     double kpe = 25.0;
     double kde = 1.0;
+    double kr = 1.0;
+    
+    //Apprentice APPRENTICE apprentice
+    double kpa = 5.0;
+    double kda = 0.1;
+    double kpe = 10.0;
+    double kd = 0.5;
+    double kr = 0.1;
+
+    aileron = kpa*(roll-roll_command) + kda*(roll_rate);
     elevator = kpe*(pitch-pitch_command) + kde*(pitch_rate);
 
     //Rudder signal will be proportional to aileron
-    double kr = 1.0;
     rudder = kr*aileron;
 
     //CONSTRAIN

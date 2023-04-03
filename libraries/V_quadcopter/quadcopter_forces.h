@@ -16,6 +16,10 @@ functions otherwise the software will completely break.
 #include "mathp.h"
 #include "timer.h"
 #include "RCIO.h"
+class environment {
+private:
+public:
+};
 #else
 #include <Environment/environment.h>
 #include <MATLAB/MATLAB.h> //This is needed for variable length arrays as inputs
@@ -42,11 +46,7 @@ class forces {
   //time is in seconds
   //state is a 13x1 using quaternions and using standard aerospace convention
   //statedot is the derivatives of the state vector
-  #ifdef ARDUINO
-  void Forcemoment(double,MATLAB,MATLAB,MATLAB,int);
-  #else
   void ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out,environment env);
-  #endif
   //Constructor
   forces();
 };

@@ -11,7 +11,7 @@ See tasks lists for more comments.
 6.) Run code in SIMONLY mode with realistic sensor noise and see if you can get altitude hold to work.
 7.) Edit telemetry to read altitude data from another drone.
 8.) Flight test again and have a ground station send it altitude commands
-^^If #7 works Zach will just need to recreate what I've done 3 times and test each one
+^^If #8 works Zach will just need to recreate what I've done 3 times and test each one
 
 =================3/28/2023================
 

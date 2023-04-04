@@ -1,40 +1,58 @@
-Cleaning up FASTCASST ON PI:
+WOODEN DRONE:
 
-  ✔ Create a scheduler for all sensors. @done (22-05-17 20:21)
-
-  ✔ Increase baudrate for HIL to 115200 @done (22-12-03 07:55)
-
-  ✔ Change the name to FASTCASST - Configurable Autopilot and Simulation Software Tool @done (23-01-30 16:13)
-
-  ✔ Fix the double to integer numerical precision issue by adding a quantization flag to the Simulation.txt file. I added a terrible hack where the control_matrix and the pwm_array is sent to every routine and a #ifdef cubesat is there to switch between the two. That's terrible. What we need to do is send the double array to all routines and then somewhere in the model we quantize the array if the flag is set @done (23-02-15 10:32)
+  ✔ From here I'd like to start editing the sensor routines to include Arduino hooks. The sensor.h file should work at the moment on both desktop and Rpi so it's time to get it to work on Arduino hooks. Edit the Sensor routine to use the newly formed folders. Think a bit more on how you want to have this sensor block. I'm assuming you'll just be importing all the sensors? Pitot, IMU, GPS, etc??? What if those sensors are not connected? Is there a way for the controller to ignore erroneous data? Or maybe just turn them on and off in the controller? @done (22-05-18 06:55)
 
   ✔ For whatever reason I couldn't get the Arduino IDE to accept the folder structure of the vehicles/ folder. So right now the forces.* is in here since Arduino doesn't need it and there is a quadcopter_controller/ folder that is imported by the Arduino IDE. It's possible you'll need to put all the control systems in the libraries folder and then the config and force models in the vehicles folder. Perhaps you can just put the entire vehicles/ folder in the libraries folder for consistency. @done (23-04-03 10:11)
 
-  ☐ Create a routine where you compile and run candidate codes to make sure everything operates as intended - Like compile simonly, sil and hil on desktop and make sure that simonly and sil runs properly
+  ✔ Make all of the sensor specific items happen inside the sensor class. @done (23-03-02 20:46)
+
+  ✔ In order for this to work, the datlogger routine is going to need to get updated to work for an SD breakout board. @done (23-03-02 20:46)
+
+  ✔ INO routine logs IMU data @done (23-03-26 21:15)
+
+  ✔ INO routine logs MPL (Baro) data @done (23-03-09 12:05)
+
+  ✔ INO routine logs GPS data @done (23-03-02 20:46)
+
+  ✔ I then would like you to make an INO routine that logs all sensor data IMU, MPL, GPS (I think those are all the sensors). @done (23-03-26 21:15)
+
+  ☐ Using this log routine I want you to log like an hour of data to disk and then save it for later processing of noise and bias. This routine needs to be general enough to work on Navio as well. 
+
+  ✔ Datalogger routine will need to be augmented to hangle RPi, DESKTOP and ARDUINO @done (23-03-02 20:46)
+
+  ☐ Start analyzing the data you obtained in from the hour of logging. See if you can get bias, std dev, noise, etc and then add that to the Sensors routine when you're using DESKTOP and POLLUTED sensor mode.
+
+ ✔ Once the Arduino hooks are in I would like one more Arduino Routine that reads the RCInput and then feeds them (pass through) to RCOutput. This will require you to use the RCInput and RCOutput routines which hopefully got combined between Navio and Arduino at which point you'll also need hooks in there for the JOYSTICK as well. Again these need to be general enough that just changing the Makefile will compile the routine onto different architectures @done (23-03-02 20:47)
+
+ ✔ Using this routine log back in to betaflight and make sure you have everything set up properly for the on board Flight controller. Again remember that the autopilot (non-PID) is the only thing that's going to go on Gitlab so for now you can make a pass through just like above and make sure the receiver is sending appropriate signals to the servos @done (23-03-09 12:06)
+
+ ✔ You should also be able to fly the drone at this point. So it would be good to go ahead and fly the drone @done (23-03-09 12:06)
+
+ ☐ Plot data from this flight test
+
+ ☐ Add telemetry when in AUTO mode on Arduino. Use Serial class and add Arduino Hooks. Note that Telemetry will default to sending different signals when in HIL mode
+ 
+ ☐ Using a scale and the pass through Arduino routine get the thrust of the motor as a function of microsend pulse and add that to the aerodynamics routine for the quadcopter. While you're doing this experiment figure out how long it takes to go from full throttle on your control stick to full throttle on the drone. That is the amount of delay we need to introduce into our actuators.
+
+ ☐ Wooden Drone waypoint flights - Can focus on outerloop control laws (Make sure to update blog for this one)
+    ☐ Attempt to code altitude hold for drone using deltaP and Az
+    ☐ Station keeping
+    ☐ Point to a desired heading
+    ☐ Waypoint controller
+
+Finishing HIL:
 
   ☐ Try running the integrator on the pi and send data to computer for rendering and create a new mode called RENDER
-
-  ✔ Call Panini at AREAI @done (22-12-02 10:07)
 
   ☐ Dan said it's possible the RK4 vector and control vector are asynchronous and causing issues. Might need to investigate the RK4 state and the control state and see if I'm dealing with that properly. To do that print time,state,control on both desktop and pi and see if you're off. Maxwell had a good idea to lower the timestep to see if that fixes it.
 
   ☐ Run SIL on Pi with Desktop mode - As in run FASTKit on Raspbian and do away with Emlid
 
-  ☐ Thread the IMU and GPS
+  ✔ Call Panini at AREAI @done (22-12-02 10:07)
 
-  ☐ Investigate the Barometer delay and see if we can make it better
-
-  ☐ See why Ground station lags by two seconds. Possible source is updating the window (Turn some off and see what happens, actually the better option is to just thread the serial and update the GUI on a different thread using a queue)
-
-  ☐ We can try systemd which is apparently what Arducopter uses
-
-  ☐ Another option is we write our own embedded software for the Pi
-
-  ☐ Have GPS origin point for simulation set inside Simulation.txt
-
-  ☐ Furtheremore, there are a ton of variables hardcoded for Telemetry. Either those variable need to be added into Config.txt or a new file must be added like Serial.txt or something. My vote is for Config.txt but we have to be careful because the mass matrix is in there. At the same time does it really matter?
-  
   ✔ We can also upgrade from the Pi3 to the Pi4 with lots of RAM @done (22-12-02 09:49)
+
+  ✔ Create a scheduler for all sensors. @done (22-05-17 20:21)
 
 COMPLEX AUTOPILOT LOOP:
     
@@ -78,50 +96,6 @@ META:
   ☐ Disconnecting and reconnecting - this would be insane.
 
   ☐ Two Way communication to update waypoints on the fly - Note that sending data from the Rpi to Desktop is working but Desktop to Rpi is broken if you use an Rpi3. This broke sometime between FASTPilot and FASTKit so circa 2019 to 2022. 
-
-WOODEN DRONE:
-
-  ✔ From here I'd like to start editing the sensor routines to include Arduino hooks. The sensor.h file should work at the moment on both desktop and Rpi so it's time to get it to work on Arduino hooks. Edit the Sensor routine to use the newly formed folders. Think a bit more on how you want to have this sensor block. I'm assuming you'll just be importing all the sensors? Pitot, IMU, GPS, etc??? What if those sensors are not connected? Is there a way for the controller to ignore erroneous data? Or maybe just turn them on and off in the controller? @done (22-05-18 06:55)
-
-  ✔ I'd like there to be a SIMONLY version of this as well where the computer just fakes the sensors. Might need to call this DESKTOP since that's what all the hooks are. @done (23-03-02 20:45)
-
-  ✔ Make all of the sensor specific items happen inside the sensor class. @done (23-03-02 20:46)
-
-  ✔ In order for this to work, the datlogger routine is going to need to get updated to work for an SD breakout board. @done (23-03-02 20:46)
-
-  ✔ INO routine logs IMU data @done (23-03-26 21:15)
-
-  ✔ INO routine logs MPL (Baro) data @done (23-03-09 12:05)
-
-  ✔ INO routine logs GPS data @done (23-03-02 20:46)
-
-  ✔ I then would like you to make an INO routine that logs all sensor data IMU, MPL, GPS (I think those are all the sensors). @done (23-03-26 21:15)
-
-  ☐ Hey the FASTDuino code is horribly hacked together. Would be nice to actually streamline the code
-
-  ☐ Using this log routine I want you to log like an hour of data to disk and then save it for later processing of noise and bias. This routine needs to be general enough to work on Navio as well. 
-
-  ✔ Datalogger routine will need to be augmented to hangle RPi, DESKTOP and ARDUINO @done (23-03-02 20:46)
-
-  ☐ Start analyzing the data you obtained in from the hour of logging. See if you can get bias, std dev, noise, etc and then add that to the Sensors routine when you're using DESKTOP and POLLUTED sensor mode.
-
- ✔ Once the Arduino hooks are in I would like one more Arduino Routine that reads the RCInput and then feeds them (pass through) to RCOutput. This will require you to use the RCInput and RCOutput routines which hopefully got combined between Navio and Arduino at which point you'll also need hooks in there for the JOYSTICK as well. Again these need to be general enough that just changing the Makefile will compile the routine onto different architectures @done (23-03-02 20:47)
-
- ✔ Using this routine log back in to betaflight and make sure you have everything set up properly for the on board Flight controller. Again remember that the autopilot (non-PID) is the only thing that's going to go on Gitlab so for now you can make a pass through just like above and make sure the receiver is sending appropriate signals to the servos @done (23-03-09 12:06)
-
- ✔ You should also be able to fly the drone at this point. So it would be good to go ahead and fly the drone @done (23-03-09 12:06)
-
- ☐ Plot data from this flight test
-
- ☐ Add telemetry when in AUTO mode on Arduino. Use Serial class and add Arduino Hooks. Note that Telemetry will default to sending different signals when in HIL mode
- 
- ☐ Using a scale and the pass through Arduino routine get the thrust of the motor as a function of microsend pulse and add that to the aerodynamics routine for the quadcopter. While you're doing this experiment figure out how long it takes to go from full throttle on your control stick to full throttle on the drone. That is the amount of delay we need to introduce into our actuators.
-
- ☐ Wooden Drone waypoint flights - Can focus on outerloop control laws (Make sure to update blog for this one)
-    ☐ Attempt to code altitude hold for drone using deltaP and Az
-    ☐ Station keeping
-    ☐ Point to a desired heading
-    ☐ Waypoint controller
 
 BDE DJI Flights:
 
@@ -249,6 +223,32 @@ SATELLITE:
   
   ☐ Run the MultiSAT++ HIL sim with an Arduino and make sure that FASTKit has the same functionality so you don't have to use MultiSAT++ anymore for CubeSat stuff
 
+EXTRA STUFF:
+  
+  ✔ Change the name to FASTCASST - Configurable Autopilot and Simulation Software Tool @done (23-01-30 16:13)
+
+  ✔ Fix the double to integer numerical precision issue by adding a quantization flag to the Simulation.txt file. I added a terrible hack where the control_matrix and the pwm_array is sent to every routine and a #ifdef cubesat is there to switch between the two. That's terrible. What we need to do is send the double array to all routines and then somewhere in the model we quantize the array if the flag is set @done (23-02-15 10:32)
+
+  ☐ Hey the FASTDuino code is horribly hacked together. Would be nice to actually streamline the code. That is use the sensors and hardware class and rcio class so that the ino is a bit more high level. 
+
+  ☐ Create a routine where you compile and run candidate codes to make sure everything operates as intended - Like compile simonly, sil and hil on desktop and make sure that simonly and sil runs properly
+
+  ☐ Thread the IMU and GPS
+
+  ☐ Investigate the Barometer delay and see if we can make it better
+
+  ☐ See why Ground station lags by two seconds. Possible source is updating the window (Turn some off and see what happens, actually the better option is to just thread the serial and update the GUI on a different thread using a queue)
+
+  ☐ We can try systemd which is apparently what Arducopter uses
+
+  ☐ Another option is we write our own embedded software for the Pi
+
+  ☐ Have GPS origin point for simulation set inside Simulation.txt
+
+  ☐ Furtheremore, there are a ton of variables hardcoded for Telemetry. Either those variable need to be added into Config.txt or a new file must be added like Serial.txt or something. My vote is for Config.txt but we have to be careful because the mass matrix is in there. At the same time does it really matter?
+
+  ☐ I'd like there to be a SIMONLY version of Arduino where the Arduino just fakes the sensors. This way I can debug runtime errors without actually having the hardware.
+
 RENDERING:
 
   ✔ Create CAD for all vehicles you are using @done (21-11-06 11:30)
@@ -258,6 +258,8 @@ RENDERING:
     ✔ X8 @done (21-11-06 11:30)
 
   ☐ How do you feel about updating OpenGL rendering environment to Unreal engine or something like Godot or even Unity???
+
+COMPLETED===================================================================================================================:
 
 FASTPILOT:
 
@@ -305,20 +307,7 @@ HIL:
   ✔ Run Tank in HIL w/ telemetry @done (22-11-11 10:09)
   ✔ Merge HIL branch @done (22-11-11 10:42)
 
-REACH:
-
-Getting the reach to work on custom software would be nice. William did a bunch of work to get it to work on the quad but we've never put it on our own software.
-
-MAVLINK:
-
-Hi Carlos,
-
-Thanks for the email.  I’ve created a git repo (https://github.com/AndersonRayner/arduino_mavlink ) that has some examples of how I’ve been including mavlink in my projects.  It’s all designed to be used in Arduino (as I’m typically coding micro-controllers) but the way the code works will be the same for you guys (as essentially it is all C/C++ in the end).
-Basically, you just need to include the headers (available from https://github.com/mavlink/c_library_v2, included as a submodule in my stuff) then use the included functions to pack/unpack the messages.  You can then connect to the Serial stream using Mission Planner (my preferred GCS, Windows only, https://ardupilot.org/planner/) or qgroundcontrol (cross-platform, http://qgroundcontrol.com/) and use that as your ground control station interface.
-You can also use mavlink to send and receive parameters (such as controller gains etc.) which I used on a previous project with great success.  The code for that is also in the git repo under mavlink/src/mavlink_parameters.cpp and mavlink/src/parameters.h.  Mission Planner and QGC both have interfaces for modifying these in real-time.
-Most of this work was guided by this blog post (https://discuss.ardupilot.org/t/mavlink-and-arduino-step-by-step/25566) so I suggest at least a quick read of that will help the students out in understanding how everything fits together.  The parameter stuff was an internal development which I hope to get written up properly one day and into a blog post to more-widely share the technique.
-Hopefully that all helps and let me know if you have any other questions.  Good luck!
-matt
+  ✔ Increase baudrate for HIL to 115200 @done (22-12-03 07:55)
 
 GROUND STATION:
 
@@ -336,7 +325,7 @@ AVIATION:
  ✔ Run SIL airplane models @done (22-04-24 20:43)
  ✔ Plot all data and email to team @done (22-04-24 20:43)
 
- ANTX(DID NOT COMPLETE THESE TASKS):
+ANTX(DID NOT COMPLETE THESE TASKS):
 
  ✔ Make sure that the Batwing is working properly in Demo mode using SIMPILOT @done (22-04-24 20:43)
  
@@ -478,8 +467,8 @@ SIMPILOT:
 
  ✔ Do the same for FASTsim SIMONLY, SIL #@done (21-10-01 12:39)
 
- FASTSim Extra Sensors:
+FASTSim Extra Sensors:
 
  ✔ Add barometer @done (21-12-17 16:21)
  ✔ Add ADC @done (21-12-17 16:21)
- ✔ Fix Datalogger to output a headers when you start (like one row) @done (21-12-17 19:00)
+ ✔ Fix Datalogger to output a headers when you start (like one row @done (21-12-17 19:00)

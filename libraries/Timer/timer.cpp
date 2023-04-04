@@ -53,7 +53,7 @@ void cross_sleep(double length,int val) {
     //This means you want to run usleep at the actual value
     //The problem is that usleep only works on linux computers
     #ifdef ARDUINO
-    cross_sleep(length);
+    cross_sleep((length*10e-6)/1000.0);
     #else
     usleep(length);
     #endif

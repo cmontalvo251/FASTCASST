@@ -12,7 +12,7 @@
 // ---- IMU RUNS AS FAST AS POSSIBLE ON EVERY PLATFORM -99      !IMU Rate (seconds) 
 // ---- ANALOG RATE IS NOT NEEDED IN FASTDUINO 0.1      !Analog Rate (seconds)
 #define PTHTYPE 2        //!PTHTYPE (0=off,1=MS,2=MPL,3=BME)
-#define IMUTYPE 3        //!IMUTYPE (0=MPU,1=LSM,3=BNO)
+#define IMUTYPE 2        //!IMUTYPE (0=MPU,1=LSM,2=BNO)
 //0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
 #define CONTROLLERTYPE 12 //!Control System (-X=controlled by PIC,0=ACRO,1=Inner,2=yawrate,1X=turns on guidance)
 //2.0  !Mass (kg) // 1U - 2 // 2U - 4 // 6U - 12
@@ -27,7 +27,7 @@ int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent.
 ///DEBUG FLAGS
 #define USETIMER
 #define USEGPS
-//#define USEIMU
+#define USEIMU
 #define TELEMETRY
 #define RCSIGNALS
 //#define LOGDATA
@@ -99,13 +99,14 @@ GPS satellites;
 //Now let's get the barometer working
 //#include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
 //BaroTemp atm;
-//Switched to new PTH class
+//Switched to new PTH class - also compiles runs and gets a valid reading 4/4/2023
 #ifdef USEPTH
 #include "PTH.h"
 PTH atm;
 #endif
 
-//And finally it's time for the IMU -- Compiles 3/20/2023 - Does it work?
+//And finally it's time for the IMU -- Compiles 3/20/2023 - Does it work? - It does now. Whew that was hard 4/4/2023
+//Note that I haven't checked the orientation so you might get the wrong angles
 #ifdef USEIMU
 #include "IMU.h"
 IMU orientation;
@@ -267,7 +268,7 @@ void populate() {
   //Analog
   //sense_matrix.vecset(21,26,analog.results,1);
 
-  //Barometer
+  //Barometera
   sense_matrix.set(27,1,atm.pressure);
   sense_matrix.set(28,1,atm.altitude);
   sense_matrix.set(29,1,atm.temperature);
@@ -298,7 +299,7 @@ void loop() {
 
   #ifdef USEPTH
   //Poll Barometer
-  if (IMUTYPE) {
+  if (PTHTYPE) {
     atm.poll(watch.currentTime);
   }
   #endif
@@ -419,5 +420,5 @@ void loop() {
     logger.writenewline();
   }
   #endif
-  //cross_sleep(0.1);
+  //cross_sleep(0.5);
 }

@@ -22,23 +22,27 @@ void IMU::init(int sensor_type_in){
     #ifdef ARDUINO
     imu_sensor = new BNO055();
     #else
-    printf("BNO055 Currently only supported on Arduino. You need to select a different IMUTYPE\n");
+    printstdout("BNO055 Currently only supported on Arduino. You need to select a different IMUTYPE\n");
     exit(1);
     #endif
     TEMP_SCALE = 1.0;
+  }
+  if ((sensor_type > 2) || (sensor_type < 0)) { 
+    printstdout("INCORRECT IMUTYPE Check your input files \n");
+    exit(1);
   }
 
   printstdout("Probing Sensor....\n");
 
   if (!imu_sensor->probe()) {
-    printf("Sensor not enabled. Exiting prematurely \n");
+    printstdout("Sensor not enabled. Exiting prematurely \n");
     return;
   } else {
-    printf("Sensor enabled properly \n");
-    printf("Running initialization procedure.....\n");
+    printstdout("Sensor enabled properly \n");
+    printstdout("Running initialization procedure.....\n");
   }
   imu_sensor->initialize();
-  printf("Beginning Gyro calibration...\n");
+  printstdout("Beginning Gyro calibration...\n");
   offset[0] = 0;
   offset[1] = 0;
   offset[2] = 0;
@@ -51,12 +55,20 @@ void IMU::init(int sensor_type_in){
       offset[1] += gy;
       offset[2] += gz;
       cross_sleep(10000,6);
-      //printf("Counter = %d \n",i);
+      /*printstdout("Counter = ");
+      printstdoutint(i);
+      printstdout("\n");*/
     }
   offset[0]/=N;
   offset[1]/=N;
   offset[2]/=N;
-  printf("Offsets are: %f %f %f\n", offset[0], offset[1], offset[2]);
+  printstdout("Offsets are: ");
+  printstdoutdbl(offset[0]);
+  printstdout(" ");
+  printstdoutdbl(offset[1]);
+  printstdout(" ");
+  printstdoutdbl(offset[2]);
+  printstdout(" ");
   //ahrs.setGyroOffset(offset[0],offset[1],offset[2]);
   #endif
 }
@@ -81,8 +93,8 @@ void IMU::loop(double elapsedTime){
   imu_sensor->update();
   //These functions here just put them into local memory. Really they should be name get_accelerometer
   //And the update routine above should be read();
-  imu_sensor->read_accelerometer(&ax, &ay, &az);
   imu_sensor->read_gyroscope(&gx, &gy, &gz);
+  imu_sensor->read_accelerometer(&ax, &ay, &az);
   imu_sensor->read_magnetometer(&mx ,&my ,&mz);
   //Comment out temperature to save time.
   //temperature = imu_sensor->read_temperature()/TEMP_SCALE;

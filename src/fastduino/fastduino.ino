@@ -147,6 +147,7 @@ void setup() {
   logger.printheaders();
 
   //Initialize Telemetry
+  Serial.print("Initializing Telemetry \n");
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix");
   serTelem.TelemInit(NUMTELEMETRY);
 
@@ -288,7 +289,7 @@ void loop() {
 
   //Send data via telemetry
   if (lastTELEMtime <= watch.currentTime) {
-    Serial.print("Sending Telemetry \n");
+    //Serial.print("Sending Telemetry \n");
     telemetry_matrix.set(1,1,watch.currentTime);
     telemetry_matrix.set(2,1,atm.pressure);
     telemetry_matrix.set(3,1,atm.temperature);

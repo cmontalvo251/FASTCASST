@@ -1,10 +1,10 @@
-  //Note that you can't define #defines in this ino script to make everything Arduino specific
+//Note that you can't define #defines in this ino script to make everything Arduino specific
 //You do have access to ARDUINO so just use #ifdef ARDUINO if you want to do something ARDUINO specific
 //Furthermore, you can't import text files on an Arduino so everything
 //in Simulation.txt and Config.txt must be placed in here
 
 //Config.txt
-#define PRINTRATE 1.0    //!Standard Out Print Rate // seconds (set to negative)
+#define PRINTRATE 0.1    //!Standard Out Print Rate // seconds (set to negative)
 #define LOGRATE 1.0     //!Data logging rate // seconds (numbers if you want)
 #define RCRATE 0.1  //!RC Rate // seconds (to run as fast as possible)
 #define TELEMRATE 1.0      //!Telemetry Rate (seconds)
@@ -24,13 +24,24 @@
 //0.000    !Iyz (kg-m^2)
 int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent. 
 
+///DEBUG FLAGS
+#define USETIMER
+#define USEGPS
+//#define USEIMU
+#define TELEMETRY
+#define RCSIGNALS
+//#define LOGDATA
+#define USEPTH
+
 //Note when setting this up for the first time. 
 //Install the Due board by going to the board manager
 //Go to preferences and change the location of the libraries to ~/FASTCASST
 
 //Timer.h for realtime clock - Tested on 2/28/2023 and it compiles and runs
+#ifdef USETIMER
 #include "timer.h"
 TIMER watch;
+#endif
 
 //Include the hardware environment
 //#include "hardware.h"
@@ -42,53 +53,69 @@ TIMER watch;
 //#include "MATLAB.h" - Tested and compiles 3/9/2023
 
 //Datalogger is inside hardware.h
+#ifdef LOGDATA
 #include "Datalogger.h" //Compiles but does not work yet - Keep getting SD card init failed
 Datalogger logger; //Remember that you need to have a data/ folder on the SD card
+#endif
 
 //RCIO is inside hardware.h 
 //#include "RCIO.h"
 //RCIO rc;
 
 //RCInput is inside RCIO.h - Compiles on 2/28/2023 and Runs on 2/28/2023
+#ifdef RCSIGNALS
 #include "RCInput.h"
 RCInput rin;
 
 //RCOutput is inside RCIO.h - Compiles and runs 2/28/2023
 #include "RCOutput.h"
 RCOutput rout;
+#endif
 
 //PWMSIGNALS.h is inside RCIO.h - Compiles and runs 2/28/2023
 //#include "PWMSIGNALS.h"
 
 //Hardware also has the Comms class for wired and wireless communication - Compiled and tested on 3/17/2023
+#ifdef TELEMETRY
 #include "Comms.h"
 Comms serTelem;
 MATLAB telemetry_matrix;
+#endif
 
 //Hardware has sensors.h
 //#include "sensors.h"
-//For now we will just create a sense matrix
+//For now we will just create a sense matrix - This is only needed for GUIDANCE
+#ifdef GUIDANCE
 MATLAB sense_matrix;
+#endif
 
 //Sensors has a lot of sensors. We're going to need to add them in one at a time
 //Let's start with GPS
+#ifdef USEGPS
 #include "GPS.h" // Compiles, runs and gets a GPS fix - 3/9/2023
 GPS satellites; 
+#endif
 
 //Now let's get the barometer working
 //#include "BaroTemp.h" //Compiles, runs and gets a valid pressure reading - 3/9/2023
 //BaroTemp atm;
 //Switched to new PTH class
+#ifdef USEPTH
 #include "PTH.h"
 PTH atm;
+#endif
 
 //And finally it's time for the IMU -- Compiles 3/20/2023 - Does it work?
+#ifdef USEIMU
 #include "IMU.h"
 IMU orientation;
+#endif
 
 //The other part we need is the quadcopter autopilot class
+#ifdef GUIDANCE
 #include "quadcopter_controller.h"
 controller control;
+#endif
 
 //Create Loop Variables
 double lastPRINTtime = 0;
@@ -105,9 +132,11 @@ void setup() {
   Serial.print("FASTKit Software Version 42.0 \n");
   
   ///Initialize the timer
+  #ifdef USETIMER
   Serial.print("Initializing Timer...\n");
   watch.init(0);
   Serial.print("Timer Initialized \n");
+  #endif
   
   //Hardware init
 
@@ -116,6 +145,7 @@ void setup() {
   //Time plus the receiver and PWM out signals
   //3 LLH signals, 3 barometer values
   //3 Euler Angles and 3 Euler rates
+  #ifdef LOGDATA
   logger.init("data/",1+RECV_N_CHANNEL*2+3+3+6); 
   //Remember the SD card on the arduino needs to have a data/ folder
   //Append the headers
@@ -145,30 +175,47 @@ void setup() {
   logger.appendheader("Pitch Rate (rad/s)");
   logger.appendheader("Yaw Rate (rad/s)");
   logger.printheaders();
+  #endif
 
   //Initialize Telemetry
+  #ifdef TELEMETRY
   Serial.print("Initializing Telemetry \n");
   telemetry_matrix.zeros(NUMTELEMETRY,1,"Telemetry Matrix");
   serTelem.TelemInit(NUMTELEMETRY);
+  #endif
 
   //Initialize the IMU
+  #ifdef USEIMU
   orientation.init(IMUTYPE);
+  #endif
   
+  #ifdef RCSIGNALS
   //rc.outInit(RECV_N_CHANNEL);
   //Initialize RCInput
   rin.initialize();
   //Initialize RCOutputr
   rout.initialize(RECV_N_CHANNEL);
+  #endif
+
+  #ifdef USEGPS
   //initialize GPS
   satellites.init();
+  #endif
+
+  #ifdef USEPTH
   //Initialize Barometer
   atm.init(PTHTYPE);
+  #endif
+
+  #ifdef GUIDANCE
   //Initialize the controller
   control.init(CONTROLLERTYPE);
   //Initialize Sense Matrix
   sense_matrix.zeros(29,1,"Full State From Sensors");
+  #endif
 }
 
+#ifdef GUIDANCE
 void populate() {
   //Initialize everything to -99
   sense_matrix.mult_eq(0);
@@ -226,99 +273,137 @@ void populate() {
   sense_matrix.set(29,1,atm.temperature);
 
 }
+#endif
 
 void loop() {
+
+  #ifdef USETIMER
   //Update Timer
   watch.updateTime();
+  #endif
+  
+  #ifdef RCSIGNALS  
   //Update RC Signals
   //rc.read();
-
-  //DEBUGGING
-
   //Read the receiver
   if (lastRCtime <= watch.currentTime) {
     rin.readRCstate();  
   }
+  #endif
   
+  #ifdef USEGPS
   //Poll GPS
   satellites.poll(watch.currentTime);
+  #endif
 
+  #ifdef USEPTH
   //Poll Barometer
   if (IMUTYPE) {
     atm.poll(watch.currentTime);
   }
+  #endif
 
+  #ifdef USEIMU
   //Poll IMU
   orientation.loop(watch.elapsedTime);
+  #endif
 
+  #ifdef GUIDANCE
   //Populate Sense Matrix
   populate();
-
   //Run the Controller.
   control.loop(watch.currentTime,rin.rx_array,sense_matrix);
-
   //I then need to populate the pwm_array with the control signals as quickly as possible
   for (int i = 0;i<rout.NUMSIGNALS;i++) {
     rout.pwm_array[i] = int(control.control_matrix.get(i+1,1));
   }
+  #endif
   
+  #ifdef RCSIGNALS
   //Send signals to PWM channels
   rout.write();
+  #endif
   
   //Print Everything
   if (lastPRINTtime <= watch.currentTime) {
       lastPRINTtime+=PRINTRATE;
+      #ifdef USETIMER
       Serial.print("T = ");
       Serial.print(watch.currentTime);
       Serial.print(" ");
       Serial.print(watch.elapsedTime);
+      #endif
+      #ifdef RCSIGNALS
       Serial.print(" RX = ");
       rin.printRCstate(-6);
       //rc.in.printRCstate(-5);
       Serial.print(" PWM = ");
       rout.print();
       //rc.out.print();
+      #endif
+      #ifdef USEGPS
       Serial.print(" LLH = ");
       satellites.printLLH();
-      Serial.print(" PTAlt = ");
+      #endif
+      #ifdef USEPTH
+      Serial.print(" PTHAlt = ");
       atm.print();
+      #endif
+      #ifdef USEIMU
       Serial.print(" Euler = ");
       orientation.printALL();      
+      #endif
       Serial.print("\n");
   }
 
   //Send data via telemetry
+  #ifdef TELEMETRY
   if (lastTELEMtime <= watch.currentTime) {
     //Serial.print("Sending Telemetry \n");
+    #ifdef USETIMER
     telemetry_matrix.set(1,1,watch.currentTime);
+    #endif
+    #ifdef USEPTH
     telemetry_matrix.set(2,1,atm.pressure);
     telemetry_matrix.set(3,1,atm.temperature);
     telemetry_matrix.set(4,1,atm.altitude);
+    #endif
     serTelem.sendTelemetry(telemetry_matrix,0);
     lastTELEMtime+=TELEMRATE;
   }
+  #endif
 
   //Log Everything
+  #ifdef LOGDATA
   if (lastLOGtime <= watch.currentTime) {
     lastLOGtime+=LOGRATE;
+    #ifdef USETIMER
     logger.printvar(watch.currentTime);
     logger.writecomma();
+    #endif
+    #ifdef RCSIGNALS
     logger.printarray(rin.rx_array,RECV_N_CHANNEL);
     logger.writecomma();
     logger.printarray(rout.pwm_array,RECV_N_CHANNEL);
     logger.writecomma();
+    #endif
+    #ifdef USEGPS
     logger.printvar(satellites.latitude);
     logger.writecomma();
     logger.printvar(satellites.longitude);
     logger.writecomma();
     logger.printvar(satellites.altitude);
     logger.writecomma();
+    #endif
+    #ifdef USEPTH
     logger.printvar(atm.pressure);
     logger.writecomma();
     logger.printvar(atm.temperature);
     logger.writecomma();
     logger.printvar(atm.altitude);
     logger.writecomma();
+    #endif
+    #ifdef USEIMU
     logger.printvar(orientation.roll);
     logger.writecomma();
     logger.printvar(orientation.pitch);
@@ -330,7 +415,9 @@ void loop() {
     logger.printvar(orientation.pitch_rate);
     logger.writecomma();
     logger.printvar(orientation.yaw_rate);
+    #endif
     logger.writenewline();
   }
+  #endif
   //cross_sleep(0.1);
 }

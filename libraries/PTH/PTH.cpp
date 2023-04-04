@@ -41,9 +41,9 @@ void PTH::print() {
   printstdout(" ");
   printstdoutdbl(temperature);
   printstdout(" ");
-  printstdoutdbl(altitude);
-  printstdout(" ");
   printstdoutdbl(humidity);
+  printstdout(" ");
+  printstdoutdbl(altitude);
 }
 
 void PTH::poll(double currentTime) {

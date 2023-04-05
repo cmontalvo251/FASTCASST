@@ -1,3 +1,17 @@
+==================4/5/2023================
+
+2.) Flash code to arduino is working time to fly.
+3.) Unfortunately I can't do this because the sensors are failing so we'll need to fix those sensors if we want to do that.
+
+Remaining items 
+ 
+4.) Fly drone manually up to altitude and log data (make sure logging data works)
+5.) Plot and post process data - get sensor noise readings
+6.) Run code in SIMONLY mode with realistic sensor noise and see if you can get altitude hold to work.
+7.) Edit telemetry to read altitude data from another drone.
+8.) Flight test again and have a ground station send it altitude commands
+^^If #8 works Zach will just need to recreate what I've done 3 times and test each one
+
 =================4/2/2023===============
 
 Horribly hacked the controller/guidance module for quadcopter

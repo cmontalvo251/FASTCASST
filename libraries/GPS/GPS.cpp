@@ -113,7 +113,6 @@ void GPS::processGPSCoordinates(double currentTime) {
     longitude = pos_data[1]/10000000.0; //lat - It really is lon lat
     altitude = pos_data[3]/1000.0; ///height above ellipsoid 1984?
     #endif
-
     if (GPSORIGINSET) {
       //Get Speed
       #ifdef ARDUINO
@@ -136,8 +135,10 @@ void GPS::processGPSCoordinates(double currentTime) {
 }
 
 void GPS::reset() {
-  if (!VALIDGPS){
-    VALIDGPS = 1;
+  if (!GPSORIGINSET){
+    GPSORIGINSET = 1;
+    printstdout("GPS Coordinate initialized. Resetting GPS Vals \n");
+    setOrigin(X_origin_SIMULATION,Y_origin_SIMULATION);
     xprev = X;
     yprev = Y;
   }

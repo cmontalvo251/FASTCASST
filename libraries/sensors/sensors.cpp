@@ -150,6 +150,8 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
   double X = model_matrix.get(1,1);
   double Y = model_matrix.get(2,1);
   double Z = model_matrix.get(3,1);
+  //printf("%lf \n",X);
+  //PAUSE();
   //Grab Zpressure before Z is polluted
   double Zpressure = Z;
 

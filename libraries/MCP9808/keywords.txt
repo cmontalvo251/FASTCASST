@@ -1,0 +1,36 @@
+#######################################
+# Syntax Coloring Map for MCP9808 Library
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+MCP9808	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+read	KEYWORD2
+write	KEYWORD2
+tUpper	KEYWORD2
+tLower	KEYWORD2
+tCritical	KEYWORD2
+tAmbient	KEYWORD2
+config	KEYWORD2
+mfrID	KEYWORD2
+deviceID	KEYWORD2
+deviceRev	KEYWORD2
+resolution	KEYWORD2
+alertCritical	KEYWORD2
+alertUpper	KEYWORD2
+alertLower	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+twiClock100kHz	LITERAL1
+twiClock400kHz	LITERAL1

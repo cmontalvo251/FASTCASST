@@ -19,10 +19,10 @@ tend = -99
 
 #Run code
 os.system('./clean_logs')
-os.system('rm simonly.exe')
+#os.system('rm simonly.exe')
 #os.system('make clean')
-os.system('make simonly MODEL="cubesat"')
-os.system('./simonly.exe cubesat/')
+#os.system('make simonly MODEL="cubesat"')
+os.system('./simonly.exe airplane/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File
@@ -37,14 +37,19 @@ print(logheaders)
 sense_data = []
 model_data = []
 for line in datafile:
+    #print('line = ',line)
     row = line.split(',')
-    numarray = [np.float(x) for x in row]
-    sense_data.append(numarray)
+    #print('row = ',row)
+    if len(row) > 1:
+        #print('len(row) = ',len(row))
+        numarray = [np.float(x) for x in row]
+        sense_data.append(numarray)
 sense_data = np.array(sense_data)
 for line in logfile:
     row = line.split(',')
-    numarray = [np.float(x) for x in row]
-    model_data.append(numarray)
+    if len(row) > 1:
+        numarray = [np.float(x) for x in row]
+        model_data.append(numarray)
 model_data = np.array(model_data)
 #Plot everything
 sense_time = sense_data[:,0]

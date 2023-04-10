@@ -26,7 +26,7 @@ WOODEN DRONE:
 
  ✔ Using this routine log back in to betaflight and make sure you have everything set up properly for the on board Flight controller. Again remember that the autopilot (non-PID) is the only thing that's going to go on Gitlab so for now you can make a pass through just like above and make sure the receiver is sending appropriate signals to the servos @done (23-03-09 12:06)
 
- ✔ You should also be able to fly the drone at this point. So it would be good to go ahead and fly the drone @done (23-03-09 12:06)
+ ☐ You should also be able to fly the drone at this point. So it would be good to go ahead and fly the drone
 
  ☐ Plot data from this flight test
 

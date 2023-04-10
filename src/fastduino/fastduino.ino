@@ -26,12 +26,13 @@ int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent.
 
 ///DEBUG FLAGS
 #define USETIMER
-#define USEGPS
-#define USEIMU
+//#define USEGPS
+//#define USEIMU
 #define TELEMETRY
 #define RCSIGNALS
 //#define LOGDATA
 #define USEPTH
+#define GUIDANCE
 
 //Note when setting this up for the first time. 
 //Install the Due board by going to the board manager
@@ -225,27 +226,36 @@ void populate() {
   //sense_matrix_dot.plus_eq(-99);
 
   ///XYZ
+  #ifdef USEGPS
   sense_matrix.set(1,1,satellites.X);
   sense_matrix.set(2,1,satellites.Y);
+  #endif
+  #ifdef USEPTH
   //sense_matrix.set(3,1,(satellites.Z-atm.altitude)/2.0);  //Average GPS and BARO?
   sense_matrix.set(3,1,-atm.altitude); //Let's use Barometer as altitude sensor
   //sense_matrix.set(3,1,-atm.altitude);
+  #endif
 
   //Roll pitch Yaw
+  #ifdef USEIMU
   sense_matrix.set(4,1,orientation.roll);
   sense_matrix.set(5,1,orientation.pitch);
 
   ///Yaw Angle IS A COMBINATION OF IMU AND GPS
   //getCompassHeading();
   sense_matrix.set(6,1,orientation.yaw);
+  #endif
 
   //UWV
+  #ifdef USEGPS
   //Assume that the vehicle is traveling straight so V and W are zero
   sense_matrix.set(7,1,satellites.speed);
+  #endif
   sense_matrix.set(8,1,0);
   sense_matrix.set(9,1,0);
 
   //PQR
+  #ifdef USEIMU
   sense_matrix.set(10,1,orientation.roll_rate);
   sense_matrix.set(11,1,orientation.pitch_rate);
   sense_matrix.set(12,1,orientation.yaw_rate);
@@ -254,24 +264,31 @@ void populate() {
   sense_matrix.set(13,1,orientation.mx);
   sense_matrix.set(14,1,orientation.my);
   sense_matrix.set(15,1,orientation.mz);
+  #endif
   //sense_matrix.set(15,1,Heading_Mag);
 
   //GPS
+  #ifdef USEGPS
   sense_matrix.set(16,1,satellites.latitude);
   sense_matrix.set(17,1,satellites.longitude);
   sense_matrix.set(18,1,satellites.altitude);
   sense_matrix.set(19,1,satellites.heading); //THe GPS Heading
+  #endif
 
   //IMU
+  #ifdef USEIMU
   sense_matrix.set(20,1,orientation.yaw); //IMU Heading
+  #endif
 
   //Analog
   //sense_matrix.vecset(21,26,analog.results,1);
 
   //Barometera
+  #ifdef USEPTH
   sense_matrix.set(27,1,atm.pressure);
   sense_matrix.set(28,1,atm.altitude);
   sense_matrix.set(29,1,atm.temperature);
+  #endif
 
 }
 #endif
@@ -315,7 +332,7 @@ void loop() {
   //Run the Controller.
   control.loop(watch.currentTime,rin.rx_array,sense_matrix);
   //I then need to populate the pwm_array with the control signals as quickly as possible
-  for (int i = 0;i<rout.NUMSIGNALS;i++) {
+  for (int i = 0;i<control.NUMSIGNALS;i++) {
     rout.pwm_array[i] = int(control.control_matrix.get(i+1,1));
   }
   #endif

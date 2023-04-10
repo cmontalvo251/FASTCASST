@@ -205,12 +205,13 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     //printf("Hardware Logging %lf \n",currentTime);
     //Time
     logger.printvar(currentTime);
+    logger.writecomma(); 
     //All sense states
     logger.print(sense.sense_matrix);
+    logger.writecomma();
     //RC Channels
-    for (int i = 0;i<5;i++) {
-      logger.printint(rc.in.rx_array[i]);
-    }
+    logger.printarray(rc.in.rx_array,5);
+    logger.writecomma();
     //RC Out Channels
     logger.printarrayln(rc.out.pwm_array,rc.out.NUMSIGNALS);
     //DEBUG PRINT

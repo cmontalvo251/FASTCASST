@@ -293,6 +293,7 @@ void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix) {
   if (currentTime >= nextLOGtime) {
     //printf("Model Logging %lf \n",currentTime);
     logger.printvar(currentTime);
+    logger.writecomma();
     //Need to move model matrix over to output matrix
     //First grab x,y,z
     output_matrix.vecset(1,3,model_matrix,1);
@@ -309,10 +310,10 @@ void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix) {
     //model_matrix.disp();
     //output_matrix.disp();
     logger.print(output_matrix);
+    logger.writecomma();
     //Log the RC channel # 5
-    for (int i = 0;i<5;i++) {
-      logger.printint(rx_array[i]);
-    }
+    logger.printarray(rx_array,5);
+    logger.writecomma();
     //Then output the pwm array
     //logger.printarrayln(pwm_out_array,NUMACTUATORS);
     //Actually log the actuator states instead

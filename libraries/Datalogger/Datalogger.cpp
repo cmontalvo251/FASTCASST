@@ -190,7 +190,7 @@ void Datalogger::printvar(double var) {
   #ifdef ARDUINO
   outfile.print(var);
   #else
-  fprintf(outfile,"%lf,",var);
+  fprintf(outfile,"%lf",var);
   #endif
   flush();
 }
@@ -199,7 +199,7 @@ void Datalogger::printint(int var) {
   #ifdef ARDUINO
   outfile.print(var);
   #else
-  fprintf(outfile,"%d,",var);
+  fprintf(outfile,"%d",var);
   #endif
   flush();
 }
@@ -207,14 +207,12 @@ void Datalogger::printint(int var) {
 void Datalogger::print(MATLAB out) {
   logctr = 1;
   out.vecfprintf(outfile);
-  writecomma();
   flush();
 }
 
 void Datalogger::print() {
   logctr = 1;
   logvars.vecfprintf(outfile);
-  writecomma();
   flush();
 }
 

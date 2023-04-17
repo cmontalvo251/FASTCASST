@@ -73,6 +73,11 @@ void loop();
 
 int main(int argc,char* argv[]) {
 
+  if (check_apm()) {
+    printf("APM is running so you need to run <sudo emlidtool ardupilot> and disable ardupilot on boot. To do that you need to select plane and version and go through the prompts \n");
+    exit(1);
+  }
+
   //Initialize Random
   srand(time(NULL));
 

@@ -27,12 +27,12 @@ int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent.
 ///DEBUG FLAGS
 #define USETIMER
 //#define USEGPS
-//#define USEIMU
-#define TELEMETRY
+#define USEIMU
+//#define TELEMETRY
 #define RCSIGNALS
-//#define LOGDATA
+#define LOGDATA
 #define USEPTH
-#define GUIDANCE
+//#define GUIDANCE
 
 //Note when setting this up for the first time. 
 //Install the Due board by going to the board manager

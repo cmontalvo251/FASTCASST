@@ -6,6 +6,9 @@ BME280::BME280() {
 
 bool BME280::initialize() {
 	bool status = bme.begin();
+	if (!status) {
+		Serial.println("Could not find a valid BME280 sensor \n");
+	}
 	return status;
 }
 
@@ -13,4 +16,5 @@ bool BME280::update(double currentTime) {
 	_pressure = bme.readPressure();
 	_temperature = bme.readTemperature();
 	_humidity = bme.readHumidity();
+	return true;
 }

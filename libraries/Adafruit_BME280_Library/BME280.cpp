@@ -13,7 +13,7 @@ bool BME280::initialize() {
 }
 
 bool BME280::update(double currentTime) {
-	_pressure = bme.readPressure();
+	_pressure = bme.readPressure()/100.0;
 	_temperature = bme.readTemperature();
 	_humidity = bme.readHumidity();
 	return true;

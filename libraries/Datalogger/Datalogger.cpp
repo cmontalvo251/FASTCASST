@@ -17,13 +17,21 @@ void printstdoutint(int var) {
     #endif
 }
 
-void printstdoutdbl(double var) {
-    #ifdef ARDUINO
+void printstdoutdbl(double var,int decimals) {
+  #ifdef ARDUINO
+  if (decimals > 0) {
+    Serial.print(var,decimals);
+  } else {
     Serial.print(var);
-    Serial.print(" ");
-    #else
-    printf("%lf ",var);
-    #endif
+  }
+  Serial.print(" ");
+  #else
+  printf("%lf ",var);
+  #endif
+}
+
+void printstdoutdbl(double var) {
+    printstdoutdbl(var,0);
 }
 
 //Constructor
@@ -186,13 +194,20 @@ void Datalogger::append(MATLAB in) {
 }
 
 //Print functions
-void Datalogger::printvar(double var) {
+void Datalogger::printvar(double var,int decimals) {
   #ifdef ARDUINO
-  outfile.print(var);
+  if (decimals > 0) { 
+    outfile.print(var,decimals);
+  } else {
+    outfile.print(var);
+  }
   #else
   fprintf(outfile,"%lf",var);
   #endif
   flush();
+}
+void Datalogger::printvar(double var) {
+  printvar(var,0);
 }
 
 void Datalogger::printint(int var) {

@@ -19,13 +19,13 @@ print('Opening Serial port')
 print('All available serial ports...')
 os.system('ls /dev/ttyUSB*')
 #ser = U(57600,"/dev/ttyUSB0",period=1.0) #Set the baudrate, port and period in seconds
-ser = U(9600,"/dev/ttyUSB0",period=1.0) #Serial for Arduino
+ser = U(9600,"/dev/ttyUSB1",period=1.0) #Serial for Arduino
 ##Initialize Filenumber at zero
 outfilename = 'logs/Ground_Station_'+datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")+'.csv'
 outfile = open(outfilename,'w')
 while True:
     position = -1
-    #print('Reading Serial....')
+    print('Reading Serial....')
     value,position,bytestring = ser.SerialGetNumber(0)
     #print('Value Received, Position, Bytes = ',value,position,bytestring)
     if position >= 0:

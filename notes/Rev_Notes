@@ -1,3 +1,10 @@
+===================4/26/2023==============
+
+MPL155A2 is too terrible of a sensor. Wiring up an LSP22
+to see if it's better. 
+
+RXIN signals Digital pins 2-7
+
 ==================4/25/2023===============
 
 Results from Arduino Datalogging Test

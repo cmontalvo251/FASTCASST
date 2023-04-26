@@ -28,7 +28,7 @@ int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent.
 #define USETIMER
 //#define USEGPS
 //#define USEIMU
-//#define TELEMETRY
+#define TELEMETRY
 //#define RCSIGNALS
 //#define LOGDATA
 #define USEPTH
@@ -377,7 +377,7 @@ void loop() {
   //Send data via telemetry
   #ifdef TELEMETRY
   if (lastTELEMtime <= watch.currentTime) {
-    //Serial.print("Sending Telemetry \n");
+    Serial.print("Sending Telemetry \n");
     #ifdef USETIMER
     telemetry_matrix.set(1,1,watch.currentTime);
     #endif

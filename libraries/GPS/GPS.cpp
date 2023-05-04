@@ -41,9 +41,9 @@ void GPS::init() {
 }
 
 void GPS::printLLH() {
-  printstdoutdbl(latitude);
-  printstdoutdbl(longitude);
-  printstdoutdbl(altitude);
+  printstdoutdbl(latitude,8);
+  printstdoutdbl(longitude,8);
+  printstdoutdbl(altitude,8);
 }
 
 void GPS::decodeXYZ() {

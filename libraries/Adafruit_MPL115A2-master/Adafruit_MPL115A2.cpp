@@ -183,7 +183,7 @@ bool Adafruit_MPL115A2::initialize() {
 bool Adafruit_MPL115A2::update(double currentTime) {
   float fpressure,ftemperature;
   getPT(&fpressure, &ftemperature);
-  _pressure = fpressure;
+  _pressure = fpressure*10; //Added a *10 because this is in Pa
   _temperature = ftemperature;
   return 1;
 }

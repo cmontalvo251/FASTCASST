@@ -12,6 +12,7 @@
 void printstdout(char* msg);
 void printstdoutint(int);
 void printstdoutdbl(double);
+void printstdoutdbl(double,int);
 
 class Datalogger {
  private:
@@ -30,6 +31,7 @@ class Datalogger {
   void findfile(char* directory);
   void print(MATLAB);
   void printvar(double);
+  void printvar(double,int);
   void writecomma();
   void writenewline();
   void printint(int);

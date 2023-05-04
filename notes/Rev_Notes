@@ -1,3 +1,84 @@
+===================4/26/2023==============
+
+MPL155A2 is too terrible of a sensor. Wiring up an LSP22
+to see if it's better. 
+
+RXIN signals Digital pins 2-7
+
+==================4/25/2023===============
+
+Results from Arduino Datalogging Test
+
+RXIN 0 (us) 992.0 0.0
+RXIN 1 (us) 1500.0 0.0
+RXIN 2 (us) 1500.0 0.0
+RXIN 3 (us) 1500.0 0.0
+RXIN 4 (us) 992.0 0.0
+RXIN 5 (us) 992.0 0.0
+PWMOUT 0 (us) 992.0 0.0
+PWMOUT 1 (us) 992.0 0.0
+PWMOUT 2 (us) 992.0 0.0
+PWMOUT 3 (us) 992.0 0.0
+PWMOUT 4 (us) 992.0 0.0
+PWMOUT 5 (us) 992.0 0.0
+Latitude (deg) -99.0 0.0
+Longitude (deg) -99.0 0.0
+Altitude (m) -99.0 0.0
+Pressure (hPa) 101.76871833084948 0.09938107845505205
+Pressure (Pa) 1017.6871833084947 0.9938107845505034
+Pressure Altitude (m) 18.733099020088577 8.233659755177008
+Temperature (C) 19.66939642324888 0.20605985540869393
+Roll (deg) -4.6899999999999995 8.881784197001252e-16
+Pitch (deg) -8.760000000000002 1.7763568394002505e-15
+Yaw (deg) -0.35999999999999993 5.551115123125783e-17
+Roll Rate (rad/s) 0.0032637853949329353 0.12275192963650708
+Pitch Rate (rad/s) -0.0014456035767511177 0.08560034127864326
+Yaw Rate (rad/s) 0.011311475409836066 0.06840252892762809
+
+Results from Raspberry Pi Datalogging Test
+
+First number is the mean and second number is the standard deviation
+
+Sense X(m)  0.0 0.0
+Sense Y(m)  0.0 0.0
+Sense Z(m)  -0.9185693169503988 0.650793947788272
+Sense Roll (deg)  -1.7413374809682711 0.045956162108804356
+Sense Pitch (deg)  0.36350600401560995 0.03148911829443201
+Sense Compass (deg)  -0.05332993784288219 0.03250948288852238
+Sense U(m/s)  0.0 0.0
+Sense V(m/s)  0.0 0.0
+Sense W(m/s)  0.0 0.0
+Sense P(rad/s)  -0.0006188019342797353 0.0032256299791546864
+Sense Q(rad/s)  0.0009154440359708161 0.0023552036709843104
+Sense R(rad/s)  -0.0018263469826367287 0.002249936419091247
+Sense Mx(Gauss)  82.98175058469545 0.9016223501067118
+Sense My(Gauss)  10.718152540749958 0.8605682337812057
+Sense Mz(Gauss)  -39.37524854612296 0.8421855244877446
+Sense GPS Latitude (deg)  0.0 0.0
+Sense GPS Longitude (deg)  0.0 0.0
+Sense GPS Altitude (m)  0.0 0.0
+Sense GPS Heading (deg)  0.0 0.0
+Sense IMU Heading (deg)  -53.31268702760025 97.08076224750792
+Sense Analog 1 (V)  5.159999999999998 1.7763568394002505e-15
+Sense Analog 2 (V)  0.033000000000000015 1.3877787807814457e-17
+Sense Analog 3 (V)  0.0 0.0
+Sense Analog 4 (V)  0.0 0.0
+Sense Analog 5 (V)  0.023006956620100678 0.0009999758024256272
+Sense Analog 6 (V)  0.02700695662010068 0.000999975802425627
+Sense Pressure (Pa)  1010.435000130366 0.07796213376473213
+Sense Pressure Altitude (m)  0.9185693169503988 0.650793947788272
+Sense Temperature (C)  29.990395402748717 1.6458100763280006
+RC Channel #1  992.0 0.0
+RC Channel #2  1500.0 0.0
+RC Channel #3  1500.0 0.0
+RC Channel #4  1500.0 0.0
+RC Channel #5  992.0 0.0
+PWM Hardware Out 1  992.0 0.0
+PWM Hardware Out 2  1500.0 0.0
+PWM Hardware Out 3  1500.0 0.0
+PWM Hardware Out 4  1500.0 0.0
+
+
 ==================4/5/2023================
 
 2.) Flash code to arduino is working time to fly.

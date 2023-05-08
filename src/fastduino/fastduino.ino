@@ -11,7 +11,7 @@
 // --- GPS ON THE ARDUINO NEEDS TO RUN AS FAST AS POSSIBLE #define GPSRATE 1.0      //!GPS Rate (seconds)
 // ---- IMU RUNS AS FAST AS POSSIBLE ON EVERY PLATFORM -99      !IMU Rate (seconds) 
 // ---- ANALOG RATE IS NOT NEEDED IN FASTDUINO 0.1      !Analog Rate (seconds)
-#define PTHTYPE 3        //!PTHTYPE (0=off,1=MS,2=MPL,3=BME)
+#define PTHTYPE 4        //!PTHTYPE (0=off,1=MS,2=MPL,3=BME,4=LPS22)
 #define IMUTYPE 2        //!IMUTYPE (0=MPU,1=LSM,2=BNO)
 //0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
 #define CONTROLLERTYPE 12 //!Control System (-X=controlled by PIC,0=ACRO,1=Inner,2=yawrate,1X=turns on guidance)
@@ -28,7 +28,7 @@ int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent.
 #define USETIMER
 //#define USEGPS
 //#define USEIMU
-#define TELEMETRY
+//#define TELEMETRY
 //#define RCSIGNALS
 //#define LOGDATA
 #define USEPTH

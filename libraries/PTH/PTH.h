@@ -9,6 +9,7 @@
 #include "MS5611.h"
 #include "Adafruit_MPL115A2.h"
 #include "BME280.h"
+#include "LPS22.h"
 #else
 #include <Timer/timer.h>
 #include <Mathp/mathp.h>

@@ -27,6 +27,10 @@ void PTH::init(int sensor_type_in) {
     printstdout("Selected: BME280 \n");
     pth_sensor = new BME280();
   }
+  if (sensor_type == 4) {
+    printstdout("Selected: LSP22 \n");
+    pth_sensor = new LPS22();
+  }
   #endif
   if (IPTH) {
     pth_sensor->initialize();

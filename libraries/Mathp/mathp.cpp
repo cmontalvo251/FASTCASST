@@ -8,6 +8,10 @@ void ClearHome() {
  #endif
 }
 
+//###############PYTHON CODE###########
+//altitude = (1.0-pow((pressure_pascals/101325.0),1.0/5.25588))/(2.2557*pow(10,-5.0))
+///////////////////////////////////////
+
 double ConvertPressure2Z(double pressure,double pressure0) {
   double pascals = pressure/0.01;
   double altitude = (1.0-pow((pascals/pressure0),1.0/5.25588))/(2.2557*pow(10,-5.0));

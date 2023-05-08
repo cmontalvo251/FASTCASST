@@ -1,3 +1,16 @@
+===================5/8/2023===============
+
+LSP22 is definitely a better sensor. I also attached a bread board
+to the wooden drone so I can more easily plug and play sensors.
+
+Trying to switch out the IMU for an NXP IMU and it works on an UNO
+but not a DUE.
+
+I have a bunch of LIS/LSM IMU's but the mag sensors are broken on 3 of them.
+I don't really want to waste my time and solder another one.
+
+Need an IMU for the drone so need to figure out what to do here.
+
 ===================4/26/2023==============
 
 MPL155A2 is too terrible of a sensor. Wiring up an LSP22

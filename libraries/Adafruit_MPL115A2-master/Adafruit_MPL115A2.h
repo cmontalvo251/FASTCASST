@@ -64,7 +64,7 @@ class Adafruit_MPL115A2 : public PTHSensor {
 
   //Functions specific to MPL115A2
   Adafruit_MPL115A2();
-  void begin(void);
+  bool begin(void);
   float getPressure(void);
   float getTemperature(void);
   void getPT(float *P, float *T);

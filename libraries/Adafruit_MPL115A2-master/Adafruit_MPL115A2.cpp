@@ -109,10 +109,11 @@ Adafruit_MPL115A2::Adafruit_MPL115A2() {
     @brief  Setups the HW (reads coefficients values, etc.)
 */
 /**************************************************************************/
-void Adafruit_MPL115A2::begin() {
+bool Adafruit_MPL115A2::begin() {
   Wire.begin();
   // Read factory coefficient values (this only needs to be done once)
   readCoefficients();
+  return 1;
 }
 
 /**************************************************************************/
@@ -176,8 +177,8 @@ void Adafruit_MPL115A2::getPT(float *P, float *T) {
 }
 
 bool Adafruit_MPL115A2::initialize() {
-  begin();
-  return 1;
+  bool status = begin();
+  return status;
 }
 
 bool Adafruit_MPL115A2::update(double currentTime) {

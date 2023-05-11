@@ -24,7 +24,9 @@ WOODEN DRONE:
 
   ✔ Datalogger routine will need to be augmented to hangle RPi, DESKTOP and ARDUINO @done (23-03-02 20:46)
 
-  ☐ Start analyzing the data you obtained in from the hour of logging. See if you can get bias, std dev, noise, etc and then add that to the Sensors routine when you're using DESKTOP and POLLUTED sensor mode.
+  ☐ Start analyzing the data you obtained in from the hour of logging. See if you can get bias, std dev, noise, etc (Need to redo this since you changed the pressure sensor to the LPS22)
+
+  ☐ then add that to the Sensors routine when you're using DESKTOP and POLLUTED sensor mode.
 
  ✔ Once the Arduino hooks are in I would like one more Arduino Routine that reads the RCInput and then feeds them (pass through) to RCOutput. This will require you to use the RCInput and RCOutput routines which hopefully got combined between Navio and Arduino at which point you'll also need hooks in there for the JOYSTICK as well. Again these need to be general enough that just changing the Makefile will compile the routine onto different architectures @done (23-03-02 20:47)
 

@@ -1,3 +1,20 @@
+===================5/11/2023==============
+
+Alright the LPS22 is up and runnning in FASTCASST
+and the BNO055 is up and running in FASTCASST....independently 
+(Right, forgot to mention that I found a BNO055 in the lab. Had to desolder it and resolder it but it's on the breadboard now)
+
+Well hang on. If you compile everything independently it works. 
+
+If you try to compile everything all at once it throws an error and says
+the ino is too big.
+
+But success!!! We now have two new sensors that are way better and more accurate. 
+
+This means we can redo the 1 hour test and get some better sensor readings. 
+
+
+
 ===================5/8/2023===============
 
 LSP22 is definitely a better sensor. I also attached a bread board
@@ -13,7 +30,7 @@ Need an IMU for the drone so need to figure out what to do here.
 
 ===================4/26/2023==============
 
-MPL155A2 is too terrible of a sensor. Wiring up an LSP22
+MPL155A2 is too terrible of a sensor for altitude. Wiring up an LSP22
 to see if it's better. 
 
 RXIN signals Digital pins 2-7

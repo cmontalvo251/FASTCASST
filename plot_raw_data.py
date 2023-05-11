@@ -23,7 +23,8 @@ tend = -99
 pp = PDF(0,plt)
 #Open File
 #datafile = open('data/RASPI_TABLE_DATA_4_25_2023.csv','r')
-datafile = open('data/ARDUINO_TABLE_DATA_4_25_2023.csv','r')
+#datafile = open('data/ARDUINO_TABLE_DATA_4_25_2023.csv','r')
+datafile = open('data/ARDUINO_TABLE_DATA_5_11_2023','r')
 dataheaders = datafile.readline().split(',')
 numVars = len(dataheaders)
 print('Number of Vars = ',numVars)
@@ -32,7 +33,7 @@ print(dataheaders)
 sense_data = []
 for line in datafile:
     row = line.split(',')
-    #print(row,len(row))
+    print(row,len(row))
     if len(row) > numVars/2.0:
         numarray = [np.float(x) for x in row]
         sense_data.append(numarray)

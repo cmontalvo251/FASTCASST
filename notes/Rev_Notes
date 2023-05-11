@@ -13,6 +13,55 @@ But success!!! We now have two new sensors that are way better and more accurate
 
 This means we can redo the 1 hour test and get some better sensor readings. 
 
+--------------___Takeaways_____-------------------
+
+1.) LPS22 give about 0.5 meter accurate altitude, same with MS5611
+2.) MPL115A2 is too terrible with accuracy of 8 meters. Not possible
+3.) MPU and BNO give readings accurate to about 0.05 degrees and rates at 0.1 rad/s
+
+I think it's safe to proceed at this point - (Adding these sensor errors to the code)
+
+-----------------__RAW DATA_____--------------------------
+
+LPS22 - 5/11/2023 on Arduino
+Pressure (Pa) 1012.718865153538 0.061805666632702594
+Temperature (C) 22.807590120160217 0.07027886629646299
+Pressure Altitude (m) -0.7568558077436582 0.5146848173247013
+
+MPL115A2 - 4/25/2023 on Arduino
+Pressure (Pa) 1017.6871833084947 0.9938107845505034
+Pressure Altitude (m) 18.733099020088577 8.233659755177008
+Temperature (C) 19.66939642324888 0.20605985540869393
+
+MS5611 - 4/25/2023 on RPI
+Sense Pressure (Pa)  1010.435000130366 0.07796213376473213
+Sense Pressure Altitude (m)  0.9185693169503988 0.650793947788272
+Sense Temperature (C)  29.990395402748717 1.6458100763280006
+
+
+BNO055 - 5/11/2023 on Arduino
+Roll (deg) -4.569886515353805 0.0016904482325902682
+Pitch (deg) -2.3288050734312415 0.012813780795129794
+Yaw (deg) -0.0667289719626168 0.06591945950881116
+Roll Rate (rad/s) 0.001582109479305741 0.12183386880970969
+Pitch Rate (rad/s) -0.0003404539385847794 0.09007609291971866
+Yaw Rate (rad/s) 0.007870493991989318 0.06930855756753578
+
+BNO055 - 4/25/2023 on Arduino
+Roll (deg) -4.6899999999999995 8.881784197001252e-16
+Pitch (deg) -8.760000000000002 1.7763568394002505e-15
+Yaw (deg) -0.35999999999999993 5.551115123125783e-17
+Roll Rate (rad/s) 0.0032637853949329353 0.12275192963650708
+Pitch Rate (rad/s) -0.0014456035767511177 0.08560034127864326
+Yaw Rate (rad/s) 0.011311475409836066 0.06840252892762809
+
+MPU - 4/25/2023 on RPI
+Sense Roll (deg)  -1.7413374809682711 0.045956162108804356
+Sense Pitch (deg)  0.36350600401560995 0.03148911829443201
+Sense Compass (deg)  -0.05332993784288219 0.03250948288852238
+Sense P(rad/s)  -0.0006188019342797353 0.0032256299791546864
+Sense Q(rad/s)  0.0009154440359708161 0.0023552036709843104
+Sense R(rad/s)  -0.0018263469826367287 0.002249936419091247
 
 
 ===================5/8/2023===============

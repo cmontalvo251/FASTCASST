@@ -48,7 +48,13 @@ void LSM9DS1::ReadRegs(const char *dev, uint8_t ReadAddr, uint8_t *ReadBuf, unsi
     SPIdev::transfer(dev, tx, rx, Bytes + 1);
     #endif
 
-    for (uint i = 0; i < Bytes; i++)
+    #ifdef ARDUINO_ARCH_SAMD 100
+    uint i;
+    #else
+    unsigned int i;
+    #endif
+
+    for (i = 0; i < Bytes; i++)
         ReadBuf[i] = rx[i + 1];
 
     cross_sleep(50,6);

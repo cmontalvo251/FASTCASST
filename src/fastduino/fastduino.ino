@@ -27,7 +27,7 @@ int NUMTELEMETRY = 4; ///Number of telemetry variables to be sent.
 ///DEBUG FLAGS
 #define USETIMER
 //#define USEGPS
-//#define USEIMU
+#define USEIMU
 //#define TELEMETRY
 //#define RCSIGNALS
 //#define LOGDATA

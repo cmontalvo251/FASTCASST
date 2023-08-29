@@ -129,7 +129,7 @@ BDE DJI Flights:
 
   ☐ Use the DJI flight controller on BDE
 
-BDE FASTSim:
+BDE FASTCASST:
     
   ☐ Download data from BDE and plot data to investigate some common issues. Did the front motors spin up when the drone tilted forward? Did the IMU accurately measure the forward tilt?
 
@@ -173,11 +173,9 @@ BDE FASTSim:
 
   ☐ Potentially use ML from Dr. Fahimi and Brian from UAH
 
-  ☐ Run BDE FASTSim in SIL mode
+  ☐ Run BDE FASTCASST in SIL mode
 
-  ☐ Run BDE FASTSim in HIL mode
-
-BDE FASTPilot:
+  ☐ Run BDE FASTCASST in HIL mode
 
   ☐ Mount telemetry hardware to drone behind flight controller for debugging in the field
 

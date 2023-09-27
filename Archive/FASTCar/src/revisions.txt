@@ -1,0 +1,203 @@
+rev1 - This revision uses the Adafruit_GPS.h and SoftwareSerial.h
+libraries to read data from the GPS and write to the SD card all on
+the GPS Shield. The GPS and SofwareSerial libraries have been updated
+to use the FASTGPS and FASTSerial libraries which basically just
+comments out the line of code ISR() so that we can read from pins 3
+and 5 using the interrupt.
+
+rev2 - This uses the TinyGPS library which seems to be smaller than
+the Adafruit_GPS library and has lss BS.
+
+rev3 - is a combination of Adafruit's GPS library and Drew's code it
+uses Adafruit and FASTserial libraries. It uses ISR to get pulse
+information from pins 3 and 5 and only controls the servo via pin
+9. Pin 10 is reserved for chipselect. The signal from recevier(esc) in pin 3 is
+spliced to go directly to the ESC from the receiver so that we can
+save the signal and control the ESC without needing two pins for
+autopilot.
+
+===================THINGS I STILL WANT TO TRY ONE DAY=========================
+=========================================================================
+
+OPTION 4 is the EASIEST TO TRY. LET"S TRY THAT FIRST
+
+=======================OPTION 6=====================================================
+
+6.) Can I edit the PWMServo library and add pin 10 to the code and create FASTServo? Ok here's the dealio
+
+so the question is which extra timer are we allowed to use.
+
+On the mega there are apparently 6 timers!!!!
+
+Pins 11,12,13 use Timer 1 which is why you can use 3 pins on the
+Arduino MEGA
+
+Let's take a look at the pinout diagram and see if I can add an extra
+servo
+
+=======================OPTION 4=======================================================
+
+4.) If all else fails I may have to write our own FASTGPS library that
+does exactly what we want.  This won't work because I think the issue
+is the parsing function. Maybe not though. Not entirely sure. What I
+want to do is comment out the GPS.parse function. 
+
+Ok so even with all that commented it still gave the jitter. This
+means it's a software serial issue. I wonder if we will still have the
+same problem using the MEGA. Let's go try that out. 
+
+OK PROBLEM SOLVED TURNS OUT ITS HARDWARE SERIAL PROBLEMS!!!!
+
+=========================================================================
+
+=======================================================================================
+
+1.) I want to try to set interuppt to false and comment out this block of code in the loop routine
+
+  if (! usingInterrupt) {
+    // read data from the GPS in the 'main loop'
+    char c = GPS.read();
+    // if you want to debug, this is a good time to do it!
+    if (GPSECHO)
+      if (c) Serial.print(c);
+  }
+
+ // if a sentence is received, we can check the checksum, parse it...
+  if (GPS.newNMEAreceived()) {
+    // a tricky thing here is if we print the NMEA sentence, or data
+    // we end up not listening and catching other sentences! 
+    // so be very wary if using OUTPUT_ALLDATA and trying to print out data
+    
+    // Don't call lastNMEA more than once between parse calls!  Calling lastNMEA 
+    // will clear the received flag and can cause very subtle race conditions if
+    // new data comes in before parse is called again.
+    char *stringptr = GPS.lastNMEA();
+    
+    if (!GPS.parse(stringptr))   // this also sets the newNMEAreceived() flag to false
+      return;  // we can fail to parse a sentence in which case we should just wait for another
+
+    // Sentence parsed! 
+    Serial.println("OK");
+    if (LOG_FIXONLY && !GPS.fix) {
+      Serial.print("No Fix");
+      return;
+    }
+
+    // Rad. lets log it!
+    Serial.println("Log");
+
+    uint8_t stringsize = strlen(stringptr);
+    if (stringsize != logfile.write((uint8_t *)stringptr, stringsize))    //write the string to the SD file
+        error(4);
+    if (strstr(stringptr, "RMC") || strstr(stringptr, "GGA"))   logfile.flush();
+    Serial.println();
+  }
+
+  in the setup routine I blocked out
+
+  useInterrupt(false); //what happens if we set this to false?
+
+  I also removed this function
+
+  void useInterrupt(boolean v) {
+  if (v) {
+    // Timer0 is already used for millis() - we'll just interrupt somewhere
+    // in the middle and call the "Compare A" function above
+    OCR0A = 0xAF;
+    TIMSK0 |= _BV(OCIE0A);
+    usingInterrupt = true;
+  } 
+  else {
+    // do not call the interrupt function COMPA anymore
+    TIMSK0 &= ~_BV(OCIE0A);
+    usingInterrupt = false;
+  }
+ }
+
+ and this one
+
+ // Interrupt is called once a millisecond, looks for any new GPS data, and stores it
+SIGNAL(TIMER0_COMPA_vect) {
+  char c = GPS.read();
+  // if you want to debug, this is a good time to do it!
+  #ifdef UDR0
+      if (GPSECHO)
+        if (c) UDR0 = c;  
+      // writing direct to UDR0 is much much faster than Serial.print 
+      // but only one character can be written at a time. 
+  #endif
+}
+  
+
+and see if a.) The servo library works b.) the PWMservo library works c.) the receiver pulsein functions works d.) the interrupt pulse in libraries work
+
+======================OPTION 1 OUTCOME=================================================
+
+a.) Plugged into pin 6 and 9 - No dice
+b.) I did number 2 first and this is not moot because you can only use pins 9 and 10 and 10 is reserved for the SD card.
+c.) This worked even with all the uncommented. Check out number 2. All you need to do is comment out ISR() in the Software Serial library.
+d.) This will take a minute to code properly. - Ok this worked but
+again only for pin 9 since we can't use pin 10.
+
+=======================================================================================
+
+=============================OPTION 2====================================================
+
+2.) I was able to edit the SoftwareSerial library so we can try and
+use the interrupt pulse in functions. Earlier today I tried to compile
+the code and it wouldn't compile. I had to edit the Software Serial
+library.  
+
+============================OPTION 2 OUTCOME===========================================
+
+The code compiled and uploaded and so far it looks like the pulses are
+correct which means the commenting out ISR worked just fine. Now I
+just need to link it up. 
+
+Ok so I had to download PWMServo_v2 the v1 didn't play nice with
+anything else. 
+
+Alright so the code works but the problem is that the SD card is
+writing to pin 10 which means we can't use pin 10. Poop. I guess if we
+had a breakout board we might be able to do this. There's really no
+work around for this unfortunately since the Servo library uses
+interrupts. 
+
+CONCLUSION: It will work if you don't use a shield because you can't
+use pin 10. Which means it will work for Jake and not Drew. 
+
+=======================OPTION 3====================================================
+
+3.) I want to try the block of code from TinyGPS here. It looks like this example code reads the data in the loop rather than messing with interrupts.
+http://arduiniana.org/libraries/tinygps/
+
+I want to try 1a-1d using the tinygps library
+
+======================OPTION 3 OUTCOME==============================================
+
+Jake uses a for loop to grab all the data from the Serial. I need to
+get that code from him. This is really what the Adafruit library
+does. I need to check and see what the GPS.parse function does if I
+comment it out.
+
+======================OPTION 5========================================================
+
+5.) I was able to download the pinout manuals for both the ATMEGA328p (UNO) and the ATMEGA2560 (MEGA) so we can set an ISR for any of the digital pins now.
+Ok well I'm going to try and get to work early tomorrow and get
+cracking on this. Any input from you guys is helpful.
+
+=====================OPTION 5 OUTCOME==================================
+
+I have successfully created interrupts for pins 3 and 5 showing that
+this works. The question really for me is can I get this to work for
+the MEGA but that's a separate project. I came back in September of
+2016 and I was able to get this to work on the MEGA.
+
+=======================OPTION 7============================================================
+
+7.) Try Hardware Serial and make everything else work and then add the
+GPS. Apparently you don't need to use Software Serial but it ties up
+0,1 which is USB. I don't want to try this. You may as well use
+Hardware Serial on the MEGA
+
+========================================================================================

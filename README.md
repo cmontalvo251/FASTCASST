@@ -24,6 +24,19 @@ and then running the associated python script to plot data
 
 $ python3 plotdata.py
 
+Notes for Windows Users (10/10/2023)
+The following 2 virtual environments do not work at the time of this writing
+1.) At the time of this writing MinGW is not currently supported in FASTCASST. For example M_PI is not defined in cmath and sys/ioctl.h only exists on Linux. It is an action item to get this to compile using MinGW
+2.) At the time of this writing Cygwin is not currently supported in FASTCASST. For example linux/types.h only exists on Linux. It is an action item to get this to compile in Cygwin
+
+If you really don't want to make the switch to linux you can always try a virtual machine using WSL or VirtualBox
+3.) Opening Powershell as Administrator and running 'wsl --install' will install a Ubuntu Virtual machine. If you get error code 0x80370114 make sure to enable WSL in program features - https://randomhacksdrc.blogspot.com/2023/02/mounting-ext4-harddrive-to-windows.html
+4.) VirtualBox and Install Ubuntu - If your computer can handle the extra memory it would be possible to install a virtual machine on your computer and run Ubuntu
+
+If you want to completely try linux or just switch completely try these options here
+5.) Dual Boot - Here you would partition your harddrive in half and install 2 operating systems on your machine
+6.) Switch to Linux completely - https://randomhacksdrc.blogspot.com/2014/10/thinking-of-making-switch-to-linux.html
+
 N.) For further reading on successes of this software please see the references below.
 
 Maxwell Cobar and Carlos Montalvo. “The Facility for Aerospace Systems and Technology Simulation:

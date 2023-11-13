@@ -287,8 +287,8 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     //AIRPLANE Airplane airplane
     double kpa = 10.0;
     double kda = 2.0;
-    double kpe = 25.0;
-    double kde = 1.0;
+    double kpe = 10.0; //Tested Meta 1 with 25 and 1.0 and kinda wobbly so lowering gains to 10 and 0.5 - 11/12/2023
+    double kde = 0.5; 
     double kr = 1.0;
     
     //Apprentice APPRENTICE apprentice

@@ -24,6 +24,9 @@
 #ifdef airplane
 #include "airplane_forces.h"
 #endif
+#ifdef quadcopter
+#include "quadcopter_forces.h"
+#endif
 
 ///Headers required to simulate the virtual environment
 #include <RK4/RK4.h>

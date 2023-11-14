@@ -8,7 +8,7 @@
 1	 	 !PTHTYPE (0=off,1=MS,2=MPL,3=BME)
 0        !IMUTYPE (0=MPU,1=LSM)
 0        !Filter Constant //0 for no filtering and 1.0 for overfiltering
-12	 	 !Control System (-X=controlled by PIC,0=ACRO,1=Inner,2=yawrate,1X=turns on guidance)
+-2	 	 !Control System (-X=controlled by PIC,0=ACRO,1=Inner,2=yawrate,1X=turns on guidance)
 0.635 !mass  (kg)
 0.0146 !Ixx    (kg-m^2)
 0.0146 !Iyy    (kg-m^2)

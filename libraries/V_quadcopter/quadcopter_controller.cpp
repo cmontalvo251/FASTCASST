@@ -71,6 +71,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     icontrol = CONTROLLER_FLAG;
   }
 
+  //Check for guidance
   if (abs(CONTROLLER_FLAG) >= 10) {
     iguidance=1;
     if (icontrol >= 10) {
@@ -97,18 +98,24 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //and then that is sent to the control_matrix  
     for (int i = 0;i<5;i++) {
       control_matrix.set(i+1,1,rx_array[i]);
-    }  
+    }
+
+    //Now this is where things get weird. If we're running in SIMONLY or
+    //SIL mode, There is no flight controller. This means that the
+    //rx_array either altered or unaltered above needs to run through
+    //the flight control system below. So we need a #ifdef
+    //If we're running in AUTO or anything but SIMONLY or SIL the
+    //routine just breaks 
+    #if defined (SIMONLY) || (SIL)
+    autoloop(currentTime,rx_array,sense_matrix,icontrol);
+    #endif
+  } else {
+    //In this case guidace is off so we need to run the autopilot loop
+    autoloop(currentTime,rx_array,sense_matrix,icontrol);
   }
+}
 
-  //Now this is where things get weird. If we're running in SIMONLY or
-  //SIL mode, There is no flight controller. This means that the
-  //rx_array either altered or unaltered above needs to run through
-  //the flight control system below. So we need a #ifdef
-  //If we're running in AUTO or anything but SIMONLY or SIL the
-  //routine just breaks 
-  
-  #if defined (SIMONLY) || (SIL)
-
+void controller::autoloop(double currentTime,int rx_array[],MATLAB sense_matrix,int icontrol) {
   //Initialize commands
   roll_command = -99;
   pitch_command = -99;
@@ -133,6 +140,13 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   // Note that Altitude and waypoint loops moved to guidance
   // 1X = This means we want the control module here to create
   // commands to send to a betaflight/cleanflight flight controller
+
+  //printf("Running Autoloop (icontrol) = %d ",icontrol);
+  //printf("TAERAG = ");
+  //for (int i = 0;i<6;i++) {
+  //printf("%d ",rx_array[i]);
+  //}
+  //printf("\n");
 
   switch (icontrol) {
   case 2:
@@ -167,7 +181,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //This means control is off but we need a bit of thrust to stay in the air
     #ifndef SIL
     if (dthrottle == -99) {
-      dthrottle = 1480-992;
+      //dthrottle = 1480-992;
+      dthrottle = 0; //Reinvestigate this. I don't like this for auto flying
     }
     #endif
     motor_lower_right = throttle + dthrottle - droll + dpitch + dyaw;
@@ -176,15 +191,16 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     motor_upper_left = throttle + dthrottle + droll - dpitch + dyaw;
     break;
   }
- //Send the motor commands to the control_matrix values
- control_matrix.set(1,1,motor_lower_right);
- control_matrix.set(2,1,motor_upper_right);
- control_matrix.set(3,1,motor_lower_left);
- control_matrix.set(4,1,motor_upper_left);
- control_matrix.set(5,1,arm_switch);
- //control_matrix.disp();
-
- #endif //SIMONLY or SIL
+  //Send the motor commands to the control_matrix values only if the
+  //arm_switch is set
+  if (arm_switch > STICK_MID) {
+    control_matrix.set(1,1,motor_lower_right);
+    control_matrix.set(2,1,motor_upper_right);
+    control_matrix.set(3,1,motor_lower_left);
+    control_matrix.set(4,1,motor_upper_left);
+    control_matrix.set(5,1,arm_switch);
+  }
+  //control_matrix.disp();
 }
 
 void controller::YawRateLoop(MATLAB sense_matrix) {
@@ -209,5 +225,6 @@ void controller::InnerLoop(MATLAB sense_matrix) {
   dpitch = kp*(pitch-pitch_command) + kd*(pitch_rate);
   dpitch = CONSTRAIN(dpitch,-500,500);    
   //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);
+  //printf("d = %lf %lf %lf %lf \n",droll,dpitch,roll_command,pitch_command);
   //printf(" Roll Command = %lf ",roll_command);
 }

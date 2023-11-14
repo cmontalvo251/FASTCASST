@@ -26,6 +26,7 @@ private:
   void AltitudeLoop(MATLAB);
   void YawRateLoop(MATLAB);
   void InnerLoop(MATLAB);
+  void autoloop(double currentTime,int rx_array[],MATLAB sense_matrix,int icontrol);
   int CONTROLLER_FLAG = -99;
   void set_defaults();
   guidance guid;

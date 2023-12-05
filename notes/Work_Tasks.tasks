@@ -1,3 +1,20 @@
+TOMAD INTEGRATION:
+
+ ☐ Compile TOMAD code and run a candidate simulation and generate plots
+
+ ☐ Add the capability to simulate multiple vehicles in FASTCASST
+ 
+ ☐ Rename the Software FASTCASST++
+
+ ☐ Add the tether model into FASTCASST from MultiSAT++ (Gitlab)
+
+ ☐ Add quadcopter and airplane mechanics from TOMAD
+
+ ☐ Simulate candidate TOMAD sim in FASTCASST++ and compare the simulations
+
+ ☐ Teach Graduate students how to use the new code
+
+
 WOODEN DRONE:
 
   ✔ From here I'd like to start editing the sensor routines to include Arduino hooks. The sensor.h file should work at the moment on both desktop and Rpi so it's time to get it to work on Arduino hooks. Edit the Sensor routine to use the newly formed folders. Think a bit more on how you want to have this sensor block. I'm assuming you'll just be importing all the sensors? Pitot, IMU, GPS, etc??? What if those sensors are not connected? Is there a way for the controller to ignore erroneous data? Or maybe just turn them on and off in the controller? @done (22-05-18 06:55)
@@ -233,7 +250,7 @@ EXTRA STUFF:
 
   ✔ Fix the double to integer numerical precision issue by adding a quantization flag to the Simulation.txt file. I added a terrible hack where the control_matrix and the pwm_array is sent to every routine and a #ifdef cubesat is there to switch between the two. That's terrible. What we need to do is send the double array to all routines and then somewhere in the model we quantize the array if the flag is set @done (23-02-15 10:32)
 
-  ☐ Hey the FASTDuino code is horribly hacked together. Would be nice to actually streamline the code. That is use the sensors and hardware class and rcio class so that the ino is a bit more high level. 
+  ✔ Hey the FASTDuino code is horribly hacked together. Would be nice to actually streamline the code. That is use the sensors and hardware class and rcio class so that the ino is a bit more high level. @done (23-12-05 10:39)
 
   ☐ Create a routine where you compile and run candidate codes to make sure everything operates as intended - Like compile simonly, sil and hil on desktop and make sure that simonly and sil runs properly
 

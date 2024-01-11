@@ -1,20 +1,3 @@
-TOMAD INTEGRATION:
-
- ☐ Compile TOMAD code and run a candidate simulation and generate plots
-
- ☐ Add the capability to simulate multiple vehicles in FASTCASST
- 
- ☐ Rename the Software FASTCASST++
-
- ☐ Add the tether model into FASTCASST from MultiSAT++ (Gitlab)
-
- ☐ Add quadcopter and airplane mechanics from TOMAD
-
- ☐ Simulate candidate TOMAD sim in FASTCASST++ and compare the simulations
-
- ☐ Teach Graduate students how to use the new code
-
-
 WOODEN DRONE:
 
   ✔ From here I'd like to start editing the sensor routines to include Arduino hooks. The sensor.h file should work at the moment on both desktop and Rpi so it's time to get it to work on Arduino hooks. Edit the Sensor routine to use the newly formed folders. Think a bit more on how you want to have this sensor block. I'm assuming you'll just be importing all the sensors? Pitot, IMU, GPS, etc??? What if those sensors are not connected? Is there a way for the controller to ignore erroneous data? Or maybe just turn them on and off in the controller? @done (22-05-18 06:55)
@@ -269,6 +252,24 @@ EXTRA STUFF:
   ☐ Furtheremore, there are a ton of variables hardcoded for Telemetry. Either those variable need to be added into Config.txt or a new file must be added like Serial.txt or something. My vote is for Config.txt but we have to be careful because the mass matrix is in there. At the same time does it really matter?
 
   ☐ I'd like there to be a SIMONLY version of Arduino where the Arduino just fakes the sensors. This way I can debug runtime errors without actually having the hardware.
+
+TOMAD INTEGRATION:
+
+ ☐ Move TOMAD from Gitlab over to Github
+
+ ☐ Compile TOMAD code and run a candidate simulation and generate plots
+
+ ☐ Add the capability to simulate multiple vehicles in FASTCASST
+ 
+ ☐ Rename the Software FASTCASST++
+
+ ☐ Add the tether model into FASTCASST from MultiSAT++ (Gitlab)
+
+ ☐ Add quadcopter and airplane mechanics from TOMAD
+
+ ☐ Simulate candidate TOMAD sim in FASTCASST++ and compare the simulations
+
+ ☐ Teach Graduate students how to use the new code
 
 RENDERING:
 

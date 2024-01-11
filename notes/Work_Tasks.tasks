@@ -255,7 +255,7 @@ EXTRA STUFF:
 
 TOMAD INTEGRATION:
 
- ☐ Move TOMAD from Gitlab over to Github
+ ✔ Move TOMAD from Gitlab over to Github @done (24-01-11 09:33)
 
  ☐ Compile TOMAD code and run a candidate simulation and generate plots
 

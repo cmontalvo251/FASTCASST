@@ -1,6 +1,7 @@
 *.eps
 *.odt
 *.csv
+*.OUT
 SysML_Diagrams/Archive
 logs/*
 *.pdf

@@ -1,0 +1,5 @@
+0	!Tinitial
+200	!Tfinal_(0.559)
+0.001	!Timestep(no_contact)
+0.001	!Timestep(with_contact)
+100	!Skip(Skip*timestep_is_the_output_rate)

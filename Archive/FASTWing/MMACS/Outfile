@@ -1,0 +1,211 @@
+Meta Aircraft written by Carlos Montalvo 
+Opening Input File 
+Opened Input File 
+Master Initialization 
+Allocating Panels 
+MPC Matrices Computed
+Time=0.001000 
+Time Simulation is 1 Percent Complete 
+Time=0.400000 
+Time Simulation is 2 Percent Complete 
+Time=0.800000 
+Time Simulation is 3 Percent Complete 
+Time=1.201000 
+Time Simulation is 4 Percent Complete 
+Time=1.601000 
+Time Simulation is 5 Percent Complete 
+Time=2.001000 
+Time Simulation is 6 Percent Complete 
+Time=2.401000 
+Time Simulation is 7 Percent Complete 
+Time=2.801000 
+Time Simulation is 8 Percent Complete 
+Time=3.201000 
+Time Simulation is 9 Percent Complete 
+Time=3.601000 
+Time Simulation is 10 Percent Complete 
+Time=4.001000 
+Time Simulation is 11 Percent Complete 
+Time=4.401000 
+Time Simulation is 12 Percent Complete 
+Time=4.801000 
+Time Simulation is 13 Percent Complete 
+Time=5.200000 
+Time Simulation is 14 Percent Complete 
+Time=5.600000 
+Time Simulation is 15 Percent Complete 
+Time=6.000000 
+Time Simulation is 16 Percent Complete 
+Time=6.400000 
+Time Simulation is 17 Percent Complete 
+Time=6.800000 
+Time Simulation is 18 Percent Complete 
+Time=7.200000 
+Time Simulation is 19 Percent Complete 
+Time=7.600000 
+Time Simulation is 20 Percent Complete 
+Time=8.000000 
+Time Simulation is 21 Percent Complete 
+Time=8.400000 
+Time Simulation is 22 Percent Complete 
+Time=8.800000 
+Time Simulation is 23 Percent Complete 
+Time=9.200000 
+Time Simulation is 24 Percent Complete 
+Time=9.600000 
+Time Simulation is 25 Percent Complete 
+Time=10.001000 
+Time Simulation is 26 Percent Complete 
+Time=10.401000 
+Time Simulation is 27 Percent Complete 
+Time=10.801000 
+Time Simulation is 28 Percent Complete 
+Time=11.201000 
+Time Simulation is 29 Percent Complete 
+Time=11.601000 
+Time Simulation is 30 Percent Complete 
+Time=12.001000 
+Time Simulation is 31 Percent Complete 
+Time=12.401000 
+Time Simulation is 32 Percent Complete 
+Time=12.801000 
+Time Simulation is 33 Percent Complete 
+Time=13.201000 
+Time Simulation is 34 Percent Complete 
+Time=13.601000 
+Time Simulation is 35 Percent Complete 
+Time=14.001000 
+Time Simulation is 36 Percent Complete 
+Time=14.401000 
+Time Simulation is 37 Percent Complete 
+Time=14.801000 
+Time Simulation is 38 Percent Complete 
+Time=15.201000 
+Time Simulation is 39 Percent Complete 
+Time=15.601000 
+Time Simulation is 40 Percent Complete 
+Time=16.001000 
+Time Simulation is 41 Percent Complete 
+Time=16.401000 
+Time Simulation is 42 Percent Complete 
+Time=16.801000 
+Time Simulation is 43 Percent Complete 
+Time=17.201000 
+Time Simulation is 44 Percent Complete 
+Time=17.601000 
+Time Simulation is 45 Percent Complete 
+Time=18.001000 
+Time Simulation is 46 Percent Complete 
+Time=18.401000 
+Time Simulation is 47 Percent Complete 
+Time=18.801000 
+Time Simulation is 48 Percent Complete 
+Time=19.200000 
+Time Simulation is 49 Percent Complete 
+Time=19.600000 
+Time Simulation is 50 Percent Complete 
+Time=20.000000 
+Time Simulation is 51 Percent Complete 
+Time=20.400000 
+Time Simulation is 52 Percent Complete 
+Time=20.800000 
+Time Simulation is 53 Percent Complete 
+Time=21.200000 
+Time Simulation is 54 Percent Complete 
+Time=21.600000 
+Time Simulation is 55 Percent Complete 
+Time=22.000000 
+Time Simulation is 56 Percent Complete 
+Time=22.400000 
+Time Simulation is 57 Percent Complete 
+Time=22.800000 
+Time Simulation is 58 Percent Complete 
+Time=23.200000 
+Time Simulation is 59 Percent Complete 
+Time=23.600000 
+Time Simulation is 60 Percent Complete 
+Time=24.000000 
+Time Simulation is 61 Percent Complete 
+Time=24.400000 
+Time Simulation is 62 Percent Complete 
+Time=24.800000 
+Time Simulation is 63 Percent Complete 
+Time=25.200000 
+Time Simulation is 64 Percent Complete 
+Time=25.600000 
+Time Simulation is 65 Percent Complete 
+Time=26.000000 
+Time Simulation is 66 Percent Complete 
+Time=26.400000 
+Time Simulation is 67 Percent Complete 
+Time=26.800000 
+Time Simulation is 68 Percent Complete 
+Time=27.200000 
+Time Simulation is 69 Percent Complete 
+Time=27.600000 
+Time Simulation is 70 Percent Complete 
+Time=28.000000 
+Time Simulation is 71 Percent Complete 
+Time=28.400000 
+Time Simulation is 72 Percent Complete 
+Time=28.800000 
+Time Simulation is 73 Percent Complete 
+Time=29.200000 
+Time Simulation is 74 Percent Complete 
+Time=29.600000 
+Time Simulation is 75 Percent Complete 
+Time=30.000000 
+Time Simulation is 76 Percent Complete 
+Time=30.400000 
+Time Simulation is 77 Percent Complete 
+Time=30.800000 
+Time Simulation is 78 Percent Complete 
+Time=31.200000 
+Time Simulation is 79 Percent Complete 
+Time=31.600000 
+Time Simulation is 80 Percent Complete 
+Time=32.000000 
+Time Simulation is 81 Percent Complete 
+Time=32.400000 
+Time Simulation is 82 Percent Complete 
+Time=32.800000 
+Time Simulation is 83 Percent Complete 
+Time=33.200000 
+Time Simulation is 84 Percent Complete 
+Time=33.600000 
+Time Simulation is 85 Percent Complete 
+Time=34.000000 
+Time Simulation is 86 Percent Complete 
+Time=34.400000 
+Time Simulation is 87 Percent Complete 
+Time=34.800000 
+Time Simulation is 88 Percent Complete 
+Time=35.200000 
+Time Simulation is 89 Percent Complete 
+Time=35.600000 
+Time Simulation is 90 Percent Complete 
+Time=36.000000 
+Time Simulation is 91 Percent Complete 
+Time=36.400000 
+Time Simulation is 92 Percent Complete 
+Time=36.800000 
+Time Simulation is 93 Percent Complete 
+Time=37.200000 
+Time Simulation is 94 Percent Complete 
+Time=37.600000 
+Time Simulation is 95 Percent Complete 
+Time=38.000000 
+Time Simulation is 96 Percent Complete 
+Time=38.400000 
+Time Simulation is 97 Percent Complete 
+Time=38.800000 
+Time Simulation is 98 Percent Complete 
+Time=39.201000 
+Time Simulation is 99 Percent Complete 
+Time=39.601000 
+Time Simulation is 100 Percent Complete 
+--------------------------------------
+Simulation Start Time:   28 of Aug  8:48:46
+Completion Time:  28 of Aug  8:49:00
+Elapsed Time : 00d:00:00:14
+--------------------------------------

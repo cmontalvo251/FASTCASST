@@ -1,0 +1,16 @@
+#ROOT=/home/carlos/Dropbox/BlackBox
+ROOT=/home/pi/BlackBox
+
+for VARIABLE in mathp.h mathp.cpp MATLAB.h MATLAB.cpp Rotation3.h Rotation3.cpp nrutils.h timer.cpp timer.h Datalogger.cpp Datalogger.h
+do
+    echo 'Making Link for ' $VARIABLE
+    ln -s ${ROOT}/c++/$VARIABLE $VARIABLE
+done
+
+#AROOT=/home/carlos/Documents/GitLab_Repos/Aircraft/Aircraft++/source
+AROOT=/home/pi/Aircraft/Aircraft++/source
+for VARIABLE in Aerodynamics.cpp Aerodynamics.h
+do
+    echo 'Making Link for' $VARIABLE
+    ln -s ${AROOT}/$VARIABLE $VARIABLE
+done

@@ -1,0 +1,13 @@
+# Blender MTL File: 'predator.blend'
+# Material Count: 2
+newmtl None_MM_ARMYCAMO.bmp
+Ns 9.803922
+Ka 0.000000 0.000000 0.000000
+Kd 0.225882 0.225882 0.225882
+Ks 0.900000 0.900000 0.900000
+d 1.000000
+illum 2
+map_Kd textures/MM_ARMYCAMO.bmp
+
+
+

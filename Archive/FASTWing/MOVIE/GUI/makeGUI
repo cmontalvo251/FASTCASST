@@ -1,0 +1,42 @@
+#!/bin/bash
+
+
+ok=0
+
+#Remove existing Executable
+if [ "$1" = "LINUX" ]; then
+    rm MOVIE
+    ok=1
+elif [ "$1" = "MAC" ]; then
+    rm -R MOVIE.app
+    ok=1
+else
+    echo 'Incorrect Argument'
+fi
+if [ "$ok" -eq 1 ]; then
+    #Create Project File
+    qmake -project
+    #Create MakeFile
+    qmake -makefile
+    #Make Function
+    make
+    #Rename function
+    if [ "$1" = "LINUX" ]; then
+	mv GUI MOVIE
+    elif [ "$1" = "MAC" ]; then
+	mv GUI.app MOVIE.app
+    fi
+    #Clean up
+    rm -f GUI.pro
+    rm -f MainGUI.o
+    rm -f Makefile
+    rm -f movie.o
+    rm -f ui_moviegui.h
+    rm -f GUIFunctions.o
+    rm -f moc_GUIFunctions.h
+    rm -f moc_GUIFunctions.cpp
+    rm -f moc_GUIFunctions.o
+fi
+
+##compilec test.cpp MainGUI.cpp -I/usr/include/qt4/ -lQtGui
+

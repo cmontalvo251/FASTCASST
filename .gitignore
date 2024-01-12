@@ -2,6 +2,7 @@
 *.odt
 *.csv
 *.OUT
+*.mat
 SysML_Diagrams/Archive
 logs/*
 *.pdf

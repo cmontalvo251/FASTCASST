@@ -223,7 +223,7 @@ SATELLITE:
   
   ☐ Make sure the reaction wheel code is working for Satellite
   
-  ☐ Run the MultiSAT++ SIL code and make sure you have the control system set up properly for CubeSats.
+  ☐ Run the MultiSAT++ SIL code and make sure you have the control system set up properly for CubeSats. (Note this is in Private_Toolboxes now)
   
   ☐ Run the MultiSAT++ HIL sim with an Arduino and make sure that FASTKit has the same functionality so you don't have to use MultiSAT++ anymore for CubeSat stuff
 
@@ -234,6 +234,8 @@ EXTRA STUFF:
   ✔ Fix the double to integer numerical precision issue by adding a quantization flag to the Simulation.txt file. I added a terrible hack where the control_matrix and the pwm_array is sent to every routine and a #ifdef cubesat is there to switch between the two. That's terrible. What we need to do is send the double array to all routines and then somewhere in the model we quantize the array if the flag is set @done (23-02-15 10:32)
 
   ✔ Hey the FASTDuino code is horribly hacked together. Would be nice to actually streamline the code. That is use the sensors and hardware class and rcio class so that the ino is a bit more high level. @done (23-12-05 10:39)
+
+  ☐ Would be nice to add in the WRF model so you can simulate the aircraft in realistic wind environments
 
   ☐ Create a routine where you compile and run candidate codes to make sure everything operates as intended - Like compile simonly, sil and hil on desktop and make sure that simonly and sil runs properly
 
@@ -257,7 +259,7 @@ TOMAD INTEGRATION:
 
  ✔ Move TOMAD from Gitlab over to Github @done (24-01-11 09:33)
 
- ☐ Compile TOMAD code and run a candidate simulation and generate plots
+ ✔ Compile TOMAD code and run a candidate simulation and generate plots @done (24-01-11 20:24)
 
  ☐ Add the capability to simulate multiple vehicles in FASTCASST
  

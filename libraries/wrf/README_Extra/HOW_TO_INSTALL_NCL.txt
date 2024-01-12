@@ -1,0 +1,179 @@
+%%%This will guide you through the setup of installing NCL 
+post processing on your computer
+
+1. Go to the following website and create an account
+
+http://www.earthsystemgrid.org/
+
+once there you need to click on NCAR Command Language and proceed to download.
+
+I downloaded version 5.2.0 (make sure to download the precompiled binaries)
+
+It will then ask you to subscribe to an elite mailing list. Subscribe, logout, and log back in
+and you should be able to download a file.
+
+If you're running Linux like I am you need to figure out the version of gcc and linux that you have
+
+to figure out which precomplied binary version to download, type the following commands
+
+   uname -m
+
+   gcc --version
+
+I get the following
+
+   i686
+
+   gcc version 4.3.2
+
+Thus the version of NCL I downloaded is called 
+
+   ncl_ncarg-5.2.0.Linux_i686_gcc432.tar.gz
+
+If you can't find a precompiled binary that means they haven't compiled NCL for your distribution and thus you will have to compile it by yourself. Good luck. I've never tried that.
+
+2. Now we can install the software.
+
+first we need to use gunzip to unzip the file
+
+   gunzip ncl_ncarg-5.2.0.Linux_i686_gcc432.tar.gz
+
+Then we need to figure out where to put the file. It creates a bin, lib, 
+and include directory so I put it in /usr/ since these directories already 
+exist, thus I type in the command
+
+   cd /usr/
+   sudo tar -xvf ~/(Directory of File)/ncl_ncarg-5.2.0.Linux_i686_gcc432.tar
+
+This should have created all of the libraries in the /usr folder. If you want to be sure type in
+
+   cd /usr/bin/
+
+   ./ncargcc
+
+   if something pops up besides command not found then you're OK
+
+3. Now that the software is installed we need to create some environment variables
+
+type the following commands
+
+   export NCARG_ROOT=/usr/   
+
+then type 
+
+   env 	  
+
+to make sure that the environment variable is created. Furthermore check the PATH environment variable.
+If /usr/bin/ is not in the PATH variable then type the following commands, else don't worry about it.
+
+   export PATH=/usr/bin:$PATH 
+
+Now to make sure that these environment variables are set everytime you start up the computer you must make
+sure that the commands are listed in your profile file type in
+
+   sudo nano /etc/profile
+
+and include the export commands in this file
+
+Finally make sure that the DISPLAY environment variable is set to 
+
+   :0.0
+
+4. Now it's time to test and make sure that NCL installed properly.
+
+First make sure you have csh installed. to test this type
+
+   csh
+
+This is just another shell enviroment so if it works you should just enter another shell. type
+
+  exit 
+
+to exit the shell
+
+To test the ncl program cd into your home directory and type
+
+  ng4ex gsun01n
+
+A window should pop up with some graphics on it. this file copies the gsun01n.ncl file into your home 
+directory. From now on you can type
+
+  ncl gsun01n.ncl 
+
+to run the same program. 
+
+---------EVERYTHING BELOW HERE IS NOT REALLY NECESSARY----------------
+
+Now to test the graphics type 
+
+  ncargex cpex08 -clean
+
+5. Problems
+
+when I run
+
+  ncargex cpex08 -clean
+
+I get the error message
+
+  /usr/bin/ld: cannot find -lX11
+  collect2: ld returned 1 exit status
+
+To fix this problem I typed 
+
+  locate libX11.so
+
+and it returned
+
+  /usr/lib/libX11.so.6
+  /usr/lib/libX11.so.6.2
+
+So I created a symbolic link in that file. The next two commands should work
+
+  cd /usr/lib/
+  sudo ln -s libX11.so.6 libX11.so
+
+Now ncargex should work. If you get another error like cannot find
+something. Just do a locate command and then a link command and it should fix it.
+
+
+6. I would recommend creating a .hluresfile to your home directory, this file customizes fonts and what not
+
+!=========================================
+! This is a sample .hluresfile. It should
+! go in your home directory.
+!
+! Comments for ".res" files are preceded by a "!".
+! Remember quotations are not used in .res files.
+
+! White background/black foreground
+*wkForegroundColor  : (/0.,0.,0./)
+*wkBackgroundColor  : (/1.,1.,1./)
+
+! Have a favorite colormap that you use for everything? You can
+! make it your default here (note the name is NOT in quotes).
+!
+! For all available color maps, see 
+! http://www.ncl.ucar.edu/Document/Graphics/color_table_gallery.shtml
+! *wkColorMap         : rainbow+gray
+
+! Font
+*Font           : helvetica 
+
+! Function Codes [Default is a colon]
+*TextFuncCode               : ~     
+ 
+! Make default X11 window larger (adjust as necessary)
+*wkWidth                     : 800
+*wkHeight                    : 800
+
+! Increase the default (16mb) contour memory
+! For example, if you have gridded data that
+! is larger than 500 x 500, you may need this.
+*wsMaximumSize: 32556688
+!==========================================
+
+
+
+
+

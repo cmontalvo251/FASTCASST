@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#This routine must be run in the WRFV root folder which contains
+#clean,configure and compile. You may use this code to save time when
+#compiling.  
+
+#Cleans everyting from the last compile
+./clean -a
+
+#Configures the input files for your configuration(make sure to pick
+#which type of compiler and nesting you would like) 
+./configure
+
+clear
+
+#This will output a list of choices to compile
+./compile
+
+#Type in the model you want to compile
+read -p "Which program do you want to compile?" choice
+
+#Standard out
+echo Compiling $choice
+echo Saving to ${choice}.log
+
+#Now this will compile the model of your choosing. A log file will be
+#created which contains the same name as the model
+./compile $choice &> ${choice}.log
+

@@ -1,0 +1,40 @@
+#!/bin/bash
+
+clear
+
+#This is where the main code is located
+export WRFV=/home/carlos/Georgia_Tech/Grad_Research/WindMapper/Wind_Modeling/WRFV3/run/
+#this is where you want to save the raw data file. open savelesdata.ncl and make sure DATA
+# and ROOT variables are the same
+export DATA=/home/carlos/Georgia_Tech/Grad_Research/WindMapper/Wind_Modeling/Simulation/Raw_Data/
+#Rename Output file and if possible convert output data to text file
+#the names of these file can be changed to whatever you like
+export FILE=wrfout_d01_0001-01-01_00:30:00
+export NCFILE=wrfles.nc
+
+#Run WRF code
+
+./runWRFcode
+
+RESTART=0 # if your just creating a restart point then 
+         # set this to one
+
+if [ $RESTART == 0 ]; then
+
+ #convert the output to NC format
+
+ ./convertOUT2NC
+
+ #convert data to TXT format
+
+ ./convertNC2TXT
+
+fi
+
+
+
+
+
+
+
+

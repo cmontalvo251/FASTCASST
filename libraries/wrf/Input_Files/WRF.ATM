@@ -1,0 +1,9 @@
+4	!Atmospheric Wind Type(1=constant,2=equation,3=table look up,4=WRF Model)
+1.225 	!Density(kg/m^3)
+1.0	!Wind scale
+0.0	!High Frequency Dryden Turbulence
+0	!Offset Heading(rad)
+0	!Ramp Time (sec)
+0.00	!Vx_Wave_speed(m/s)
+0.00	!Vy_Wave_speed(m/s)
+'/home/carlos/Documents/GitLab_Repos/Research/Data25dx_HF_0/' !WRF Data location

@@ -1,3 +1,5 @@
+*.eps
+*.odt
 *.csv
 SysML_Diagrams/Archive
 logs/*

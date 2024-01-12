@@ -255,11 +255,11 @@ EXTRA STUFF:
 
   ☐ I'd like there to be a SIMONLY version of Arduino where the Arduino just fakes the sensors. This way I can debug runtime errors without actually having the hardware.
 
-TOMAD INTEGRATION:
+TOSIM INTEGRATION:
 
- ✔ Move TOMAD from Gitlab over to Github @done (24-01-11 09:33)
+ ✔ Move TOSIM from Gitlab over to Github @done (24-01-11 09:33)
 
- ✔ Compile TOMAD code and run a candidate simulation and generate plots @done (24-01-11 20:24)
+ ✔ Compile TOSIM code and run a candidate simulation and generate plots @done (24-01-11 20:24)
 
  ☐ Add the capability to simulate multiple vehicles in FASTCASST
  
@@ -267,11 +267,19 @@ TOMAD INTEGRATION:
 
  ☐ Add the tether model into FASTCASST from MultiSAT++ (Gitlab)
 
- ☐ Add quadcopter and airplane mechanics from TOMAD
+ ☐ Add quadcopter and airplane mechanics from TOSIM
 
- ☐ Simulate candidate TOMAD sim in FASTCASST++ and compare the simulations
+ ☐ Simulate candidate TOSIM sim in FASTCASST++ and compare the simulations
 
- ☐ Teach Graduate students how to use the new code
+ MIGRATING FASTSENSORS:
+
+   ☐ Move all the Arduino codes to the Microcontroller repos
+
+   ☐ Migrate FASTLogger into FASTCASST Archive 
+
+   ☐ Most of the sensor codes could be put into Microcontrollers honestly since it's plotting data
+
+   ☐ Or even the instrumentation repo?
 
 RENDERING:
 

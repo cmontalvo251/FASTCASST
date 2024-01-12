@@ -1,0 +1,5 @@
+make rebuild
+echo 'g++ -c -w Autopilot.cpp -I../../Navio/ -Ilinks'
+g++ -c -w Autopilot.cpp -I../../Navio/ -Ilinks
+echo 'g++ -c -w Plane.cpp -I../../Navio/ -Ilinks'
+g++ -c -w Plane.cpp -I../../Navio/ -Ilinks

@@ -12,10 +12,6 @@ void controller::init(int CONTROLLERTYPE_IN) {
   set_defaults();
   printstdout("Controller Received Configuration Matrix \n");
   printstdout("Controller Setup \n");
-  if (abs(CONTROLLER_FLAG) >= 10) {
-    guid.init();
-  }
-
 }
 
 void controller::init(MATLAB in_configuration_matrix) {

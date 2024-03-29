@@ -8,7 +8,7 @@ functions otherwise the software will completely break.
 
 */
 
-#include "quadcopter_forces.h"
+#include "hybrid_forces.h"
 
 //Constructor
 forces::forces() {

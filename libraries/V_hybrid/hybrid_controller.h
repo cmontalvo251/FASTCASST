@@ -17,8 +17,10 @@
 class controller {
 private:
   double elapsedTime = 0,lastTime=0; //These are used to keep track of time elapsed.
-  double roll_command,pitch_command;
-  double droll,dpitch,dyaw;
+  double roll_command,pitch_command,yaw_rate_command;
+  double droll,dpitch,dyaw,dthrottle;
+  double airplane_aileron,airplane_elevator,airplane_rudder;
+  double motor_upper_left,motor_upper_right,motor_lower_left,motor_lower_right;
   void YawRateLoop_QUAD(MATLAB);
   void InnerLoop_QUAD(MATLAB);
   void InnerLoop_AIRPLANE(MATLAB);

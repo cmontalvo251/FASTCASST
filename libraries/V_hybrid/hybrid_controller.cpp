@@ -26,6 +26,7 @@ void controller::set_defaults() {
   control_matrix.set(3,1,OUTMIN);
   control_matrix.set(4,1,OUTMIN);
   control_matrix.set(5,1,OUTMIN);
+  //Think about what defaults you want OUTMIN, OUTMID, OUTMAX
 }
 
 void controller::print() {

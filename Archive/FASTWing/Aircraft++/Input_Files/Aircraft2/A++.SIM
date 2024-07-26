@@ -1,0 +1,4 @@
+0	!Initial Time (sec) 
+25	!Final Time (sec)
+0.0001	!Timestep (sec)
+1	!Use Experimental Input Files

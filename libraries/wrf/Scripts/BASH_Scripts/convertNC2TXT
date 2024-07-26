@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#This routine automates the function call to NCL (it is run by runWRFNCLCODE)
+
+ORIGINALDIRECTORY=$PWD
+
+#cd into directory WRFV directory
+cd $WRFV
+
+#test to see if file exists
+if [ -e "$NCFILE" ]; then
+
+   #cd back into original directory
+   cd $ORIGINALDIRECTORY
+   
+   #run conversion code
+   echo " "
+   echo "Converting NC file to TXT"
+   echo " "
+   #Check to make sure that the Data Folder is wiped clean
+   if [ -d $DATA ]; then
+       #Delete the directory
+       rm -r $DATA
+   fi
+   #Then create it again
+   mkdir $DATA
+
+   ncl savelesdata.ncl #this is an ncl code that converts a .nc file to .txt
+
+else
+
+  #file didn't convert properly or file just doesn't exist
+  #at all
+  echo $FILE
+  echo "and/or"
+  echo $NCFILE
+  echo "Does not exist"
+
+fi
+
+#cd back into original directory
+cd $ORIGINALDIRECTORY

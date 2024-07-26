@@ -1,0 +1,30 @@
+#!/bin/bash
+
+ORIGINALDIRECTORY=$PWD #save current directory
+
+#WRFV must be an environment variable pointing to the 
+#location of /run folder. use the command 'export' to 
+#save an environment variable
+
+#cd into directory WRFV directory 
+cd $WRFV
+
+echo $WRFV
+
+#run ideal.exe
+
+echo " "
+echo "Running Ideal.exe"
+echo "  "
+./ideal.exe
+
+#run wrf.exe
+
+echo " "
+echo "Running wrf.exe"
+echo " "
+./wrf.exe
+
+#cd back into original directory
+cd $ORIGINALDIRECTORY
+

@@ -1,0 +1,9 @@
+2800	!Weight_(N)_(assume_m1=m2)
+1000	!Ixx(kg-m^2)
+3000	!Iyy
+3000	!Izz
+0	!Ixy
+0	!Ixz
+0	!Iyz
+32.17	!Gravity m/s^2
+

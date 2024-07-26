@@ -1,0 +1,6 @@
+1	!Number_of_Connections
+1 2 !Aircraft_one_is_connected_to_aircraft_two
+0.0 0.743 0.0 !r_cg_aircraft_one
+0.0 -0.743 0.0 !r_cg_aircraft_two
+10000 200 !Linear_K_C
+130 2.6	!Rotation_K_C

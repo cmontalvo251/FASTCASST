@@ -1,0 +1,13 @@
+0	!Mode(0=6DOF,1=6DOF+Linearize,2=MONTECARLO,3=SOI,4=Tracking)
+0	!MCRUN(825,823,820,811,810,807,805)
+1	!Aerodynamics
+1	!Gravity
+1	!Crash_Detection
+0	!Sensor_Errors
+0	!SMARTSIMULATING
+1	!ContactMode(0=off,1=Soft_Contact,2=Hard_Contact)
+1	!Magnet_Type(0=off,1=Analytic,2=Numerical)
+3	!Nxmag
+3	!Nymag
+3	!Nzmag
+

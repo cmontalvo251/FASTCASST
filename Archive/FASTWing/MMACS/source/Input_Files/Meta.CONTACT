@@ -1,0 +1,42 @@
+10000  10000 K1n_K1t
+10000  10000  K2n_K2t
+100.0  100.0  C1n_C1t
+100.0  100.0  C2n_C2t
+0.25          mu
+0 -0.51 0.0  !vector_from_cg1_to_plane(m)
+-0.3 0.3 -0.51 0.51 -0.04 0.04 !Limits_of_contact_cube
+34   	   !Nverts
+0 1.02 0   !vector_from_cg_to_vertex(m)
+0.2 1.02 0.15   !vector_from_cg_to_vertex(m)
+-0.2 1.02 -0.15   !vector_from_cg_to_vertex(m)
+-0.2 1.02 0.15   !vector_from_cg_to_vertex(m)
+0.2 1.02 0.0   !vector_from_cg_to_vertex(m)
+0.2 1.02 -0.15   !vector_from_cg_to_vertex(m)
+0.0 1.02 0.15   !vector_from_cg_to_vertex(m)
+0 1.02 -0.15   !vector_from_cg_to_vertex(m)
+-0.15 1.02 0.0   !vector_from_cg_to_vertex(m)
+0.2 1.02 0.0   !vector_from_cg_to_vertex(m)
+0.075 1.02 0.075   !vector_from_cg_to_vertex(m)
+0.075 1.02 -0.075   !vector_from_cg_to_vertex(m)
+-0.075 1.02 0.075   !vector_from_cg_to_vertex(m)
+-0.075 1.02 -0.075   !vector_from_cg_to_vertex(m)
+0.2 0.9 0.15   !vector_from_cg_to_vertex(m)
+-0.2 0.9 -0.15   !vector_from_cg_to_vertex(m)
+-0.2 0.9 0.15   !vector_from_cg_to_vertex(m)
+0.2 0.9 -0.15   !vector_from_cg_to_vertex(m)
+0.2 0.8 0.15   !vector_from_cg_to_vertex(m)
+-0.2 0.8 -0.15   !vector_from_cg_to_vertex(m)
+-0.2 0.8 0.15   !vector_from_cg_to_vertex(m)
+0.2 0.8 -0.15   !vector_from_cg_to_vertex(m)
+0.2 0.7 0.15   !vector_from_cg_to_vertex(m)
+-0.2 0.7 -0.15   !vector_from_cg_to_vertex(m)
+-0.2 0.7 0.15   !vector_from_cg_to_vertex(m)
+0.2 0.7 -0.15   !vector_from_cg_to_vertex(m)
+0.2 0.6 0.15   !vector_from_cg_to_vertex(m)
+-0.2 0.6 -0.15   !vector_from_cg_to_vertex(m)
+-0.2 0.6 0.15   !vector_from_cg_to_vertex(m)
+0.2 0.6 -0.15   !vector_from_cg_to_vertex(m)
+0.2 0.5 0.15   !vector_from_cg_to_vertex(m)
+-0.2 0.5 -0.15   !vector_from_cg_to_vertex(m)
+-0.2 0.5 0.15   !vector_from_cg_to_vertex(m)
+0.2 0.5 -0.15   !vector_from_cg_to_vertex(m)

@@ -1,0 +1,5 @@
+1.29	 !Magnet_charge_of_magnet(Tesla)
+0.1016	 !a_(length(m))(0.3214)
+0.0250	 !b_(width(m))(0.0095)
+0.0202	 !c_(thickness(m))
+0	 !Density_of_magnet(kg/m^3)(7450)

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [ "$1" = "LINUX" ]; then
+    rm LinuxGL.exe
+    ok=1
+elif [ "$1" = "MAC" ]; then
+    rm MacGL.exe
+    ok=1
+else
+    echo 'Incorrect Argument'
+    ok=0
+fi
+
+if [ "$ok" -eq 1 ]; then
+    if [ "$1" = "LINUX" ]; then
+	compilec movie.cpp -w -O1 -lGLU -lglut -lGL
+	mv Run.exe LinuxGL.exe
+    elif [ "$1" = "MAC" ]; then
+	compilec movie.cpp -w -O1 -framework GLUT -framework OpenGL
+	mv Run.exe MacGL.exe
+    fi
+fi
+
+

@@ -23,6 +23,9 @@ hardware hw;
 #ifdef quadcopter
 #include "quadcopter_controller.h"
 #endif
+#ifdef hybrid
+#include "hybrid_controller.h"
+#endif
 controller control;
 
 //If you're simulating the vehicle you have to turn on the 

@@ -1,0 +1,14 @@
+0					!Save Each Frame to a File 1 = on,0 = off
+4	!Number of objects in window
+Input_Files/objects/ground/ground.obj 	!Second Object file - This is the Earth
+120.000000  	        		!Scale Factor of Object
+1.000000  	        		!Scale Factor of Position
+Input_Files/objects/sky/skydome.obj 	!Second Object file - This is the Earth
+20.000000  	        		!Scale Factor of Object
+1.000000  	        		!Scale Factor of Position
+Input_Files/objects/plane.obj 	      	!First Object file
+0.2500000  	        		!Scale Factor of Object
+1.0					!Scale Factor of Position
+Input_Files/objects/plane.obj 	      	!First Object file
+0.2500000  	        		!Scale Factor of Object
+1.0					!Scale Factor of Position

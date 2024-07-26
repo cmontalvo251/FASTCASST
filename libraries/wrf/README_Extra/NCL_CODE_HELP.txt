@@ -1,0 +1,105 @@
+This will explain a few helpful stuff for the 
+NCL programming language. If you know fortran then this will
+be pretty simple.
+
+If you ever want to look up a function or anything like that just go to this website
+
+    http://www.ncl.ucar.edu/Document/Manuals/Ref_Manual/NclIntr.shtml
+
+;%%%%%%%%PRINT TO HOME%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+To output a string to the home menu you type in 
+
+    print("test")
+
+to print a variable you type
+
+    print(sprintf("%9.9f",variable))
+
+in the above sprintf converts the variable to a string using the format
+"%number_of_digits_before_decimal_point.number_of_digits_after_decimal_pointf"
+
+;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+;%%%%%%%%STRINGS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+strings in NCL work sort of like vectors to. let's say I have x=2 and I want to convert this to a string
+The following will do it
+
+   string1 = "x=" + sprintf("%1.0f",x)
+
+;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+;%%%%%%%%%OUTPUT DATA TO FILE%%%%%%%%%%%%%%%%%%%%%%%%
+
+The following will output the variable 'x' to the file "test.txt"
+
+    asciiwrite("test.txt",x)
+
+Now the above file does not do a good job at formatting so the best 
+way to do it is to output the data using write_matrix. the following lines of code
+will write the matrix u_in to the file UData.txt(note this only works for 2-D arrays)
+Note that it will write that file in the directory ~/NCL_Test_Data/
+
+    dimensionsU = dimsizes(u_in)
+    cU = dimensionsU(2)
+    rU = dimensionsU(0)
+    SAVELOCATION = "~/NCL_Test_Data/" ; pick a location to put the gile
+    opt1 = True ; declare a variable with attributes
+    opt1@fout = SAVELOCATION + "Udata.txt" ; specify the output file name
+    opt1@title = "U-wind component" ; add a header
+    format1 = sprintf("%3.0f",cU) + "f10.4"    ; note that format1 = "202f10.4"
+    write_matrix(u_in(0:rU-1,0,0:cU-1),format1,opt1) 
+
+the nomenclature for the format field is 
+"number_of_columnsfnumber_of_digits_per_variable.number_of_digits_after_the_decimal"
+
+   "202f10.4" ;this creates 202 columns with 10 digits alloted for every value and 4 decimal points after the decimal
+
+;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+;%%%%%%%%%%%VARIABLE LOG%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+If you want to see what variables are contained in a certain file
+type in the following
+
+    ncdump wrfexample.nc &> variable.log
+
+then open up variable.log to see all of the variables. Then use the
+command 
+
+    data = addfile("filename.nc","r") ; import file
+    times = wrf_user_list_times(data) ; get time stamps
+    ntimes = dimsizes(times)          ; get number of timestamps
+    time = times(3)                   ; pick a timestamp
+    ; make sure 3 < ntimes
+    variable = wrf_user_getvar(data,"variablename",time)
+
+
+;%%%%%%%%%IF,THEN,ELSE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+an 'if' statement is done as follows
+
+  if (logical expression)  then
+
+  statement
+
+  end if
+
+here's an example
+
+  if (a .eq. 0) then
+
+  a = 1
+
+  end if
+
+;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+;%%%%%%%%%%%%%%%%%GENERAL FUNCTIONS%%%%%%%%%%%%%%%%%%%
+
+x = min(array) ; computes minimum value of array and returns to x
+
+;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    

@@ -1,0 +1,7 @@
+-1. split aero has extra drag when rolling
+-2. Added Cyp to fuselage aero
+-3. removed CLP from fuselage
+-4. change acwing(2) = -0.0875
+-5. added Cnp to fuselage aero
+-6. add CLR to fuselage aero
+-7. added CNR to fuselage aero

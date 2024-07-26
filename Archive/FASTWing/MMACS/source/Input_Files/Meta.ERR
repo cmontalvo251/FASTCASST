@@ -1,0 +1,36 @@
+GPS
+0.07	!GPS_Noisetype
+1.06 1.06 2.38	!positionBias
+0.85 0.85 1.9	!positionNoise
+0.68 0.68 1.52	!velocitynoise
+10000	!tau_pos
+10	!tau_vel
+10	!GPSupdaterate(10Hz)
+RATE_GYRO
+1	!PQR_Noisetype
+0.0175 0.0175 0.0175	!noise
+0.00048 0.00048 0.00048	!turnon
+0.000048 0.000048 0.000048 !drift
+0.001 	!XYcross
+0.001	!YZcross
+0.001	!XZcross
+0.001 0.001 0.001 !misalign
+0.001 0.001 0.001 !Scale-1
+200	!Rate_Gyro_update_rate(200)
+HORIZON
+1	!HNoisetype
+0.002 0.002 0.002 !Noise
+0.002 0.002 0.002 !Bias
+ACCELEROMETER
+1	!ACCEL_Noisetype
+0.01 0.01 0.01	!noise
+0.05 0.05 0.05	!turnon
+0.03 0.03 0.03 !drift
+0.0005 	!XYcross
+0.0005	!YZcross
+0.0005	!XZcross
+0.0003 0.0003 0.0003 !misalign
+0.00001 0.00001 0.00001 !Scale-1
+200	!Accel_update_rate(200)
+VISNAV
+1	!VisNav_Noisetype

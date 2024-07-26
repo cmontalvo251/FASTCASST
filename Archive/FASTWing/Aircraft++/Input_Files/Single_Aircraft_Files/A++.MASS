@@ -1,0 +1,19 @@
+1.2364	!Mass (kg)
+0.23083252176875 (kg-m^2)
+0.12326181467115 (kg-m^2)
+0.261842767316082 (kg-m^2)
+
+##Add this to the python version as well
+#Unfortunately the get aircraft coefficient code is in Eng units
+#and the simulations are in SI units
+weight = 2.72 #weight of aircraft in lbs
+Ixx = 0.17016620657925008 #From get_aircraft_coefficients_v4.py
+Iyy = 0.09086672561536692 #this is slugs-ft^2
+Izz = 0.19302648557913507
+
+Weight in english units is 2.72 lbs
+mass in SI units is 1.2364 kg (divide lbs/2.2)
+
+Ixx (slugs - ft^2) * (14.5939 kg / 1 slugs) * ( 1 m / 3.28 ft)^2
+
+Inertias = [0.17016620657925008,0.09086672561536692,0.19302648557913507] slugs-ft^2

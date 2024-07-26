@@ -1,0 +1,22 @@
+  
+ AAAA TTTT M   M OOOO SSSS PPPP H  H EEEE RRR  EEEE
+ A  A  TT  MM MM O  O SS   PP P H  H EE   RR R EE  
+ AAAA  TT  M M M O  O SSSS PPPP HHHH EEEE RRRR EEEE
+ A  A  TT  M   M O  O   SS PP   H  H EE   RRR  EE  
+ A  A  TT  M   M OOOO SSSS PP   H  H EEEE RR R EEEE
+  
+ Atmosphere Input File: 
+ WRF.ATM
+  
+ Model Number (0=Constant, 1=Equation, 2=Table):            4
+  
+ Using Wind File = WRF_Wind_Data/                                                                                                                  
+ Grid Size of WRF model =    25.000000000000000       m
+ Maximum Height of WRF model =    1000.0000000000000       m
+ Grid Size of Turbulence(m) =    1.0000000000000000     
+ Wind scale =    1.0000000000000000     
+ Turbulence Scale =    0.0000000000000000     
+ Heading Offset in WRF model(rad) =    0.0000000000000000     
+ Wavespeed in X and Y (m/s) =    0.0000000000000000        0.0000000000000000     
+ Ramp Time (sec) =    0.0000000000000000     
+ Data Quality Flag (nd, 0=Data Not Loaded Successfully, 1=Data Loaded Successfully):            1

@@ -1,0 +1,80 @@
+Ok to run the WRF Sim I'm assuming you have the following installed on
+your computer.
+
+MATLAB
+NCL
+Net-CDF
+WRF
+
+If you do great. So here's how I got the code to run in an easy and
+efficient manner. First let's talk about the flow of the entire simulation process.
+
+---------------OVERALL FLOW (MANUAL) ----------------------
+
+1.) Edit namelist.input and input_sounding
+You want to create an initial u,v wind profile and also set the simulation time to 30 minutes. This way the LES will kick off and create adequate turbulence. You also want to create a RESTART point so that it simulates for 30 minutes and then saves the entire WRF profile at 30 minutes.
+
+2.) ./ideal.exe
+
+This will set up all the input files.
+
+3.) ./wrf.exe 
+
+This will actually run the code and create a restart file at 30 minutes.
+
+4.) Now go back and edit namelist.input and simulate for 10 minutes. This time you don't need a restart point and you just want ti simulate starting at 30 minutes and simulate for 10 outputting at 1 second.
+
+5.) ./ideal.exe
+
+Again this will set up everything.
+
+6.) ./wrf.exe
+
+This will run the code for 10 minutes and create a huge file that looks like this. 
+
+wrfout_d01_0001-01-01_00:30:00
+
+7.) Rename this file to a ".nc" file
+
+8.) use NCL to output the U,V,W wind data to text files. Unfortunately NCL outputs the data to text files in a format that I don't particularly like. i.e Every text file has wind for a constant z for every second. That's alot of text files.
+
+9.) Consolidate all files into 1 file per wind data per second. Thus the final text files should read like this.
+
+[U,V,W]_time.txt - you will have 3 text files per timestamp. One along U, V and W. The text file will have the data at every grid point in the cube(x,y,z).
+
+Now running 1-9 is very tedious and can get time consuming so I wrote a few scripts to everything for you. This is what you can do to make things go a little easier.
+
+-------------- OVERALL FLOW (AUTOMATIC) ----------------------
+
+1.) Open createlesdata.m - Read the directions for creating a restart point. This involves editing namelist.input and input_sounding 
+
+2.) run createlesdata.m
+
+3.) Now follow the directions for using a restart point.
+
+4.) run createlesdata.m
+
+That's it!
+
+Ok so what is exactly happening.
+
+1.) Edit namelist.input and input_sounding
+2.) createlesdata.m executes a bash script "runWRFNCLcode"
+3.) runWRFNCLcode contains some environment variables that you must change depending on PATHs to your files. script first executes "runWRFcode"
+4.) runWRFcode merely executes ideal.exe and wrf.exe
+5.) runWRFNCLcode then branches depending on a RESTART point or not. If you're creating a restart point the entire MATLAB routine breaks out if not two more scripts are run "convertOUT2NC" and "convertNC2TXT"
+6.) convertOUT2NC merely renames the wierd WRF output file to a ".nc" file extension.
+7.) convertNC2TXT looks like alot when you open it but all it does is call "ncl savedata.ncl" which is an NCL script that I wrote 
+8.) savedata.ncl outputs the WRF data to text files. In here you need to change some PATHs as well.
+9.) Finally back to createlesdata.m, this MATLAB script executes "consolidate.m"
+10.) consolidate.m puts the data into a more workable format.
+
+-------PLOTTING and UTILIZING THE DATA-----------
+
+So how do we plot everything or use u,v,w in simulation?
+
+I created a script called "plotlesdata.m" which pulls in the WRF data to plot some mesh plots and stuff.
+
+The kernel of the code comes from two MATLAB files "UVWfrontend.m" which you should run once to initialize everything and then "uvwout.m" which interpolates the data to create u,v,w = f(x,y,z,t)
+
+And there you have it.

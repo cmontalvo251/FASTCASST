@@ -1,0 +1,9 @@
+0		!Constant_Winds
+0 0 0		!Constant_Scale
+0.1 0.1 0.1	!Frequency_Scale
+0		!Turbulence
+1 1 1		!Turbulence_Scale
+0		!WRF
+1 1 1		!WRF_Scale
+1		!Override_Path
+/home/carlos/Documents/WRF_Wind_Data/Data25dx_HF_0/

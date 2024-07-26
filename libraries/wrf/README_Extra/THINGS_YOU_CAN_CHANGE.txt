@@ -1,0 +1,172 @@
+THIS FILE WILL EXPLAIN EVERYTHING THAT YOU CAN CHANGE ABOUT
+THE WIND MODELING CODE
+
+%%%%%This will explain the namelist.input and input_sounding 
+file as well as possible.
+
+
+%%%%%%%%%%%%%RUN TIME%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Specify the run time and start time then make sure that
+the end time matches up
+
+ run_days                            = 0,
+ run_hours                           = 0,
+ run_minutes                         = 20,
+ run_seconds                         = 0,
+ start_year                          = 0001,
+ start_month                         = 01,
+ start_day                           = 01,
+ start_hour                          = 00,
+ start_minute                        = 00,
+ start_second                        = 00,
+ end_year                            = 0001,
+ end_month                           = 01,
+ end_day                             = 01,
+ end_hour                            = 00,
+ end_minute                          = 20,
+ end_second                          = 00,
+
+%%%%%OUTPUT DATA PARAMETER%%%%%%%%%%%%%%%%%%%%%%
+
+The history interval is in minutes and outputs the data every
+history_interval minutes.
+
+ history_interval                    = 1,
+
+if you want to output in seconds change the history_interval 
+to history_interval_m and history_interval_s
+
+ history_interval_m                  = 01,
+ history_interval_s                  = 00,
+
+%%%%%%%% TIMESTEP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The timestep is in seconds(recommend 6*dx(km))
+
+ time_step                           = 20,
+
+%%%%%%OUTPUT DOMAIN SIZE PARAMETERS%%%%%%%%%%%%%%%%%%%
+
+These are domain parameters. Essentially how big the 
+matrices are. e_we is the number of columns and e_vert 
+is the number of rows
+
+ s_we (max_dom)                      = 1,	; start index in x (west-east) direction (leave as is)
+ e_we (max_dom)                      = 91,	; end index in x (west-east) direction
+ s_sn (max_dom)                      = 1,	; start index in y (south-north) direction (leave as is)
+ e_sn (max_dom)                      = 82,	; end index in y (south-north) direction
+ s_vert (max_dom)                    = 1,	; start index in z (vertical) direction (leave as is)
+ e_vert (max_dom)                    = 28,	; end index in z (vertical) direction
+
+%%%%%%%%%%%%%%%GRID SIZE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The following specify the grid size for the output data in 
+meters. ztop is the maximum height which in this case is 30km. Of course
+if you change these parameters make sure to change the timestep accordingly
+Actually don't ever change ztop unless you are running LES. 
+
+ dx                                  = 2000,
+ dy                                  = 2000,
+ ztop                                = 30000.,
+
+if you change ztop you must change the input_sounding file
+The timestep is in seconds(recommend 6*dx(km))
+
+%%%%%%%%INPUT_SOUNDING FILE%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+the format is as follows
+
+this is the first line
+
+surface_pressure(hPa)  surface_temp(K) moisture_mixing ratio(g/kg)
+
+the rest is define as follows. thus you need to make sure you
+have enough data points for this
+height(m) temp(K) mixing_ratio(g/kg) x-wind(m/s) y-wind(m/s)
+
+%%%%%%%%%%TOPOGRAPHY%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+To change the topography go into the file 
+~/dyn_em/module_initialize_[case].F where [case] is the current 
+case you are running and on about line 289 change the value
+grid%ht to whatever you want.
+
+%make sure that terrain data is square if you add an external
+terrain_data.txt
+
+if you want just flat terrain just delete the terrain_data.txt file in the run/ folder
+
+%%%%%%%%%%VARIABLES IN module_initialize_[case].F%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+grid%ht = the terrain height in meters
+its = s_we from namelist.input 
+ite = e_we from namelist.input
+jts = s_sn from namelist.input
+jte = e_sn from namelist.input
+ids = s_we from namelist.input 
+ide = e_we from namelist.input
+jds = s_sn from namelist.input
+jde = e_sn from namelist.input
+g = gravity in m/s^2
+
+%%%%RESTART RUNS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Consult the WRF_user_guide page 92 to learn about
+this. This allows you to start a run and create a save 
+point. Allowing you to quit the program and continue from
+where you left off. I would write it here but it is pretty
+straight forward
+
+%%%%%%%%PHYSICS PARAMETERS%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ &physics
+ mp_physics                          = 0, ; rain,ice, and snow (I usually pick 2)
+ ra_lw_physics                       = 0, ; accounts for gases (1)
+ ra_sw_physics                       = 0, ; accounts for cloude (1)
+ radt                                = 0, ; ??
+ sf_sfclay_physics                   = 0, ; viscous sub layers (1)
+ sf_surface_physics                  = 0, ; Don't use this one
+ bl_pbl_physics                      = 0, ; 
+ bldt                                = 0,
+ cu_physics                          = 0,
+ cudt                                = 0,
+ isfflx                              = 1, heat flux stuff
+ ifsnow                              = 0,
+ icloud                              = 1,
+ num_soil_layers                     = 5,
+
+All of these parameters can be changed. Consult the WRF_user_guide
+for detailed explanations. page 104
+
+%%%%%%%%%%%LARGE EDDY SIMULATION STUFF%%%%%%%%%%%%%%%%%
+
+The surface heat flux is in the namelist.input file and is written
+as tke_heat flux. As shown below.
+
+ tke_heat_flux                       = 0.24,   0.24,   0.24,
+
+The units are in Watts/m^2 where a Watt = Joule/s = N*m/s
+
+Also it takes 30 minutes of simulation time to accurately capture
+well established turbulence. So it might be a good idea to 
+simulate for 30 minutes then take the wind at 30 minutes as the 
+initial conditions
+
+%%%%OTHER F FILES%%%%%%%%%%%%%%
+
+Sometimes if your timestep is too large you get NANs. I edited
+a few routines to add in a test for NANs. No one likes to run code for
+hours and just get a bunch of garbage.
+
+
+
+
+
+
+
+
+
+
+
+

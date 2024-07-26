@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#This merely renames the wrf output file to a .nc file.
+#It is run by runWRFNCLcode
+
+ORIGINALDIRECTORY=$PWD
+
+#cd into directory WRFV directory
+cd $WRFV
+
+if [ -e "$FILE" ]; then
+  
+  #File Exists but needs to be converted   
+  mv $FILE $NCFILE
+  echo " "
+  echo "File Converted to NC format"
+  echo " "
+
+fi
+
+#cd back into original directory
+cd $ORIGINALDIRECTORY
+

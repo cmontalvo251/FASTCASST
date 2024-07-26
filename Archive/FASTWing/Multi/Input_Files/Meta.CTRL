@@ -1,0 +1,4 @@
+1	!Control_On_off
+1	!Control_Type(0=Trim,1=Autopilot)	
+0	!FCSUPDATE
+

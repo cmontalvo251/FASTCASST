@@ -1,0 +1,139 @@
+%%%This Will Guide you through the setup process for WRFV version 3.1.1
+
+%%Before you do this make sure you have the following
+programs
+
+Program List
+1. m4
+2. csh
+3. C and C++ (test this by typing in gcc and g++)
+4. gfortran
+%%Automatically installed by Ubuntu
+5. bash
+6. sh
+7. perl
+8. gunzip
+9. tar
+
+%If you don't have these programs then you need to install them using synaptic package manager or sudo apt-get install(if using ubuntu)
+
+%%Installation Guide
+
+1. Download netcdf-bin using synaptic package manager (System-Administration-Synaptic Package Manager)
+   Notes: if it downloads successfully you should be able to type in ncdump but not nc-config
+
+   you might also want to make sure that ncdump is located in /usr/bin/ that way when you do the manual install
+   everything will work well
+
+   to check and make sure that ncdump is located in the /usr/bin/ folder type the following commands
+
+   cd /usr/bin/
+
+   ./ncdump
+
+   if it says "no such file or directory" something went wrong
+
+2. Now go to this website and download the rest of net-cdf andideal.exe              tr49t67
+ do a manual install. I downloaded net-cdf 4.0.1
+
+   http://www.unidata.ucar.edu/downloads/netcdf/netcdf-4_0_1/index.jsp    (MAKE SURE TO DOWNLOAD THE .gz VERSION)
+
+   this will download a .gz so you need to type the following commands
+ 
+   cd (directory of downloaded file)
+
+   gunzip (netcdf file)
+
+   tar -xvf (netcdf file)
+
+   cd (netcdf folder)
+
+   To do the manual install you can either:
+
+   A. open the INSTALL file and read how to do it or
+   B. type the following command
+      
+   sudo ./configure --prefix="/usr/"
+
+   To make sure that everything installed correctly type
+
+   sudo make check install
+
+   If it works it should say CONGRATULATIONS blah blah blah
+
+   Last thing to check is to make sure that nc-config exists and that it is located in the /usr/bin folder
+
+3. Now we must set some environment variables, type the following
+
+   export NETCDF=/usr/
+
+   then type env to and make sure the variable was created,then open up your profile file. (Note: when you set an environment variable it only sets it in the terminal    window that you have open. if you close that terminal window you need to redeclare all the environment variables...lame. which is why we are putting the variables in the profile file that way when you log in all the env variables are automatically set)
+
+   Anyway to open up the profile file the following command will work
+
+   sudo nano /etc/profile
+
+   somewhere in the file type in:
+
+   export NETCDF=/usr/
+
+   then to close the file type CTRL-X and then it will ask you if you want to save. type Y for yes.
+
+   This will guarantee that the environment variable is set everytime you boot your computer
+
+4. Now we are ready to compile WRFV
+
+   So go to this website and download WRFV3. Go down to the bottom of the page and click "New Users"
+
+   http://www.mmm.ucar.edu/wrf/users/download/get_source.html
+   (This is also a great website for documentation and forums)
+
+   You must create a username and password to access it
+
+   I downloaded WRFV3.1.1
+
+   again use the gunzip and tar commands to extract the folder (make sure you extract the folder into a place that makes sense)
+
+   Now once you have the WRFV folder extracted cd into the folder and type ./clean -a then ./configure
+
+   I usually pick selection 1(but I would pick the gcc or the gfortran compiler) with no nesting
+
+   Then type 
+
+   ./compile   
+
+   a list of options will pop up, to test it type
+
+   ./compile em_b_wave >& wave.log
+
+   This compile usually takes about 10 minutes to compile
+
+   The extra > will write everything to the log file so when the compilation is over open up the wave.log file
+   and check and see if any errors exist.
+
+4.5 To compile the code by typing in one command you need the code CreateCode which I created.
+    It prompts the user for the compilation and just takes out some unnecessary steps.
+
+   ./CreateCode
+
+   pick your selection for configuring. it then asks you which code to compile and thats it   
+
+5. Now if everything worked you should be able to do the following
+
+   cd into a folder called run/ and see two files ideal.exe and wrf.exe
+
+   first open up namelist.input to change the input configuration then run ./ideal.exe and then ./wrf.exe
+
+
+   If something didn't work 
+
+   ./clean -a 
+
+   then run ./configure with different options and see if that works
+
+If you have any questions call or email 
+
+Carlos Montalvo
+cmontalvo@gatech.edu
+678-756-7862
+

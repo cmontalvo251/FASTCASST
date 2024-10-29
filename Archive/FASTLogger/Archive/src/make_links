@@ -1,0 +1,28 @@
+##Location of C.git from Github
+CROOT=/home/pi/C
+
+rm links/*.cpp links/*.h links/*.o links/*.a
+
+GLOBAL_FILES='timer.cpp timer.h mathp.cpp mathp.h'
+MATLAB_FILES='MATLAB.cpp MATLAB.h nrutils.h'
+SIXDOF_FILES='Rotation3.cpp Rotation3.h'
+DATALOGGER_FILES='Datalogger.cpp Datalogger.h'
+SERIAL_FILES='Serial.cpp Serial.h'
+
+####COPIES FILES
+declare -A CFILES
+CFILES[0]=${GLOBAL_FILES}
+CFILES[1]=${SIXDOF_FILES}
+CFILES[2]=${DATALOGGER_FILES}
+CFILES[3]=${SERIAL_FILES}
+CFILES[4]=${MATLAB_FILES}
+C_FILES_SUB=(/ 6DOF/ Datalogger/ Serial/ MATLAB/)
+for i in {0..4}
+do
+	IFILES=${CFILES[$i]}
+	for VARIABLE in $IFILES
+	do
+		echo 'Making Link for ' ${CROOT}/${C_FILES_SUB[$i]}$VARIABLE
+		ln -s ${CROOT}/${C_FILES_SUB[$i]}$VARIABLE links/$VARIABLE
+	done
+done

@@ -18,11 +18,11 @@ tstart = -99
 tend = -99
 
 #Run code
-os.system('./clean_logs')
+#os.system('./clean_logs')
 #os.system('rm simonly.exe')
 #os.system('make clean')
 #os.system('make simonly MODEL="cubesat"')
-os.system('./simonly.exe airplane/')
+#os.system('./simonly.exe airplane/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File
@@ -42,13 +42,13 @@ for line in datafile:
     #print('row = ',row)
     if len(row) > 1:
         #print('len(row) = ',len(row))
-        numarray = [np.float(x) for x in row]
+        numarray = [float(x) for x in row]
         sense_data.append(numarray)
 sense_data = np.array(sense_data)
 for line in logfile:
     row = line.split(',')
     if len(row) > 1:
-        numarray = [np.float(x) for x in row]
+        numarray = [float(x) for x in row]
         model_data.append(numarray)
 model_data = np.array(model_data)
 #Plot everything

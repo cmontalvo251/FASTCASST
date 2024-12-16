@@ -1,3 +1,4 @@
+
 #############################################
 #
 #  FASTPy - Facility for Aerial Systems and Technology
@@ -14,22 +15,22 @@
 #Add in all needed libraries and modules
 import sys, time
 
-sys.path.append('../hardware/Util')
+sys.path.append('/home/pi/FASTCASST/libraries/Util')
 import util
 
-sys.path.append('../hardware/GPS/')
+sys.path.append('/home/pi/FASTCASST/libraries/GPS')
 import gps
 
-sys.path.append('../hardware/IMU/')
+sys.path.append('/home/pi/FASTCASST/libraries/MPU9250')
 import mpu9250
 
-sys.path.append('../hardware/Datalogger')
+sys.path.append('/home/pi/FASTCASST/libraries/Datalogger')
 import datalogger
 
-sys.path.append('../hardware/LED')
+sys.path.append('/home/pi/FASTCASST/libraries/LED')
 import leds
 
-sys.path.append('../hardware/RCIO/Python')
+sys.path.append('/home/pi/FASTCASST/libraries/RCIO/Python')
 import rcinput
 import pwm
 
@@ -42,6 +43,7 @@ util.check_apm()
 
 #Setup datalogger
 logger = datalogger.Datalogger()
+print(sys.argv)
 logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
@@ -111,7 +113,7 @@ while (True):
     if(elapsedTime > 1.0):
         StartTime = time.time()
         gps_llh.update()
-        print(gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
+        #print(gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
 
     #Set arm switch up for safety reasons
     if(armswitch < 1.495):

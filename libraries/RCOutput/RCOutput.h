@@ -15,7 +15,7 @@
 
 #define OUTMIN 992
 #define OUTMID 1500
-#define OUTMAX 2000
+#define OUTMAX 1950
 
 class RCOutput {
 public:

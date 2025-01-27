@@ -4,11 +4,9 @@
 #  FASTPy - Facility for Aerial Systems and Technology
 #  Kit in Python
 #
-#  Front Wheel Drive Car Manual Control Software
-#  Created: Spring 2022
-#  Primary Author: Julia Nelson
-#  Secondary Author: Maxwell Cobar
-#  Tertiary Author : Aramis Hoffmann
+#  Standard 4 Channel Airplane (Derived from Car.py)
+#  Created: Spring 2025
+#  Primary Author: Kate Doiron
 #
 ################################################
 

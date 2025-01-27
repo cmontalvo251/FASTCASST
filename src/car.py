@@ -157,7 +157,7 @@ while (True):
     #print(armswitch,throttlerc,yawrc)
 
     #Print to Home
-    print(np.round(RunTime,2),throttlerc,rollrc)
+    print(np.round(RunTime,2),throttlerc,rollrc,pitchrc)
 
     #Log data
     outdata[0] = armswitch

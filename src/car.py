@@ -8,6 +8,7 @@
 #  Created: Spring 2022
 #  Primary Author: Julia Nelson
 #  Secondary Author: Maxwell Cobar
+#  Tertiary Author : Aramis Hoffmann
 #
 ################################################
 
@@ -36,9 +37,12 @@ import pwm
 
 import numpy as np
 #Create a time for elapsed time
+print('Setting up Time')
 StartTime = time.time()
+GPSTime = time.time()
 
 #Make sure Ardupilot is off
+print('Checking to make sure APM is off')
 util.check_apm()
 
 #Setup datalogger
@@ -51,21 +55,26 @@ logger.open()
 outdata = np.zeros(10)
 
 #Setup GPS
+print('Initializing GPS...')
 gps_llh = gps.GPS()
 gps_llh.initialize()
 
 #Setup IMU
+print('Initializing IMU...')
 imu = mpu9250.MPU9250()
 imu.initialize()
 
 #Setup RCIO
+print('Initializing RCInput...')
 rcin = rcinput.RCInput()
 i = 0
 num_channels = 9
 
 #Setup LED
+print('Setting up LEDs.....')
 led = leds.Led()
 led.setColor('Yellow')
+print('LED is yellow now')
 
 #Setup Servos
 SERVO_MIN = 0.995 #ms
@@ -75,6 +84,7 @@ PWM_OUTPUT = [0,1] #Servo Rail Spots
 print('PWM Channels: ',PWM_OUTPUT)
 
 #Throttle - PWM Channel 1
+print('Initializing PMW channels')
 pwm1 = pwm.PWM(PWM_OUTPUT[0])
 pwm1.initialize()
 pwm1.set_period(50)
@@ -86,12 +96,13 @@ pwm2.set_period(50)
 pwm2.enable()
 
 #Short break to build suspense
+print('Sleep for 1 second')
 time.sleep(1)
 
 #This runs on repeat until code is killed
 while (True):
-    RunTime = time.time()
-    elapsedTime = RunTime - StartTime
+    RunTime = time.time() - StartTime
+    elapsedTime = RunTime - GPSTime
     #print(elapsedTime)
     
     #Read in receiver commands
@@ -111,7 +122,7 @@ while (True):
 
     #Get GPS update
     if(elapsedTime > 1.0):
-        StartTime = time.time()
+        GPSTime = time.time()
         gps_llh.update()
         #print(gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
 
@@ -144,6 +155,9 @@ while (True):
         pwm2.set_duty_cycle(SERVO_MID)
         #print('Autonomous Control')
     #print(armswitch,throttlerc,yawrc)
+
+    #Print to Home
+    print(np.round(RunTime,2),throttlerc,rollrc)
 
     #Log data
     outdata[0] = armswitch

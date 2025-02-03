@@ -1,14 +1,6 @@
-/* Forces Template 2021
+//This is for an x8 quad with 4 motors on top and 4 motors on bottom
 
-This forces file is a template for a fictitious portalcube
-with thrusters and a simple aero model. The Dynamics.cpp module
-will call a few candidate functions. If you make your own aero
-file with header and cpp file you must conform to the following
-functions otherwise the software will completely break.
-
-*/
-
-#include "forces.h"
+#include "x8_forces.h"
 
 //Constructor
 forces::forces() {

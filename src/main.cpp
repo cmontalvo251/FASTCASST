@@ -26,6 +26,9 @@ hardware hw;
 #ifdef hybrid
 #include "hybrid_controller.h"
 #endif
+#ifdef x8
+#include "x8_controller.h"
+#endif
 controller control;
 
 //If you're simulating the vehicle you have to turn on the 

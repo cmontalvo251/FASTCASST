@@ -1,7 +1,6 @@
-//This is a portal cube template. You must adhere to these standards if you write your
-//own
+//This is an x8 quad with 4 rotors on top and 4 rotors on bottom
 
-#include "controller.h"
+#include "x8_controller.h"
 
 controller::controller() {
 };

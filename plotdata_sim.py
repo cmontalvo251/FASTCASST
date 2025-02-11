@@ -17,12 +17,12 @@ except:
 tstart = -99
 tend = -99
 
-#Run code
-#os.system('./clean_logs')
-#os.system('rm simonly.exe')
-#os.system('make clean')
-#os.system('make simonly MODEL="cubesat"')
-#os.system('./simonly.exe airplane/')
+#Run code - Comment out section later?
+os.system('./clean_logs')
+os.system('rm simonly.exe')
+os.system('make clean')
+os.system('make simonly MODEL="x8"')
+os.system('./simonly.exe x8/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File

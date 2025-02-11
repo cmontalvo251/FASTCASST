@@ -2,9 +2,379 @@
 
 #include "x8_controller.h"
 
+////////////////////////////////////////////////////////////////Start Motor Class////////////////////////////////////////////////////////////////
+//Motor class constructor 
+Motor::Motor() {
+    //Initialize vectors
+    r.zeros(3, 1, "r vector");
+    n.zeros(3, 1, "n vector");
+    Tn.zeros(3, 1, "Thrust vector");
+    datapts.zeros(3, 1, "Motor data points");
+
+    //Rotor radius - from Propulsion constructor in Propulsion.cpp in SUAM
+    R = (5.0 / 12.0) * FT2M;
+
+    //Set minimum signal
+    MINSIGNAL = OUTMIN;
+}
+
+//Function to calculate coefficient of thrust and torque coefficient
+void Motor::MotorCalcs(double Tdatapt, double pwm_datapt, double omegaRPMdatapt) {
+    //Compute Kt
+    float dpwm = pwm_datapt - OUTMIN;
+    kt = Tdatapt / (dpwm * dpwm);
+
+    //Angular Velocity computation
+    a = (omegaRPMdatapt * 2 * PI / 60.0) / dpwm;
+
+    //Constants
+    rho = 1.225;     //kg/m^3
+    A = PI * R * R;  //m^2
+
+    //Compute ct and cq
+    ct = kt / (rho * A * R * R * a * a); //.0335?
+    cq = sqrt(ct * ct * ct) / sqrt(2);   //lbf-s/ft^2 /.004?
+
+    //Set controller ct and cq to calculated values?
+
+    //Debug prints
+    //printf("Ct and Cq = %lf %lf \n",ct,cq);
+    //printf("pwm_datapt and ct = %lf %lf \n", pwm_datapt, ct);
+}
+
+//Function to compute pwm signal based on thrust
+double Motor::compute_signal_NO_OMEGA(double thrust_req) {
+    //Assume Thrust = kt*(pwm_signal - MINSIGNAL)**2
+    double pwm_req = sqrt(thrust_req / kt) + OUTMIN;
+    return pwm_req;
+}
+
+//Function to compute thrust based on pwm
+void Motor::compute_thrust_NO_OMEGA() {
+    thrust = kt * (pwm_signal - OUTMIN) * (pwm_signal - OUTMIN);
+    Tn.mult(n, thrust);
+}
+
+//Function to compute torque based on thrust
+void Motor::compute_torque_NO_OMEGA() {
+    // printdouble(thrust,"thrust");
+    // printdouble(R,"R");
+    // printdouble(cq,"cq");
+    // printdouble(ct,"ct");
+    torque = thrust * R * cq / ct;
+}
+/////////////////////////////////////////////////////////////////End Motor Class/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////Start Controller Class//////////////////////////////////////////////////////////////
+//controller class constructor - sets system parameters and sets up motors
 controller::controller() {
+    //Mass (from Propulsion constructor in Propulsion.cpp in SUAM)
+    mass = 0.735;
+
+    //Inertia (from Propulsion constructor in Propulsion.cpp in SUAM)
+    Ixx = 0.07413; //Autopilot.cpp says 0.045
+    Iyy = Ixx;     //Autopilot.cpp says 0.07413
+    Izz = Ixx + Iyy - mass * 0.65 * 0.65 / 6;
+
+    //Coefficient of thrust (from MotorCalcs function in Motor.cpp in SUAM)
+    ct = .0335; //Paper says 0.011321 - Call from motor?
+
+    //Torque coefficient (from MotorCalcs function in Motor.cpp in SUAM)
+    cq = .004; //Paper says 0.00085 - Call from motor?
+
+    //Prop Radius (from Propulsion constructor in Propulsion.cpp in SUAM)
+    Rrotor = (5.0 / 12.0) * FT2M;
+
+    //r vector components (from Propulsion constructor in Propulsion.cpp in SUAM)
+    rx = 0.10115;
+    ry = rx;
+    rz = 0.0508;
+
+    //From Propulsion constructor in Propulsion.cpp from SUAM
+    //These come from data sheets
+    //at a signal of
+    pwm_datapt_ = 1766.0;
+    //thrust is
+    Tdatapt_ = (5.0 / GEARTH); //Newtons to kg
+    //angular velocity is
+    omegaRPMdatapt_ = 3500.0;
+    
+    //Wrap defaults into matlab vector
+    datapts.zeros(3, 1, "Data points for motors");
+    datapts.set(1, 1, Tdatapt_);
+    datapts.set(2, 1, pwm_datapt_);
+    datapts.set(3, 1, omegaRPMdatapt_);
+
+    //Compute nominal and max thrusts and configuration matrix
+    MotorsSetup(datapts); 
+
+    //Test remove motor
+    //RemoveMotors(3);
 };
 
+//Function to add a motor to system
+void controller::addMotor(double rx, double ry, double rz, double nx, double ny, double nz, int direction, int op) {
+    //Increment the number of motors by 1
+    NUMMOTORS++;
+
+    //Set motor position vector
+    MOTORS[NUMMOTORS - 1].r.set(1, 1, rx);
+    MOTORS[NUMMOTORS - 1].r.set(2, 1, ry);
+    MOTORS[NUMMOTORS - 1].r.set(3, 1, rz);
+
+    //Set motor normal vector
+    MOTORS[NUMMOTORS - 1].n.set(1, 1, nx);
+    MOTORS[NUMMOTORS - 1].n.set(2, 1, ny);
+    MOTORS[NUMMOTORS - 1].n.set(3, 1, nz);
+
+    //Set motor spin direction
+    MOTORS[NUMMOTORS - 1].dir = direction;
+
+    //Set motor pwm placeholder to minimum output
+    MOTORS[NUMMOTORS - 1].pwm_signal = OUTMIN;
+
+    //Set whether motor is ON or OFF
+    MOTORS[NUMMOTORS - 1].op_flag = op;
+
+    //Show that motor was added
+    cout << "Motor " << NUMMOTORS << " Set" << endl;
+
+    // Debug prints
+    // MOTORS[NUMMOTORS-1].r.disp();
+    // MOTORS[NUMMOTORS-1].n.disp();
+}
+
+//Function to compute configuration matrix [Q]
+void controller::MotorBeep(MATLAB datapts_IN) {
+    //Compute weight of drone
+    double weight = GEARTH * mass;
+
+    //Compute thrust required for each motor
+    double nominal_thrust = weight / (double)NUMMOTORS;
+
+    //Pull out values for motors - ???????????????????????????????????????????????????????????????????????????????????????????????????????????????
+    Tdatapt_ = datapts_IN.get(1, 1);
+    pwm_datapt_ = datapts_IN.get(2, 1);
+    omegaRPMdatapt_ = datapts_IN.get(3, 1);
+
+    //Debug prints
+    //cout << "weight = " << weight << " mass = " << mass << endl;
+    //cout << "thrust req = " << thrust_req << endl;
+
+    //Compute max thrust - number of motors ON to total number of motors
+    MOTORSRUNNING = NUMMOTORS;
+
+    //Set Nominal Thrust of all motors
+    for (int i = 0; i < NUMMOTORS; i++) {
+        //Re run motor calcs based on new values
+        MOTORS[i].MotorCalcs(Tdatapt_, pwm_datapt_, omegaRPMdatapt_);
+        MOTORS[i].Nominal_Thrust = nominal_thrust;
+        MOTORS[i].pwm_nominal = MOTORS[i].compute_signal_NO_OMEGA(nominal_thrust);
+
+        //This computes Max Thrust so you have two data points
+        MOTORS[i].pwm_signal = OUTMAX;
+        MOTORS[i].compute_thrust_NO_OMEGA();
+        MOTORS[i].Max_Thrust = MOTORS[i].thrust;
+        MOTORS[i].pwm_signal = OUTMIN;
+    }
+
+    //This is where we make our configuration matrices
+    H.zeros(4, NUMMOTORS, "Configuration Matrix");
+    HT.zeros(NUMMOTORS, 4, "Configuration Matrix Transposed");
+    HHT.zeros(4, 4, "HHT");
+    HHT_inv.zeros(4, 4, "HHT_inv");
+    Q.zeros(NUMMOTORS, 4, "Control Matrix");
+    M.zeros(4, 4, "Mass Matrix");
+    M.set(1, 1, mass);
+    M.set(2, 2, Ixx);
+    M.set(3, 3, Iyy);
+    M.set(4, 4, Izz);
+    U.zeros(4, 1, "Gamma Matrix");
+    CHI.zeros(NUMMOTORS, 1, "Thrust Required");
+
+    //The controller works like this
+    //M*U = H*CHI -- H is a 4xN thus there is no unique solution
+    //thus you must use Lagranges Method -- Q = H'*inv(H*H')*M
+    //then CHI = Q*U where U is our desired values
+
+
+    for (int i = 1; i <= NUMMOTORS; i++) {
+        H.set(1, i, 1.0); //The 1 is because all motors create thrust
+        H.set(2, i, -MOTORS[i - 1].r.get(2, 1));
+        H.set(3, i, -MOTORS[i - 1].r.get(1, 1));
+        H.set(4, i, MOTORS[i - 1].dir);
+    }
+    //HT*inv(HHT)*M
+    //H = 4xN
+    //HT = Nx4
+    //HHT = 4x4
+    HT.transpose_not_square(H);
+    HHT.mult(H, HT);
+
+    //M.disp();
+    //H.disp();
+    //HT.disp();
+    //HHT.disp();
+
+    //Shit. Need a 4x4 inverse routine
+    //Alright added crazy shit inverse functions
+    HHT_inv.matrix_inverse(HHT, 4);
+
+    //HHT_inv.disp();
+
+    //Then we need HT*inv(HHT) == N-1 x 4 - 4 x 4
+    HT_inv_HHT.zeros(NUMMOTORS, 4, "HT_inv_HHT");
+    HT_inv_HHT.mult(HT, HHT_inv);
+    //HT_inv_HHT.disp();
+
+    //Finally we can get Q
+    Q.mult(HT_inv_HHT, M);
+    Q.disp();
+}
+
+//Function to add the 8 motors of BumbleBee
+void controller::MotorsSetup(MATLAB datapts_IN) {
+    //Top Motors
+    addMotor(rx, -ry, -rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 1 - top_front_left 
+    addMotor(rx, ry, -rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 2 - top_front_right
+    addMotor(-rx, ry, -rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 3 - top_back_right
+    addMotor(-rx, -ry, -rz, 0.0, 0.0, -1.0, -1, 1); //Motor 4 - top_back_left
+
+    //Bottom Motors
+    addMotor(rx, -ry, rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 5 - bottom_front_left
+    addMotor(rx, ry, rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 6 - bottom_front_right
+    addMotor(-rx, ry, rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 7 - bottom_back_right
+    addMotor(-rx, -ry, rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 8 - bottom_back_left
+
+    //Finalize motor calcs
+    MotorBeep(datapts_IN);
+}
+
+//Function to remove set number of motors - should it include what motors to remove? RemoveMotors is called in Autopilot constructor. Would it be called in controller constructor or after a set time
+//in controller loop?
+void controller::RemoveMotors(int removemotors) {
+    //Increase MOTORSOFF
+    MOTORSOFF = removemotors;
+
+    //With motors removed we need to reinitialize all the control matrices
+    MOTORSRUNNING = NUMMOTORS - MOTORSOFF;
+
+    //Set operational flag = 0 for turned off motors
+    for (int i = NUMMOTORS; i > MOTORSRUNNING; i--) {
+        MOTORS[i].op_flag = 0;
+    }
+
+    //Indicator statement
+    printf("Total Motors = %d, Removing %d motors. Running Motors = %d \n", NUMMOTORS, removemotors, MOTORSRUNNING);
+
+    //This is where we make our configuration matrices
+    Hprime.zeros(4, MOTORSRUNNING, "Configuration Matrix Prime");
+    HTprime.zeros(MOTORSRUNNING, 4, "Configuration Matrix Transposed Prime");
+    Qprime.zeros(MOTORSRUNNING, 4, "Control Matrix Prime");
+    CHIprime.zeros(MOTORSRUNNING, 1, "Thrust Required Prime");
+
+    for (int i = 1; i <= MOTORSRUNNING; i++) {
+        Hprime.set(1, i, 1.0);
+        Hprime.set(2, i, -MOTORS[i - 1].r.get(2, 1));
+        Hprime.set(3, i, -MOTORS[i - 1].r.get(1, 1));
+        Hprime.set(4, i, MOTORS[i - 1].dir);
+    }
+
+    //HT*inv(HHT)*M
+    //H = 4xN
+    //HT = Nx4
+    //HHT = 4x4
+    HTprime.transpose_not_square(Hprime);
+    HHTprime.mult(Hprime, HTprime);
+
+    //M.disp();
+    //H.disp();
+    //HT.disp();
+    //HHT.disp();
+
+    //Shit. Need a 4x4 inverse routine
+    //Alright added crazy shit inverse functions
+    HHT_invprime.matrix_inverse(HHTprime, 4);
+
+    //HHT_inv.disp();
+
+    //Then we need HT*inv(HHT) == N-1 x 4 - 4 x 4
+    HT_inv_HHTprime.zeros(MOTORSRUNNING, 4, "HT_inv_HHTprime");
+    HT_inv_HHTprime.mult(HTprime, HHT_invprime);
+    //HT_inv_HHT.disp();
+
+    //Finally we can get Q
+    Qprime.mult(HT_inv_HHTprime, M);
+    //Q.disp();
+}
+
+//Function to compute reconfigurable matrix [CHI / CHIprime]
+void controller::computeReconfigurable(double thrust, double d_roll, double d_pitch, double d_yaw) {
+    //Set U
+    U.set(1, 1, thrust);
+    U.set(2, 1, d_roll);
+    U.set(3, 1, d_pitch);
+    U.set(4, 1, d_yaw);
+
+    //Then we compute the Thrusts required for control
+    //chi = Q*U
+    //Q.disp();
+    //U.disp();
+
+    //Placeholder value
+    double value;
+
+    //Check if all motors are ON or if any are OFF
+    if (MOTORSRUNNING == NUMMOTORS) {
+        //Compute reconfiguration matrix
+        CHI.mult(Q, U);
+
+        //Once we know the thrust required we need to compute the pwm signal required
+        //Constrain Motors between 0 and Max_Thrust
+        for (int i = 0; i < NUMMOTORS; i++) {
+            //Need a bunch of saturation filters
+            //Need to make sure if any thrust is less than zero we change it using the CONSTRAIN function
+            value = CHI.get(i + 1, 1);
+            value = CONSTRAIN(value, 0.0, MOTORS[0].Max_Thrust);
+            CHI.set(i + 1, 1, value);
+            //Then compute Motor signals required for that amount of thrust
+            MOTORS[i].pwm_signal = MOTORS[i].compute_signal_NO_OMEGA(CHI.get(i + 1, 1));
+            //printf("Motor signals = %lf \n",MOTORS[i].pwm_signal);
+        }
+    }
+    else {
+        //Motors out
+        //Qprime.disp();
+        //U.disp();
+
+        //Compute reconfiguration matrix
+        CHIprime.mult(Qprime, U);
+
+        //We need to multiply CHI by a factor otherwise will blow this shit up
+        //I don't think we need this anymore
+        //CHIprime.mult_eq((double)MOTORSRUNNING/(double)NUMMOTORS);
+        ///CHIprime.disp();
+        //CHIprime.disp();
+        
+        //Constrain thrust between 0 and Max_Thrust
+        for (int i = 0; i < NUMMOTORS; i++) {
+            //Need a bunch of saturation filters
+            //Need to make sure if any thrust is less than zero we change it
+            if (i < MOTORSRUNNING) {
+                value = CHIprime.get(i + 1, 1);
+                value = CONSTRAIN(value, 0.0, MOTORS[0].Max_Thrust);
+                CHIprime.set(i + 1, 1, value);
+                //Then compute Motor signals required for that amount of thrust
+                MOTORS[i].pwm_signal = MOTORS[i].compute_signal_NO_OMEGA(CHIprime.get(i + 1, 1));
+            }
+            else {
+                MOTORS[i].pwm_signal = MOTORS[0].MINSIGNAL;
+            }
+        }
+    }
+}
+
+//Function to initialize control matrix
 void controller::init(MATLAB in_configuration_matrix) {
   control_matrix.zeros(NUMSIGNALS,1,"Control Signals"); //The standards must be TAERA1A2A3A4
   set_defaults();
@@ -14,6 +384,7 @@ void controller::init(MATLAB in_configuration_matrix) {
   printf("Controller Setup \n");
 }
 
+//Set control matrix to minimum pwm
 void controller::set_defaults() {
   control_matrix.set(1,1,OUTMIN);
   control_matrix.set(2,1,OUTMIN);
@@ -25,12 +396,14 @@ void controller::set_defaults() {
   control_matrix.set(8,1,OUTMIN);
 }
 
+//Print control matrix
 void controller::print() {
   for (int i = 1;i<=NUMSIGNALS;i++) {
     printf("%d ",int(control_matrix.get(i,1)));
   }
 }
 
+//Main controller loop
 void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //The sensor matrix is a 29x1. See sensors.cpp for list of sensors
   //At a minimum you need to just feed through the rxcomms into the control_matrix
@@ -60,7 +433,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   double elevator = rx_array[2];
   double rudder = rx_array[3];
   double autopilot = rx_array[4];
-  bool icontrol = 0;
+  bool icontrol = 1;
 
   switch (CONTROLLER_FLAG) {
   case -1:
@@ -83,41 +456,96 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
   //Then you can run any control loop you want.
   if (icontrol) {
-    //STABILIZE MODE
-    //printf(" STAB ");
-    double roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
-    double pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
-    double yaw_rate_command = (rudder-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
-    double roll = sense_matrix.get(4,1);
-    double pitch = sense_matrix.get(5,1);
-    double yaw = sense_matrix.get(6,1);
-    double roll_rate = sense_matrix.get(10,1); //For SIL/SIMONLY see Sensors.cpp
-    double pitch_rate = sense_matrix.get(11,1); //These are already in deg/s
-    double yaw_rate = sense_matrix.get(12,1); //Check IMU.cpp to see for HIL
-    //state.disp();
-    //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
-    double kp = 10.0;
-    double kd = 2.0;
-    double kyaw = 0.2;
-    double droll = kp*(roll-roll_command) + kd*(roll_rate);
-    droll = CONSTRAIN(droll,-500,500);
-    double dpitch = kp*(pitch-pitch_command) + kd*(pitch_rate);
-    dpitch = CONSTRAIN(dpitch,-500,500);
-    double dyaw = kyaw*(yaw_rate-yaw_rate_command);
-    //printf("YAW RATE = %lf YAW RATE COMMAND = %lf DYAW = %lf \n",yaw_rate,yaw_rate_command,dyaw);
-    dyaw = CONSTRAIN(dyaw,-500,500);
-    //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);
-    //printf(" Roll Command = %lf ",roll_command);
-    throttle = 1500.0; // Just for debugging. Don't yell at your past self.
-    motor_upper_left_top = throttle - droll - dpitch - dyaw;
-    motor_upper_right_top = throttle + droll - dpitch + dyaw;
-    motor_lower_left_top = throttle - droll + dpitch + dyaw;
-    motor_lower_right_top = throttle + droll + dpitch - dyaw;
+      //Stabilize Mode - Nonreconfigurable
+      /*
+      //STABILIZE MODE
+      //printf(" STAB ");
+      double roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+      double pitch_command = -(elevator-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+      double yaw_rate_command = (rudder-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
+      double roll = sense_matrix.get(4,1);
+      double pitch = sense_matrix.get(5,1);
+      double yaw = sense_matrix.get(6,1);
+      double roll_rate = sense_matrix.get(10,1); //For SIL/SIMONLY see Sensors.cpp
+      double pitch_rate = sense_matrix.get(11,1); //These are already in deg/s
+      double yaw_rate = sense_matrix.get(12,1); //Check IMU.cpp to see for HIL
+      //state.disp();
+      //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
+      double kp = 10.0;
+      double kd = 2.0;
+      double kyaw = 0.2;
+      double droll = kp*(roll-roll_command) + kd*(roll_rate);
+      droll = CONSTRAIN(droll,-500,500);
+      double dpitch = kp*(pitch-pitch_command) + kd*(pitch_rate);
+      dpitch = CONSTRAIN(dpitch,-500,500);
+      double dyaw = kyaw*(yaw_rate-yaw_rate_command);
+      //printf("YAW RATE = %lf YAW RATE COMMAND = %lf DYAW = %lf \n",yaw_rate,yaw_rate_command,dyaw);
+      dyaw = CONSTRAIN(dyaw,-500,500);
+      //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);
+      //printf(" Roll Command = %lf ",roll_command);
+      throttle = 1500.0; // Just for debugging. Don't yell at your past self.
+      motor_upper_left_top = throttle - droll - dpitch - dyaw;
+      motor_upper_right_top = throttle + droll - dpitch + dyaw;
+      motor_lower_left_top = throttle - droll + dpitch + dyaw;
+      motor_lower_right_top = throttle + droll + dpitch - dyaw;
+      motor_upper_left_bottom = throttle - droll - dpitch + dyaw;
+      motor_upper_right_bottom = throttle + droll - dpitch - dyaw;
+      motor_lower_left_bottom = throttle - droll + dpitch - dyaw;
+      motor_lower_right_bottom = throttle + droll + dpitch + dyaw;
+      */
+
+      //Stabilize Mode - Reconfigurable
+
+      //Controller values
+      double kp = 10.0;
+      double kd = 2.0;
+      double kyaw = 0.2;
+
+      //Measure commands
+      double roll_command = (aileron - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+      double pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+      double yaw_rate_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+
+      //Measure state
+      double roll = sense_matrix.get(4, 1);
+      double pitch = sense_matrix.get(5, 1);
+      double yaw = sense_matrix.get(6, 1);
+      double roll_rate = sense_matrix.get(10, 1);  //For SIL/SIMONLY see Sensors.cpp
+      double pitch_rate = sense_matrix.get(11, 1); //These are already in deg/s
+      double yaw_rate = sense_matrix.get(12, 1);   //Check IMU.cpp to see for HIL
+
+      //PID control on commands
+      double droll = kp * (roll - roll_command) + kd * (roll_rate);
+      droll = CONSTRAIN(droll, -500, 500);
+      double dpitch = kp * (pitch - pitch_command) + kd * (pitch_rate);
+      dpitch = CONSTRAIN(dpitch, -500, 500);
+      double dyaw = kyaw * (yaw_rate - yaw_rate_command);
+      dyaw = CONSTRAIN(dyaw, -500, 500);
+
+      //Compute desired thrust
+      double thrust_desired = ((8.0 * MOTORS[0].Max_Thrust) / ((double)OUTMAX - (double)OUTMIN)) * (throttle - OUTMIN);
+      //double dthrust = mass * GEARTH; //maybe not this
+
+      //Compute thrust needed for each motor
+      computeReconfigurable(thrust_desired / mass, droll, dpitch, dyaw);
+
+      //Set pwm motor variables for control_matrix - can the long ass variables be changed to the MOTORS[i].pwm_signal like a for loop with
+      //for (int i = 0; i <= NUMSIGNALS; i++) {control_matrix.set(i, 1, MOTORS[i].pwm_signal;} ?
+      motor_upper_left_bottom = MOTORS[0].pwm_signal;
+      motor_upper_right_bottom = MOTORS[1].pwm_signal;
+      motor_lower_right_bottom = MOTORS[2].pwm_signal;
+      motor_lower_left_bottom = MOTORS[3].pwm_signal;
+      motor_upper_left_top = MOTORS[4].pwm_signal;
+      motor_upper_right_top = MOTORS[5].pwm_signal;
+      motor_lower_right_top = MOTORS[6].pwm_signal;
+      motor_lower_left_top = MOTORS[7].pwm_signal;
+
+
+      //Debug print statements
+      //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);
+      //printf(" Roll Command = %lf ",roll_command);
+      //printf("YAW RATE = %lf YAW RATE COMMAND = %lf DYAW = %lf \n",yaw_rate,yaw_rate_command,dyaw);
     
-    motor_upper_left_bottom = throttle - droll - dpitch + dyaw;
-    motor_upper_right_bottom = throttle + droll - dpitch - dyaw;
-    motor_lower_left_bottom = throttle - droll + dpitch - dyaw;
-    motor_lower_right_bottom = throttle + droll + dpitch + dyaw;
     
   } else {
     //ACRO MODE
@@ -145,6 +573,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   /*  for (int i = 0;i<5;i++) {
     printf(" %d ",rx_array[i]);
   }
-  printf("\n");
-  control_matrix.disp();*/
+  printf("\n");*/
+  control_matrix.disp();
 }

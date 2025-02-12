@@ -51,6 +51,7 @@ private:
 	double elapsedTime = 0, lastTime=0;
 	double mass, Ixx, Iyy, Izz, ct, cq, Rrotor, rx, ry, rz, nx, ny, nz;
 	int CONTROLLER_FLAG = -99;
+	double zprev = -999,zint = 0;
 	void set_defaults();
 
 	//List of private variables and functions

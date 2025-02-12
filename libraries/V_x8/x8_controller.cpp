@@ -229,7 +229,7 @@ void controller::MotorBeep(MATLAB datapts_IN) {
 
     //Finally we can get Q
     Q.mult(HT_inv_HHT, M);
-    Q.disp();
+    //Q.disp();
 }
 
 //Function to add the 8 motors of BumbleBee
@@ -328,7 +328,7 @@ void controller::computeReconfigurable(double thrust, double d_roll, double d_pi
     if (MOTORSRUNNING == NUMMOTORS) {
         //Compute reconfiguration matrix
         CHI.mult(Q, U);
-        CHI.disp();
+        //CHI.disp();
 
         //Once we know the thrust required we need to compute the pwm signal required
         //Constrain Motors between 0 and Max_Thrust
@@ -498,14 +498,16 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //Stabilize Mode - Reconfigurable
 
       //Controller values
-      double kp = 10.0;
-      double kd = 2.0;
-      double kyaw = 0.2;
+      double kp = 0;
+      double kd = 0.0;
+      double kyaw = 0.0;
 
       //Measure commands
       double roll_command = (aileron - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
       double pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
       double yaw_rate_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+      //printf("Roll pitch yaw command = %lf %lf %lf \n",roll_command,pitch_command,yaw_rate_command);
+      //PAUSE();
 
       //Measure state
       double roll = sense_matrix.get(4, 1);
@@ -524,7 +526,19 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       dyaw = CONSTRAIN(dyaw, -500, 500);
 
       //Debug
-      throttle = 1600;
+      double z = sense_matrix.get(3,1);
+      double zdot = 0;
+      //If altitude_prev has been set compute a first order derivative
+      if (zprev != -999) {
+        zdot = (z - zprev) / elapsedTime;
+      }
+      //Then set the previous value
+      zprev = z;      
+      double ZCOMMAND = -100;
+      double zerror = ZCOMMAND - z;
+      zint += zerror * elapsedTime;
+      throttle = OUTMIN - 10*zerror - 10*(0-zdot) - 0.5*zint;
+      //printf("Throttle = %lf \n",throttle);
 
       //Compute desired thrust
       double dthrust = ((8.0 * MOTORS[0].Max_Thrust) / ((double)OUTMAX - (double)OUTMIN)) * (throttle - OUTMIN);

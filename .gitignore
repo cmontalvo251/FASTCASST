@@ -1,4 +1,5 @@
 *.eps
+sixdof.py
 *.odt
 pdf.py
 *.csv

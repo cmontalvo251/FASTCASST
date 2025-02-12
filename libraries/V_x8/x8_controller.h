@@ -14,7 +14,7 @@ private:
 public:
 	MATLAB r, n, Tn, datapts;
 	int dir, op_flag;
-	double pwm_signal, pwm_nominal, MINSIGNAL, thrust, torque, kt, rho, a, A, R, ct, cq, Max_Thrust, Nominal_Thrust;
+	double pwm_signal, pwm_nominal, thrust, torque, kt, rho, a, A, R, ct, cq, Max_Thrust, Nominal_Thrust;
 	Motor();
 	void MotorCalcs(double T, double p, double w);
 	double compute_signal_NO_OMEGA(double);

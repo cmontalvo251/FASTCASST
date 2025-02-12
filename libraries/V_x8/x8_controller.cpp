@@ -13,9 +13,6 @@ Motor::Motor() {
 
     //Rotor radius - from Propulsion constructor in Propulsion.cpp in SUAM
     R = (5.0 / 12.0) * FT2M;
-
-    //Set minimum signal
-    MINSIGNAL = OUTMIN;
 }
 
 //Function to calculate coefficient of thrust and torque coefficient
@@ -178,6 +175,9 @@ void controller::MotorBeep(MATLAB datapts_IN) {
         MOTORS[i].pwm_signal = OUTMIN;
     }
 
+    //Debug print statements
+    printf("Max thrust and nominal thrust: %lf %lf \n", MOTORS[0].Max_Thrust, nominal_thrust);
+
     //This is where we make our configuration matrices
     H.zeros(4, NUMMOTORS, "Configuration Matrix");
     HT.zeros(NUMMOTORS, 4, "Configuration Matrix Transposed");
@@ -328,6 +328,7 @@ void controller::computeReconfigurable(double thrust, double d_roll, double d_pi
     if (MOTORSRUNNING == NUMMOTORS) {
         //Compute reconfiguration matrix
         CHI.mult(Q, U);
+        CHI.disp();
 
         //Once we know the thrust required we need to compute the pwm signal required
         //Constrain Motors between 0 and Max_Thrust
@@ -368,7 +369,7 @@ void controller::computeReconfigurable(double thrust, double d_roll, double d_pi
                 MOTORS[i].pwm_signal = MOTORS[i].compute_signal_NO_OMEGA(CHIprime.get(i + 1, 1));
             }
             else {
-                MOTORS[i].pwm_signal = MOTORS[0].MINSIGNAL;
+                MOTORS[i].pwm_signal = OUTMIN;
             }
         }
     }
@@ -433,7 +434,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   double elevator = rx_array[2];
   double rudder = rx_array[3];
   double autopilot = rx_array[4];
-  bool icontrol = 1;
+  bool icontrol = 0;
 
   switch (CONTROLLER_FLAG) {
   case -1:
@@ -522,12 +523,15 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double dyaw = kyaw * (yaw_rate - yaw_rate_command);
       dyaw = CONSTRAIN(dyaw, -500, 500);
 
+      //Debug
+      throttle = 1600;
+
       //Compute desired thrust
-      double thrust_desired = ((8.0 * MOTORS[0].Max_Thrust) / ((double)OUTMAX - (double)OUTMIN)) * (throttle - OUTMIN);
+      double dthrust = ((8.0 * MOTORS[0].Max_Thrust) / ((double)OUTMAX - (double)OUTMIN)) * (throttle - OUTMIN);
       //double dthrust = mass * GEARTH; //maybe not this
 
       //Compute thrust needed for each motor
-      computeReconfigurable(thrust_desired / mass, droll, dpitch, dyaw);
+      computeReconfigurable(dthrust, droll, -dpitch, dyaw);
 
       //Set pwm motor variables for control_matrix - can the long ass variables be changed to the MOTORS[i].pwm_signal like a for loop with
       //for (int i = 0; i <= NUMSIGNALS; i++) {control_matrix.set(i, 1, MOTORS[i].pwm_signal;} ?
@@ -574,5 +578,5 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     printf(" %d ",rx_array[i]);
   }
   printf("\n");*/
-  control_matrix.disp();
+  //control_matrix.disp();
 }

@@ -31,18 +31,14 @@ import datalogger
 sys.path.append('/home/pi/FASTCASST/libraries/LED')
 import leds
 
-#sys.path.append('/home/pi/FASTCASST/libraries/MS5611/')
-#import ms5611
+sys.path.append('/home/pi/FASTCASST/libraries/MS5611/')
+import ms5611
 
 sys.path.append('/home/pi/FASTCASST/libraries/RCIO/Python')
 import rcinput
 import pwm
 
 import numpy as np
-#Create a time for elapsed time
-print('Setting up Time')
-StartTime = time.time()
-GPSTime = time.time()
 
 #Make sure Ardupilot is off
 print('Checking to make sure APM is off')
@@ -54,8 +50,7 @@ print(sys.argv)
 logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
-#arm,throttlerc,yawrc,lat,lon,alt,velocity,roll,pitch,heading
-outdata = np.zeros(9)
+outdata = np.zeros(10)
 
 #Setup GPS
 print('Initializing GPS...')
@@ -80,10 +75,18 @@ led.setColor('Yellow')
 print('LED is yellow now')
 
 #Setup the Barometer
-#print('Setting up the barometer....')
-#baro = ms5611.MS5611()
-#baro.initialize()
-#BAROFLAG = False
+print('Setting up the barometer....')
+BARONEXT = 1.0
+BAROWAIT = 0.01
+baro = ms5611.MS5611()
+baro.initialize()
+baro.refreshPressure()
+time.sleep(BAROWAIT)
+baro.readPressure()
+baro.calculatePressureAndTemperature()
+pressure = baro.PRES
+time.sleep(BARONEXT)
+BAROMODE = 0
 
 #Setup Servos
 SERVO_MIN = 0.995 #ms
@@ -107,6 +110,12 @@ pwm2.enable()
 #Short break to build suspense
 print('Sleep for 1 second')
 time.sleep(1)
+
+#Create a time for elapsed time
+print('Setting up Time')
+StartTime = time.time()
+GPSTime = time.time()
+BAROTime = time.time()-StartTime
 
 #This runs on repeat until code is killed
 while (True):
@@ -135,17 +144,30 @@ while (True):
         GPSTime = time.time()
         gps_llh.update()
         #print(gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
-
-    """
-    if BAROFLAG:
-        baro.readPressure()
-        baro.readTemperature()
-        baro.calculatePressureAndTemperature()
-    else:
+        
+    if BAROMODE == 2:
+        #first we grab prassure
+        pressure = baro.PRES
+        #in here we want to make sure we wait 1 second before we set
+        #baromode back to zero
+        if (RunTime - BAROTime) > BARONEXT:
+            BAROTime = RunTime
+            BAROMODE = 0
+    if BAROMODE == 1:
+        #If baromode is 1 we read and calculate but only after 0.01 seconds has passed
+        if (RunTime - BAROTime) > BAROWAIT:
+            baro.readPressure()
+            baro.calculatePressureAndTemperature()
+            BAROTime = RunTime
+            #and set the baromode to 2
+            BAROMODE = 2
+    if BAROMODE == 0:
+        #initially the mode is zero
+        #so we refresh the register
         baro.refreshPressure()
-        baro.refreshTemperature()
-    BAROFLAG = not BAROFLAG
-    """
+        BAROTime = RunTime
+        #then we set the mode to 1
+        BAROMODE = 1
 
     #Compute the controller values
     throttle_command = throttlerc
@@ -180,10 +202,10 @@ while (True):
     #print(armswitch,throttlerc,rollrc)
 
     #Print to Home
-    print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)#,baro.PRES)
+    print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude,np.round(pressure,2))
 
     #Log data
-    outdata[0] = np.round(RunTime,2)
+    outdata[0] = np.round(RunTime,5)
     outdata[1] = throttlerc
     outdata[2] = rollrc
     outdata[3] = autopilot
@@ -192,5 +214,6 @@ while (True):
     outdata[6] = gps_llh.altitude
     outdata[7] = throttle_command
     outdata[8] = roll_command
+    outdata[9] = np.round(pressure,5)
     #outdata[]
     logger.println(outdata)

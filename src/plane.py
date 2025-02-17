@@ -49,7 +49,6 @@ print(sys.argv)
 logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
-#arm,throttlerc,yawrc,lat,lon,alt,velocity,roll,pitch,heading
 outdata = np.zeros(10)
 
 #Setup GPS

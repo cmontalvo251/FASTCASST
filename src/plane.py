@@ -29,15 +29,14 @@ import datalogger
 sys.path.append('/home/pi/FASTCASST/libraries/LED')
 import leds
 
+sys.path.append('/home/pi/FASTCASST/libraries/MS5611/')
+import ms5611
+
 sys.path.append('/home/pi/FASTCASST/libraries/RCIO/Python')
 import rcinput
 import pwm
 
 import numpy as np
-#Create a time for elapsed time
-print('Setting up Time')
-StartTime = time.time()
-GPSTime = time.time()
 
 #Make sure Ardupilot is off
 print('Checking to make sure APM is off')
@@ -73,6 +72,20 @@ led = leds.Led()
 led.setColor('Yellow')
 print('LED is yellow now')
 
+#Setup the Barometer
+print('Setting up the barometer....')
+BARONEXT = 1.0
+BAROWAIT = 0.01
+baro = ms5611.MS5611()
+baro.initialize()
+baro.refreshPressure()
+time.sleep(BAROWAIT)
+baro.readPressure()
+baro.calculatePressureAndTemperature()
+pressure = baro.PRES
+time.sleep(BARONEXT)
+BAROMODE = 0
+
 #Setup Servos
 SERVO_MIN = 0.995 #ms
 SERVO_MID = 1.504 #ms
@@ -96,6 +109,12 @@ pwm2.enable()
 print('Sleep for 1 second')
 time.sleep(1)
 
+#Create a time for elapsed time
+print('Setting up Time')
+StartTime = time.time()
+GPSTime = time.time()
+BAROTime = time.time()-StartTime
+
 #This runs on repeat until code is killed
 while (True):
     RunTime = time.time() - StartTime
@@ -115,6 +134,7 @@ while (True):
     pitchrc = float(period[2])/1000.
     yawrc = float(period[3])/1000.
     armswitch = float(period[4])/1000.
+    autopilot = float(period[6])/1000.
     #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
 
     #Get GPS update
@@ -122,6 +142,44 @@ while (True):
         GPSTime = time.time()
         gps_llh.update()
         #print(gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
+
+    if BAROMODE == 2:
+        #first we grab prassure
+        pressure = baro.PRES
+        #in here we want to make sure we wait 1 second before we set
+        #baromode back to zero
+        if (RunTime - BAROTime) > BARONEXT:
+            BAROTime = RunTime
+            BAROMODE = 0
+    if BAROMODE == 1:
+        #If baromode is 1 we read and calculate but only after 0.01 seconds has passed
+        if (RunTime - BAROTime) > BAROWAIT:
+            baro.readPressure()
+            baro.calculatePressureAndTemperature()
+            BAROTime = RunTime
+            #and set the baromode to 2
+            BAROMODE = 2
+    if BAROMODE == 0:
+        #initially the mode is zero
+        #so we refresh the register
+        baro.refreshPressure()
+        BAROTime = RunTime
+        #then we set the mode to 1
+        BAROMODE = 1
+
+    #Compute the controller values
+    throttle_command = throttlerc
+    yaw_command = yawrc
+
+    ##Saturation blocks
+    if(throttle_command < SERVO_MIN):
+        throttle_command = SERVO_MIN
+    if(throttle_command > SERVO_MAX):
+        throttle_command = SERVO_MAX
+    if(yaw_command < SERVO_MIN):
+        yaw_command = SERVO_MIN
+    if(yaw_command > SERVO_MAX):
+        yaw_command = SERVO_MAX
 
     #Set arm switch up for safety reasons
     if(armswitch < 1.495):
@@ -131,20 +189,8 @@ while (True):
         #print('Disarmed for safety')
     elif(1.495 < armswitch < 1.995):
         led.setColor('Green')
-        #Add Saturation Block to ensure servo safety
-        if(throttlerc < SERVO_MIN):
-            throttlerc = SERVO_MIN
-        if(throttlerc > SERVO_MAX):
-            throttlerc = SERVO_MAX
-        #Send throttlerc to servo
-        pwm1.set_duty_cycle(throttlerc)
-        #Add Saturation Block to ensure servo safety
-        if(yawrc < SERVO_MIN):
-            yawrc = SERVO_MIN
-        if(yawrc > SERVO_MAX):
-            yawrc = SERVO_MAX
-        #Send yawrc to servo
-        pwm2.set_duty_cycle(yawrc)
+        pwm1.set_duty_cycle(throttle_command)
+        pwm2.set_duty_cycle(yaw_command)
         #print('Open Loop Control')
     elif(armswitch > 1.995):
         led.setColor('Blue')
@@ -154,11 +200,18 @@ while (True):
     #print(armswitch,throttlerc,yawrc)
 
     #Print to Home
-    print(np.round(RunTime,2),throttlerc,rollrc,pitchrc,yawrc)
+    print(np.round(RunTime,2), throttlerc, yawrc, autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude,np.round(pressure,2))
 
     #Log data
-    outdata[0] = armswitch
+    outdata[0] = np.round(RunTime,5)
     outdata[1] = throttlerc
     outdata[2] = yawrc
+    outdata[3] = autopilot
+    outdata[4] = gps_llh.longitude
+    outdata[5] = gps_llh.latitude
+    outdata[6] = gps_llh.altitude
+    outdata[7] = throttle_command
+    outdata[8] = yaw_command
+    outdata[9] = np.round(pressure,5)
     #outdata[]
     logger.println(outdata)

@@ -2,7 +2,9 @@ class RCInput():
     CHANNEL_COUNT = 14
     channels = []
 
-    def __init__(self):
+    def __init__(self,num_channels=9):
+        self.num_channels = num_channels
+        self.period = [0]*num_channels
         for i in range(0, self.CHANNEL_COUNT):
             try:
                 f = open("/sys/kernel/rcio/rcin/ch%d" % i, "r")

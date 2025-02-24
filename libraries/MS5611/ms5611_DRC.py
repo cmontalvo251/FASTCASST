@@ -214,30 +214,40 @@ class MS5611:
 		return is_pressure_valid and is_temp_valid
 
         def start(self,timeIN):
-                BAROTime = timeIN-StartTime
-
+                self.BAROTime = 0.0
+                self.BARONEXT = 1.0
+                self.BAROWAIT = 0.01
+                self.initialize()
+                self.refreshPressure()
+                time.sleep(BAROWAIT)
+                self.readPressure()
+                self.calculatePressureAndTemperature()
+                self.pressure = baro.PRES
+                time.sleep(BARONEXT)
+                self.BAROMODE = 0
+                
         def poll(self,RunTime):
-                if BAROMODE == 2:
+                if self.BAROMODE == 2:
                         #first we grab prassure
-                        pressure = self.PRES
+                        self.pressure = self.PRES
                         #in here we want to make sure we wait 1 second before we set
                         #baromode back to zero
-                        if (RunTime - BAROTime) > BARONEXT:
-                                BAROTime = RunTime
-                                BAROMODE = 0
-                if BAROMODE == 1:
+                        if (RunTime - self.BAROTime) > self.BARONEXT:
+                                self.BAROTime = RunTime
+                                self.BAROMODE = 0
+                if self.BAROMODE == 1:
                         #If baromode is 1 we read and calculate but only after 0.01 seconds has passed
-                        if (RunTime - BAROTime) > BAROWAIT:
+                        if (RunTime - self.BAROTime) > self.BAROWAIT:
                                 self.readPressure()
                                 self.calculatePressureAndTemperature()
-                                BAROTime = RunTime
+                                self.BAROTime = RunTime
                                 #and set the baromode to 2
-                                BAROMODE = 2
-                if BAROMODE == 0:
+                                self.BAROMODE = 2
+                if self.BAROMODE == 0:
                         #initially the mode is zero
                         #so we refresh the register
                         self.refreshPressure()
-                        BAROTime = RunTime
+                        self.BAROTime = RunTime
                         #then we set the mode to 1
-                        BAROMODE = 1
+                        self.BAROMODE = 1
 

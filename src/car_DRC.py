@@ -64,9 +64,7 @@ imu.initialize()
 
 #Setup RCIO
 print('Initializing RCInput...')
-rcin = rcinput.RCInput()
-i = 0
-num_channels = 9
+rcin = rcinput.RCInput(9)
 
 #Setup LED
 print('Setting up LEDs.....')
@@ -76,33 +74,20 @@ print('LED is yellow now')
 
 #Setup the Barometer
 print('Setting up the barometer....')
-BARONEXT = 1.0
-BAROWAIT = 0.01
 baro = ms5611.MS5611()
-baro.initialize()
-baro.refreshPressure()
-time.sleep(BAROWAIT)
-baro.readPressure()
-baro.calculatePressureAndTemperature()
-pressure = baro.PRES
-time.sleep(BARONEXT)
-BAROMODE = 0
+baro.start()
 
-#Setup Servos
-SERVO_MIN = 0.995 #ms
-SERVO_MID = 1.504 #ms
-SERVO_MAX = 2.010 #ms
-PWM_OUTPUT = [0,1] #Servo Rail Spots
-print('PWM Channels: ',PWM_OUTPUT)
-
+#SETUP SERVOS
 #Throttle - PWM Channel 1
 print('Initializing PMW channels')
-pwm1 = pwm.PWM(PWM_OUTPUT[0])
+pwms = pwm.CHANNELS(2) ##Create 2 PWM objects
+
+pwm1 = pwm.PWM(0)
 pwm1.initialize()
 pwm1.set_period(50)
 pwm1.enable()
 #Steering - PWM Channel 2
-pwm2 = pwm.PWM(PWM_OUTPUT[1])
+pwm2 = pwm.PWM(1)
 pwm2.initialize()
 pwm2.set_period(50)
 pwm2.enable()
@@ -114,20 +99,16 @@ time.sleep(1)
 #Create a time for elapsed time
 print('Setting up Time')
 StartTime = time.time()
-GPSTime = time.time()
-baro.start(time.time())
 
 #This runs on repeat until code is killed
 while (True):
     RunTime = time.time() - StartTime
-    elapsedTime = RunTime - GPSTime
     #print(elapsedTime)
     
     #Read in receiver commands
-    period = []
     for i in range(num_channels):
         value = rcin.read(i)
-        period.append(value)
+        period[i] = value
     #print period
 
     #Turn receiver commands to floats
@@ -140,10 +121,7 @@ while (True):
     #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
 
     #Get GPS update
-    if(elapsedTime > 1.0):
-        GPSTime = time.time()
-        gps_llh.update()
-        #print(gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
+    gps_llh.poll(RunTime)
 
     #Poll barometer
     baro.poll(RunTime)

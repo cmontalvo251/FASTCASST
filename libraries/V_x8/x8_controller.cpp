@@ -105,8 +105,24 @@ controller::controller() {
     //Compute nominal and max thrusts and configuration matrix
     MotorsSetup(datapts); 
 
-    //Test remove motor
-    //RemoveMotors(3);
+    //Test remove motor - remove from recent
+    //RemoveMotors(2);
+    
+    //Remove specific number of motors
+    motorsToRemove = 4;
+
+    //Initialize MOTORSOFF vector for removing specific motors
+    REMOVEMOTORS.zeros(motorsToRemove, 1, "Vector of motors to remove");
+
+    //Remove input remove array for left side
+    REMOVEMOTORS.set(1, 1, 1); //top_front_left
+    REMOVEMOTORS.set(2, 1, 4); //top_back_left
+    REMOVEMOTORS.set(3, 1, 5); //bottom_front_left
+    REMOVEMOTORS.set(4, 1, 8); //bottom_back_left
+    
+    //Test remove motor - remove specific
+    //RemoveMotors(motorsToRemove, REMOVEMOTORS);
+    
 };
 
 //Function to add a motor to system
@@ -134,7 +150,7 @@ void controller::addMotor(double rx, double ry, double rz, double nx, double ny,
     MOTORS[NUMMOTORS - 1].op_flag = op;
 
     //Show that motor was added
-    cout << "Motor " << NUMMOTORS << " Set" << endl;
+    //cout << "Motor " << NUMMOTORS << " Set" << endl;
 
     // Debug prints
     // MOTORS[NUMMOTORS-1].r.disp();
@@ -149,7 +165,7 @@ void controller::MotorBeep(MATLAB datapts_IN) {
     //Compute thrust required for each motor
     double nominal_thrust = weight / (double)NUMMOTORS;
 
-    //Pull out values for motors - ???????????????????????????????????????????????????????????????????????????????????????????????????????????????
+    //Pull out values for motors
     Tdatapt_ = datapts_IN.get(1, 1);
     pwm_datapt_ = datapts_IN.get(2, 1);
     omegaRPMdatapt_ = datapts_IN.get(3, 1);
@@ -176,7 +192,7 @@ void controller::MotorBeep(MATLAB datapts_IN) {
     }
 
     //Debug print statements
-    printf("Max thrust and nominal thrust: %lf %lf \n", MOTORS[0].Max_Thrust, nominal_thrust);
+    //printf("Max thrust and nominal thrust: %lf %lf \n", MOTORS[0].Max_Thrust, nominal_thrust);
 
     //This is where we make our configuration matrices
     H.zeros(4, NUMMOTORS, "Configuration Matrix");
@@ -235,24 +251,29 @@ void controller::MotorBeep(MATLAB datapts_IN) {
 //Function to add the 8 motors of BumbleBee
 void controller::MotorsSetup(MATLAB datapts_IN) {
     //Top Motors
-    addMotor(rx, -ry, -rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 1 - top_front_left 
-    addMotor(rx, ry, -rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 2 - top_front_right
-    addMotor(-rx, ry, -rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 3 - top_back_right
-    addMotor(-rx, -ry, -rz, 0.0, 0.0, -1.0, -1, 1); //Motor 4 - top_back_left
+    addMotor(rx, -ry, -rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 1 - upper_left_top 
+    addMotor(rx, ry, -rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 2 - upper_right_top
+    addMotor(-rx, ry, -rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 3 - lower_right_top
+    addMotor(-rx, -ry, -rz, 0.0, 0.0, -1.0, -1, 1); //Motor 4 - lower_left_top
 
     //Bottom Motors
-    addMotor(rx, -ry, rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 5 - bottom_front_left
-    addMotor(rx, ry, rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 6 - bottom_front_right
-    addMotor(-rx, ry, rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 7 - bottom_back_right
-    addMotor(-rx, -ry, rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 8 - bottom_back_left
+    addMotor(rx, -ry, rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 5 - upper_left_bottom
+    addMotor(rx, ry, rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 6 - upper_right_bottom
+    addMotor(-rx, ry, rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 7 - lower_right_bottom
+    addMotor(-rx, -ry, rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 8 - lower_left_bottom
+
+    //Debug print
+    //for (int i = 1; i <= NUMMOTORS; i++) {
+    //    printf("Motor %i op_flag %i \n", i, MOTORS[i - 1].op_flag);
+    //}
 
     //Finalize motor calcs
     MotorBeep(datapts_IN);
 }
 
-//Function to remove set number of motors - should it include what motors to remove? RemoveMotors is called in Autopilot constructor. Would it be called in controller constructor or after a set time
-//in controller loop?
+//Function to remove set number of motors from most recent to oldest
 void controller::RemoveMotors(int removemotors) {
+
     //Increase MOTORSOFF
     MOTORSOFF = removemotors;
 
@@ -261,15 +282,18 @@ void controller::RemoveMotors(int removemotors) {
 
     //Set operational flag = 0 for turned off motors
     for (int i = NUMMOTORS; i > MOTORSRUNNING; i--) {
-        MOTORS[i].op_flag = 0;
+        MOTORS[i - 1].op_flag = 0;
     }
 
     //Indicator statement
-    printf("Total Motors = %d, Removing %d motors. Running Motors = %d \n", NUMMOTORS, removemotors, MOTORSRUNNING);
+    printf("Total Motors = %i, Removing %i motors. Running Motors = %i \n", NUMMOTORS, removemotors, MOTORSRUNNING);
 
     //This is where we make our configuration matrices
     Hprime.zeros(4, MOTORSRUNNING, "Configuration Matrix Prime");
     HTprime.zeros(MOTORSRUNNING, 4, "Configuration Matrix Transposed Prime");
+    HHTprime.zeros(4, 4, "H*HT Prime");
+    HHT_invprime.zeros(4, 4, "Inv(HHTprime)");
+    HT_inv_HHTprime.zeros(MOTORSRUNNING, 4, "HT_inv_HHTprime");
     Qprime.zeros(MOTORSRUNNING, 4, "Control Matrix Prime");
     CHIprime.zeros(MOTORSRUNNING, 1, "Thrust Required Prime");
 
@@ -284,28 +308,129 @@ void controller::RemoveMotors(int removemotors) {
     //H = 4xN
     //HT = Nx4
     //HHT = 4x4
-    HTprime.transpose_not_square(Hprime);
+    
+    //If four motors get turned off, it is a square matrix
+    if (MOTORSRUNNING == 4) {
+        Hprime.transpose();
+        for (int i = 1; i <= MOTORSRUNNING; i++) {
+            HTprime.set(i, 1, Hprime.get(i, 1));
+        }
+    }
+    else {
+        HTprime.transpose_not_square(Hprime);
+    }
+
     HHTprime.mult(Hprime, HTprime);
 
     //M.disp();
-    //H.disp();
-    //HT.disp();
-    //HHT.disp();
+    //Hprime.disp();
+    //HTprime.disp();
+    //HHTprime.disp();
 
     //Shit. Need a 4x4 inverse routine
     //Alright added crazy shit inverse functions
     HHT_invprime.matrix_inverse(HHTprime, 4);
 
-    //HHT_inv.disp();
+    //HHT_invprime.disp();
 
     //Then we need HT*inv(HHT) == N-1 x 4 - 4 x 4
-    HT_inv_HHTprime.zeros(MOTORSRUNNING, 4, "HT_inv_HHTprime");
     HT_inv_HHTprime.mult(HTprime, HHT_invprime);
-    //HT_inv_HHT.disp();
+    //HT_inv_HHTprime.disp();
 
     //Finally we can get Q
     Qprime.mult(HT_inv_HHTprime, M);
-    //Q.disp();
+    //Qprime.disp();
+}
+
+//Function to remove specific set number of motors
+void controller::RemoveMotors(int removemotors, MATLAB motorsRemoved) {
+    //Debug
+    //cout << "In RemoveMotors" << endl;
+
+    //Set MOTORSOFF
+    MOTORSOFF = removemotors;
+
+    //With motors removed we need to reinitialize all the control matrices
+    MOTORSRUNNING = NUMMOTORS - MOTORSOFF;
+
+    //Set operational flag = 0 for turned off motors
+    for (int i = 1; i <= MOTORSOFF; i++) {
+        int motorNum = motorsRemoved.get(i, 1);
+        
+        for (int j = 1; j <= NUMMOTORS; j++) {
+            if (j == motorNum) {
+                MOTORS[j - 1].op_flag = 0;
+
+                //Debug
+                //printf("Setting motor %i op_flag to %i \n", motorNum, MOTORS[j - 1].op_flag);
+            }
+        }
+    }
+
+    //Debug
+    //PAUSE();
+
+    //Indicator statement
+    printf("Total Motors = %d, Removing %d motors. Running Motors = %d \n", NUMMOTORS, removemotors, MOTORSRUNNING);
+
+    //This is where we make our configuration matrices
+    Hprime.zeros(4, MOTORSRUNNING, "Configuration Matrix Prime");
+    HTprime.zeros(MOTORSRUNNING, 4, "Configuration Matrix Transposed Prime");
+    HHTprime.zeros(4, 4, "H*HT Prime");
+    HHT_invprime.zeros(4, 4, "Inv(HHTprime)");
+    HT_inv_HHTprime.zeros(MOTORSRUNNING, 4, "HT_inv_HHTprime");
+    Qprime.zeros(MOTORSRUNNING, 4, "Control Matrix Prime");
+    CHIprime.zeros(MOTORSRUNNING, 1, "Thrust Required Prime");
+
+    //Set the H matrix for motors that are turned on
+    for (int i = 1; i <= MOTORSRUNNING; i++) {
+        if (MOTORS[i - 1].op_flag == 1) {
+            Hprime.set(1, i, - 1.0); //+ ?
+            Hprime.set(2, i, -MOTORS[i - 1].r.get(2, 1));
+            Hprime.set(3, i, MOTORS[i - 1].r.get(1, 1)); //- ?
+            Hprime.set(4, i, MOTORS[i - 1].dir * cq * Rrotor / ct); //just dir?
+        }
+    }
+
+    //HT*inv(HHT)*M
+    //H = 4xN
+    //HT = Nx4
+    //HHT = 4x4
+
+    //If four motors get turned off, it is a square matrix - I hate how this works
+    if (MOTORSRUNNING == 4) {
+        Hprime.transpose();
+        for (int i = 1; i <= MOTORSRUNNING; i++) {
+            HTprime.set(i, 1, Hprime.get(i, 1));
+        }
+    }
+    else {
+        HTprime.transpose_not_square(Hprime);
+    }
+    
+    HHTprime.mult(Hprime, HTprime);
+
+    //M.disp();
+    //Hprime.disp();
+    //HTprime.disp();
+    //HHTprime.disp();
+
+    //Shit. Need a 4x4 inverse routine
+    //Alright added crazy shit inverse functions
+    HHT_invprime.matrix_inverse(HHTprime, 4);
+
+    //HHT_invprime.disp();
+
+    //Then we need HT*inv(HHT) == N-1 x 4 - 4 x 4
+    HT_inv_HHTprime.mult(HTprime, HHT_invprime);
+    //HT_inv_HHTprime.disp();
+
+    //Finally we can get Q
+    Qprime.mult(HT_inv_HHTprime, M);
+    //Qprime.disp();
+
+    //Debug
+    //cout << "Finished RemoveMotors" << endl;
 }
 
 //Function to compute reconfigurable matrix [CHI / CHIprime]
@@ -354,19 +479,21 @@ void controller::computeReconfigurable(double thrust, double d_roll, double d_pi
         //We need to multiply CHI by a factor otherwise will blow this shit up
         //I don't think we need this anymore
         //CHIprime.mult_eq((double)MOTORSRUNNING/(double)NUMMOTORS);
-        ///CHIprime.disp();
         //CHIprime.disp();
         
+        //Flag increment for pulling value from chi
+        int chi = 0;
+
         //Constrain thrust between 0 and Max_Thrust
+        //Check whether motors are ON or OFF
         for (int i = 0; i < NUMMOTORS; i++) {
-            //Need a bunch of saturation filters
-            //Need to make sure if any thrust is less than zero we change it
-            if (i < MOTORSRUNNING) {
-                value = CHIprime.get(i + 1, 1);
+            if (MOTORS[i].op_flag == 1) {
+                value = CHIprime.get(chi + 1, 1);
                 value = CONSTRAIN(value, 0.0, MOTORS[0].Max_Thrust);
-                CHIprime.set(i + 1, 1, value);
+                CHIprime.set(chi + 1, 1, value);
                 //Then compute Motor signals required for that amount of thrust
-                MOTORS[i].pwm_signal = MOTORS[i].compute_signal_NO_OMEGA(CHIprime.get(i + 1, 1));
+                MOTORS[i].pwm_signal = MOTORS[i].compute_signal_NO_OMEGA(CHIprime.get(chi + 1, 1));
+                chi++;
             }
             else {
                 MOTORS[i].pwm_signal = OUTMIN;
@@ -497,15 +624,17 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
       //Stabilize Mode - Reconfigurable
 
-      //Controller values
-      double kp = 0;
-      double kd = 0.0;
-      double kyaw = 0.0;
+      //Euler angle controller gains
+      double kp_euler = 190;  //10
+      double kd_euler = 90;   //2
+      double kyaw = 0.5;     //0.5
 
       //Measure commands
       double roll_command = (aileron - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
       double pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
       double yaw_rate_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+
+      //Debug
       //printf("Roll pitch yaw command = %lf %lf %lf \n",roll_command,pitch_command,yaw_rate_command);
       //PAUSE();
 
@@ -517,38 +646,122 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double pitch_rate = sense_matrix.get(11, 1); //These are already in deg/s
       double yaw_rate = sense_matrix.get(12, 1);   //Check IMU.cpp to see for HIL
 
-      //PID control on commands
-      double droll = kp * (roll - roll_command) + kd * (roll_rate);
+      //Add PID controller on Euler rates cause nothing else is working
+      double kp_rate = 10.0;
+      double kd_rate = 2.0;
+
+      double rollddot = 0;
+      double pitchddot = 0;
+
+      if (rolldotprev != -999) {
+          rollddot = (roll_rate - rolldotprev) / elapsedTime;
+      }
+
+      rolldotprev = roll_rate;
+
+      if (pitchdotprev != -999) {
+          pitchddot = (pitch_rate - pitchdotprev) / elapsedTime;
+      }
+
+      pitchdotprev = pitch_rate;
+
+      double roll_rate_command = kp_rate * (roll_rate) - kd_rate * (rollddot);
+      double pitch_rate_command = kp_rate * (pitch_rate) - kd_rate * (pitchddot);
+      
+
+      //PID control on Euler commands
+      double droll = kp_euler * (roll - roll_command) - kd_euler * (roll_rate - roll_rate_command); //kd_euler * (roll_rate);
       droll = CONSTRAIN(droll, -500, 500);
-      double dpitch = kp * (pitch - pitch_command) + kd * (pitch_rate);
+      double dpitch = kp_euler * (pitch - pitch_command) - kd_euler * (pitch_rate - pitch_rate_command); //kd_euler * (pitch_rate);
       dpitch = CONSTRAIN(dpitch, -500, 500);
       double dyaw = kyaw * (yaw_rate - yaw_rate_command);
       dyaw = CONSTRAIN(dyaw, -500, 500);
 
-      //Debug
+      //Extra filters for if nan - thanks, IEEE
+      if (droll != droll) {
+          if (droll > 0) {
+              droll = 500;
+          }
+          else {
+              droll = -500;
+          }
+      }
+
+      if (dpitch != dpitch) {
+          if (dpitch > 0) {
+              dpitch = 500;
+          }
+          else {
+              dpitch = -500;
+          }
+          
+      }
+
+      if (dyaw != dyaw) {
+          if (dyaw > 0) {
+              dyaw = 500;
+          }
+          else {
+              dyaw = -500;
+          }
+      }
+
+      //Altitude control gains
+      double kp_z = 85;    //80
+      double ki_z = 0.5;   //0.5
+      double kd_z = 60;    //60
+
+      //[80, 0.5, 60] - dips by about 25 m, minimal oscillation, pretty long settle time
+
+      //Measure altitude and vertical velocity
       double z = sense_matrix.get(3,1);
       double zdot = 0;
+
       //If altitude_prev has been set compute a first order derivative
       if (zprev != -999) {
         zdot = (z - zprev) / elapsedTime;
       }
+
       //Then set the previous value
-      zprev = z;      
+      zprev = z;   
+
+      //Set z and zdot commands to 100 m [negative is up]
       double ZCOMMAND = -100;
+      double ZDOTCOMMAND = 0;
+
+      //Compute error and integral of error
       double zerror = ZCOMMAND - z;
       zint += zerror * elapsedTime;
-      throttle = OUTMIN - 10*zerror - 10*(0-zdot) - 0.5*zint;
+
+      //Compute throttle
+      throttle = OUTMIN - kp_z*zerror - kd_z*(ZDOTCOMMAND-zdot) - ki_z*zint;
+      throttle = CONSTRAIN(throttle, OUTMIN, OUTMAX);
+
+      //Extra filter for if it goes nan
+      if (throttle != throttle) {
+          if (throttle > 0) {
+              throttle = OUTMAX;
+          }
+          else {
+              throttle = OUTMIN;
+          }
+      }
+
+      //Debug
       //printf("Throttle = %lf \n",throttle);
 
       //Compute desired thrust
       double dthrust = ((8.0 * MOTORS[0].Max_Thrust) / ((double)OUTMAX - (double)OUTMIN)) * (throttle - OUTMIN);
-      //double dthrust = mass * GEARTH; //maybe not this
+
+      //Debug
+      //printf("dthrust droll dpitch dyaw %d %d %d %d \n", dthrust, droll, dpitch, dyaw);
 
       //Compute thrust needed for each motor
-      computeReconfigurable(dthrust, droll, -dpitch, dyaw);
+      computeReconfigurable(dthrust, droll, dpitch, dyaw);
 
       //Set pwm motor variables for control_matrix - can the long ass variables be changed to the MOTORS[i].pwm_signal like a for loop with
       //for (int i = 0; i <= NUMSIGNALS; i++) {control_matrix.set(i, 1, MOTORS[i].pwm_signal;} ?
+      /**/
       motor_upper_left_bottom = MOTORS[0].pwm_signal;
       motor_upper_right_bottom = MOTORS[1].pwm_signal;
       motor_lower_right_bottom = MOTORS[2].pwm_signal;
@@ -557,7 +770,17 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       motor_upper_right_top = MOTORS[5].pwm_signal;
       motor_lower_right_top = MOTORS[6].pwm_signal;
       motor_lower_left_top = MOTORS[7].pwm_signal;
+      
 
+      //Debug - See how roll/pitch react when one side of motors is off and other is at max
+      /*motor_upper_left_bottom = OUTMIN;
+      motor_upper_right_bottom = OUTMID;
+      motor_lower_right_bottom = OUTMID;
+      motor_lower_left_bottom = OUTMIN;
+      motor_upper_left_top = OUTMIN;
+      motor_upper_right_top = OUTMID;
+      motor_lower_right_top = OUTMID;
+      motor_lower_left_top = OUTMIN;*/
 
       //Debug print statements
       //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);
@@ -588,6 +811,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   control_matrix.set(6,1,motor_upper_right_top);
   control_matrix.set(7,1,motor_lower_right_top);
   control_matrix.set(8,1,motor_lower_left_top);
+
+  //Debug
   /*  for (int i = 0;i<5;i++) {
     printf(" %d ",rx_array[i]);
   }

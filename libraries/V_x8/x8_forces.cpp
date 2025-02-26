@@ -45,10 +45,10 @@ forces::forces() {
   //printf("CT/CQ = %lf/%lf \n",ct,cq);
   //PAUSE();
 
-  //Distance from Cg to rotor
-  rx = (9.0/12.0)/3.28; //meters
-  ry = (9.0/12.0)/3.28; 
-  rz = 0.0;
+  //Distance from Cg to rotor - Changed to values from SUAM - 2/12/25 12:50pm
+  rx = 0.10115; //(9.0/12.0)/3.28; //meters
+  ry = 0.10115; //(9.0/12.0)/3.28; 
+  rz = 0.0508;  //0.0; 
 }
 
 void forces::compute_thrust_and_torque(MATLAB pwm_out) {

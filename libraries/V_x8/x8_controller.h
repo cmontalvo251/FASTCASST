@@ -50,8 +50,8 @@ class controller {
 private:
 	double elapsedTime = 0, lastTime=0;
 	double mass, Ixx, Iyy, Izz, ct, cq, Rrotor, rx, ry, rz, nx, ny, nz;
-	int CONTROLLER_FLAG = -99;
-	double zprev = -999,zint = 0;
+	int CONTROLLER_FLAG = -99, motorsToRemove = 0;
+	double rolldotprev = -999, pitchdotprev = -999, zprev = -999,zint = 0;
 	void set_defaults();
 
 	//List of private variables and functions
@@ -71,13 +71,14 @@ private:
 	* ny - y-component of n vector, usually 0; [m]
 	* nz - z-component of n vector, usually -1; [m]
 	* CONTROLLER_FLAG - sets controller state, -1 -> User decides, 0 - OFF, 1 - ON; []
+	* motorsToRemove - sets number of motors to remove / sets size for specific array; []
 	* set_defaults - sets motor control matrix to minimum PWM signal;
 	*/
 
 public:
 	int NUMMOTORS = 0, MOTORSOFF = 0, NUMSIGNALS = 8;
 	int MOTORSRUNNING;
-	MATLAB control_matrix;
+	MATLAB control_matrix, REMOVEMOTORS;
 	MATLAB M, U, H, HT, HHT, HHT_inv, HT_inv_HHT, Q, CHI;
 	MATLAB Hprime, HTprime, HHTprime, HHT_invprime, HT_inv_HHTprime, Qprime, CHIprime, datapts;
 	double Tdatapt_, pwm_datapt_, omegaRPMdatapt_;
@@ -86,6 +87,7 @@ public:
 	void MotorBeep(MATLAB);
 	void MotorsSetup(MATLAB datapts);
 	void RemoveMotors(int);
+	void RemoveMotors(int, MATLAB);
 	void computeReconfigurable(double, double, double, double);
 	void loop(double currentTime,int rx_array[],MATLAB sense_matrix);
 	void init(MATLAB in_configuration_matrix);
@@ -98,6 +100,7 @@ public:
 	* NUMSIGNALS - number of signals needed to calculate, 8 due to 8 motors, if motor is OFF, signal is OUTMIN; []
 	* MOTORSRUNNING - keeps track of number of motors that are ON; []
 	* control_matrix - control vector of PWM signals, vector in form of [Thrust Aileron Elevator Rudder A1 A2 A3 A4]^T; []
+	* REMOVEMOTRS - vector of motor numbers to turn OFF; []
 	* M - 4x4 mass matrix for calcs, diag[m Ixx Iyy Izz]; [kg & kg*m^2]
 	* U - 4x1 control vector for calcs, [dthrust droll dpitch dyaw]^T; [?]
 	* H - 4x8 parameter matrix (P in AIAA paper) for calcs, [-1 -ryi rxi cq*R*sigmai/ct]^T; [?]
@@ -120,8 +123,9 @@ public:
 	* MOTORS - create 20 motors "just cuz I can" - quote from Propulsion.h in SUAM;
 	* addMotor - function to add a motor, has inputs of (rx ry rz nx ny nz dir op_flag);
 	* MotorBeep - function to compute configuration matrix [Q] for all motors;
-	* MotorsSetup - function to create the 8 motors and set r, n, dir, and op_flag; *********Is used in Autopilot.cpp, but FASTCASST doesnt have that. Move to controller constructor?******************
-	* RemoveMotors - function to remove a set number of motors; *****************************Should it be changed to remove specific motors?************************************************************
+	* MotorsSetup - function to create the 8 motors and set r, n, dir, and op_flag; 
+	* RemoveMotors(int) - function to remove a set number of motors starting at the last added and working in;
+	* RemoveMotors(int, MATLAB) - function to remove a specific set of motors from a given array;
 	* computeReconfigurable - function to compute the reconfigurable matrix [CHI / CHIprime] and set the motor object's pwm_signal to computed signal;
 	* loop - main controller loop that decides controller mode, calculates controller commands, and sets control_matrix;
 	* init - initialization function for control_matrix and sets to minimum pwm output;

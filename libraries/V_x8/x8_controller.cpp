@@ -106,7 +106,7 @@ controller::controller() {
     MotorsSetup(datapts); 
 
     //Test remove motor - remove from recent
-    //RemoveMotors(2);
+    RemoveMotors(2);
     
     //Remove specific number of motors
     motorsToRemove = 4;
@@ -215,10 +215,11 @@ void controller::MotorBeep(MATLAB datapts_IN) {
 
 
     for (int i = 1; i <= NUMMOTORS; i++) {
-        H.set(1, i, 1.0); //The 1 is because all motors create thrust
+        //From paper, H = [-1 -ryi rxi (sigmai * cq * Rrotor / ct)]^T
+        H.set(1, i, -1.0); 
         H.set(2, i, -MOTORS[i - 1].r.get(2, 1));
-        H.set(3, i, -MOTORS[i - 1].r.get(1, 1));
-        H.set(4, i, MOTORS[i - 1].dir);
+        H.set(3, i, MOTORS[i - 1].r.get(1, 1));
+        H.set(4, i, (MOTORS[i - 1].dir * cq * Rrotor / ct));
     }
     //HT*inv(HHT)*M
     //H = 4xN
@@ -298,10 +299,11 @@ void controller::RemoveMotors(int removemotors) {
     CHIprime.zeros(MOTORSRUNNING, 1, "Thrust Required Prime");
 
     for (int i = 1; i <= MOTORSRUNNING; i++) {
-        Hprime.set(1, i, 1.0);
+        //From paper, H = [-1 -ryi rxi (sigmai * cq * Rrotor / ct)]^T
+        Hprime.set(1, i, -1.0);
         Hprime.set(2, i, -MOTORS[i - 1].r.get(2, 1));
-        Hprime.set(3, i, -MOTORS[i - 1].r.get(1, 1));
-        Hprime.set(4, i, MOTORS[i - 1].dir);
+        Hprime.set(3, i, MOTORS[i - 1].r.get(1, 1));
+        Hprime.set(4, i, (MOTORS[i - 1].dir * cq * Rrotor / ct));
     }
 
     //HT*inv(HHT)*M
@@ -385,10 +387,11 @@ void controller::RemoveMotors(int removemotors, MATLAB motorsRemoved) {
     //Set the H matrix for motors that are turned on
     for (int i = 1; i <= MOTORSRUNNING; i++) {
         if (MOTORS[i - 1].op_flag == 1) {
-            Hprime.set(1, i, - 1.0); //+ ?
+            //From paper, H = [-1 -ryi rxi (sigmai * cq * Rrotor / ct)]^T
+            Hprime.set(1, i, - 1.0);
             Hprime.set(2, i, -MOTORS[i - 1].r.get(2, 1));
-            Hprime.set(3, i, MOTORS[i - 1].r.get(1, 1)); //- ?
-            Hprime.set(4, i, MOTORS[i - 1].dir * cq * Rrotor / ct); //just dir?
+            Hprime.set(3, i, MOTORS[i - 1].r.get(1, 1));
+            Hprime.set(4, i, (MOTORS[i - 1].dir * cq * Rrotor / ct));
         }
     }
 
@@ -624,15 +627,33 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
       //Stabilize Mode - Reconfigurable
 
-      //Euler angle controller gains
-      double kp_euler = 190;  //10
-      double kd_euler = 90;   //2
-      double kyaw = 0.5;     //0.5
+      //Euler angle controller gains - euler angles don't use integral controllers
+      double kp_roll = 0.5;   //0.5
+      double kd_roll = 1.0;   //1.0
+      double kp_pitch = 0.5;  //0.5
+      double kd_pitch = 1.0;  //1.0
+      double kp_yaw = 0;      //0 - controlling yaw itself makes it spaz out
+      double kd_yaw = 0.5;    //0.5
+
+      //Roll: [0.5 1.0] stabilizes drone in ~1 sec for IC of 1 rad/s
+      //Pitch: [0.5 1.0] stabilizes drone in ~1 sec for IC of 1 rad/s
+      //Yaw: [0 0.5] stabilizes yaw rate almost instantaneously for IC of 1 rad/s
 
       //Measure commands
       double roll_command = (aileron - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
       double pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
-      double yaw_rate_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+      double yaw_rate_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0); //rudder does yaw, but here it will control yaw_rate
+      //yaw itself will have to be controlled by user commands
+
+      //Set non-stick commands
+      double roll_rate_command = 0;
+      double pitch_rate_command = 0;
+      double yaw_command = 0;
+
+      //Verification tests - make sure model works for different angle commands
+      //roll_command = 45;
+      //pitch_command = 45;
+      //yaw_rate_command = 1;
 
       //Debug
       //printf("Roll pitch yaw command = %lf %lf %lf \n",roll_command,pitch_command,yaw_rate_command);
@@ -646,35 +667,12 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double pitch_rate = sense_matrix.get(11, 1); //These are already in deg/s
       double yaw_rate = sense_matrix.get(12, 1);   //Check IMU.cpp to see for HIL
 
-      //Add PID controller on Euler rates cause nothing else is working
-      double kp_rate = 10.0;
-      double kd_rate = 2.0;
-
-      double rollddot = 0;
-      double pitchddot = 0;
-
-      if (rolldotprev != -999) {
-          rollddot = (roll_rate - rolldotprev) / elapsedTime;
-      }
-
-      rolldotprev = roll_rate;
-
-      if (pitchdotprev != -999) {
-          pitchddot = (pitch_rate - pitchdotprev) / elapsedTime;
-      }
-
-      pitchdotprev = pitch_rate;
-
-      double roll_rate_command = kp_rate * (roll_rate) - kd_rate * (rollddot);
-      double pitch_rate_command = kp_rate * (pitch_rate) - kd_rate * (pitchddot);
-      
-
-      //PID control on Euler commands
-      double droll = kp_euler * (roll - roll_command) - kd_euler * (roll_rate - roll_rate_command); //kd_euler * (roll_rate);
+      //PID control on Euler commands - u = k * (reference - measured) 
+      double droll = kp_roll * (roll_command - roll) + kd_roll * (roll_rate_command - roll_rate);
       droll = CONSTRAIN(droll, -500, 500);
-      double dpitch = kp_euler * (pitch - pitch_command) - kd_euler * (pitch_rate - pitch_rate_command); //kd_euler * (pitch_rate);
+      double dpitch = kp_pitch * (pitch_command - pitch) + kd_pitch * (pitch_rate_command - pitch_rate);
       dpitch = CONSTRAIN(dpitch, -500, 500);
-      double dyaw = kyaw * (yaw_rate - yaw_rate_command);
+      double dyaw = kp_yaw * (yaw_command - yaw) + kd_yaw * (yaw_rate_command - yaw_rate);
       dyaw = CONSTRAIN(dyaw, -500, 500);
 
       //Extra filters for if nan - thanks, IEEE
@@ -711,7 +709,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double ki_z = 0.5;   //0.5
       double kd_z = 60;    //60
 
-      //[80, 0.5, 60] - dips by about 25 m, minimal oscillation, pretty long settle time
+      //[85, 0.5, 60] - dips by about 25 m, minimal oscillation, pretty long settle time
 
       //Measure altitude and vertical velocity
       double z = sense_matrix.get(3,1);
@@ -757,11 +755,16 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //printf("dthrust droll dpitch dyaw %d %d %d %d \n", dthrust, droll, dpitch, dyaw);
 
       //Compute thrust needed for each motor
-      computeReconfigurable(dthrust, droll, dpitch, dyaw);
+      computeReconfigurable(-dthrust, droll, dpitch, -dyaw);
+      //dthrust needs to be negative. "Up is down. That's just maddeningly unhelpful. Why are these things never clear?" - Captain Jack Sparrow
 
       //Set pwm motor variables for control_matrix - can the long ass variables be changed to the MOTORS[i].pwm_signal like a for loop with
       //for (int i = 0; i <= NUMSIGNALS; i++) {control_matrix.set(i, 1, MOTORS[i].pwm_signal;} ?
-      /**/
+      /*
+      
+      */
+
+      //Controller
       motor_upper_left_bottom = MOTORS[0].pwm_signal;
       motor_upper_right_bottom = MOTORS[1].pwm_signal;
       motor_lower_right_bottom = MOTORS[2].pwm_signal;
@@ -771,16 +774,48 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       motor_lower_right_top = MOTORS[6].pwm_signal;
       motor_lower_left_top = MOTORS[7].pwm_signal;
       
-
-      //Debug - See how roll/pitch react when one side of motors is off and other is at max
-      /*motor_upper_left_bottom = OUTMIN;
+      //Debug - See how roll/pitch react when one side of motors is off and other is at max or mid
+      /*
+      //Left OFF & Right MID
+      motor_upper_left_bottom = OUTMIN;
       motor_upper_right_bottom = OUTMID;
       motor_lower_right_bottom = OUTMID;
       motor_lower_left_bottom = OUTMIN;
       motor_upper_left_top = OUTMIN;
       motor_upper_right_top = OUTMID;
       motor_lower_right_top = OUTMID;
-      motor_lower_left_top = OUTMIN;*/
+      motor_lower_left_top = OUTMIN;
+      
+      //Right OFF & Left MID
+      motor_upper_left_bottom = OUTMID;
+      motor_upper_right_bottom = OUTMIN;
+      motor_lower_right_bottom = OUTMIN;
+      motor_lower_left_bottom = OUTMID;
+      motor_upper_left_top = OUTMID;
+      motor_upper_right_top = OUTMIN;
+      motor_lower_right_top = OUTMIN;
+      motor_lower_left_top = OUTMID;
+
+      //Front OFF & Back MID
+      motor_upper_left_bottom = OUTMIN;
+      motor_upper_right_bottom = OUTMIN;
+      motor_lower_right_bottom = OUTMID;
+      motor_lower_left_bottom = OUTMID;
+      motor_upper_left_top = OUTMIN;
+      motor_upper_right_top = OUTMIN;
+      motor_lower_right_top = OUTMID;
+      motor_lower_left_top = OUTMID;
+
+      //Back OFF & Front MID
+      motor_upper_left_bottom = OUTMID;
+      motor_upper_right_bottom = OUTMID;
+      motor_lower_right_bottom = OUTMIN;
+      motor_lower_left_bottom = OUTMIN;
+      motor_upper_left_top = OUTMID;
+      motor_upper_right_top = OUTMID;
+      motor_lower_right_top = OUTMIN;
+      motor_lower_left_top = OUTMIN;
+      */
 
       //Debug print statements
       //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);

@@ -106,22 +106,26 @@ controller::controller() {
     MotorsSetup(datapts); 
 
     //Test remove motor - remove from recent
-    RemoveMotors(2);
+    //RemoveMotors(2);
     
     //Remove specific number of motors
-    motorsToRemove = 4;
+    motorsToRemove = 2;
 
     //Initialize MOTORSOFF vector for removing specific motors
     REMOVEMOTORS.zeros(motorsToRemove, 1, "Vector of motors to remove");
 
-    //Remove input remove array for left side
-    REMOVEMOTORS.set(1, 1, 1); //top_front_left
+    //Remove input - Make sure to change the first indices to start at 1 and increase to motorsToRemove
+    //REMOVEMOTORS.set(1, 1, 1); //top_front_left
+    REMOVEMOTORS.set(1, 1, 2); //top_front_right
+    //REMOVEMOTORS.set(1, 1, 3); //top_back_right
     REMOVEMOTORS.set(2, 1, 4); //top_back_left
-    REMOVEMOTORS.set(3, 1, 5); //bottom_front_left
-    REMOVEMOTORS.set(4, 1, 8); //bottom_back_left
+    //REMOVEMOTORS.set(1, 1, 5); //bottom_front_left
+    //REMOVEMOTORS.set(1, 1, 6); //bottom_front_right
+    //REMOVEMOTORS.set(1, 1, 7); //bottom_back_right
+    //REMOVEMOTORS.set(2, 1, 8); //bottom_back_left
     
     //Test remove motor - remove specific
-    //RemoveMotors(motorsToRemove, REMOVEMOTORS);
+    RemoveMotors(motorsToRemove, REMOVEMOTORS);
     
 };
 
@@ -364,7 +368,7 @@ void controller::RemoveMotors(int removemotors, MATLAB motorsRemoved) {
                 MOTORS[j - 1].op_flag = 0;
 
                 //Debug
-                //printf("Setting motor %i op_flag to %i \n", motorNum, MOTORS[j - 1].op_flag);
+                printf("Setting motor %i op_flag to %i \n", motorNum, MOTORS[j - 1].op_flag);
             }
         }
     }
@@ -373,7 +377,7 @@ void controller::RemoveMotors(int removemotors, MATLAB motorsRemoved) {
     //PAUSE();
 
     //Indicator statement
-    printf("Total Motors = %d, Removing %d motors. Running Motors = %d \n", NUMMOTORS, removemotors, MOTORSRUNNING);
+    printf("Total Motors = %i, Removing %i motors. Running Motors = %i \n", NUMMOTORS, removemotors, MOTORSRUNNING);
 
     //This is where we make our configuration matrices
     Hprime.zeros(4, MOTORSRUNNING, "Configuration Matrix Prime");
@@ -384,14 +388,23 @@ void controller::RemoveMotors(int removemotors, MATLAB motorsRemoved) {
     Qprime.zeros(MOTORSRUNNING, 4, "Control Matrix Prime");
     CHIprime.zeros(MOTORSRUNNING, 1, "Thrust Required Prime");
 
+    //Counter for adding on motors to Hprime
+    int ctr = 1;
+
     //Set the H matrix for motors that are turned on
-    for (int i = 1; i <= MOTORSRUNNING; i++) {
+    for (int i = 1; i <= NUMMOTORS; i++) {
         if (MOTORS[i - 1].op_flag == 1) {
             //From paper, H = [-1 -ryi rxi (sigmai * cq * Rrotor / ct)]^T
-            Hprime.set(1, i, - 1.0);
-            Hprime.set(2, i, -MOTORS[i - 1].r.get(2, 1));
-            Hprime.set(3, i, MOTORS[i - 1].r.get(1, 1));
-            Hprime.set(4, i, (MOTORS[i - 1].dir * cq * Rrotor / ct));
+            Hprime.set(1, ctr, - 1.0);
+            Hprime.set(2, ctr, -MOTORS[i - 1].r.get(2, 1));
+            Hprime.set(3, ctr, MOTORS[i - 1].r.get(1, 1));
+            Hprime.set(4, ctr, (MOTORS[i - 1].dir * cq * Rrotor / ct));
+
+            //Increment counter
+            ctr++;
+        }
+        else {
+            printf("Motor % i is off \n", i);
         }
     }
 
@@ -403,8 +416,11 @@ void controller::RemoveMotors(int removemotors, MATLAB motorsRemoved) {
     //If four motors get turned off, it is a square matrix - I hate how this works
     if (MOTORSRUNNING == 4) {
         Hprime.transpose();
-        for (int i = 1; i <= MOTORSRUNNING; i++) {
+        for (int i = 0; i < MOTORSRUNNING; i++) {
             HTprime.set(i, 1, Hprime.get(i, 1));
+            HTprime.set(i, 2, Hprime.get(i, 2));
+            HTprime.set(i, 3, Hprime.get(i, 3));
+            HTprime.set(i, 4, Hprime.get(i, 4));
         }
     }
     else {
@@ -414,7 +430,7 @@ void controller::RemoveMotors(int removemotors, MATLAB motorsRemoved) {
     HHTprime.mult(Hprime, HTprime);
 
     //M.disp();
-    //Hprime.disp();
+    Hprime.disp();
     //HTprime.disp();
     //HHTprime.disp();
 

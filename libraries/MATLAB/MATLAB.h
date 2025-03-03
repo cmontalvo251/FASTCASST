@@ -51,6 +51,7 @@ class MATLAB {
   void zeros(int,int,char*);
   void ones(int,int,char*);
   void transpose();
+  void transpose(MATLAB);
   void transpose_not_square(MATLAB);
   //Inverses for diagonal matrices and 2x2
   void inv(MATLAB,char*); //DO NOT DELETE KEPT FOR BACKWARDS COMPATIBILITY

@@ -571,6 +571,19 @@ void MATLAB::transpose() {
   }
 }
 
+void MATLAB::transpose(MATLAB A) {
+    if (!isquare_) {
+        printf("Error in transpose. Matrix is not square. Suggest running transpose_not_square() var = %s \n", name_);
+        return;
+    }
+    double temp;
+    for (int idx = 1; idx <= A.row_; idx++) {
+        for (int jdx = 1; jdx <= A.col_; jdx++) {
+            set(jdx, idx, A.get(idx,jdx));
+        }
+    }
+}
+
 void MATLAB::transpose_not_square(MATLAB A) {
   //Make sure that row and columns match up
   if ((row_ != A.col_) || (col_ != A.row_)) {

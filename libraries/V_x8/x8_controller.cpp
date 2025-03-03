@@ -106,23 +106,23 @@ controller::controller() {
     MotorsSetup(datapts); 
 
     //Test remove motor - remove from recent
-    //RemoveMotors(2);
+    //RemoveMotors(4);
     
     //Remove specific number of motors
-    motorsToRemove = 2;
+    motorsToRemove = 4;
 
     //Initialize MOTORSOFF vector for removing specific motors
     REMOVEMOTORS.zeros(motorsToRemove, 1, "Vector of motors to remove");
 
     //Remove input - Make sure to change the first indices to start at 1 and increase to motorsToRemove
-    //REMOVEMOTORS.set(1, 1, 1); //top_front_left
-    REMOVEMOTORS.set(1, 1, 2); //top_front_right
-    //REMOVEMOTORS.set(1, 1, 3); //top_back_right
-    REMOVEMOTORS.set(2, 1, 4); //top_back_left
+    REMOVEMOTORS.set(1, 1, 1); //top_front_left
+    REMOVEMOTORS.set(2, 1, 2); //top_front_right
+    REMOVEMOTORS.set(3, 1, 3); //top_back_right
+    REMOVEMOTORS.set(4, 1, 4); //top_back_left
     //REMOVEMOTORS.set(1, 1, 5); //bottom_front_left
-    //REMOVEMOTORS.set(1, 1, 6); //bottom_front_right
-    //REMOVEMOTORS.set(1, 1, 7); //bottom_back_right
-    //REMOVEMOTORS.set(2, 1, 8); //bottom_back_left
+    //REMOVEMOTORS.set(2, 1, 6); //bottom_front_right
+    //REMOVEMOTORS.set(3, 1, 7); //bottom_back_right
+    //REMOVEMOTORS.set(4, 1, 8); //bottom_back_left
     
     //Test remove motor - remove specific
     RemoveMotors(motorsToRemove, REMOVEMOTORS);
@@ -317,10 +317,7 @@ void controller::RemoveMotors(int removemotors) {
     
     //If four motors get turned off, it is a square matrix
     if (MOTORSRUNNING == 4) {
-        Hprime.transpose();
-        for (int i = 1; i <= MOTORSRUNNING; i++) {
-            HTprime.set(i, 1, Hprime.get(i, 1));
-        }
+        HTprime.transpose(Hprime);
     }
     else {
         HTprime.transpose_not_square(Hprime);
@@ -415,13 +412,7 @@ void controller::RemoveMotors(int removemotors, MATLAB motorsRemoved) {
 
     //If four motors get turned off, it is a square matrix - I hate how this works
     if (MOTORSRUNNING == 4) {
-        Hprime.transpose();
-        for (int i = 0; i < MOTORSRUNNING; i++) {
-            HTprime.set(i, 1, Hprime.get(i, 1));
-            HTprime.set(i, 2, Hprime.get(i, 2));
-            HTprime.set(i, 3, Hprime.get(i, 3));
-            HTprime.set(i, 4, Hprime.get(i, 4));
-        }
+        HTprime.transpose(Hprime);
     }
     else {
         HTprime.transpose_not_square(Hprime);
@@ -430,7 +421,7 @@ void controller::RemoveMotors(int removemotors, MATLAB motorsRemoved) {
     HHTprime.mult(Hprime, HTprime);
 
     //M.disp();
-    Hprime.disp();
+    //Hprime.disp();
     //HTprime.disp();
     //HHTprime.disp();
 
@@ -653,7 +644,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
       //Roll: [0.5 1.0] stabilizes drone in ~1 sec for IC of 1 rad/s
       //Pitch: [0.5 1.0] stabilizes drone in ~1 sec for IC of 1 rad/s
-      //Yaw: [0 0.5] stabilizes yaw rate almost instantaneously for IC of 1 rad/s
+      //Yaw: [0 0.5] stabilizes yaw rate almost instantaneously for IC of 1 rad/s. Don't use proportional. It blows up.
 
       //Measure commands
       double roll_command = (aileron - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
@@ -668,6 +659,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
       //Verification tests - make sure model works for different angle commands
       //roll_command = 45;
+      //roll_command = 1;
       //pitch_command = 45;
       //yaw_rate_command = 1;
 
@@ -773,6 +765,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //Compute thrust needed for each motor
       computeReconfigurable(-dthrust, droll, dpitch, -dyaw);
       //dthrust needs to be negative. "Up is down. That's just maddeningly unhelpful. Why are these things never clear?" - Captain Jack Sparrow
+      //dyaw also needs to be negative apparently. It also doesn't like proportional control. It crashes out just like me. 
 
       //Set pwm motor variables for control_matrix - can the long ass variables be changed to the MOTORS[i].pwm_signal like a for loop with
       //for (int i = 0; i <= NUMSIGNALS; i++) {control_matrix.set(i, 1, MOTORS[i].pwm_signal;} ?

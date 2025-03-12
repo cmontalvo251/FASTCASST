@@ -244,8 +244,17 @@ void GPS::computeCOG(double current_time) {
 
   ///////////??COMPUTE RAW SPEED AND HEAVILY FILTERED SPEED
   if (dt > 0) {
-    double vx = dx/dt;
-    double vy = dy/dt;
+    vx = dx/dt; //Added to GPS.h file for X8 
+    vy = dy/dt; //Added to GPS.h file for X8
+
+    //Need to include heading for body frame velocity calculations - only do for x8 in case it breaks shit
+    #ifdef x8
+    double u = vx;
+    double v = vy;
+    vx = u * cos(heading_new) + v * sin(heading_new);
+    vy = -u * sin(heading_new) + v * cos(heading_new);
+    #endif
+
     speed = sqrt((vx*vx + vy*vy));
   } else {
     speed = 0;

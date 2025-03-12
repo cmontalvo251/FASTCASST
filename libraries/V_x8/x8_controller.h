@@ -7,6 +7,7 @@
 #include <MATLAB/MATLAB.h>  //this is for MATLAB vectors/matrices
 #include <RCIO/RCIO.h>      //this is for STICK values
 #include <Mathp/mathp.h>    //this is for conversion variables
+#include <math.h>           //this is for trig functions
 
 //Motor class for defining motor attributes - See SUAM motor.h/cpp
 class Motor {
@@ -51,7 +52,7 @@ private:
 	double elapsedTime = 0, lastTime=0;
 	double mass, Ixx, Iyy, Izz, ct, cq, Rrotor, rx, ry, rz, nx, ny, nz;
 	int CONTROLLER_FLAG = -99, motorsToRemove = 0;
-	double rolldotprev = -999, pitchdotprev = -999, zprev = -999,zint = 0;
+	double xprev = -999, xint = 0, yprev = -999, yint = 0, uprev = -999, uint = 0, vprev = -999, vint = 0, zprev = -999, zint = 0;
 	void set_defaults();
 
 	//List of private variables and functions
@@ -72,6 +73,16 @@ private:
 	* nz - z-component of n vector, usually -1; [m]
 	* CONTROLLER_FLAG - sets controller state, -1 -> User decides, 0 - OFF, 1 - ON; []
 	* motorsToRemove - sets number of motors to remove / sets size for specific array; []
+	* xprev - previous x for derivative control of heading; [m]
+	* xint - integral error for x for integral control of heading; [m * s]
+	* yprev - previous y for derivative control of heading; [m]
+	* yint - integral error for y for integral control of heading; [m * s]
+	* uprev - previous u val for derivative control of u; [m/s]
+	* uint - integral error for u; [m]
+	* vprev - previous v val for derivative control of v; [m/s]
+	* vint - integral error for v; [m]
+	* zprev - previous altitude value for derivative control of z; [m]
+	* zint - integral error for z; [m*s]
 	* set_defaults - sets motor control matrix to minimum PWM signal;
 	*/
 
@@ -81,6 +92,10 @@ public:
 	MATLAB control_matrix, REMOVEMOTORS;
 	MATLAB M, U, H, HT, HHT, HHT_inv, HT_inv_HHT, Q, CHI;
 	MATLAB Hprime, HTprime, HHTprime, HHT_invprime, HT_inv_HHTprime, Qprime, CHIprime, datapts;
+	MATLAB WAYPOINTS;
+	int WayCtr = 1, NUMWAYPTS;
+	bool WaypointControl, STAY;
+	double timeWaypoint, topSpeed;
 	double Tdatapt_, pwm_datapt_, omegaRPMdatapt_;
 	Motor MOTORS[20];
 	void addMotor(double, double, double, double, double, double, int, int);
@@ -117,6 +132,13 @@ public:
 	* HT_inv_HHTprime - Nx4 matrix for mult(HTprime, HHT_invprime); [?]
 	* Qprime - Nx4 configuration matrix for mult(HT_inv_HHTprime, M); [?]
 	* CHIprime - Nx1 calculated control thrust vector; [N]
+	* WAYPOINTS - Nx3 matrix for waypoints, vector seen as {x y z}; [m]
+	* WayCtr - counter to increment waypoint;
+	* NUMWAYPTS - number of active waypoints;
+	* WaypointControl - bool to activate or deactive waypoint control, if not active, just stabilization code;
+	* STAY - boolean to tell controller to stop moving after hitting a waypoint;
+	* timeWaypoint - log when reaching waypoint and set velocity command to zero for 10 s;
+	* topSpeed - top speed achieved before reaching cruise phase; [m/s]
 	* Tdatapt_ - thrust datapoint for motor calculations; [N]
 	* pwm_datapt_ - pwm datapoint that corresponds to Tdatapt_; []
 	* omegaRPMdatapt_ - ang vel datapoint that corresponds to Tdatapt_; []

@@ -54,7 +54,7 @@ class GPS {
   int start_pt = 1;
   MATLAB dist_vec;
   MATLAB time_vec;
-  double speed=0,dist=0,speed_raw=0;
+  double speed=0,dist=0,speed_raw=0, vx = 0, vy = 0; //Adding vx and vy to keep track of side slip in X8
   unsigned long lastTime = 0;
   GPS(); //constructor
   void poll(float);

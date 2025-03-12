@@ -125,8 +125,69 @@ controller::controller() {
     //REMOVEMOTORS.set(4, 1, 8); //bottom_back_left
     
     //Test remove motor - remove specific
-    RemoveMotors(motorsToRemove, REMOVEMOTORS);
+    //RemoveMotors(motorsToRemove, REMOVEMOTORS);
+
+    //Waypoint Control Flag
+    WaypointControl = false;
+
+    //Stay flag to tell controller to stop and hover after reaching waypoint
+    STAY = false;
     
+    //Number of Active Waypoints
+    NUMWAYPTS = 4;
+
+    //Waypoint Control Vector - right now just meters for sims. Should change to lat, lon later for real
+    WAYPOINTS.zeros(5, 3, "Waypoint Matrix");
+
+    //Star Pattern
+    /*
+    //Waypoint 1: (0, 0, -200) - IC
+    WAYPOINTS.set(1, 1, 0);
+    WAYPOINTS.set(1, 2, 0);
+    WAYPOINTS.set(1, 3, -200);
+
+    //Waypoint 2: (30, 80, -150)
+    WAYPOINTS.set(2, 1, 30);
+    WAYPOINTS.set(2, 2, 80);
+    WAYPOINTS.set(2, 3, -150);
+
+    //Waypoint 3: (60, 0, -100)
+    WAYPOINTS.set(3, 1, 60);
+    WAYPOINTS.set(3, 2, 0);
+    WAYPOINTS.set(3, 3, -100);
+
+    //Waypoint 4: (-20, 50, -150)
+    WAYPOINTS.set(4, 1, -20);
+    WAYPOINTS.set(4, 2, 50);
+    WAYPOINTS.set(4, 3, -150);
+
+    //Waypoint 5: (80, 50, -100)
+    WAYPOINTS.set(5, 1, 80);
+    WAYPOINTS.set(5, 2, 50);
+    WAYPOINTS.set(5, 3, -100);
+    */
+    
+    //Rectangle
+    //Waypoint 1: (0, 0, -200) - IC
+    WAYPOINTS.set(1, 1, 0);
+    WAYPOINTS.set(1, 2, 0);
+    WAYPOINTS.set(1, 3, -200);
+
+    //Waypoint 2: (100, 0, -150)
+    WAYPOINTS.set(2, 1, 100);
+    WAYPOINTS.set(2, 2, 0);
+    WAYPOINTS.set(2, 3, -150);
+
+    //Waypoint 3: (100, 100, -100)
+    WAYPOINTS.set(3, 1, 100);
+    WAYPOINTS.set(3, 2, 100);
+    WAYPOINTS.set(3, 3, -100);
+
+    //Waypoint 4: (0, 100, -150)
+    WAYPOINTS.set(4, 1, 0);
+    WAYPOINTS.set(4, 2, 100);
+    WAYPOINTS.set(4, 3, -150);
+
 };
 
 //Function to add a motor to system
@@ -632,56 +693,381 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       motor_lower_right_bottom = throttle + droll + dpitch + dyaw;
       */
 
-      //Stabilize Mode - Reconfigurable
+      //Stabilize Mode - Reconfigurable + Waypoint Control
 
-      //Euler angle controller gains - euler angles don't use integral controllers
-      double kp_roll = 0.5;   //0.5
-      double kd_roll = 1.0;   //1.0
-      double kp_pitch = 0.5;  //0.5
-      double kd_pitch = 1.0;  //1.0
-      double kp_yaw = 0;      //0 - controlling yaw itself makes it spaz out
-      double kd_yaw = 0.5;    //0.5
-
-      //Roll: [0.5 1.0] stabilizes drone in ~1 sec for IC of 1 rad/s
-      //Pitch: [0.5 1.0] stabilizes drone in ~1 sec for IC of 1 rad/s
-      //Yaw: [0 0.5] stabilizes yaw rate almost instantaneously for IC of 1 rad/s. Don't use proportional. It blows up.
-
-      //Measure commands
-      double roll_command = (aileron - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
-      double pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
-      double yaw_rate_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0); //rudder does yaw, but here it will control yaw_rate
-      //yaw itself will have to be controlled by user commands
-
-      //Set non-stick commands
-      double roll_rate_command = 0;
-      double pitch_rate_command = 0;
+      //Initialize Commands - If WaypointControl = false, these commands are default stabilize commands
+      double roll_command = 0;
+      double pitch_command = 0;
       double yaw_command = 0;
+      double ZCOMMAND = -100;
 
-      //Verification tests - make sure model works for different angle commands
-      //roll_command = 45;
-      //roll_command = 1;
-      //pitch_command = 45;
-      //yaw_rate_command = 1;
+      //Initialize errors - xerror and yerror are for waypoint control. zerror and yaw_error are for both.
+      double xerror = 0;
+      double yerror = 0;
+      double zerror = 0;
+      double yaw_error = 0;
 
-      //Debug
-      //printf("Roll pitch yaw command = %lf %lf %lf \n",roll_command,pitch_command,yaw_rate_command);
-      //PAUSE();
+      //Measure state before control loop
 
-      //Measure state
+      //Measure Position - x and y are for waypoint control. z is for both.
+      double x = sense_matrix.get(1, 1);
+      double y = sense_matrix.get(2, 1);
+      double z = sense_matrix.get(3, 1);
+
+      //Measure xy velocity components - for waypoint control
+      double u = sense_matrix.get(7, 1);  //u and v in GPS.cpp were changed to body frame u and v instead of GPS u and v for x8
+      double v = -sense_matrix.get(8, 1); //it may be sensing v wrong, so added negative sign
+
+      //Measure state - need all of these for both.
       double roll = sense_matrix.get(4, 1);
       double pitch = sense_matrix.get(5, 1);
-      double yaw = sense_matrix.get(6, 1);
+      double yaw = sense_matrix.get(6, 1);         //Yaw acts weird and has been replaced by IMU_heading
       double roll_rate = sense_matrix.get(10, 1);  //For SIL/SIMONLY see Sensors.cpp
       double pitch_rate = sense_matrix.get(11, 1); //These are already in deg/s
       double yaw_rate = sense_matrix.get(12, 1);   //Check IMU.cpp to see for HIL
 
+      //Get Yaw from GPS and IMU - Sense Yaw and GPS Yaw reset every second. IMU yaw works
+      double GPS_heading = sense_matrix.get(19, 1);
+      double IMU_heading = sense_matrix.get(20, 1);
+      //yaw = 1.0 * GPS_heading + 0.0 * IMU_heading;
+
+      //Iniitalize altitude control gains to normal sim gains - Low gains for high altitude (sims) and high gains for low altitude (sims/real hardware)
+      double kp_z = 30;
+      double ki_z = 1.0;
+      double kd_z = 55;
+      //[30, 1.0, 55] - overshoot of approximately 12 m, no oscillation, 100 s settle time - Waypoint control gains
+
+      //If you want waypoint control, set WaypointControl variable in constructor to true; else, only stabilize mode
+      if (WaypointControl) {
+          ////////////////////////////////////////////////////////////////Waypoint Control Mode///////////////////////////////////////////////////////////
+          
+          /************************Heading Controller**********************/
+
+          //Heading Control Gains
+          double kp_x = 1.0;
+          double ki_x = 0.0;
+          double kd_x = 0.0;
+          double kp_y = 1.0;
+          double ki_y = 0.0;
+          double kd_y = 0.0;
+
+          //Measure waypoint command
+          double XCOMMAND = WAYPOINTS.get(WayCtr, 1);
+          double YCOMMAND = WAYPOINTS.get(WayCtr, 2);
+          double ZCOMMAND = WAYPOINTS.get(WayCtr, 3);
+
+          //Tell stay to go true if stopped at waypoint for 10 seconds
+          if ((currentTime >= timeWaypoint + 10) && (STAY == true)) {
+              STAY = false;
+          }
+
+          //Hover at final destination
+          /*
+          if (WayCtr > NUMWAYPTS) {
+              XCOMMAND = WAYPOINTS.get(1, NUMWAYPTS);
+              YCOMMAND = WAYPOINTS.get(2, NUMWAYPTS);
+              ZCOMMAND = WAYPOINTS.get(3, NUMWAYPTS);
+          }
+          */
+
+          //Compute Error
+          xerror = XCOMMAND - x;
+          yerror = YCOMMAND - y;
+          zerror = ZCOMMAND - z;
+
+          //Compute integral error
+          xint += xerror * elapsedTime;
+          yint += yerror * elapsedTime;
+
+          //Initialize derivative error
+          double xdot = 0;
+          double ydot = 0;
+
+          //Compute derivative error
+          if (xprev != -999) {
+              xdot = (x - xprev) / elapsedTime;
+          }
+
+          if (yprev != -999) {
+              ydot = (y - yprev) / elapsedTime;
+          }
+
+          //Increment value
+          xprev = x;
+          yprev = y;
+
+          //Check if arrived at waypoint and increment waypoint counter if arrived; Tolerance of 1 m for x,y and 10 m for z - Need to make z controller better
+          if ((abs(xerror) < 1.0) && (abs(yerror) < 1.0) && (abs(zerror) < 10.0) && (STAY == false)) {
+              //Let know that at waypoint
+              printf("Arrived at Waypoint %i \n", WayCtr);
+
+              //Increment waypoint to next point
+              WayCtr += 1;
+
+              //Tell controller to stop and hover
+              STAY = true;
+
+              //Set time at waypoint
+              timeWaypoint = currentTime;
+
+              //Reset waypoint circuit if reaching last waypoint
+              if (WayCtr > NUMWAYPTS) {
+                  WayCtr = 1;
+              }
+
+          }
+
+          //Heading gains
+          double x_head = kp_x * xerror + ki_x * xint + kd_x * xdot;
+          double y_head = kp_y * yerror + ki_y * yint + kd_x * ydot;
+
+          //Calculate Yaw based on Waypoint
+          double yaw_command = atan2(yerror, xerror) * RAD2DEG;
+
+          //Debug
+          //printf("GPS_heading IMU_heading yaw yaw_command %lf %lf %lf %lf \n", GPS_heading, IMU_heading, yaw, yaw_command);
+          //if (WayCtr == 4) {
+          //    printf("x y xerror yerror yaw_command %lf %lf %lf %lf %lf \n", x, y, xerror, yerror, yaw_command);
+          //}
+
+          //Constrain yaw command to match sensors
+          yaw_command = CONSTRAIN(yaw_command, -180, 180);
+
+          //Calculate yaw error
+          yaw_error = yaw_command - IMU_heading;
+
+          //Wrap error
+          if (yaw_error > 180) {
+              yaw_error -= 360;
+          }
+          else if (yaw_error < -180) {
+              yaw_error += 360;
+          }
+
+          //Constrain yaw error to limit aggressive turns
+          yaw_error = CONSTRAIN(yaw_error, -30, 30);
+
+          /**************Foward Velocity + Sideslip Controllers************/
+
+          //Velocity Controllers - Until pusher gets added, pitch will be used to move forward
+          //Control gains
+          double kp_u = 0.5;
+          double ki_u = 0.0;
+          double kd_u = 0.1;
+          double kp_v = 0.01;  //0.2
+          double ki_v = 0.0;
+          double kd_v = 0.007;   //0.005
+
+          //Velocity commands - only want forward velocity (u) when pointed at waypoint
+          double uc = 0;
+          double vc = 0;
+
+          //Set max velocity [m/s]
+          double umax = 1.5;
+
+          //Set forward velocity command as a function to speed up then slow down between waypoints
+
+          //Initialize waypoint positions
+          double x1, y1, x2, y2 = 0;
+
+          //If returning to start
+          if (WayCtr == 1) {
+              //Previous waypoint is last waypoint
+              x1 = WAYPOINTS.get(NUMWAYPTS, 1);
+              y1 = WAYPOINTS.get(NUMWAYPTS, 2);
+          }
+          //If any in between waypoints
+          else {
+              //Previous waypoint is just previous
+              x1 = WAYPOINTS.get((WayCtr - 1), 1);
+              y1 = WAYPOINTS.get((WayCtr - 1), 2);
+          }
+
+          //Current waypoint
+          x2 = WAYPOINTS.get(WayCtr, 1);
+          y2 = WAYPOINTS.get(WayCtr, 2);
+
+          //Compute distance to between waypoints (optimal path)
+          double d = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+
+          //Compute distance to next waypoint
+          double dn = sqrt(pow(xerror, 2) + pow(yerror, 2));
+
+          //Set acceleration, cruise, and deceleration phases - each distance defines speed limits certain radii from waypoint
+          double da = d;         //Start accelerating at or greater than optimal distance to waypoint
+          double dc = 0.6 * d;   //Stop accelerating when within 80% distance to next waypoint 
+          double dd = 0.2 * d;   //Start decelerating when within 40% distance next waypoint
+          double ds = 0.5;       //Stop distance is when xerror and yerror < 0.5 m, so when within 0.5 m of waypoint
+          double dcut = 1.5 * d; //Define cutoff boundary condition. If greater than this distance, it is going wrong way.
+
+          //Set velocity command based on position
+          if (dn > dcut) {
+              //If past boundary, go in reverse because it is probably going the wrong way
+              //uc = -topSpeed;
+          }
+          else if (dn <= dcut && dn >= dc) {
+              //Acceleration phase - linear acceleration from 0 to top speed when leaving accel distance. 
+              uc = 0.75 * umax * ((dn - d) / (dc - d) + 1);
+
+              //Set top achieved speed for cruise and decel.
+              topSpeed = u;
+
+              //Constrain
+              topSpeed = CONSTRAIN(topSpeed, 0.1, umax);
+          }
+          else if (dn < dc && dn >= dd) {
+              //Cruise phase - keep top speed achieved in accel phase
+              uc = topSpeed;
+          }
+          else if(dn < dd && dn >= ds) {
+              //Deceleration phase - linear deceleration from top speed to zero
+              uc = topSpeed * (1 - (dn - dd) / (ds - dd));
+          }
+          else if(dn < ds || STAY == true) {
+              //Stop phase - stop at waypoint
+              uc = 0;
+          }
+
+          //Velocity failsafe - if sideslip or velocity get too large, stop to correct
+          if (abs(v) > 1 || abs(u) > 5) {
+              uc = 0;
+          }
+
+          //Constrain command 
+          uc = CONSTRAIN(uc, 0, umax);
+
+          //Calculate error in forward and side velocity
+          double uerror = uc - u;
+          double verror = vc - v;
+
+          //Calculate integral error
+          uint += uerror * elapsedTime;
+          vint += verror * elapsedTime;
+
+          //Anti-Integral Windup
+          if (abs(uint) > 5) {
+              uint = 5 * sign(uint);
+          }
+          if (abs(vint) > 5) {
+              vint = 5 * sign(vint);
+          }
+
+          //Initialize derivative of velocity
+          double udot = 0;
+          double vdot = 0;
+
+          //Calculate derivative of velocity
+          if (uprev != -999) {
+              udot = (u - uprev) / elapsedTime;
+          }
+          if (vprev != -999) {
+              vdot = (v - vprev) / elapsedTime;
+          }
+
+          //Set prev value
+          uprev = u;
+          vprev = v;
+
+          //Calculate pitch and roll commands
+          pitch_command = -atan2((kp_u * uerror + ki_u * uint + kd_u * udot), GEARTH) * RAD2DEG;
+          roll_command = atan2((kp_v * verror + ki_v * vint + kd_v * vdot), GEARTH) * RAD2DEG;
+          //Both are negative kp because if you want to go foward, you have to tilt forward which is negative pitch.
+          //If you are sliding right, you will want to roll left (-) to stop.
+          if (WayCtr == 1) {
+              printf("xerror yerror u uc v roll_command %lf %lf %lf %lf %lf %lf \n", xerror, yerror, u, uc, v, roll_command);
+          }
+
+          //Constrain roll and pitch
+          roll_command = CONSTRAIN(roll_command, -5, 5);
+          pitch_command = CONSTRAIN(pitch_command, -5, 5);
+
+          //Debug
+          //printf("GPS_heading IMU_heading yaw %lf %lf %lf \n", GPS_heading, IMU_heading, yaw);
+          
+          
+      }
+      else {
+          //////////////////////////////////////////////////////////////Stabilize Only Mode/////////////////////////////////////////////////////
+
+          //Measure commands from pilot
+          roll_command = (aileron - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+          pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+          yaw_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+
+          //Compute yaw error
+          yaw_error = yaw_command - IMU_heading;
+
+          //Constrain yaw error to limit aggressive turns
+          yaw_error = CONSTRAIN(yaw_error, -30, 30);
+
+          //Altitude Command
+          ZCOMMAND = -10;
+
+          //Altitude control gains 
+          kp_z = 80000;
+          ki_z = 1000.0;
+          kd_z = 100000;
+          //[80000, 1000, 100000] - roughly hovers in place - Autopilot gains - real hardware
+
+          //Put an offset on z for real hardware 
+          //z = z - 2; //If IC = -1, it should just hover
+
+          //Offset z for auto mode cause it starts so low
+          //z = z + 2;
+
+          //Verification tests - make sure model works for different angle commands
+          //roll_command = 45;
+          //roll_command = 1;
+          //pitch_command = 45;
+          //yaw_rate_command = 1;
+
+          //Test both roll and pitch commands and yaw rate command in one go for brevity of thesis
+          /*
+          if (currentTime < 20) {
+              roll_command = 45;
+              //roll_command = 30; //For four motors removed, max roll/pitch command is 30 degrees for 20 seconds without hitting ground
+          }
+          else if (currentTime > 50 and currentTime < 80) {
+              pitch_command = 45;
+              //pitch_command = 20; //For four motors removed, max roll/pitch command is 30 degrees for 20 seconds without hitting ground
+          }
+          else {
+              yaw_rate_command = 1;
+          }
+          */
+
+          //Debug
+          //printf("Roll pitch yaw command = %lf %lf %lf \n",roll_command,pitch_command,yaw_rate_command);
+          //PAUSE();
+      }
+      
+      /**********************Euler Angle Controllers*******************/
+
+      //Euler angle controller gains - euler angles don't use integral controllers
+      double kp_roll = 1.0;   //0.5
+      double kd_roll = 1.0;   //1.0
+      double kp_pitch = 0.5;  //0.5
+      double kd_pitch = 1.0;  //1.0
+      double kp_yaw = 1.0;    //0.1
+      double kd_yaw = 1.0;    //0.5
+
+      //Set non-stick commands
+      double roll_rate_command = 0;
+      double pitch_rate_command = 0;
+      double yaw_rate_command = 0;
+
       //PID control on Euler commands - u = k * (reference - measured) 
+      //droll and dpitch control roll and pitch
+      //dyaw controls yaw rate
       double droll = kp_roll * (roll_command - roll) + kd_roll * (roll_rate_command - roll_rate);
       droll = CONSTRAIN(droll, -500, 500);
       double dpitch = kp_pitch * (pitch_command - pitch) + kd_pitch * (pitch_rate_command - pitch_rate);
       dpitch = CONSTRAIN(dpitch, -500, 500);
-      double dyaw = kp_yaw * (yaw_command - yaw) + kd_yaw * (yaw_rate_command - yaw_rate);
+      double dyaw = kp_yaw * yaw_error + kd_yaw * (yaw_rate_command - yaw_rate);
       dyaw = CONSTRAIN(dyaw, -500, 500);
+
+      //Debug
+      //printf("dyaw yaw %lf %lf \n", dyaw, yaw);
 
       //Extra filters for if nan - thanks, IEEE
       if (droll != droll) {
@@ -712,15 +1098,13 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
           }
       }
 
-      //Altitude control gains
-      double kp_z = 85;    //80
-      double ki_z = 0.5;   //0.5
-      double kd_z = 60;    //60
+      /************************Altitude Controller*********************/
 
-      //[85, 0.5, 60] - dips by about 25 m, minimal oscillation, pretty long settle time
+      //PID Control on Altitude
+      //ALtitude measurement moved before split for waypoint control
+      //Error calculation moved in else loop 
 
-      //Measure altitude and vertical velocity
-      double z = sense_matrix.get(3,1);
+      //Initialize vertical velocity
       double zdot = 0;
 
       //If altitude_prev has been set compute a first order derivative
@@ -732,11 +1116,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       zprev = z;   
 
       //Set z and zdot commands to 100 m [negative is up]
-      double ZCOMMAND = -100;
+      //double ZCOMMAND = -100; //Commented out for waypoint testing
       double ZDOTCOMMAND = 0;
 
-      //Compute error and integral of error
-      double zerror = ZCOMMAND - z;
+      //Compute integral of error
       zint += zerror * elapsedTime;
 
       //Compute throttle
@@ -764,16 +1147,28 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
       //Compute thrust needed for each motor
       computeReconfigurable(-dthrust, droll, dpitch, -dyaw);
+      
+      //Notes:
       //dthrust needs to be negative. "Up is down. That's just maddeningly unhelpful. Why are these things never clear?" - Captain Jack Sparrow
-      //dyaw also needs to be negative apparently. It also doesn't like proportional control. It crashes out just like me. 
+      //dyaw also needs to be negative apparently. 
 
+      //Suggestion:
       //Set pwm motor variables for control_matrix - can the long ass variables be changed to the MOTORS[i].pwm_signal like a for loop with
       //for (int i = 0; i <= NUMSIGNALS; i++) {control_matrix.set(i, 1, MOTORS[i].pwm_signal;} ?
+
+      //Keep for copy/paste when running tests
       /*
-      
+      motor_upper_left_bottom = MOTORS[0].pwm_signal;
+      motor_upper_right_bottom = MOTORS[1].pwm_signal;
+      motor_lower_right_bottom = MOTORS[2].pwm_signal;
+      motor_lower_left_bottom = MOTORS[3].pwm_signal;
+      motor_upper_left_top = MOTORS[4].pwm_signal;
+      motor_upper_right_top = MOTORS[5].pwm_signal;
+      motor_lower_right_top = MOTORS[6].pwm_signal;
+      motor_lower_left_top = MOTORS[7].pwm_signal;
       */
 
-      //Controller
+      //Set PWM signals
       motor_upper_left_bottom = MOTORS[0].pwm_signal;
       motor_upper_right_bottom = MOTORS[1].pwm_signal;
       motor_lower_right_bottom = MOTORS[2].pwm_signal;
@@ -783,7 +1178,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       motor_lower_right_top = MOTORS[6].pwm_signal;
       motor_lower_left_top = MOTORS[7].pwm_signal;
       
-      //Debug - See how roll/pitch react when one side of motors is off and other is at max or mid
+      //Debug - See how roll/pitch react when one side of motors is off and other is at max or mid. Keep in case tests need to be ran again.
       /*
       //Left OFF & Right MID
       motor_upper_left_bottom = OUTMIN;
@@ -847,6 +1242,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Send the motor commands to the control_matrix values
   //control_matrix.mult_eq(0);
   //control_matrix.plus_eq(STICK_MIN);
+
+  //Suggestion:
+  //Again, could just use MOTORS[i].pwm_signal and use for(int i = 0; i < NUMMOTORS; i++) {control_matrix.set(i,1,MOTORS[i].pwm_signal;}
+  //Using MOTORS[i].pwm_signal would avoid needing to define these variables
   control_matrix.set(1,1,motor_upper_left_bottom);
   control_matrix.set(2,1,motor_upper_right_bottom);
   control_matrix.set(3,1,motor_lower_right_bottom);

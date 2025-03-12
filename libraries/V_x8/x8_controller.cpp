@@ -626,6 +626,17 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   double motor_lower_left_bottom = OUTMIN;
   double motor_lower_right_bottom = OUTMIN;
 
+  //Hardware debug
+  //control_matrix.set(1,1,motor_upper_left_bottom);
+  //control_matrix.set(2,1,motor_upper_right_bottom);
+  //control_matrix.set(3,1,motor_lower_right_bottom);
+  //control_matrix.set(4,1,motor_lower_left_bottom);
+  //control_matrix.set(5,1,motor_upper_left_top);
+  //control_matrix.set(6,1,motor_upper_right_top);
+  //control_matrix.set(7,1,motor_lower_right_top);
+  //control_matrix.set(8,1,motor_lower_left_top);
+  //return;
+
   //First extract the relavent commands from the receiver.
   double throttle = rx_array[0];
   double aileron = rx_array[1];
@@ -737,6 +748,20 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double kd_z = 55;
       //[30, 1.0, 55] - overshoot of approximately 12 m, no oscillation, 100 s settle time - Waypoint control gains
 
+      //Calculate pwm needed for hover
+      double throttle_hover = OUTMIN;
+
+      //Calculate weight
+      double weight = mass * GEARTH;
+
+      //Find pwm for nominal thrust
+      double hover_thrust = weight / (double)MOTORSRUNNING;
+      for (int i = 0; i < NUMMOTORS; i++){
+          if (MOTORS[i].op_flag == 1) {
+               throttle_hover = MOTORS[i].compute_signal_NO_OMEGA(hover_thrust);          
+          }
+      }
+
       //If you want waypoint control, set WaypointControl variable in constructor to true; else, only stabilize mode
       if (WaypointControl) {
           ////////////////////////////////////////////////////////////////Waypoint Control Mode///////////////////////////////////////////////////////////
@@ -754,7 +779,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
           //Measure waypoint command
           double XCOMMAND = WAYPOINTS.get(WayCtr, 1);
           double YCOMMAND = WAYPOINTS.get(WayCtr, 2);
-          double ZCOMMAND = WAYPOINTS.get(WayCtr, 3);
+          ZCOMMAND = WAYPOINTS.get(WayCtr, 3);
 
           //Tell stay to go true if stopped at waypoint for 10 seconds
           if ((currentTime >= timeWaypoint + 10) && (STAY == true)) {
@@ -851,7 +876,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
           //Velocity Controllers - Until pusher gets added, pitch will be used to move forward
           //Control gains
-          double kp_u = 0.5;
+          double kp_u = 0.1;
           double ki_u = 0.0;
           double kd_u = 0.1;
           double kp_v = 0.01;  //0.2
@@ -1001,12 +1026,12 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
           yaw_error = CONSTRAIN(yaw_error, -30, 30);
 
           //Altitude Command
-          ZCOMMAND = -10;
+          ZCOMMAND = -1;
 
           //Altitude control gains 
-          kp_z = 80000;
-          ki_z = 1000.0;
-          kd_z = 100000;
+          kp_z = 1.0;
+          ki_z = 0.0;
+          kd_z = 0.0;
           //[80000, 1000, 100000] - roughly hovers in place - Autopilot gains - real hardware
 
           //Put an offset on z for real hardware 
@@ -1044,12 +1069,12 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       /**********************Euler Angle Controllers*******************/
 
       //Euler angle controller gains - euler angles don't use integral controllers
-      double kp_roll = 1.0;   //0.5
-      double kd_roll = 1.0;   //1.0
-      double kp_pitch = 0.5;  //0.5
-      double kd_pitch = 1.0;  //1.0
-      double kp_yaw = 1.0;    //0.1
-      double kd_yaw = 1.0;    //0.5
+      double kp_roll = 0.1;   //0.5
+      double kd_roll = 0.0;   //1.0
+      double kp_pitch = 0.1;  //0.5
+      double kd_pitch = 0.0;  //1.0
+      double kp_yaw = 0.01;    //0.1
+      double kd_yaw = 0.0;    //0.5
 
       //Set non-stick commands
       double roll_rate_command = 0;
@@ -1122,8 +1147,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //Compute integral of error
       zint += zerror * elapsedTime;
 
-      //Compute throttle
-      throttle = OUTMIN - kp_z*zerror - kd_z*(ZDOTCOMMAND-zdot) - ki_z*zint;
+      //Compute throttle - throttle is issue. Change OUTMIN to throttle?
+      //throttle = throttle_hover - kp_z*zerror - kd_z*(ZDOTCOMMAND-zdot) - ki_z*zint;
       throttle = CONSTRAIN(throttle, OUTMIN, OUTMAX);
 
       //Extra filter for if it goes nan
@@ -1140,7 +1165,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //printf("Throttle = %lf \n",throttle);
 
       //Compute desired thrust
-      double dthrust = ((8.0 * MOTORS[0].Max_Thrust) / ((double)OUTMAX - (double)OUTMIN)) * (throttle - OUTMIN);
+      double dthrust = (((double)MOTORSRUNNING * MOTORS[0].Max_Thrust) / ((double)OUTMAX - (double)OUTMIN)) * (throttle - OUTMIN);
 
       //Debug
       //printf("dthrust droll dpitch dyaw %d %d %d %d \n", dthrust, droll, dpitch, dyaw);

@@ -721,7 +721,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //Measure state - need all of these for both.
       double roll = sense_matrix.get(4, 1);
       double pitch = sense_matrix.get(5, 1);
-      double yaw = sense_matrix.get(6, 1);         //Yaw acts weird and has been replaced by IMU_heading
+      double yaw = sense_matrix.get(20, 1);    //changed from 6 because IMU heading is better than compass which uses GPS.
       double roll_rate = sense_matrix.get(10, 1);  //For SIL/SIMONLY see Sensors.cpp
       double pitch_rate = sense_matrix.get(11, 1); //These are already in deg/s
       double yaw_rate = sense_matrix.get(12, 1);   //Check IMU.cpp to see for HIL

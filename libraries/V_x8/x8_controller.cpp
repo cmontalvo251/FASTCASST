@@ -643,6 +643,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   double elevator = rx_array[2];
   double rudder = rx_array[3];
   double autopilot = rx_array[4];
+  double cutoff = rx_array[8];
   bool icontrol = 0;
 
   switch (CONTROLLER_FLAG) {
@@ -1271,14 +1272,20 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Suggestion:
   //Again, could just use MOTORS[i].pwm_signal and use for(int i = 0; i < NUMMOTORS; i++) {control_matrix.set(i,1,MOTORS[i].pwm_signal;}
   //Using MOTORS[i].pwm_signal would avoid needing to define these variables
-  control_matrix.set(1,1,motor_upper_left_bottom);
-  control_matrix.set(2,1,motor_upper_right_bottom);
-  control_matrix.set(3,1,motor_lower_right_bottom);
-  control_matrix.set(4,1,motor_lower_left_bottom);
-  control_matrix.set(5,1,motor_upper_left_top);
-  control_matrix.set(6,1,motor_upper_right_top);
-  control_matrix.set(7,1,motor_lower_right_top);
-  control_matrix.set(8,1,motor_lower_left_top);
+
+  if (cutoff < OUTMID) {
+      set_defaults();
+  }
+  else {
+      control_matrix.set(1, 1, motor_upper_left_bottom);
+      control_matrix.set(2, 1, motor_upper_right_bottom);
+      control_matrix.set(3, 1, motor_lower_right_bottom);
+      control_matrix.set(4, 1, motor_lower_left_bottom);
+      control_matrix.set(5, 1, motor_upper_left_top);
+      control_matrix.set(6, 1, motor_upper_right_top);
+      control_matrix.set(7, 1, motor_lower_right_top);
+      control_matrix.set(8, 1, motor_lower_left_top);
+  }
 
   //Debug
   /*  for (int i = 0;i<5;i++) {

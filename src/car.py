@@ -50,7 +50,7 @@ print(sys.argv)
 logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
-outdata = np.zeros(10)
+outdata = np.zeros(8)
 
 #Setup GPS
 print('Initializing GPS...')
@@ -114,14 +114,13 @@ time.sleep(1)
 #Create a time for elapsed time
 print('Setting up Time')
 StartTime = time.time()
-GPSTime = time.time()
 BAROTime = time.time()-StartTime
+GPScount = 0 #Counts how many time the GPS has been read per 0.25 sec
+GPStime = 0 #Increments every 0.25 sec
 
 #This runs on repeat until code is killed
 while (True):
     RunTime = time.time() - StartTime
-    elapsedTime = RunTime - GPSTime
-    #print(elapsedTime)
     
     #Read in receiver commands
     period = []
@@ -139,35 +138,40 @@ while (True):
     autopilot = float(period[6])/1000.
     #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
 
-    #Get GPS update
-    if(elapsedTime > 1.0):
-        GPSTime = time.time()
+    #Get GPS update every 0.25 s
+    if GPStime <= RunTime:
+        GPScount = 0
+        GPStime += 0.25
+    if(RunTime > 1.0) & (GPScount == 0):
         gps_llh.update()
+        GPScount = 1
+
         #print(gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
-        
-    if BAROMODE == 2:
-        #first we grab prassure
-        pressure = baro.PRES
-        #in here we want to make sure we wait 1 second before we set
-        #baromode back to zero
-        if (RunTime - BAROTime) > BARONEXT:
-            BAROTime = RunTime
-            BAROMODE = 0
-    if BAROMODE == 1:
-        #If baromode is 1 we read and calculate but only after 0.01 seconds has passed
-        if (RunTime - BAROTime) > BAROWAIT:
-            baro.readPressure()
-            baro.calculatePressureAndTemperature()
-            BAROTime = RunTime
-            #and set the baromode to 2
-            BAROMODE = 2
-    if BAROMODE == 0:
-        #initially the mode is zero
-        #so we refresh the register
-        baro.refreshPressure()
-        BAROTime = RunTime
-        #then we set the mode to 1
-        BAROMODE = 1
+    
+#Barometer not needed
+    #if BAROMODE == 2:
+        ##first we grab prassure
+        #pressure = baro.PRES
+        ##in here we want to make sure we wait 1 second before we set
+        ##baromode back to zero
+        #if (RunTime - BAROTime) > BARONEXT:
+            #BAROTime = RunTime
+            #BAROMODE = 0
+    #if BAROMODE == 1:
+        ##If baromode is 1 we read and calculate but only after 0.01 seconds has passed
+        #if (RunTime - BAROTime) > BAROWAIT:
+            #baro.readPressure()
+            #baro.calculatePressureAndTemperature()
+            #BAROTime = RunTime
+            ##and set the baromode to 2
+            #BAROMODE = 2
+    #if BAROMODE == 0:
+        ##initially the mode is zero
+        ##so we refresh the register
+        #baro.refreshPressure()
+        #BAROTime = RunTime
+        ##then we set the mode to 1
+        #BAROMODE = 1
 
     #Compute the controller values
     throttle_command = throttlerc
@@ -202,7 +206,7 @@ while (True):
     #print(armswitch,throttlerc,rollrc)
 
     #Print to Home
-    print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude,np.round(pressure,2))
+    print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
 
     #Log data
     outdata[0] = np.round(RunTime,5)
@@ -211,9 +215,8 @@ while (True):
     outdata[3] = autopilot
     outdata[4] = gps_llh.longitude
     outdata[5] = gps_llh.latitude
-    outdata[6] = gps_llh.altitude
-    outdata[7] = throttle_command
-    outdata[8] = roll_command
-    outdata[9] = np.round(pressure,5)
+    outdata[6] = throttle_command
+    outdata[7] = roll_command
     #outdata[]
     logger.println(outdata)
+    time.sleep(0.01)

@@ -642,14 +642,16 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   double aileron = rx_array[1];
   double elevator = rx_array[2];
   double rudder = rx_array[3];
-  double autopilot = rx_array[4];
-  double cutoff = rx_array[8];
+  double autopilot = rx_array[4]; //Autopilot - OUTMIN = cutoff, OUTMID = ACRO, OUTMAX = AUTOPILOT
   bool icontrol = 0;
+
+  //Debug
+  //printf("rx [5] [6] [7] [8] %lf %lf %lf %lf \n",rx_array[5], rx_array[6], rx_array[7], rx_array[8]);
 
   switch (CONTROLLER_FLAG) {
   case -1:
     //User decides
-    if (autopilot > STICK_MID) {
+    if (autopilot > 1.2 * STICK_MID) {
       icontrol = 1;
     } else {
       icontrol = 0;
@@ -1031,15 +1033,12 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
           //Altitude control gains 
           kp_z = 1.0;
-          ki_z = 0.0;
-          kd_z = 0.0;
+          ki_z = 0.1;
+          kd_z = 0.5;
           //[80000, 1000, 100000] - roughly hovers in place - Autopilot gains - real hardware
 
-          //Put an offset on z for real hardware 
-          //z = z - 2; //If IC = -1, it should just hover
-
-          //Offset z for auto mode cause it starts so low
-          //z = z + 2;
+          //Combine throttle input and throttle hover as weighted average
+          throttle = 0.3 * throttle_hover + 0.7 * throttle;
 
           //Verification tests - make sure model works for different angle commands
           //roll_command = 45;
@@ -1071,11 +1070,11 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
       //Euler angle controller gains - euler angles don't use integral controllers
       double kp_roll = 0.1;   //0.5
-      double kd_roll = 0.0;   //1.0
+      double kd_roll = 0.05;   //1.0
       double kp_pitch = 0.1;  //0.5
-      double kd_pitch = 0.0;  //1.0
+      double kd_pitch = 0.05;  //1.0
       double kp_yaw = 0.01;    //0.1
-      double kd_yaw = 0.0;    //0.5
+      double kd_yaw = 0.01;    //0.5
 
       //Set non-stick commands
       double roll_rate_command = 0;
@@ -1149,7 +1148,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       zint += zerror * elapsedTime;
 
       //Compute throttle - throttle is issue. Change OUTMIN to throttle?
-      //throttle = throttle_hover - kp_z*zerror - kd_z*(ZDOTCOMMAND-zdot) - ki_z*zint;
+      throttle = throttle - kp_z*zerror - kd_z*(ZDOTCOMMAND-zdot) - ki_z*zint;
       throttle = CONSTRAIN(throttle, OUTMIN, OUTMAX);
 
       //Extra filter for if it goes nan
@@ -1273,10 +1272,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Again, could just use MOTORS[i].pwm_signal and use for(int i = 0; i < NUMMOTORS; i++) {control_matrix.set(i,1,MOTORS[i].pwm_signal;}
   //Using MOTORS[i].pwm_signal would avoid needing to define these variables
 
-  if (cutoff < OUTMID) {
+  if (autopilot < 0.8 * STICK_MID) {
       set_defaults();
   }
-  else {
+  else if (autopilot > 0.8 * STICK_MID) {
       control_matrix.set(1, 1, motor_upper_left_bottom);
       control_matrix.set(2, 1, motor_upper_right_bottom);
       control_matrix.set(3, 1, motor_lower_right_bottom);

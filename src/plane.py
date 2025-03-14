@@ -143,10 +143,11 @@ while (True):
     pitchrc = float(period[2])/1000.
     yawrc = float(period[3])/1000.
     armswitch = float(period[4])/1000.
-    autopilot = float(period[6])/1000.
+    autopilot = float(period[6])/1000. ##This is not working on the current transmitter
     #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
 
-    #Get GPS update
+    #Get GPS update (Commented out gps and barometer for now while debugging servos
+    """
     if(RunTime > 1.0):
         GPSTime = time.time()
         gps_llh.update()
@@ -175,6 +176,7 @@ while (True):
         BAROTime = RunTime
         #then we set the mode to 1
         BAROMODE = 1
+    """
 
     #Compute the controller values
     throttle_command = throttlerc
@@ -212,7 +214,9 @@ while (True):
     elif(1.495 < armswitch < 1.995):
         led.setColor('Green')
         pwm1.set_duty_cycle(throttle_command)
-        pwm2.set_duty_cycle(yaw_command)
+        pwm2.set_duty_cycle(roll_command)
+        pwm3.set_duty_cycle(pitch_command)
+        pwm4.set_duty_cycle(yaw_command)
         #print('Open Loop Control')
     elif(armswitch > 1.995):
         led.setColor('Blue')
@@ -222,7 +226,7 @@ while (True):
     #print(armswitch,throttlerc,yawrc)
 
     #Print to Home
-    print(np.round(RunTime,2), throttlerc, rollrc, pitchrc, yawrc, autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude,np.round(pressure,2))
+    print(np.round(RunTime,2), throttlerc, rollrc, pitchrc, yawrc, armswitch,autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude,np.round(pressure,2))
 
     #Log data
     outdata[0] = np.round(RunTime,5)

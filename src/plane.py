@@ -48,7 +48,7 @@ print(sys.argv)
 logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
-outdata = np.zeros(10)
+outdata = np.zeros(12)
 
 #Setup GPS
 print('Initializing GPS...')
@@ -90,7 +90,7 @@ BAROMODE = 0
 SERVO_MIN = 0.995 #ms
 SERVO_MID = 1.504 #ms
 SERVO_MAX = 2.010 #ms
-PWM_OUTPUT = [0,1] #Servo Rail Spots
+PWM_OUTPUT = [0,1,2,3] #Servo Rail Spots
 print('PWM Channels: ',PWM_OUTPUT)
 
 #Throttle - PWM Channel 1
@@ -99,11 +99,21 @@ pwm1 = pwm.PWM(PWM_OUTPUT[0])
 pwm1.initialize()
 pwm1.set_period(50)
 pwm1.enable()
-#Steering - PWM Channel 2
+#Roll (Aileron) - PWM Channel 2
 pwm2 = pwm.PWM(PWM_OUTPUT[1])
 pwm2.initialize()
 pwm2.set_period(50)
 pwm2.enable()
+#Pitch (Elevator) - PWM Channel 3
+pwm3 = pwm.PWM(PWM_OUTPUT[2])
+pwm3.initialize()
+pwm3.set_period(50)
+pwm3.enable()
+#Yaw (Rudder) - PWM Channel 4
+pwm4 = pwm.PWM(PWM_OUTPUT[3])
+pwm4.initialize()
+pwm4.set_period(50)
+pwm4.enable()
 
 #Short break to build suspense
 print('Sleep for 1 second')
@@ -112,14 +122,13 @@ time.sleep(1)
 #Create a time for elapsed time
 print('Setting up Time')
 StartTime = time.time()
-GPSTime = time.time()
+GPSTime = 0
+GPScount = 0
 BAROTime = time.time()-StartTime
 
 #This runs on repeat until code is killed
 while (True):
     RunTime = time.time() - StartTime
-    elapsedTime = RunTime - GPSTime
-    #print(elapsedTime)
     
     #Read in receiver commands
     period = []
@@ -138,7 +147,7 @@ while (True):
     #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
 
     #Get GPS update
-    if(elapsedTime > 1.0):
+    if(RunTime > 1.0):
         GPSTime = time.time()
         gps_llh.update()
         #print(gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
@@ -169,6 +178,8 @@ while (True):
 
     #Compute the controller values
     throttle_command = throttlerc
+    roll_command = rollrc
+    pitch_command = pitchrc
     yaw_command = yawrc
 
     ##Saturation blocks
@@ -176,6 +187,17 @@ while (True):
         throttle_command = SERVO_MIN
     if(throttle_command > SERVO_MAX):
         throttle_command = SERVO_MAX
+
+    if(roll_command < SERVO_MIN):
+        roll_command = SERVO_MIN
+    if(roll_command > SERVO_MAX):
+        roll_command = SERVO_MAX
+
+    if(pitch_command < SERVO_MIN):
+        pitch_command = SERVO_MIN
+    if(pitch_command > SERVO_MAX):
+        pitch_command = SERVO_MAX
+
     if(yaw_command < SERVO_MIN):
         yaw_command = SERVO_MIN
     if(yaw_command > SERVO_MAX):
@@ -200,7 +222,7 @@ while (True):
     #print(armswitch,throttlerc,yawrc)
 
     #Print to Home
-    print(np.round(RunTime,2), throttlerc, yawrc, autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude,np.round(pressure,2))
+    print(np.round(RunTime,2), throttlerc, rollrc, pitchrc, yawrc, autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude,np.round(pressure,2))
 
     #Log data
     outdata[0] = np.round(RunTime,5)
@@ -211,7 +233,13 @@ while (True):
     outdata[5] = gps_llh.latitude
     outdata[6] = gps_llh.altitude
     outdata[7] = throttle_command
-    outdata[8] = yaw_command
-    outdata[9] = np.round(pressure,5)
+    outdata[8] = roll_command
+    outdata[9] = pitch_command
+    outdata[10] = yaw_command
+    outdata[11] = np.round(pressure,5)
     #outdata[]
     logger.println(outdata)
+    
+
+    time.sleep(0.01)
+

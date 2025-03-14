@@ -1,4 +1,5 @@
 //This is an x8 quad with 4 rotors on top and 4 rotors on bottom
+//Check notes at bottom of file 
 
 #include "x8_controller.h"
 
@@ -669,7 +670,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
   //Then you can run any control loop you want.
   if (icontrol) {
-      //Stabilize Mode - Nonreconfigurable
+      //Stabilize Mode - Nonreconfigurable - Replacing ACRO with this since ACRO is unstable
       /*
       //STABILIZE MODE
       //printf(" STAB ");
@@ -1069,11 +1070,11 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       /**********************Euler Angle Controllers*******************/
 
       //Euler angle controller gains - euler angles don't use integral controllers
-      double kp_roll = 0.1;   //0.5
+      double kp_roll = 0.1;    //0.5
       double kd_roll = 0.05;   //1.0
-      double kp_pitch = 0.1;  //0.5
+      double kp_pitch = 0.1;   //0.5
       double kd_pitch = 0.05;  //1.0
-      double kp_yaw = 0.01;    //0.1
+      double kp_yaw = 0.0;     //0.1 - setting to zero for hardware testing cause BB is being weird
       double kd_yaw = 0.01;    //0.5
 
       //Set non-stick commands
@@ -1253,15 +1254,53 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     
     
   } else {
-    //ACRO MODE
-    motor_upper_left_bottom = throttle + (aileron-STICK_MID) - (elevator-STICK_MID) + (rudder-STICK_MID);
+    //ACRO MODE - Unstable, so replacing with old stabilize mode
+    /*
+    motor_upper_left_bottom = throttle + (aileron - STICK_MID) - (elevator - STICK_MID) + (rudder - STICK_MID);
     motor_upper_right_bottom = throttle - (aileron-STICK_MID) - (elevator-STICK_MID) - (rudder-STICK_MID);
     motor_lower_right_bottom = throttle - (aileron-STICK_MID) + (elevator-STICK_MID) + (rudder-STICK_MID);
     motor_lower_left_bottom = throttle + (aileron-STICK_MID) + (elevator-STICK_MID) - (rudder-STICK_MID);
     motor_upper_left_top = throttle + (aileron-STICK_MID) - (elevator-STICK_MID) - (rudder-STICK_MID);
     motor_upper_right_top = throttle - (aileron-STICK_MID) - (elevator-STICK_MID) + (rudder-STICK_MID);
     motor_lower_right_top = throttle - (aileron-STICK_MID) + (elevator-STICK_MID) - (rudder-STICK_MID);
-    motor_lower_left_top = throttle + (aileron-STICK_MID) + (elevator-STICK_MID) + (rudder-STICK_MID);		
+    motor_lower_left_top = throttle + (aileron-STICK_MID) + (elevator-STICK_MID) + (rudder-STICK_MID);
+    */	
+
+    //STABILIZE MODE
+      //printf(" STAB ");
+    double roll_command = (aileron - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+    double pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+    double yaw_rate_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+    double roll = sense_matrix.get(4, 1);
+    double pitch = sense_matrix.get(5, 1);
+    double yaw = sense_matrix.get(6, 1);
+    double roll_rate = sense_matrix.get(10, 1); //For SIL/SIMONLY see Sensors.cpp
+    double pitch_rate = sense_matrix.get(11, 1); //These are already in deg/s
+    double yaw_rate = sense_matrix.get(12, 1); //Check IMU.cpp to see for HIL
+    //state.disp();
+    //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
+    double kp = 10.0;
+    double kd = 2.0;
+    double kyaw = 0.2;
+    double droll = kp * (roll - roll_command) + kd * (roll_rate);
+    droll = CONSTRAIN(droll, -500, 500);
+    double dpitch = kp * (pitch - pitch_command) + kd * (pitch_rate);
+    dpitch = CONSTRAIN(dpitch, -500, 500);
+    double dyaw = kyaw * (yaw_rate - yaw_rate_command);
+    //printf("YAW RATE = %lf YAW RATE COMMAND = %lf DYAW = %lf \n",yaw_rate,yaw_rate_command,dyaw);
+    dyaw = CONSTRAIN(dyaw, -500, 500);
+    //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);
+    //printf(" Roll Command = %lf ",roll_command);
+    throttle = 1500.0; // Just for debugging. Don't yell at your past self.
+    motor_upper_left_top = throttle - droll - dpitch - dyaw;
+    motor_upper_right_top = throttle + droll - dpitch + dyaw;
+    motor_lower_left_top = throttle - droll + dpitch + dyaw;
+    motor_lower_right_top = throttle + droll + dpitch - dyaw;
+    motor_upper_left_bottom = throttle - droll - dpitch + dyaw;
+    motor_upper_right_bottom = throttle + droll - dpitch - dyaw;
+    motor_lower_left_bottom = throttle - droll + dpitch - dyaw;
+    motor_lower_right_bottom = throttle + droll + dpitch + dyaw;
+
   }
   
   //Send the motor commands to the control_matrix values
@@ -1293,3 +1332,61 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   printf("\n");*/
   //control_matrix.disp();
 }
+
+
+//Notes:
+/*
+1. PWM Used to be PWM 1-8 controlling {1, 4, 2, 3, 6, 8, 7, 5}. Unknown why. Just logged in case need to be changed back.
+
+2. FASTCASST data print read as: T, dt time time step RX Thrust Aileron Elevator Rudder Autopilot ? RPY Roll Pitch Yaw PWM 1 2 3 4 5 6 7 8 LL(B)H Longitude Latitude Altitude
+
+3. Autopilot switch (rx_array[4]) has added motor cutoff. On IRIS transmitter, that is the 3 positon switch. STD is STICK_MIN which is motor cutoff, LTR is STICK_MID
+   which is old stabiliize mode, and AUTO is STICK_MAX which is reconfigurable control law autopilot. 
+   3.a "ACRO mode is impossible to fly. Some sort of proportional control is required." - Dr. Montalvo 3/14/2025. So don't use ACRO cause it's unstable.
+   3.b Since ACRO mode is unstable, it was replaced with the old stabilize code that is not the reconfigurable control law.
+   3.c For future waypoint control, may need to have WaypointControl flag as a switch so that if drone starts to fritz, the pilot can regain turn it off and regain control.
+
+4. For props, red bolts are righty tighty, and black bolts are lefty tighty.Very annoying.
+
+5. To run SIMONLY in WSL: 
+   5.a If os.system is commented out in plotdata_sim.py:
+       cd FASTCASST
+       make clean 
+       make simonly MODEL="x8"
+       python3 plotdata_sim.py
+   5.b If make clean and make simonly not commented out:
+       cd FASTCASST
+       python3 plotdata_sim.py
+   5.c MODEL has to be all caps. The string is just whatever is after V_ for the model folder being used.
+
+6. To run auto on a raspberry pi:
+   login: -ask Dr. Montalvo-
+   password: -ask Dr. Montalvo-
+   cd FASTCASST
+   git pull origin [branch]
+   make clean
+   make auto MODEL="x8"
+   sudo ./auto.exe x8/
+
+   6.a At the time of writing this, work was done in the reconfig branch. If you have your own, it'll be yours.
+
+7. Common WSL commands for running FASTCASST:
+   7.a ls -> list; lists files and folders in current directory
+   7.b cd -> change directory; changes between folders
+   7.c cd - -> go back one directory
+   7.d \cd -> return to root directory
+   7.e nano [name].filetype -> opens file in nano for editing code
+   7.f sudo -> super user do; execute commands that require special privileges
+   7.g sudo python3 [name].py -> run Python file
+
+8. Common GitBash commands used during research:
+   8.a git branch -> tells you what branch you are in
+   8.b git status -> lists changed files
+   8.c git diff -> shows difference between what you have and what is online
+   8.d git commit -am "Description" -> log changes and description of changes before pushing code
+   8.e git push origin [branch] -> pushes your code to specified branch
+   8.f git pull origin [branch] -> pulls code down from specified branch on GitHub
+   8.g git checkout [branch] -> swaps to specified branch
+
+9. To push code, you need an SSH key and a GitHub account, and you are gonna have to look that up cause it's complicated.
+*/

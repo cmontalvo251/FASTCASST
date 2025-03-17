@@ -318,16 +318,16 @@ void controller::MotorBeep(MATLAB datapts_IN) {
 //Function to add the 8 motors of BumbleBee
 void controller::MotorsSetup(MATLAB datapts_IN) {
     //Top Motors
-    addMotor(rx, -ry, -rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 1 - upper_left_top 
-    addMotor(rx, ry, -rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 2 - upper_right_top
-    addMotor(-rx, ry, -rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 3 - lower_right_top
-    addMotor(-rx, -ry, -rz, 0.0, 0.0, -1.0, -1, 1); //Motor 4 - lower_left_top
+    addMotor(rx, -ry, -rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 1 - upper_left_top - green prop w/ red dot
+    addMotor(rx, ry, -rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 2 - upper_right_top - red prop w/ green dot
+    addMotor(-rx, ry, -rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 3 - lower_right_top - red prop w/ purple dot
+    addMotor(-rx, -ry, -rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 4 - lower_left_top - orange prop w/ blue dot
 
     //Bottom Motors
-    addMotor(rx, -ry, rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 5 - upper_left_bottom
-    addMotor(rx, ry, rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 6 - upper_right_bottom
-    addMotor(-rx, ry, rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 7 - lower_right_bottom
-    addMotor(-rx, -ry, rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 8 - lower_left_bottom
+    addMotor(rx, -ry, rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 5 - upper_left_bottom - orange prop w/ black dot
+    addMotor(rx, ry, rz, 0.0, 0.0, -1.0, -1, 1);     //Motor 6 - upper_right_bottom - green prop w/ purple dot
+    addMotor(-rx, ry, rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 7 - lower_right_bottom - green prop w/ red dot
+    addMotor(-rx, -ry, rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 8 - lower_left_bottom - red prop w/ yellow dot
 
     //Debug print
     //for (int i = 1; i <= NUMMOTORS; i++) {
@@ -1072,17 +1072,17 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       /**********************Euler Angle Controllers*******************/
 
       //Euler angle controller gains - euler angles don't use integral controllers
-      double kp_roll = 0.0;    //0.5
-      double kd_roll = 0.0;   //1.0
+      double kp_roll = 0.1;    //0.5
+      double kd_roll = 0.0;    //1.0
       double kp_pitch = 0.0;   //0.5
-      double kd_pitch = 0.0;  //1.0
+      double kd_pitch = 0.0;   //1.0
       double kp_yaw = 0.0;     //0.1 - setting to zero for hardware testing cause BB is being weird
-      double kd_yaw = 0.0;    //0.5
+      double kd_yaw = 0.0;     //0.5
 
       //Set non-stick commands
       double roll_rate_command = 0;
       double pitch_rate_command = 0;
-      //double yaw_rate_command = 0; //changed stick yaw to yaw rate
+      //double yaw_rate_command = 0; //changed stick yaw to yaw rate for hardware testing
 
       //PID control on Euler commands - u = k * (reference - measured) 
       //droll and dpitch control roll and pitch
@@ -1284,9 +1284,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //state.disp();
     //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
 
-    double kp = 10.0;
-    double kd = 2.0;
-    double kyaw = 0.2;
+    double kp = 0.0; //10.0
+    double kd = 0.0;  //2.0
+    double kyaw = 0.2;//0.2
 
     double droll = kp * (roll - roll_command) + kd * (roll_rate);
     droll = CONSTRAIN(droll, -500, 500);

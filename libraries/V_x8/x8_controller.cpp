@@ -1014,8 +1014,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
           //Debug
           //printf("GPS_heading IMU_heading yaw %lf %lf %lf \n", GPS_heading, IMU_heading, yaw);
-          
-          
       }
       else {
           //////////////////////////////////////////////////////////////Stabilize Only Mode/////////////////////////////////////////////////////
@@ -1095,7 +1093,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       dyaw = CONSTRAIN(dyaw, -500, 500);
 
       //Debug
-      //printf("dyaw yaw %lf %lf \n", dyaw, yaw);
+      printf("yaw_rate_command yaw_rate %lf %lf \n", yaw_rate_command, yaw_rate);
 
       //Extra filters for if nan - thanks, IEEE
       if (droll != droll) {
@@ -1284,9 +1282,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //state.disp();
     //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
 
-    double kp = 1.0; //10.0
+    double kp = 10.0; //10.0
     double kd = 0.0;  //2.0
-    double kyaw = 0.2;//0.2
+    double kyaw = 5.0;//0.2
 
     double droll = kp * (roll - roll_command) + kd * (roll_rate);
     droll = CONSTRAIN(droll, -500, 500);

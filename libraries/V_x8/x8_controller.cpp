@@ -1070,10 +1070,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       /**********************Euler Angle Controllers*******************/
 
       //Euler angle controller gains - euler angles don't use integral controllers
-      double kp_roll = 0.1;    //0.5
-      double kd_roll = 0.01;    //1.0
-      double kp_pitch = 0.0;   //0.5
-      double kd_pitch = 0.0;   //1.0
+      double kp_roll = 0.0;    //0.5
+      double kd_roll = 0.0;    //1.0
+      double kp_pitch = 0.1;   //0.5
+      double kd_pitch = 0.01;   //1.0
       double kp_yaw = 0.0;    //0.1 - setting to zero for hardware testing cause BB is being weird
       double kd_yaw = 0.0;     //0.5
 

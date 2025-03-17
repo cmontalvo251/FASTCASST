@@ -714,7 +714,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double roll_command = 0;
       double pitch_command = 0;
       double yaw_command = 0;
-      double yaw_rate_command = 0;
+      //double yaw_rate_command = 0;  //Hardware testing thing
       double ZCOMMAND = -100;
 
       //Initialize errors - xerror and yerror are for waypoint control. zerror and yaw_error are for both.
@@ -1021,7 +1021,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
           //Measure commands from pilot
           roll_command = (aileron - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
           pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
-          yaw_rate_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+          yaw_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
 
           //Compute yaw error
           yaw_error = yaw_command - IMU_heading;
@@ -1074,13 +1074,13 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double kd_roll = 0.0;    //1.0
       double kp_pitch = 0.0;   //0.5
       double kd_pitch = 0.0;   //1.0
-      double kp_yaw = 0.0;     //0.1 - setting to zero for hardware testing cause BB is being weird
-      double kd_yaw = 0.1;     //0.5
+      double kp_yaw = 0.1;     //0.1 - setting to zero for hardware testing cause BB is being weird
+      double kd_yaw = 0.0;     //0.5
 
       //Set non-stick commands
       double roll_rate_command = 0;
       double pitch_rate_command = 0;
-      //double yaw_rate_command = 0; //changed stick yaw to yaw rate for hardware testing
+      double yaw_rate_command = 0;   //stick gets stuck, so stick has to control yaw or it will spin out
 
       //PID control on Euler commands - u = k * (reference - measured) 
       //droll and dpitch control roll and pitch

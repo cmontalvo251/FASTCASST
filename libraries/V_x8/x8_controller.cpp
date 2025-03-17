@@ -1071,11 +1071,11 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
       //Euler angle controller gains - euler angles don't use integral controllers
       double kp_roll = 0.01;    //0.5
-      double kd_roll = 0.01;    //1.0
+      double kd_roll = 0.05;    //1.0
       double kp_pitch = 0.01;   //0.5
-      double kd_pitch = 0.01;   //1.0
+      double kd_pitch = 0.05;   //1.0
       double kp_yaw = 0.01;    //0.1 - setting to zero for hardware testing cause BB is being weird
-      double kd_yaw = 0.01;     //0.5
+      double kd_yaw = 0.05;     //0.5
 
       //Set non-stick commands
       double roll_rate_command = 0;
@@ -1282,7 +1282,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //state.disp();
     //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
 
-    double kp = 10.0; //10.0
+    double kp = 5.0; //10.0
     double kd = 0.0;  //2.0
     double kyaw = 5.0;//0.2
 

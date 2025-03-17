@@ -1093,7 +1093,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       dyaw = CONSTRAIN(dyaw, -500, 500);
 
       //Debug
-      printf("yaw_command rudder %lf %lf \n", yaw_command, rudder);
+      //printf("yaw_command rudder %lf %lf \n", yaw_command, rudder);
 
       //Extra filters for if nan - thanks, IEEE
       if (droll != droll) {

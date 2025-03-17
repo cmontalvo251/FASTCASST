@@ -1,5 +1,5 @@
 //This is an x8 quad with 4 rotors on top and 4 rotors on bottom
-//Check notes at bottom of file 
+//Check notes at bottom of file for useful information
 
 #include "x8_controller.h"
 
@@ -714,6 +714,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double roll_command = 0;
       double pitch_command = 0;
       double yaw_command = 0;
+      double yaw_rate_command = 0;
       double ZCOMMAND = -100;
 
       //Initialize errors - xerror and yerror are for waypoint control. zerror and yaw_error are for both.
@@ -751,6 +752,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double ki_z = 1.0;
       double kd_z = 55;
       //[30, 1.0, 55] - overshoot of approximately 12 m, no oscillation, 100 s settle time - Waypoint control gains
+      //Need to retest for bug fixes
 
       //Calculate pwm needed for hover
       double throttle_hover = OUTMIN;
@@ -1021,7 +1023,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
           //Measure commands from pilot
           roll_command = (aileron - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
           pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
-          yaw_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+          yaw_rate_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
 
           //Compute yaw error
           yaw_error = yaw_command - IMU_heading;
@@ -1038,8 +1040,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
           kd_z = 0.5;
           //[80000, 1000, 100000] - roughly hovers in place - Autopilot gains - real hardware
 
-          //Combine throttle input and throttle hover as weighted average
-          throttle = 0.3 * throttle_hover + 0.7 * throttle;
+          //Combine throttle input and throttle hover as weighted average - Commented out to turn off altitude controller
+          //throttle = 0.3 * throttle_hover + 0.7 * throttle;
 
           //Verification tests - make sure model works for different angle commands
           //roll_command = 45;
@@ -1070,17 +1072,17 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       /**********************Euler Angle Controllers*******************/
 
       //Euler angle controller gains - euler angles don't use integral controllers
-      double kp_roll = 0.1;    //0.5
-      double kd_roll = 0.05;   //1.0
-      double kp_pitch = 0.1;   //0.5
-      double kd_pitch = 0.05;  //1.0
+      double kp_roll = 0.0;    //0.5
+      double kd_roll = 0.0;   //1.0
+      double kp_pitch = 0.0;   //0.5
+      double kd_pitch = 0.0;  //1.0
       double kp_yaw = 0.0;     //0.1 - setting to zero for hardware testing cause BB is being weird
-      double kd_yaw = 0.01;    //0.5
+      double kd_yaw = 0.0;    //0.5
 
       //Set non-stick commands
       double roll_rate_command = 0;
       double pitch_rate_command = 0;
-      double yaw_rate_command = 0;
+      //double yaw_rate_command = 0; //changed stick yaw to yaw rate
 
       //PID control on Euler commands - u = k * (reference - measured) 
       //droll and dpitch control roll and pitch
@@ -1148,8 +1150,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //Compute integral of error
       zint += zerror * elapsedTime;
 
-      //Compute throttle - throttle is issue. Change OUTMIN to throttle?
-      throttle = throttle - kp_z*zerror - kd_z*(ZDOTCOMMAND-zdot) - ki_z*zint;
+      //Compute throttle - Commented out to turn off altitude controller. Altitude will be stick only for hardware testing
+      //throttle = throttle - kp_z*zerror - kd_z*(ZDOTCOMMAND-zdot) - ki_z*zint;
       throttle = CONSTRAIN(throttle, OUTMIN, OUTMAX);
 
       //Extra filter for if it goes nan
@@ -1184,67 +1186,67 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
       //Keep for copy/paste when running tests
       /*
-      motor_upper_left_bottom = MOTORS[0].pwm_signal;
-      motor_upper_right_bottom = MOTORS[1].pwm_signal;
-      motor_lower_right_bottom = MOTORS[2].pwm_signal;
-      motor_lower_left_bottom = MOTORS[3].pwm_signal;
-      motor_upper_left_top = MOTORS[4].pwm_signal;
-      motor_upper_right_top = MOTORS[5].pwm_signal;
-      motor_lower_right_top = MOTORS[6].pwm_signal;
-      motor_lower_left_top = MOTORS[7].pwm_signal;
+      motor_upper_left_top = MOTORS[0].pwm_signal;
+      motor_upper_right_top = MOTORS[1].pwm_signal;
+      motor_lower_right_top = MOTORS[2].pwm_signal;
+      motor_lower_left_top = MOTORS[3].pwm_signal;
+      motor_upper_left_bottom = MOTORS[4].pwm_signal;
+      motor_upper_right_bottom = MOTORS[5].pwm_signal;
+      motor_lower_right_bottom = MOTORS[6].pwm_signal;
+      motor_lower_left_bottom = MOTORS[7].pwm_signal;
       */
 
       //Set PWM signals
-      motor_upper_left_bottom = MOTORS[0].pwm_signal;
-      motor_upper_right_bottom = MOTORS[1].pwm_signal;
-      motor_lower_right_bottom = MOTORS[2].pwm_signal;
-      motor_lower_left_bottom = MOTORS[3].pwm_signal;
-      motor_upper_left_top = MOTORS[4].pwm_signal;
-      motor_upper_right_top = MOTORS[5].pwm_signal;
-      motor_lower_right_top = MOTORS[6].pwm_signal;
-      motor_lower_left_top = MOTORS[7].pwm_signal;
+      motor_upper_left_top = MOTORS[0].pwm_signal;
+      motor_upper_right_top = MOTORS[1].pwm_signal;
+      motor_lower_right_top = MOTORS[2].pwm_signal;
+      motor_lower_left_top = MOTORS[3].pwm_signal;
+      motor_upper_left_bottom = MOTORS[4].pwm_signal;
+      motor_upper_right_bottom = MOTORS[5].pwm_signal;
+      motor_lower_right_bottom = MOTORS[6].pwm_signal;
+      motor_lower_left_bottom = MOTORS[7].pwm_signal;
       
       //Debug - See how roll/pitch react when one side of motors is off and other is at max or mid. Keep in case tests need to be ran again.
       /*
       //Left OFF & Right MID
-      motor_upper_left_bottom = OUTMIN;
-      motor_upper_right_bottom = OUTMID;
-      motor_lower_right_bottom = OUTMID;
-      motor_lower_left_bottom = OUTMIN;
       motor_upper_left_top = OUTMIN;
       motor_upper_right_top = OUTMID;
       motor_lower_right_top = OUTMID;
       motor_lower_left_top = OUTMIN;
+      motor_upper_left_bottom = OUTMIN;
+      motor_upper_right_bottom = OUTMID;
+      motor_lower_right_bottom = OUTMID;
+      motor_lower_left_bottom = OUTMIN;
       
       //Right OFF & Left MID
-      motor_upper_left_bottom = OUTMID;
-      motor_upper_right_bottom = OUTMIN;
-      motor_lower_right_bottom = OUTMIN;
-      motor_lower_left_bottom = OUTMID;
       motor_upper_left_top = OUTMID;
       motor_upper_right_top = OUTMIN;
       motor_lower_right_top = OUTMIN;
       motor_lower_left_top = OUTMID;
+      motor_upper_left_bottom = OUTMID;
+      motor_upper_right_bottom = OUTMIN;
+      motor_lower_right_bottom = OUTMIN;
+      motor_lower_left_bottom = OUTMID;
 
       //Front OFF & Back MID
-      motor_upper_left_bottom = OUTMIN;
-      motor_upper_right_bottom = OUTMIN;
-      motor_lower_right_bottom = OUTMID;
-      motor_lower_left_bottom = OUTMID;
       motor_upper_left_top = OUTMIN;
       motor_upper_right_top = OUTMIN;
       motor_lower_right_top = OUTMID;
       motor_lower_left_top = OUTMID;
+      motor_upper_left_bottom = OUTMIN;
+      motor_upper_right_bottom = OUTMIN;
+      motor_lower_right_bottom = OUTMID;
+      motor_lower_left_bottom = OUTMID;
 
       //Back OFF & Front MID
-      motor_upper_left_bottom = OUTMID;
-      motor_upper_right_bottom = OUTMID;
-      motor_lower_right_bottom = OUTMIN;
-      motor_lower_left_bottom = OUTMIN;
       motor_upper_left_top = OUTMID;
       motor_upper_right_top = OUTMID;
       motor_lower_right_top = OUTMIN;
       motor_lower_left_top = OUTMIN;
+      motor_upper_left_bottom = OUTMID;
+      motor_upper_right_bottom = OUTMID;
+      motor_lower_right_bottom = OUTMIN;
+      motor_lower_left_bottom = OUTMIN;
       */
 
       //Debug print statements
@@ -1267,31 +1269,38 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     */	
 
     //STABILIZE MODE
-      //printf(" STAB ");
+    //printf(" STAB ");
     double roll_command = (aileron - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
     double pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
     double yaw_rate_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
+
     double roll = sense_matrix.get(4, 1);
     double pitch = sense_matrix.get(5, 1);
     double yaw = sense_matrix.get(6, 1);
     double roll_rate = sense_matrix.get(10, 1); //For SIL/SIMONLY see Sensors.cpp
     double pitch_rate = sense_matrix.get(11, 1); //These are already in deg/s
     double yaw_rate = sense_matrix.get(12, 1); //Check IMU.cpp to see for HIL
+
     //state.disp();
     //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
+
     double kp = 10.0;
     double kd = 2.0;
     double kyaw = 0.2;
+
     double droll = kp * (roll - roll_command) + kd * (roll_rate);
     droll = CONSTRAIN(droll, -500, 500);
+
     double dpitch = kp * (pitch - pitch_command) + kd * (pitch_rate);
     dpitch = CONSTRAIN(dpitch, -500, 500);
+
     double dyaw = kyaw * (yaw_rate - yaw_rate_command);
     //printf("YAW RATE = %lf YAW RATE COMMAND = %lf DYAW = %lf \n",yaw_rate,yaw_rate_command,dyaw);
     dyaw = CONSTRAIN(dyaw, -500, 500);
     //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);
     //printf(" Roll Command = %lf ",roll_command);
-    throttle = 1500.0; // Just for debugging. Don't yell at your past self.
+    //throttle = 1500.0; // Just for debugging. Don't yell at your past self.
+
     motor_upper_left_top = throttle - droll - dpitch - dyaw;
     motor_upper_right_top = throttle + droll - dpitch + dyaw;
     motor_lower_left_top = throttle - droll + dpitch + dyaw;
@@ -1311,18 +1320,27 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Again, could just use MOTORS[i].pwm_signal and use for(int i = 0; i < NUMMOTORS; i++) {control_matrix.set(i,1,MOTORS[i].pwm_signal;}
   //Using MOTORS[i].pwm_signal would avoid needing to define these variables
 
+  //If switch set to STD, cut off motors
   if (autopilot < 0.8 * STICK_MID) {
       set_defaults();
   }
+  //Else if switch set to LTR or AUTO, do stabilize or reconfigurable mode. LTR is stabilize, and AUTO is reconfigurable.
   else if (autopilot > 0.8 * STICK_MID) {
-      control_matrix.set(1, 1, motor_upper_left_bottom);
-      control_matrix.set(2, 1, motor_upper_right_bottom);
-      control_matrix.set(3, 1, motor_lower_right_bottom);
-      control_matrix.set(4, 1, motor_lower_left_bottom);
-      control_matrix.set(5, 1, motor_upper_left_top);
-      control_matrix.set(6, 1, motor_upper_right_top);
-      control_matrix.set(7, 1, motor_lower_right_top);
-      control_matrix.set(8, 1, motor_lower_left_top);
+      //For hardware testing:
+      //1. Turn all gains to zero.
+      //2. Make sure motors go from min to max for thrust, roll, pitch, and yaw rate commands.
+      //3. Set all but one motor to min and test spin of each motor individually.
+      //4. Don't really try to get off the ground. Just try to get it to roll, pitch, and yaw a little and correctly with stick commands.
+      //5. Add proportional gain only and test roll, pitch, and yaw rate commands individually.
+      //6. Add derivative gain and test roll, pitch, and yaw rate commands individually.
+      control_matrix.set(1, 1, motor_upper_left_top);     //OUTMIN); //motor_upper_left_top);
+      control_matrix.set(2, 1, motor_upper_right_top);    //OUTMIN); //motor_upper_right_top);
+      control_matrix.set(3, 1, motor_lower_right_top);    //OUTMIN); //motor_lower_right_top);
+      control_matrix.set(4, 1, motor_lower_left_top);     //OUTMIN); //motor_lower_left_top);
+      control_matrix.set(5, 1, motor_upper_left_bottom);  //OUTMIN); //motor_upper_left_bottom);
+      control_matrix.set(6, 1, motor_upper_right_bottom); //OUTMIN); //motor_upper_right_bottom);
+      control_matrix.set(7, 1, motor_lower_right_bottom); //OUTMIN); //motor_lower_right_bottom);
+      control_matrix.set(8, 1, motor_lower_left_bottom);  //OUTMIN); //motor_lower_left_bottom);
   }
 
   //Debug
@@ -1332,7 +1350,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   printf("\n");*/
   //control_matrix.disp();
 }
-
 
 //Notes:
 /*

@@ -1074,8 +1074,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double kd_roll = 0.01;    //1.0
       double kp_pitch = 0.01;   //0.5
       double kd_pitch = 0.01;   //1.0
-      double kp_yaw = 0.0;    //0.1 - setting to zero for hardware testing cause BB is being weird
-      double kd_yaw = 0.0;     //0.5
+      double kp_yaw = 0.01;    //0.1 - setting to zero for hardware testing cause BB is being weird
+      double kd_yaw = 0.01;     //0.5
 
       //Set non-stick commands
       double roll_rate_command = 0;

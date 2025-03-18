@@ -1,3 +1,14 @@
+PYTHON SRC:
+
+  ☐ Merge KATE, and ARAMIS
+  ☐ Edit car.py, plane.py and boat.py to be a singular file with different settings at the top of the file (if it gets complex add extra .py files)
+  ☐ Update the FASTCASST notes and README based on car.py and plane.py progress
+
+BUMBLEBEE:
+
+  ☐ Merge the reconfig branch
+  ☐ Edit the x8_controller.cpp to be clean and test that it can simonly and sil
+
 WOODEN DRONE:
 
   ✔ From here I'd like to start editing the sensor routines to include Arduino hooks. The sensor.h file should work at the moment on both desktop and Rpi so it's time to get it to work on Arduino hooks. Edit the Sensor routine to use the newly formed folders. Think a bit more on how you want to have this sensor block. I'm assuming you'll just be importing all the sensors? Pitot, IMU, GPS, etc??? What if those sensors are not connected? Is there a way for the controller to ignore erroneous data? Or maybe just turn them on and off in the controller? @done (22-05-18 06:55)
@@ -89,7 +100,7 @@ META:
 
   ✔ Barometer calibration has screwed up the z altitude before calibration. Need a fix here @done (22-12-02 09:50)
 
-  ☐ SysID of airplane (Flights + simulation)
+  ☐ SysID of carbon fiber airplane (Flights + simulation)
 
   ✔ Simulation of waypoint flights of single airplane @done (22-11-10 21:00)
 

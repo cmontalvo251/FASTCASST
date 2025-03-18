@@ -1072,8 +1072,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //Euler angle controller gains - euler angles don't use integral controllers
       double kp_roll = 0.01;    //0.5
       double kd_roll = 0.05;    //1.0
-      double kp_pitch = 0.01;   //0.5
-      double kd_pitch = 0.05;   //1.0
+      double kp_pitch = 0.05;   //0.5
+      double kd_pitch = 0.1;   //1.0
       double kp_yaw = 0.01;    //0.1 - setting to zero for hardware testing cause BB is being weird
       double kd_yaw = 0.05;     //0.5
 
@@ -1393,6 +1393,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
    7.e nano [name].filetype -> opens file in nano for editing code
    7.f sudo -> super user do; execute commands that require special privileges
    7.g sudo python3 [name].py -> run Python file
+   7.h sudo shutdown now - turns off rpi
 
 8. Common GitBash commands used during research:
    8.a git branch -> tells you what branch you are in
@@ -1404,4 +1405,15 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
    8.g git checkout [branch] -> swaps to specified branch
 
 9. To push code, you need an SSH key and a GitHub account, and you are gonna have to look that up cause it's complicated.
+
+10. To get data off rpi using usb:
+    10.a plug in usb
+    10.b run:
+         lsblk
+         sudo mkdir /mnt/usb
+         sudo mount /dev/sdX /mnt/usb
+         sudo cp /path/file /mnt/usb/
+         sudo umount /mnt/usb
+
+         Note: sdX will be whatever your usb is plugged into. You see attached devices using lsblk.
 */

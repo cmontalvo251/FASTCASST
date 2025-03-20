@@ -107,10 +107,10 @@ controller::controller() {
     MotorsSetup(datapts); 
 
     //Test remove motor - remove from recent
-    //RemoveMotors(4);
+    //RemoveMotors(3);
     
     //Remove specific number of motors
-    motorsToRemove = 4;
+    motorsToRemove = 3;
 
     //Initialize MOTORSOFF vector for removing specific motors
     REMOVEMOTORS.zeros(motorsToRemove, 1, "Vector of motors to remove");
@@ -118,15 +118,15 @@ controller::controller() {
     //Remove input - Make sure to change the first indices to start at 1 and increase to motorsToRemove
     REMOVEMOTORS.set(1, 1, 1); //top_front_left
     REMOVEMOTORS.set(2, 1, 2); //top_front_right
-    REMOVEMOTORS.set(3, 1, 3); //top_back_right
-    REMOVEMOTORS.set(4, 1, 4); //top_back_left
+    //REMOVEMOTORS.set(3, 1, 3); //top_back_right
+    REMOVEMOTORS.set(3, 1, 4); //top_back_left
     //REMOVEMOTORS.set(1, 1, 5); //bottom_front_left
     //REMOVEMOTORS.set(2, 1, 6); //bottom_front_right
     //REMOVEMOTORS.set(3, 1, 7); //bottom_back_right
     //REMOVEMOTORS.set(4, 1, 8); //bottom_back_left
     
     //Test remove motor - remove specific
-    //RemoveMotors(motorsToRemove, REMOVEMOTORS);
+    RemoveMotors(motorsToRemove, REMOVEMOTORS);
 
     //Waypoint Control Flag
     WaypointControl = false;
@@ -646,6 +646,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   double autopilot = rx_array[4]; //Autopilot - OUTMIN = cutoff, OUTMID = ACRO, OUTMAX = AUTOPILOT
   bool icontrol = 0;
 
+  //For sims
+  autopilot = STICK_MAX;
+
   //Debug
   //printf("rx [5] [6] [7] [8] %lf %lf %lf %lf \n",rx_array[5], rx_array[6], rx_array[7], rx_array[8]);
 
@@ -1023,6 +1026,18 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
           pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
           yaw_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
 
+          if (currentTime < 20) {
+              //roll_command = 45;
+              roll_command = 10; //For four motors removed, max roll/pitch command is 30 degrees for 20 seconds without hitting ground
+          }
+          else if (currentTime > 50 and currentTime < 80) {
+              //pitch_command = 45;
+              pitch_command = 10; //For four motors removed, max roll/pitch command is 30 degrees for 20 seconds without hitting ground
+          }
+          else {
+              yaw_command = 45;
+          }
+
           //Compute yaw error
           yaw_error = yaw_command - IMU_heading;
 
@@ -1030,13 +1045,15 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
           yaw_error = CONSTRAIN(yaw_error, -30, 30);
 
           //Altitude Command
-          ZCOMMAND = -1;
+          ZCOMMAND = -100;
+
+          //Compute Altitude error
+          zerror = ZCOMMAND - z;
 
           //Altitude control gains 
-          kp_z = 1.0;
-          ki_z = 0.1;
-          kd_z = 0.5;
-          //[80000, 1000, 100000] - roughly hovers in place - Autopilot gains - real hardware
+          kp_z = 100.0;
+          ki_z = 5.0;
+          kd_z = 130.0;
 
           //Combine throttle input and throttle hover as weighted average - Commented out to turn off altitude controller
           //throttle = 0.3 * throttle_hover + 0.7 * throttle;
@@ -1049,17 +1066,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
           //Test both roll and pitch commands and yaw rate command in one go for brevity of thesis
           /*
-          if (currentTime < 20) {
-              roll_command = 45;
-              //roll_command = 30; //For four motors removed, max roll/pitch command is 30 degrees for 20 seconds without hitting ground
-          }
-          else if (currentTime > 50 and currentTime < 80) {
-              pitch_command = 45;
-              //pitch_command = 20; //For four motors removed, max roll/pitch command is 30 degrees for 20 seconds without hitting ground
-          }
-          else {
-              yaw_rate_command = 1;
-          }
+          
           */
 
           //Debug
@@ -1070,12 +1077,12 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       /**********************Euler Angle Controllers*******************/
 
       //Euler angle controller gains - euler angles don't use integral controllers
-      double kp_roll = 0.01;    //0.5
-      double kd_roll = 0.05;    //1.0
-      double kp_pitch = 0.01;   //0.5
-      double kd_pitch = 0.01;   //1.0
-      double kp_yaw = 0.01;    //0.1 - setting to zero for hardware testing cause BB is being weird
-      double kd_yaw = 0.05;     //0.5
+      double kp_roll = 0.1;    //0.5
+      double kd_roll = 0.5;    //1.0
+      double kp_pitch = 0.1;   //0.5
+      double kd_pitch = 0.5;   //1.0
+      double kp_yaw = 0.1;    //0.1 - setting to zero for hardware testing cause BB is being weird
+      double kd_yaw = 0.5;     //0.5
 
       //Set non-stick commands
       double roll_rate_command = 0;
@@ -1141,15 +1148,14 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //Then set the previous value
       zprev = z;   
 
-      //Set z and zdot commands to 100 m [negative is up]
-      //double ZCOMMAND = -100; //Commented out for waypoint testing
+      //Set z (moved to else loop) and zdot commands to 100 m [negative is up]
       double ZDOTCOMMAND = 0;
 
       //Compute integral of error
       zint += zerror * elapsedTime;
 
       //Compute throttle - Commented out to turn off altitude controller. Altitude will be stick only for hardware testing
-      //throttle = throttle - kp_z*zerror - kd_z*(ZDOTCOMMAND-zdot) - ki_z*zint;
+      throttle = throttle - kp_z * zerror - kd_z * (ZDOTCOMMAND - zdot) - ki_z * zint;
       throttle = CONSTRAIN(throttle, OUTMIN, OUTMAX);
 
       //Extra filter for if it goes nan
@@ -1172,7 +1178,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //printf("dthrust droll dpitch dyaw %d %d %d %d \n", dthrust, droll, dpitch, dyaw);
 
       //Compute thrust needed for each motor
-      computeReconfigurable(-dthrust, droll, dpitch, -dyaw);
+      computeReconfigurable(-dthrust, droll, dpitch, dyaw);
       
       //Notes:
       //dthrust needs to be negative. "Up is down. That's just maddeningly unhelpful. Why are these things never clear?" - Captain Jack Sparrow

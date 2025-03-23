@@ -8,6 +8,8 @@ BUMBLEBEE:
 
   ☐ Merge the reconfig branch
   ☐ Edit the x8_controller.cpp to be clean and test that it can simonly and sil
+  ☐ Since bumblebee flight testing broke a bunch of stuff - Grab an SD card and image a pi and upload it to Google Drive
+  ☐ Take a look at BDE FASTCASST and add Bumblebee flight tests since software has been rewritten and we need to make sure that BBee flies with the new software
 
 WOODEN DRONE:
 

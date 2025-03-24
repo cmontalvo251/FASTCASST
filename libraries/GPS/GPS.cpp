@@ -228,6 +228,7 @@ void GPS::computeCOG(double current_time) {
   //Then proceed with the speed measurement
   double dx = X - xprev;
   double dy = Y - yprev;
+  double dz = Z - zprev; //For vertical speed controller only
   double dt = current_time - prev_time;
   dist = sqrt((pow(dx,2)) + (pow(dy,2)));
 
@@ -246,6 +247,7 @@ void GPS::computeCOG(double current_time) {
   if (dt > 0) {
     vx = dx/dt; //Added to GPS.h file for X8 
     vy = dy/dt; //Added to GPS.h file for X8
+    vz = dz/dt; //Added to GPS.h file for X8
 
     //Need to include heading for body frame velocity calculations - only do for x8 in case it breaks shit
     #ifdef x8
@@ -253,6 +255,8 @@ void GPS::computeCOG(double current_time) {
     double v = vy;
     vx = u * cos(heading_new) + v * sin(heading_new);
     vy = -u * sin(heading_new) + v * cos(heading_new);
+
+    double w 
     #endif
 
     speed = sqrt((vx*vx + vy*vy));

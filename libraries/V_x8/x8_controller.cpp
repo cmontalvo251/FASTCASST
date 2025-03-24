@@ -106,11 +106,12 @@ controller::controller() {
     //Compute nominal and max thrusts and configuration matrix
     MotorsSetup(datapts); 
 
-    //Test remove motor - remove from recent
-    //RemoveMotors(3);
+    //Remove from most recent
+    //Used in IC test for thesis, see V_x8/Sim_Plots/4.2 for results
+    //RemoveMotors(4);
     
     //Remove specific number of motors
-    motorsToRemove = 3;
+    motorsToRemove = 4;
 
     //Initialize MOTORSOFF vector for removing specific motors
     REMOVEMOTORS.zeros(motorsToRemove, 1, "Vector of motors to remove");
@@ -118,15 +119,16 @@ controller::controller() {
     //Remove input - Make sure to change the first indices to start at 1 and increase to motorsToRemove
     REMOVEMOTORS.set(1, 1, 1); //top_front_left
     REMOVEMOTORS.set(2, 1, 2); //top_front_right
-    //REMOVEMOTORS.set(3, 1, 3); //top_back_right
-    REMOVEMOTORS.set(3, 1, 4); //top_back_left
+    REMOVEMOTORS.set(3, 1, 3); //top_back_right
+    REMOVEMOTORS.set(4, 1, 4); //top_back_left
     //REMOVEMOTORS.set(1, 1, 5); //bottom_front_left
     //REMOVEMOTORS.set(2, 1, 6); //bottom_front_right
     //REMOVEMOTORS.set(3, 1, 7); //bottom_back_right
     //REMOVEMOTORS.set(4, 1, 8); //bottom_back_left
     
     //Test remove motor - remove specific
-    RemoveMotors(motorsToRemove, REMOVEMOTORS);
+    //Used for command test of thesis, see V_x8/Sim_Plots/4.3 for results
+    //RemoveMotors(motorsToRemove, REMOVEMOTORS);
 
     //Waypoint Control Flag
     WaypointControl = false;
@@ -140,7 +142,7 @@ controller::controller() {
     //Waypoint Control Vector - right now just meters for sims. Should change to lat, lon later for real
     WAYPOINTS.zeros(5, 3, "Waypoint Matrix");
 
-    //Star Pattern
+    //Star Pattern - Haven't tested yet. Trying to get rectangle first
     /*
     //Waypoint 1: (0, 0, -200) - IC
     WAYPOINTS.set(1, 1, 0);
@@ -257,8 +259,16 @@ void controller::MotorBeep(MATLAB datapts_IN) {
         MOTORS[i].pwm_signal = OUTMIN;
     }
 
+    //Thrust/Weight Ratios - Max_Thrust is calculated in units of kg
+    double TW8 = 8 * MOTORS[0].Max_Thrust / mass;
+    double TW7 = 7 * MOTORS[0].Max_Thrust / mass;
+    double TW6 = 6 * MOTORS[0].Max_Thrust / mass;
+    double TW5 = 5 * MOTORS[0].Max_Thrust / mass;
+    double TW4 = 4 * MOTORS[0].Max_Thrust / mass;
+
     //Debug print statements
-    //printf("Max thrust and nominal thrust: %lf %lf \n", MOTORS[0].Max_Thrust, nominal_thrust);
+    //printf("Max Thrust and Nominal Thrust (Full Motors) T/W: %lf %lf \n", MOTORS[0].Max_Thrust, nominal_thrust);
+    //printf("T/W Ratios for 8, 7, 6, 5, and 4 Motors: %lf %lf %lf %lf %lf \n", TW8, TW7, TW6, TW5, TW4);
 
     //This is where we make our configuration matrices
     H.zeros(4, NUMMOTORS, "Configuration Matrix");
@@ -318,16 +328,16 @@ void controller::MotorBeep(MATLAB datapts_IN) {
 //Function to add the 8 motors of BumbleBee
 void controller::MotorsSetup(MATLAB datapts_IN) {
     //Top Motors
-    addMotor(rx, -ry, -rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 1 - upper_left_top - green prop w/ red dot
-    addMotor(rx, ry, -rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 2 - upper_right_top - red prop w/ green dot
-    addMotor(-rx, ry, -rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 3 - lower_right_top - red prop w/ purple dot
-    addMotor(-rx, -ry, -rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 4 - lower_left_top - orange prop w/ blue dot
+    addMotor(rx, -ry, -rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 1 - upper_left_top - green prop w/ red dot - CCW
+    addMotor(rx, ry, -rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 2 - upper_right_top - red prop w/ green dot - CW
+    addMotor(-rx, ry, -rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 3 - lower_right_top - red prop w/ purple dot - CCW
+    addMotor(-rx, -ry, -rz, 0.0, 0.0, -1.0, 1, 1);   //Motor 4 - lower_left_top - orange prop w/ blue dot - CW
 
     //Bottom Motors
-    addMotor(rx, -ry, rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 5 - upper_left_bottom - orange prop w/ black dot
-    addMotor(rx, ry, rz, 0.0, 0.0, -1.0, -1, 1);     //Motor 6 - upper_right_bottom - green prop w/ purple dot
-    addMotor(-rx, ry, rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 7 - lower_right_bottom - green prop w/ red dot
-    addMotor(-rx, -ry, rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 8 - lower_left_bottom - red prop w/ yellow dot
+    addMotor(rx, -ry, rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 5 - upper_left_bottom - orange prop w/ black dot - CW
+    addMotor(rx, ry, rz, 0.0, 0.0, -1.0, -1, 1);     //Motor 6 - upper_right_bottom - green prop w/ purple dot - CCW
+    addMotor(-rx, ry, rz, 0.0, 0.0, -1.0, 1, 1);     //Motor 7 - lower_right_bottom - green prop w/ red dot - CW
+    addMotor(-rx, -ry, rz, 0.0, 0.0, -1.0, -1, 1);   //Motor 8 - lower_left_bottom - red prop w/ yellow dot - CCW
 
     //Debug print
     //for (int i = 1; i <= NUMMOTORS; i++) {
@@ -1026,16 +1036,26 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
           pitch_command = -(elevator - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
           yaw_command = (rudder - STICK_MID) * 50.0 / ((STICK_MAX - STICK_MIN) / 2.0);
 
-          if (currentTime < 20) {
-              //roll_command = 45;
-              roll_command = 10; //For four motors removed, max roll/pitch command is 30 degrees for 20 seconds without hitting ground
+          //Test both roll and pitch commands and yaw rate command in one go for brevity of thesis
+          //Commands found for being able to stabilize altitude with number of operational motors.
+          //For quadruple motor failure, it hits the ground. Altitude controller gains need to be increased
+          //Future Work: Make control gains dynamic with the number of operational motors
+          if (currentTime < 25) {
+              //roll_command = 55; //Full Motor Control
+              //roll_command = 50; //Single Motor Failure
+              //roll_command = 33; //Dual Motor Failure
+              //roll_command = 7; //Triple Motor Failure
+              roll_command = 0; //Quadruple Motor Failure
           }
-          else if (currentTime > 50 and currentTime < 80) {
-              //pitch_command = 45;
-              pitch_command = 10; //For four motors removed, max roll/pitch command is 30 degrees for 20 seconds without hitting ground
+          else if (currentTime > 50 and currentTime < 75) {
+              //pitch_command = 55; //Full Motor Control
+              //pitch_command = 50; //Single Motor Failure
+              //pitch_command = 33; //Dual Motor Failure
+              //pitch_command = 7; //Triple Motor Failure
+              pitch_command = 0; //Quadruple Motor Failure
           }
           else {
-              yaw_command = 45;
+              yaw_command = 90;
           }
 
           //Compute yaw error
@@ -1058,19 +1078,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
           //Combine throttle input and throttle hover as weighted average - Commented out to turn off altitude controller
           //throttle = 0.3 * throttle_hover + 0.7 * throttle;
 
-          //Verification tests - make sure model works for different angle commands
-          //roll_command = 45;
-          //roll_command = 1;
-          //pitch_command = 45;
-          //yaw_rate_command = 1;
-
-          //Test both roll and pitch commands and yaw rate command in one go for brevity of thesis
-          /*
-          
-          */
-
           //Debug
-          //printf("Roll pitch yaw command = %lf %lf %lf \n",roll_command,pitch_command,yaw_rate_command);
+          //printf("Roll pitch yaw commands = %lf %lf %lf \n",roll_command,pitch_command,yaw_rate_command);
           //PAUSE();
       }
       
@@ -1209,6 +1218,18 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       motor_upper_right_bottom = MOTORS[5].pwm_signal;
       motor_lower_right_bottom = MOTORS[6].pwm_signal;
       motor_lower_left_bottom = MOTORS[7].pwm_signal;
+
+      //Hardware Testing - If Roll or pitch go over 60 deg, assume flipping and cut motors
+      if (abs(roll) > 60 || abs(pitch) > 60) {
+          motor_upper_left_top = OUTMIN;
+          motor_upper_right_top = OUTMIN;
+          motor_lower_right_top = OUTMIN;
+          motor_lower_left_top = OUTMIN;
+          motor_upper_left_bottom = OUTMIN;
+          motor_upper_right_bottom = OUTMIN;
+          motor_lower_right_bottom = OUTMIN;
+          motor_lower_left_bottom = OUTMIN;
+      }
       
       //Debug - See how roll/pitch react when one side of motors is off and other is at max or mid. Keep in case tests need to be ran again.
       /*
@@ -1400,6 +1421,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
    7.f sudo -> super user do; execute commands that require special privileges
    7.g sudo python3 [name].py -> run Python file
    7.h sudo shutdown now - turns off rpi
+   7.i emacs - show and change libraries similar to on Windows. Faster than ls and cd through a bunch of libraries
 
 8. Common GitBash commands used during research:
    8.a git branch -> tells you what branch you are in
@@ -1422,4 +1444,15 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
          sudo umount /mnt/usb
 
          Note: sdX will be whatever your usb is plugged into. You see attached devices using lsblk.
+
+11. In 2019 paper, the T/W ratio was reported as 5 but was calculated off of 1766 µs PWM instead of max of 1950 µs.
+    11.a Code calculated and reported max T/W for each case as:
+         1. 8 Motors: 8.501608
+         2. 7 Motors: 7.438907
+         3. 6 Motors: 6.376206
+         4. 5 Motors: 5.313505
+         5. 4 Motors: 4.250804
+         using a max thrust of 0.781085 kg from each motor and a mass of 0.735 kg. Weighing on 3/22/2025 had BumbleBee at 0.882 kg, but whatever.
+    11.b Nominal thrust using 0.735 kg mass is 0.900986 kg for total sum of thrusts.
+
 */

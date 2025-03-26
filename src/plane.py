@@ -48,7 +48,7 @@ print(sys.argv)
 logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
-outdata = np.zeros(12)
+outdata = np.zeros(17)
 
 #Setup GPS
 print('Initializing GPS...')
@@ -137,6 +137,12 @@ while (True):
         period.append(value)
     #print period
 
+    #Get IMU
+    a,g,rpy,temp = imu.getALL()
+    roll = rpy[0]
+    pitch = rpy[1]
+    yaw = rpy[2]
+
     #Turn receiver commands to floats
     throttlerc = float(period[0])/1000.
     rollrc = float(period[1])/1000.
@@ -152,7 +158,8 @@ while (True):
         GPSTime = time.time()
         gps_llh.update()
         #print(gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
-
+    """
+    
     if BAROMODE == 2:
         #first we grab prassure
         pressure = baro.PRES
@@ -176,7 +183,6 @@ while (True):
         BAROTime = RunTime
         #then we set the mode to 1
         BAROMODE = 1
-    """
 
     #Compute the controller values
     throttle_command = throttlerc
@@ -231,19 +237,23 @@ while (True):
     #Log data
     outdata[0] = np.round(RunTime,5)
     outdata[1] = throttlerc
-    outdata[2] = yawrc
-    outdata[3] = autopilot
-    outdata[4] = gps_llh.longitude
-    outdata[5] = gps_llh.latitude
-    outdata[6] = gps_llh.altitude
-    outdata[7] = throttle_command
-    outdata[8] = roll_command
-    outdata[9] = pitch_command
-    outdata[10] = yaw_command
-    outdata[11] = np.round(pressure,5)
+    outdata[2] = rollrc
+    outdata[3] = pitchrc
+    outdata[4] = yawrc
+    outdata[5] = autopilot
+    outdata[6] = gps_llh.longitude
+    outdata[7] = gps_llh.latitude
+    outdata[8] = gps_llh.altitude
+    outdata[9] = throttle_command
+    outdata[10] = roll_command
+    outdata[11] = pitch_command
+    outdata[12] = yaw_command
+    outdata[13] = np.round(pressure,5)
+    outdata[14] = roll
+    outdata[15] = pitch
+    outdata[16] = yaw
     #outdata[]
     logger.println(outdata)
-    
 
     time.sleep(0.01)
 

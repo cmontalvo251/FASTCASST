@@ -394,6 +394,10 @@ void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
     } else {
       val = actuatorStates.get(i+1,1);
     }
+
+    //Saturation filter for pwm_out for model for when system goes unstable when testing. Can be taken out later if needed. Added 2/14/2025 @ 10:30am by Andrew to avoid
+    //FASTCASST crashing out when one side of x8 motors are off for testing the forces/moments and roll/pitch
+    val = CONSTRAIN(val, OUTMIN, OUTMAX);
     pwm_out.set(i+1,1,val);
   }
   //pwm_out.disp();

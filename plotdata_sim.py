@@ -3,6 +3,7 @@
 import matplotlib.pyplot as plt
 plt.rcParams.update({'figure.max_open_warning': 0})
 import sys
+sys.path.append('supplemental_files/')
 import os
 import numpy as np
 
@@ -17,12 +18,12 @@ except:
 tstart = -99
 tend = -99
 
-#Run code
-#os.system('./clean_logs')
-#os.system('rm simonly.exe')
+#Run code - Comment out section later?
+os.system('./clean_logs')
+os.system('rm simonly.exe')
 #os.system('make clean')
-#os.system('make simonly MODEL="cubesat"')
-#os.system('./simonly.exe airplane/')
+os.system('make simonly MODEL="x8"')
+os.system('./simonly.exe x8/')
 ##Create PDF Handle
 pp = PDF(0,plt)
 #Open File

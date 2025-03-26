@@ -9,6 +9,8 @@
 #include <Rotation/Rotation3.h>
 #include <Mathp/mathp.h>
 #include <Datalogger/Datalogger.h>
+#include <RCIO/RCIO.h>      //this is for STICK values for constraining PWM out; Added 2/14/2025 @ 10:30am by Andrew to avoid having FASTCASST crash out
+							//when it goes unstable
 
 ///If running SIL or HIL and on a desktop (anything with a rendering environment)
 //we need to turn on OPENGL this way the PIC actually has something to fly.

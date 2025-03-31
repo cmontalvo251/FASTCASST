@@ -48,7 +48,7 @@ print(sys.argv)
 logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
-outdata = np.zeros(17)
+outdata = np.zeros(20)
 
 #Setup GPS
 print('Initializing GPS...')
@@ -125,6 +125,8 @@ StartTime = time.time()
 GPSTime = 0
 GPScount = 0
 BAROTime = time.time()-StartTime
+printRATE = 0.2
+printNEXT = 0.0
 
 #This runs on repeat until code is killed
 while (True):
@@ -142,6 +144,9 @@ while (True):
     roll = rpy[0]
     pitch = rpy[1]
     yaw = rpy[2]
+    roll_rate = -g[1]
+    pitch_rate = -g[0]
+    yaw_rate = -g[2]
 
     #Turn receiver commands to floats
     throttlerc = float(period[0])/1000.
@@ -185,10 +190,37 @@ while (True):
         BAROMODE = 1
 
     #Compute the controller values
-    throttle_command = throttlerc
-    roll_command = rollrc
-    pitch_command = pitchrc
-    yaw_command = yawrc
+
+    #Set arm switch up for safety reasons
+    if(armswitch < 1.495):
+        led.setColor('Red')
+        throttle_command = SERVO_MIN
+        roll_command = SERVO_MID
+        pitch_command = SERVO_MID
+        yaw_command = SERVO_MID
+        #print('Disarmed for safety')
+    elif(1.495 < armswitch < 1.995):
+        led.setColor('Green')
+        throttle_command = throttlerc
+        roll_command = rollrc
+        pitch_command = pitchrc
+        yaw_command = yawrc
+        #print('Open Loop Control')
+    elif(armswitch > 1.995):
+        ##PROGRAM PD CONTROLLER
+        led.setColor('Blue')
+	#throttle_command unchanged
+        throttle_command = throttlerc
+        kp = 0.01
+        kd = 0.001
+        kr = 1.0
+        roll_error = kp*(roll - 0) + kd*(roll_rate - 0)
+        roll_command = SERVO_MID + roll_error
+        pitch_command = SERVO_MID + kp*(pitch - 0) + kd*(pitch_rate - 0)
+        yaw_command = SERVO_MID + kr*roll_error
+        #print('Autonomous Control')
+
+    #print(armswitch,throttlerc,yawrc)
 
     ##Saturation blocks
     if(throttle_command < SERVO_MIN):
@@ -211,28 +243,15 @@ while (True):
     if(yaw_command > SERVO_MAX):
         yaw_command = SERVO_MAX
 
-    #Set arm switch up for safety reasons
-    if(armswitch < 1.495):
-        led.setColor('Red')
-        pwm1.set_duty_cycle(SERVO_MIN)
-        pwm2.set_duty_cycle(SERVO_MID)
-        #print('Disarmed for safety')
-    elif(1.495 < armswitch < 1.995):
-        led.setColor('Green')
-        pwm1.set_duty_cycle(throttle_command)
-        pwm2.set_duty_cycle(roll_command)
-        pwm3.set_duty_cycle(pitch_command)
-        pwm4.set_duty_cycle(yaw_command)
-        #print('Open Loop Control')
-    elif(armswitch > 1.995):
-        led.setColor('Blue')
-        pwm1.set_duty_cycle(SERVO_MIN)
-        pwm2.set_duty_cycle(SERVO_MID)
-        #print('Autonomous Control')
-    #print(armswitch,throttlerc,yawrc)
+    pwm1.set_duty_cycle(throttle_command)
+    pwm2.set_duty_cycle(roll_command)
+    pwm3.set_duty_cycle(pitch_command)
+    pwm4.set_duty_cycle(yaw_command)
 
     #Print to Home
-    print(np.round(RunTime,2), throttlerc, rollrc, pitchrc, yawrc, armswitch,autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude,np.round(pressure,2))
+    if RunTime > printNEXT:
+        print(np.round(RunTime,2), throttlerc, rollrc, pitchrc, yawrc, armswitch,autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude,np.round(pressure,2),np.round(roll,2),np.round(pitch,2),np.round(yaw,2),np.round(roll_rate,2),np.round(pitch_rate,2),np.round(yaw_rate,2))
+        printNEXT += printRATE
 
     #Log data
     outdata[0] = np.round(RunTime,5)
@@ -248,10 +267,13 @@ while (True):
     outdata[10] = roll_command
     outdata[11] = pitch_command
     outdata[12] = yaw_command
-    outdata[13] = np.round(pressure,5)
+    outdata[13] = pressure
     outdata[14] = roll
     outdata[15] = pitch
     outdata[16] = yaw
+    outdata[17] = roll_rate
+    outdata[18] = pitch_rate
+    outdata[19] = yaw_rate
     #outdata[]
     logger.println(outdata)
 

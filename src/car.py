@@ -50,7 +50,7 @@ print(sys.argv)
 logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
-outdata = np.zeros(9)
+outdata = np.zeros(10)
 
 #Setup GPS
 print('Initializing GPS...')
@@ -75,18 +75,18 @@ led.setColor('Yellow')
 print('LED is yellow now')
 
 #Setup the Barometer
-print('Setting up the barometer....')
-BARONEXT = 1.0
-BAROWAIT = 0.01
-baro = ms5611.MS5611()
-baro.initialize()
-baro.refreshPressure()
-time.sleep(BAROWAIT)
-baro.readPressure()
-baro.calculatePressureAndTemperature()
-pressure = baro.PRES
-time.sleep(BARONEXT)
-BAROMODE = 0
+#print('Setting up the barometer....')
+#BARONEXT = 1.0
+#BAROWAIT = 0.01
+#baro = ms5611.MS5611()
+#baro.initialize()
+#baro.refreshPressure()
+#time.sleep(BAROWAIT)
+#baro.readPressure()
+#baro.calculatePressureAndTemperature()
+#pressure = baro.PRES
+#time.sleep(BARONEXT)
+#BAROMODE = 0
 
 #Setup Servos
 SERVO_MIN = 0.995 #ms
@@ -178,21 +178,25 @@ while (True):
         ##then we set the mode to 1
         #BAROMODE = 1
 
+    d_long = gps_llh.longitude - wp_long
+    d_lat = gps_llh.latitude - wp_lat
+    dx = d_long * np.pi/180 * R
+    dy = d_lat * np.pi/180 * R
+    d = np.sqrt(dx**2 + dy**2)
+    Servo_Turn = False
+
     #Compute the controller values
-    if autopilot < 2:
+    if (autopilot < 2):
         throttle_command = throttlerc
         roll_command = rollrc
     else: #Remember to test this part of code!
         throttle_command = 0
-        d_long = gps_llh.longitude - wp_long #Difference of longitude between waypoint and car
-        d_lat = gps_llh.latitude - wp_lat #Difference of latitude between waypoint and car
-        dx = d_long * np.pi/180 * R #Distance between waypoint and car in m along the longitudinal axis
-        dy = d_lat * np.pi/180 * R #Distance between waypoint and car in m along the latitudinal axis
-        d = np.sqrt(dx**2 + dy**2) #Distance between waypoint and car in m
-        if (d<=20): #If the distance is less or equal two 20m...
+        if (d<=20): #If the distance is less than or equal to 20 m...
             roll_command = SERVO_MAX #...turn the front wheels left
+            Servo_Turn = True #Records the servo did turn
         else: #If the distance is greater than 20 m...
             roll_command = SERVO_MID #... keep the wheels straight
+            Servo_Turn = False #Records the servo didn't turn
 
     ##Saturation blocks
     if(throttle_command < SERVO_MIN):
@@ -223,7 +227,7 @@ while (True):
     #print(armswitch,throttlerc,rollrc)
 
     #Print to Home
-    print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude, d, throttle_command,roll_command)
+    print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude, d, Servo_Turn, throttle_command,roll_command)
 
     #Log data
     outdata[0] = np.round(RunTime,5)
@@ -233,8 +237,9 @@ while (True):
     outdata[4] = gps_llh.longitude
     outdata[5] = gps_llh.latitude
     outdata[6] = d
-    outdata[7] = throttle_command
-    outdata[8] = roll_command
+    outdata[7] = Servo_Turn
+    outdata[8] = throttle_command
+    outdata[9] = roll_command
     #outdata[]
     logger.println(outdata)
     time.sleep(0.01)

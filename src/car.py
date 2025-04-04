@@ -50,7 +50,7 @@ print(sys.argv)
 logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
-outdata = np.zeros(8)
+outdata = np.zeros(9)
 
 #Setup GPS
 print('Initializing GPS...')
@@ -106,6 +106,11 @@ pwm2 = pwm.PWM(PWM_OUTPUT[1])
 pwm2.initialize()
 pwm2.set_period(50)
 pwm2.enable()
+
+#Waypoints
+wp_long = -88.1759 #Waypoint Latitude
+wp_lat = 30.6908 #Waypoint Longitude
+R = 6371*10**3 #Radius of the Earth in m
 
 #Short break to build suspense
 print('Sleep for 1 second')
@@ -174,8 +179,20 @@ while (True):
         #BAROMODE = 1
 
     #Compute the controller values
-    throttle_command = throttlerc
-    roll_command = rollrc
+    if autopilot < 2:
+        throttle_command = throttlerc
+        roll_command = rollrc
+    else: #Remember to test this part of code!
+        throttle_command = 0
+        d_long = gps_llh.longitude - wp_long #Difference of longitude between waypoint and car
+        d_lat = gps_llh.latitude - wp_lat #Difference of latitude between waypoint and car
+        dx = d_long * np.pi/180 * R #Distance between waypoint and car in m along the longitudinal axis
+        dy = d_lat * np.pi/180 * R #Distance between waypoint and car in m along the latitudinal axis
+        d = np.sqrt(dx**2 + dy**2) #Distance between waypoint and car in m
+        if (d<=20): #If the distance is less or equal two 20m...
+            roll_command = SERVO_MAX #...turn the front wheels left
+        else: #If the distance is greater than 20 m...
+            roll_command = SERVO_MID #... keep the wheels straight
 
     ##Saturation blocks
     if(throttle_command < SERVO_MIN):
@@ -206,7 +223,7 @@ while (True):
     #print(armswitch,throttlerc,rollrc)
 
     #Print to Home
-    print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
+    print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude, d, throttle_command,roll_command)
 
     #Log data
     outdata[0] = np.round(RunTime,5)
@@ -215,8 +232,9 @@ while (True):
     outdata[3] = autopilot
     outdata[4] = gps_llh.longitude
     outdata[5] = gps_llh.latitude
-    outdata[6] = throttle_command
-    outdata[7] = roll_command
+    outdata[6] = d
+    outdata[7] = throttle_command
+    outdata[8] = roll_command
     #outdata[]
     logger.println(outdata)
     time.sleep(0.01)

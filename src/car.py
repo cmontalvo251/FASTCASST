@@ -108,9 +108,11 @@ pwm2.set_period(50)
 pwm2.enable()
 
 #Waypoints
-wp_long = -88.1759 #Waypoint Latitude
-wp_lat = 30.6908 #Waypoint Longitude
+wp = np.array([[-88.1755, 30.6906], [-88.1750, 30.6902], [-88.1745, 30.6906]])
+wp_index = 0 #Keeps track of which waypoint is being used
+wp_index_max = len(wp)
 R = 6371*10**3 #Radius of the Earth in m
+Servo_Turn = False
 
 #Short break to build suspense
 print('Sleep for 1 second')
@@ -178,12 +180,11 @@ while (True):
         ##then we set the mode to 1
         #BAROMODE = 1
 
-    d_long = gps_llh.longitude - wp_long
-    d_lat = gps_llh.latitude - wp_lat
+    d_long = gps_llh.longitude - wp[wp_index, 0]
+    d_lat = gps_llh.latitude - wp[wp_index, 1]
     dx = d_long * np.pi/180 * R
     dy = d_lat * np.pi/180 * R
     d = np.sqrt(dx**2 + dy**2)
-    Servo_Turn = False
 
     #Compute the controller values
     if (autopilot < 2):
@@ -191,9 +192,13 @@ while (True):
         roll_command = rollrc
     else: #Remember to test this part of code!
         throttle_command = 0
+        if wp_index >= wp_index_max:
+            break
         if (d<=20): #If the distance is less than or equal to 20 m...
-            roll_command = SERVO_MAX #...turn the front wheels left
-            Servo_Turn = True #Records the servo did turn
+            Servo_Turn = True #Records the servo turned
+            pwm2.set_duty_cycle(SERVO_MAX) #Turns the front wheels left
+            time.sleep(1) #Stops the car to signal it's reached its waypoint
+            wp_index += 1
         else: #If the distance is greater than 20 m...
             roll_command = SERVO_MID #... keep the wheels straight
             Servo_Turn = False #Records the servo didn't turn

@@ -153,8 +153,8 @@ while (True):
     rollrc = float(period[1])/1000.
     pitchrc = float(period[2])/1000.
     yawrc = float(period[3])/1000.
-    armswitch = float(period[4])/1000.
-    autopilot = float(period[6])/1000. ##This is not working on the current transmitter
+    armswitch = float(period[4])/1000.  ##CHANGE ARMSWITCH TO BE AUTOPILOT AND JUST HAVE PLANE ARMED AT ALL TIMES
+    autopilot = float(period[5])/1000. ##This is not working on the current transmitter
     #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
 
     #Get GPS update (Commented out gps and barometer for now while debugging servos
@@ -203,8 +203,8 @@ while (True):
         led.setColor('Green')
         throttle_command = throttlerc
         roll_command = rollrc
-        pitch_command = pitchrc
-        yaw_command = yawrc
+        pitch_command = SERVO_MID-(pitchrc-SERVO_MID) #switch pitch and yaw
+        yaw_command = SERVO_MID-(yawrc-SERVO_MID) 
         #print('Open Loop Control')
     elif(armswitch > 1.995):
         ##PROGRAM PD CONTROLLER
@@ -215,8 +215,8 @@ while (True):
         kd = 0.001
         kr = 1.0
         roll_error = kp*(roll - 0) + kd*(roll_rate - 0)
-        roll_command = SERVO_MID + roll_error
-        pitch_command = SERVO_MID + kp*(pitch - 0) + kd*(pitch_rate - 0)
+        roll_command = SERVO_MID - roll_error
+        pitch_command = SERVO_MID - kp*(pitch - 0) - kd*(pitch_rate - 0)
         yaw_command = SERVO_MID + kr*roll_error
         #print('Autonomous Control')
 

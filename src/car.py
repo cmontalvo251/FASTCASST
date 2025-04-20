@@ -50,7 +50,7 @@ print(sys.argv)
 logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
-outdata = np.zeros(10)
+outdata = np.zeros(13)
 
 #Setup GPS
 print('Initializing GPS...')
@@ -112,7 +112,6 @@ wp = np.array([[-88.1755, 30.6906], [-88.1750, 30.6902], [-88.1745, 30.6906]])
 wp_index = 0 #Keeps track of which waypoint is being used
 wp_index_max = len(wp)
 R = 6371*10**3 #Radius of the Earth in m
-Servo_Turn = False
 
 #Short break to build suspense
 print('Sleep for 1 second')
@@ -153,8 +152,6 @@ while (True):
         gps_llh.update()
         GPScount = 1
 
-        #print(gps_llh.longitude,gps_llh.latitude,gps_llh.altitude)
-    
 #Barometer not needed
     #if BAROMODE == 2:
         ##first we grab prassure
@@ -180,11 +177,12 @@ while (True):
         ##then we set the mode to 1
         #BAROMODE = 1
 
+    #Find the distance and angle from the car to the next waypoint
     d_long = gps_llh.longitude - wp[wp_index, 0]
     d_lat = gps_llh.latitude - wp[wp_index, 1]
     dx = d_long * np.pi/180 * R
     dy = d_lat * np.pi/180 * R
-    d = np.sqrt(dx**2 + dy**2)
+    d = np.sqrt(dx**2 + dy**2) #Distance from car to waypoint
 
     #Compute the controller values
     if (autopilot < 2):
@@ -195,13 +193,11 @@ while (True):
         if wp_index >= wp_index_max:
             break
         if (d<=20): #If the distance is less than or equal to 20 m...
-            Servo_Turn = True #Records the servo turned
             pwm2.set_duty_cycle(SERVO_MAX) #Turns the front wheels left
             time.sleep(1) #Stops the car to signal it's reached its waypoint
             wp_index += 1
         else: #If the distance is greater than 20 m...
             roll_command = SERVO_MID #... keep the wheels straight
-            Servo_Turn = False #Records the servo didn't turn
 
     ##Saturation blocks
     if(throttle_command < SERVO_MIN):
@@ -232,19 +228,25 @@ while (True):
     #print(armswitch,throttlerc,rollrc)
 
     #Print to Home
-    print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude, d, Servo_Turn, throttle_command,roll_command)
+    #print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude, d, phi, throttle_command,roll_command)
+    #Get acceleration, gyroscope, magnetometer & temperature data
+    a,g,m,rpy,temp = imu.getALL()
+    print(m[0],m[1],m[2],np.round(rpy[2],2))
 
     #Log data
     outdata[0] = np.round(RunTime,5)
-    outdata[1] = throttlerc
-    outdata[2] = rollrc
-    outdata[3] = autopilot
-    outdata[4] = gps_llh.longitude
-    outdata[5] = gps_llh.latitude
-    outdata[6] = d
-    outdata[7] = Servo_Turn
-    outdata[8] = throttle_command
-    outdata[9] = roll_command
+    outdata[1] = a[0]
+    outdata[2] = a[1]
+    outdata[3] = a[2]
+    outdata[4] = g[0]
+    outdata[5] = g[1]
+    outdata[6] = g[2]
+    outdata[7] = m[0]
+    outdata[8] = m[1]
+    outdata[9] = m[2]
+    outdata[10] = rpy[0]
+    outdata[11] = rpy[1]
+    outdata[12] = rpy[2]
     #outdata[]
     logger.println(outdata)
     time.sleep(0.01)

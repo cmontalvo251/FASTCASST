@@ -61,6 +61,7 @@ gps_llh.initialize()
 print('Initializing IMU...')
 imu = mpu9250.MPU9250()
 imu.initialize()
+imu.calib_mag()
 
 #Setup RCIO
 print('Initializing RCInput...')
@@ -231,7 +232,7 @@ while (True):
     #print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude, d, phi, throttle_command,roll_command)
     #Get acceleration, gyroscope, magnetometer & temperature data
     a,g,m,rpy,temp = imu.getALL()
-    print(m[0],m[1],m[2],np.round(rpy[2],2))
+    print(np.round(RunTime, 2), np.round(m[0], 2), np.round(m[1], 2), np.round(m[2], 2))
 
     #Log data
     outdata[0] = np.round(RunTime,5)

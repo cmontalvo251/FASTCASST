@@ -553,6 +553,7 @@ class MPU9250:
         for i in range(7, 10):
             data = self.byte_to_float_le(response[i*2:i*2+2])
             self.magnetometer_data[i-7] = data * self.magnetometer_ASA[i-7]
+        #print(self.magnetometer_data)
 
 # -----------------------------------------------------------------------------------------------
 #                                          GET VALUES
@@ -569,13 +570,14 @@ class MPU9250:
         ay = a[0]
         ax = a[1]
         az = a[2]
-        phi = np.arctan(ay/az)
-        theta = np.arctan(-ax/(ay*np.sin(phi)+az*np.cos(phi)))
+        phi = np.arctan2(ay,az)
+        theta = np.arctan2(-ax, (ay*np.sin(phi)+az*np.cos(phi)))
         bx = m[0]
         by = m[1]
         bz = m[2]
-        #psi = np.arctan2((bz*np.sin(phi)-by*np.cos(phi)),(bx*np.cos(theta)+by*np.sin(theta)*np.sin(phi)+bz*np.sin(theta)*np.cos(phi)))
-        psi = np.arctan2(-by,bx)
+        psi = np.arctan2((bz*np.sin(phi)-by*np.cos(phi)), (bx*np.cos(theta)+by*np.sin(theta)*np.sin(phi)+bz*np.sin(theta)*np.cos(phi)))
+        #psi = np.arctan2(-by,bx)
+        #psi = 0
         roll = phi * 180.0/np.pi
         pitch = theta * 180.0/np.pi
         yaw = psi * 180.0/np.pi

@@ -154,6 +154,18 @@ void printdouble(double in,char name[]) {
 	printf("\n");
 }
 
+int sign(double in) {
+    if (in > 0) {
+        return 1;
+    }
+    else if (in < 0) {
+        return -1;
+    }
+    else {
+        return 0;
+    }
+}
+
 // Copyright - Carlos Montalvo 2015
 // You may freely distribute this file but please keep my name in here
 // as the original owner

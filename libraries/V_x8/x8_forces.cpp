@@ -1,14 +1,6 @@
-/* Forces Template 2021
+//This is for an x8 quad with 4 motors on top and 4 motors on bottom
 
-This forces file is a template for a fictitious portalcube
-with thrusters and a simple aero model. The Dynamics.cpp module
-will call a few candidate functions. If you make your own aero
-file with header and cpp file you must conform to the following
-functions otherwise the software will completely break.
-
-*/
-
-#include "forces.h"
+#include "x8_forces.h"
 
 //Constructor
 forces::forces() {
@@ -53,10 +45,10 @@ forces::forces() {
   //printf("CT/CQ = %lf/%lf \n",ct,cq);
   //PAUSE();
 
-  //Distance from Cg to rotor
-  rx = (9.0/12.0)/3.28; //meters
-  ry = (9.0/12.0)/3.28; 
-  rz = 0.0;
+  //Distance from Cg to rotor - Changed to values from SUAM - 2/12/25 12:50pm
+  rx = 0.10115; //(9.0/12.0)/3.28; //meters
+  ry = 0.10115; //(9.0/12.0)/3.28; 
+  rz = 0.0508;  //0.0; 
 }
 
 void forces::compute_thrust_and_torque(MATLAB pwm_out) {

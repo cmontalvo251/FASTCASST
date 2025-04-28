@@ -61,6 +61,7 @@ void ConvertXYZ2LLHSPHERICAL(double XYZ[],double LLH[]);
 void ConvertLLH2XYZSPHERICAL(double XYZ[],double LLH[]);
 double ConvertZ2Pressure(double Z);
 double ConvertPressure2Z(double P,double P0);
+int sign(double);
 
 #endif
 

@@ -335,6 +335,13 @@ void sensors::populate(double currentTime,double elapsedTime) {
   sense_matrix.set(8,1,0);
   sense_matrix.set(9,1,0);
 
+  //UVW - Adding this to keep track of v for side slip control in X8 waypoint control
+  #ifdef x8
+  sense_matrix.set(7, 1, satellites.vx);
+  sense_matrix.set(8, 1, satellites.vy);
+  sense_matrix.set(9, 1, satellites.vz);
+  #endif
+
   //PQR
   sense_matrix.set(10,1,orientation.roll_rate);
   sense_matrix.set(11,1,orientation.pitch_rate);

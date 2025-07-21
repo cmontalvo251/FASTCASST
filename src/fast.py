@@ -128,6 +128,7 @@ GPScount = 0 #Counts how many time the GPS has been read per 0.25 sec
 GPStime = 0 #Increments every 0.25 sec
 
 #This runs on repeat until code is killed
+print('Running main loop....')
 while (True):
     RunTime = time.time() - StartTime
     

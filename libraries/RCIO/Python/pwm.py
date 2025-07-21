@@ -1,4 +1,5 @@
 import os.path
+import util
 
 class CHANNELS():
     def __init__(self,num_outputs):
@@ -22,6 +23,7 @@ class PWM():
         self.channel_path = self.SYSFS_PWM_PATH_BASE + "pwm{}/".format(self.channel)
         self.is_initialized = False
         self.is_enabled = False
+        self.SIL = util.isSIL()
 
     def __enter__(self):
         self.initialize()
@@ -40,17 +42,21 @@ class PWM():
     def initialize(self):
         if not os.path.exists(self.SYSFS_PWM_PATH_BASE):
             raise OSError("rcio_pwm module wasn't loaded")
-
-        if not os.path.exists(self.channel_path):
-            with open(self.SYSFS_PWM_EXPORT_PATH, "a") as pwm_export:
-                pwm_export.write(str(self.channel))
-
+        if self.SIL:
+            print('Emulating PWM signal. Initializing pin.....',self.channel)
+        else:
+            if not os.path.exists(self.channel_path):
+                with open(self.SYSFS_PWM_EXPORT_PATH, "a") as pwm_export:
+                    pwm_export.write(str(self.channel))
         self.is_initialized = True
 
     def enable(self):
-        with open(self.channel_path + "enable", "w") as pwm_enable:
-            pwm_enable.write("1")
-            self.is_enabled = True
+        if self.SIL:
+            print('Emulating PWM signal. Enabling pin.....',self.channel)
+        else:
+            with open(self.channel_path + "enable", "w") as pwm_enable:
+                pwm_enable.write("1")
+        self.is_enabled = True
 
     def disable(self):
         with open(self.channel_path + "enable", "w") as pwm_enable:
@@ -62,8 +68,11 @@ class PWM():
             raise RuntimeError("PWM not initialized. Call initialize first")
 
         period_ns = int(1e9/freq)
-        with open(self.channel_path + "period",  "w") as pwm_period:
-            pwm_period.write(str(period_ns))
+        if self.SIL:
+            print('Emulating PWM signal. Setting frequency for pin....',freq,self.channel)
+        else:
+            with open(self.channel_path + "period",  "w") as pwm_period:
+                pwm_period.write(str(period_ns))
 
     def set_duty_cycle(self, period):
         if not self.is_initialized:

@@ -1,9 +1,21 @@
 import os.path
 
+class CHANNELS():
+    def __init__(self,num_outputs):
+        channels = []
+        for i in range(0,num_outputs):
+            channels.append(PWM(i))
+            channels[i].initialize()
+            channels[i].set_period(50)
+            channels[i].enable()
+
 class PWM():
     SYSFS_PWM_PATH_BASE = "/sys/class/pwm/pwmchip0/"
     SYSFS_PWM_EXPORT_PATH = "/sys/class/pwm/pwmchip0/export"
     SYSFS_PWM_UNEXPORT_PATH = "/sys/class/pwm/pwmchip0/unexport"
+    SERVO_MIN = 0.995 #ms
+    SERVO_MID = 1.504 #ms
+    SERVO_MAX = 2.010 #ms
 
     def __init__(self, channel):
         self.channel = channel
@@ -60,3 +72,4 @@ class PWM():
         period_ns = int(period*1e6)
         with open(self.channel_path + "duty_cycle", "w") as pwm_duty:
             pwm_duty.write(str(period_ns))
+        

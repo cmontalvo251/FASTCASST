@@ -39,7 +39,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-i", help = "Sensor selection: -i [sensor name]. Sensors names: mpu is MPU9250, lsm is LSM9DS1")
 
 if len(sys.argv) == 1:
-    print "Enter parameter"
+    print("Enter parameter")
     parser.print_help()
     sys.exit(1)
 elif len(sys.argv) == 2:
@@ -48,19 +48,19 @@ elif len(sys.argv) == 2:
 args = parser.parse_args()
 
 if args.i == 'mpu':
-    print "Selected: MPU9250"
+    print ("Selected: MPU9250")
     imu = navio.mpu9250.MPU9250()
 elif args.i == 'lsm':
-    print "Selected: LSM9DS1"
+    print ("Selected: LSM9DS1")
     imu = navio.lsm9ds1.LSM9DS1()
 else:
-    print "Wrong sensor name. Select: mpu or lsm"
+    print ("Wrong sensor name. Select: mpu or lsm")
     sys.exit(1)
 
 
 
 if imu.testConnection():
-    print "Connection established: True"
+    print ("Connection established: True")
 else:
     sys.exit("Connection established: False")
 
@@ -84,8 +84,8 @@ while True:
 
 	m9a, m9g, m9m = imu.getMotion9()
 
-	print "Acc:", "{:+7.3f}".format(m9a[0]), "{:+7.3f}".format(m9a[1]), "{:+7.3f}".format(m9a[2]),
-	print " Gyr:", "{:+8.3f}".format(m9g[0]), "{:+8.3f}".format(m9g[1]), "{:+8.3f}".format(m9g[2]),
-	print " Mag:", "{:+7.3f}".format(m9m[0]), "{:+7.3f}".format(m9m[1]), "{:+7.3f}".format(m9m[2])
+	print ("Acc:", "{:+7.3f}".format(m9a[0]), "{:+7.3f}".format(m9a[1]), "{:+7.3f}".format(m9a[2]))
+	print (" Gyr:", "{:+8.3f}".format(m9g[0]), "{:+8.3f}".format(m9g[1]), "{:+8.3f}".format(m9g[2]))
+	print (" Mag:", "{:+7.3f}".format(m9m[0]), "{:+7.3f}".format(m9m[1]), "{:+7.3f}".format(m9m[2]))
 
 	time.sleep(0.5)

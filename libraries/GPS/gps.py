@@ -25,6 +25,8 @@ class GPS():
         self.latO = 33.16
         self.lonO = -88.1
     def initialize(self):
+        self.GPSTime = 0.0
+        self.GPSNEXT = 1.0
         self.ubl = UBLX.UBlox("spi:0.0", baudrate=5000000, timeout=2)
 
         self.ubl.configure_poll_port()
@@ -83,6 +85,12 @@ class GPS():
         self.longitude = self.getfloat(lonstr)/10000000.0
         self.latitude = self.getfloat(latstr)/10000000.0  ##I'm dividing by random numbers until shit looks right
         self.altitude = self.getfloat(altstr)/1000.0
+
+    def poll(self,RunTime):
+        if (RunTime - self.GPSTime) > self.GPSNEXT:
+            GPSTime = RunTime
+            self.update()
+        
         
     def update(self):
         msg = self.ubl.receive_message()

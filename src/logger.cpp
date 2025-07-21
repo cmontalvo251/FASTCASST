@@ -21,7 +21,7 @@ Datalogger logger;
 double lastLOGtime = 0;
 
 int main(int argc,char* argv[]) {
-  printf("FASTKit Logger \n");
+  printf("FASTCASST Logger \n");
 
   //Initialize Logger
   logger.init("data/",sense.getNumVars());

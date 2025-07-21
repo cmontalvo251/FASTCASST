@@ -31,6 +31,7 @@ import time
 import struct
 import array
 import numpy as np
+import util
 
 class MPU9250:
 
@@ -342,14 +343,17 @@ class MPU9250:
         [0x81, self.__MPUREG_I2C_SLV0_CTRL]  #Enable I2C and set 1 byte
         ]
 
-        for i in range(0, MPU_InitRegNum):
-            self.WriteReg(MPU_Init_Data[i][1], MPU_Init_Data[i][0])
-            time.sleep(0.01) # I2C must slow down the write speed, otherwise it won't work
+        self.SIL = util.isSIL()
+        if self.SIL:
+            print('Running in SIL mode....emulating IMU')
+        else:
+            for i in range(0, MPU_InitRegNum):
+                self.WriteReg(MPU_Init_Data[i][1], MPU_Init_Data[i][0])
+                time.sleep(0.01) # I2C must slow down the write speed, otherwise it won't work
 
-        self.set_acc_scale(self.__BITS_FS_16G)
-        self.set_gyro_scale(self.__BITS_FS_2000DPS)
-
-        self.calib_mag()
+            self.set_acc_scale(self.__BITS_FS_16G)
+            self.set_gyro_scale(self.__BITS_FS_2000DPS)
+            self.calib_mag()
 
 # -----------------------------------------------------------------------------------------------
 #                                 ACCELEROMETER SCALE

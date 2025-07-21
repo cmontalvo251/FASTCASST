@@ -44,7 +44,12 @@ util.check_apm()
 
 #Setup datalogger
 logger = datalogger.Datalogger()
-print(sys.argv)
+#Get Directoy
+print('Input arguments = ',sys.argv)
+if len(sys.argv) > 1:
+    print('Using Directory = ',sys.argv[1])
+else:
+    sys.exit('No input argument given for datalogging directory')
 logger.findfile(sys.argv[1])
 logger.open()
 #create an array for data
@@ -59,7 +64,6 @@ gps_llh.initialize()
 print('Initializing IMU...')
 imu = mpu9250.MPU9250()
 imu.initialize()
-imu.calib_mag()
 
 #Setup RCIO
 print('Initializing RCInput...')

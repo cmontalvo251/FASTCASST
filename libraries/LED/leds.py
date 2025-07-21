@@ -1,20 +1,30 @@
 ON = 0
 OFF = 1
+import util
 
 class Pin():
-    def __init__(self, folder_name):
+    def __init__(self, folder_name,color):
         self.pin = folder_name
+        self.color = color
+        self.SIL = util.isSIL()
     
     def write(self, value):
-        with open("/sys/class/leds/%s/brightness" % self.pin, "w") as value_file:
-            value_file.write(str(value))
+        if self.SIL:
+            if value == 1:
+                mode = 'OFF'
+            else:
+                mode = 'ON'
+            print('Running in SIL mode so printing color and mode....',self.color,mode)
+        else:
+            with open("/sys/class/leds/%s/brightness" % self.pin, "w") as value_file:
+                value_file.write(str(value))
 
 class Led():
 
     def __init__(self):
-        self.ledR = Pin("rgb_led0")
-        self.ledB = Pin("rgb_led1")
-        self.ledG = Pin("rgb_led2")
+        self.ledR = Pin("rgb_led0","red")
+        self.ledB = Pin("rgb_led1","blue")
+        self.ledG = Pin("rgb_led2","green")
 
         self.ledR.write(OFF) 
         self.ledG.write(OFF) 

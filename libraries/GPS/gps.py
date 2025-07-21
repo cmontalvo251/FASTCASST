@@ -1,6 +1,6 @@
 import sys
-sys.path.append('/home/pi/FASTCASST/libraries/Ublox')
-sys.path.append('/home/pi/FASTCASST/libraries/Util')
+sys.path.append('../libraries/Ublox')
+sys.path.append('../libraries/Util')
 import util
 import ublox as UBLX
 import numpy as np

@@ -1,9 +1,25 @@
+import sys
+import util
+import numpy as np
+
 class Datalogger():
-	def __init__(self):
+	def __init__(self,NUMOUTPUTS):
 		self.number = 0
+		self.SIL = util.isSIL()
+		print('Input arguments = ',sys.argv)
+		if len(sys.argv) > 1:
+			print('Using Directory = ',sys.argv[1])
+		else:
+		    sys.exit('No input argument given for datalogging directory')
+		self.findfile(sys.argv[1])
+		self.open()
+		#create an array for data
+		self.outdata = np.zeros(NUMOUTPUTS)
 
 	def findfile(self,directory,extension='.txt'):
 		found = 0
+		if self.SIL:
+			print('rm '+directory+'*'+extension)
 		while not found:
 			self.filename = directory + str(self.number) + extension
 			print("Attempting to check for file: " + self.filename);
@@ -26,8 +42,9 @@ class Datalogger():
 		else:
 			print("File " + self.filename + " opened successfully")
 
-	def println(self,out):
+	def println(self):
 		ctr = 0
+		out = self.outdata
 		for o in out:
 			s = str(o)
 			if ctr != len(out)-1:

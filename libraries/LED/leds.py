@@ -4,11 +4,9 @@ import util
 
 class Pin():
     def __init__(self, folder_name,color):
-        print('Initializing LEDs....')
         self.pin = folder_name
         self.color = color
         self.SIL = util.isSIL()
-        print('LEDs Initialized')
     
     def write(self, value):
         if self.SIL:
@@ -25,6 +23,7 @@ class Pin():
 class Led():
 
     def __init__(self):
+        print('Initializing LEDs....')
         self.ledR = Pin("rgb_led0","red")
         self.ledB = Pin("rgb_led1","blue")
         self.ledG = Pin("rgb_led2","green")
@@ -32,6 +31,9 @@ class Led():
         self.ledR.write(OFF) 
         self.ledG.write(OFF) 
         self.ledB.write(OFF) 
+        #initialize to yellow
+        self.setColor('Yellow')
+        print('LEDs Initialized')
     
     def setColor(self, color):
         self.ledR.write(self.gamma[color][0]) 

@@ -10,9 +10,14 @@
 #
 ################################################
 
+#####################PARAMETERS##########################
+NUMOUTPUTS = 13  #Number of data outputs
+NUMRX = 9  #Receiver signals
+NUMPWM = 2 #Number of PWM signals
 
 #Add in all needed libraries and modules
 import sys, time
+import numpy as np
 
 sys.path.append('../libraries/Util')
 import util
@@ -33,43 +38,25 @@ sys.path.append('../libraries/MS5611/')
 import ms5611
 
 sys.path.append('../libraries/RCIO/Python')
-import rcinput
-import pwm
-
-import numpy as np
+import rcio
 
 #Make sure Ardupilot is off
 util.check_apm()
 
 #Setup datalogger
-logger = datalogger.Datalogger()
-#Get Directoy
-print('Input arguments = ',sys.argv)
-if len(sys.argv) > 1:
-    print('Using Directory = ',sys.argv[1])
-else:
-    sys.exit('No input argument given for datalogging directory')
-logger.findfile(sys.argv[1])
-logger.open()
-#create an array for data
-outdata = np.zeros(13)
+logger = datalogger.Datalogger(NUMOUTPUTS)
 
 #Setup GPS
 gps_llh = gps.GPS()
-gps_llh.initialize()
 
 #Setup IMU
 imu = mpu9250.MPU9250()
-imu.initialize()
 
-#Setup RCIO
-rcin = rcinput.RCInput()
-i = 0
-num_channels = 9
+#Setup RCIO (receiver signals and output pwmsignals)
+rc = rcio.RCIO(NUMRX,NUMPWM)
 
 #Setup LED
 led = leds.Led()
-led.setColor('Yellow')
 
 #Setup the Barometer
 #print('Setting up the barometer....')
@@ -85,23 +72,6 @@ led.setColor('Yellow')
 #time.sleep(BARONEXT)
 #BAROMODE = 0
 
-#Setup Servos
-SERVO_MIN = 0.995 #ms
-SERVO_MID = 1.504 #ms
-SERVO_MAX = 2.010 #ms
-PWM_OUTPUT = [0,1] #Servo Rail Spots
-
-#Throttle - PWM Channel 1
-pwm1 = pwm.PWM(PWM_OUTPUT[0])
-pwm1.initialize()
-pwm1.set_period(50)
-pwm1.enable()
-#Steering - PWM Channel 2
-pwm2 = pwm.PWM(PWM_OUTPUT[1])
-pwm2.initialize()
-pwm2.set_period(50)
-pwm2.enable()
-
 #Waypoints
 wp = np.array([[-88.1755, 30.6906], [-88.1750, 30.6902], [-88.1745, 30.6906]])
 wp_index = 0 #Keeps track of which waypoint is being used
@@ -115,27 +85,16 @@ time.sleep(1)
 #Create a time for elapsed time
 print('Setting up Time')
 StartTime = time.time()
-BAROTime = time.time()-StartTime
 
 #This runs on repeat until code is killed
 print('Running main loop....')
 while (True):
+
+    #Get Time
     RunTime = time.time() - StartTime
     
     #Read in receiver commands
-    rcsignals = []
-    for i in range(num_channels):
-        value = rcin.read(i)
-        rcsignals.append(value)
-
-    #Turn receiver commands to floats
-    rollrc = float(rcsignals[0])/1000.
-    pitchrc = float(rcsignals[1])/1000.
-    throttlerc = float(rcsignals[2])/1000.
-    yawrc = float(rcsignals[3])/1000.
-    armswitch = float(rcsignals[4])/1000.
-    autopilot = float(rcsignals[6])/1000.
-    #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
+    rc.rcin.readALL()
 
     #Get acceleration, gyroscope, magnetometer & temperature data
     a,g,m,rpy,temp = imu.getALL()
@@ -176,9 +135,9 @@ while (True):
     d = np.sqrt(dx**2 + dy**2) #Distance from car to waypoint
 
     #Compute the controller values
-    if (autopilot < 2):
-        throttle_command = throttlerc
-        roll_command = rollrc
+    if (rc.rcin.autopilot < 2):
+        throttle_command = rc.rcin.throttlerc
+        roll_command = rc.rcin.rollrc
     else: #Remember to test this part of code!
         throttle_command = 0
         if wp_index >= wp_index_max:
@@ -191,30 +150,30 @@ while (True):
             roll_command = SERVO_MID #... keep the wheels straight
 
     ##Saturation blocks
-    if(throttle_command < SERVO_MIN):
-        throttle_command = SERVO_MIN
-    if(throttle_command > SERVO_MAX):
-        throttle_command = SERVO_MAX
-    if(roll_command < SERVO_MIN):
-        roll_command = SERVO_MIN
-    if(roll_command > SERVO_MAX):
-        roll_command = SERVO_MAX
+    if(throttle_command < rc.SERVO_MIN):
+        throttle_command = rc.SERVO_MIN
+    if(throttle_command > rc.SERVO_MAX):
+        throttle_command = rc.SERVO_MAX
+    if(roll_command < rc.SERVO_MIN):
+        roll_command = rc.SERVO_MIN
+    if(roll_command > rc.SERVO_MAX):
+        roll_command = rc.SERVO_MAX
 
     #Set arm switch up for safety reasons
-    if(armswitch < 1.495):
+    if(rc.rcin.armswitch < 1.495):
         led.setColor('Red')
-        pwm1.set_duty_cycle(SERVO_MIN)
-        pwm2.set_duty_cycle(SERVO_MID)
+        rc.pwms[0].set_duty_cycle(rc.SERVO_MIN)
+        rc.pwms[1].set_duty_cycle(rc.SERVO_MID)
         #print('Disarmed for safety')
-    elif(1.495 < armswitch < 1.995):
+    elif(1.495 < rcin.armswitch < 1.995):
         led.setColor('Green')
-        pwm1.set_duty_cycle(throttle_command)
-        pwm2.set_duty_cycle(roll_command)
+        rc.pwms[0].set_duty_cycle(throttle_command)
+        rc.pwms[1].set_duty_cycle(roll_command)
         #print('Open Loop Control')
-    elif(armswitch > 1.995):
+    elif(rcin.armswitch > 1.995):
         led.setColor('Blue')
-        pwm1.set_duty_cycle(SERVO_MIN)
-        pwm2.set_duty_cycle(SERVO_MID)
+        rc.pwms[0].set_duty_cycle(rc.SERVO_MIN)
+        rc.pwms[1].set_duty_cycle(rc.SERVO_MID)
         #print('Autonomous Control')
     #print(armswitch,throttlerc,rollrc)
 
@@ -224,19 +183,20 @@ while (True):
     #print(np.round(RunTime, 2), np.round(m[0], 2), np.round(m[1], 2), np.round(m[2], 2))
 
     #Log data
-    outdata[0] = np.round(RunTime,5)
-    outdata[1] = a[0]
-    outdata[2] = a[1]
-    outdata[3] = a[2]
-    outdata[4] = g[0]
-    outdata[5] = g[1]
-    outdata[6] = g[2]
-    outdata[7] = m[0]
-    outdata[8] = m[1]
-    outdata[9] = m[2]
-    outdata[10] = rpy[0]
-    outdata[11] = rpy[1]
-    outdata[12] = rpy[2]
-    #outdata[]
-    logger.println(outdata)
+    logger.outdata[0] = np.round(RunTime,5)
+    logger.outdata[1] = a[0]
+    logger.outdata[2] = a[1]
+    logger.outdata[3] = a[2]
+    logger.outdata[4] = g[0]
+    logger.outdata[5] = g[1]
+    logger.outdata[6] = g[2]
+    logger.outdata[7] = m[0]
+    logger.outdata[8] = m[1]
+    logger.outdata[9] = m[2]
+    logger.outdata[10] = rpy[0]
+    logger.outdata[11] = rpy[1]
+    logger.outdata[12] = rpy[2]
+    logger.println()
+
+    #sleep so we don't spontaneously explode
     time.sleep(0.01)

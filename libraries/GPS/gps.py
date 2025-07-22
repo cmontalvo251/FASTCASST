@@ -24,6 +24,7 @@ class GPS():
         self.GPSVAL = 60.0*self.NM2FT*self.FT2M
         self.latO = 33.16
         self.lonO = -88.1
+        self.initialize()
     def initialize(self):
         self.GPSNEXT = 0.25
         self.GPSTime = -self.GPSNEXT

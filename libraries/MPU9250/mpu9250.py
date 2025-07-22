@@ -246,6 +246,7 @@ class MPU9250:
         self.gyroscope_data = [0.0, 0.0, 0.0]
         self.accelerometer_data = [0.0, 0.0, 0.0]
         self.magnetometer_data = [0.0, 0.0, 0.0]
+        self.initialize()
 
     def bus_open(self):
         self.bus.open(self.spi_bus_number, self.spi_dev_number)

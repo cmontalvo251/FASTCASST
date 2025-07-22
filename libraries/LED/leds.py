@@ -4,9 +4,11 @@ import util
 
 class Pin():
     def __init__(self, folder_name,color):
+        print('Initializing LEDs....')
         self.pin = folder_name
         self.color = color
         self.SIL = util.isSIL()
+        print('LEDs Initialized')
     
     def write(self, value):
         if self.SIL:
@@ -14,10 +16,11 @@ class Pin():
                 mode = 'OFF'
             else:
                 mode = 'ON'
-            print('Running in SIL mode so printing color and mode....',self.color,mode)
+            #print('Running in SIL mode so printing color and mode....',self.color,mode)
         else:
             with open("/sys/class/leds/%s/brightness" % self.pin, "w") as value_file:
                 value_file.write(str(value))
+            #print('Changing LED color = ',self.color,mode)
 
 class Led():
 

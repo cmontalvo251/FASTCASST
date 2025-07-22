@@ -1,7 +1,7 @@
 PYTHON SRC:
 
   ✔ Merge KATE, and ARAMIS @done (25-07-21 16:09)
-  ☐ Make car.py run in SIL mode so you can run it on your computer
+  ✔ Make car.py run in SIL mode so you can run it on your computer @done (25-07-22 15:29)
   ☐ Edit car.py, plane.py and boat.py to be a singular file with different settings at the top of the file (if it gets complex add extra .py files)
   ☐ Test car.py, plane.py and boat.py on HW
   ☐ Update the FASTCASST notes and README based on car.py and plane.py progress

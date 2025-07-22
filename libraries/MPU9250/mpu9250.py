@@ -313,6 +313,7 @@ class MPU9250:
 # -----------------------------------------------------------------------------------------------
 
     def initialize(self, sample_rate_div = 1, low_pass_filter = 0x01):
+        print('Initializing IMU....')
         MPU_InitRegNum = 17
         MPU_Init_Data = [[0, 0]] * MPU_InitRegNum
 
@@ -347,6 +348,7 @@ class MPU9250:
         if self.SIL:
             print('Running in SIL mode....emulating IMU')
         else:
+
             for i in range(0, MPU_InitRegNum):
                 self.WriteReg(MPU_Init_Data[i][1], MPU_Init_Data[i][0])
                 time.sleep(0.01) # I2C must slow down the write speed, otherwise it won't work
@@ -354,6 +356,7 @@ class MPU9250:
             self.set_acc_scale(self.__BITS_FS_16G)
             self.set_gyro_scale(self.__BITS_FS_2000DPS)
             self.calib_mag()
+        print('IMU initialized')
 
 # -----------------------------------------------------------------------------------------------
 #                                 ACCELEROMETER SCALE
@@ -566,8 +569,14 @@ class MPU9250:
 # -----------------------------------------------------------------------------------------------
 
     def getALL(self):
-        a,g,m = self.getMotion9()
-        temp = self.temperature
+        if self.SIL:
+            a = [0,0,9.81]
+            g = [0,0,0]
+            m = [150,150,150]
+            temp = 25.
+        else:
+            a,g,m = self.getMotion9()
+            temp = self.temperature
         rpy = self.imufusion(a,g,m)
         return a,g,m,rpy,temp
     def imufusion(self,a,g,m):

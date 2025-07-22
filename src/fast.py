@@ -39,7 +39,6 @@ import pwm
 import numpy as np
 
 #Make sure Ardupilot is off
-print('Checking to make sure APM is off')
 util.check_apm()
 
 #Setup datalogger
@@ -56,26 +55,21 @@ logger.open()
 outdata = np.zeros(13)
 
 #Setup GPS
-print('Initializing GPS...')
 gps_llh = gps.GPS()
 gps_llh.initialize()
 
 #Setup IMU
-print('Initializing IMU...')
 imu = mpu9250.MPU9250()
 imu.initialize()
 
 #Setup RCIO
-print('Initializing RCInput...')
 rcin = rcinput.RCInput()
 i = 0
 num_channels = 9
 
 #Setup LED
-print('Setting up LEDs.....')
 led = leds.Led()
 led.setColor('Yellow')
-print('LED is yellow now')
 
 #Setup the Barometer
 #print('Setting up the barometer....')
@@ -96,10 +90,8 @@ SERVO_MIN = 0.995 #ms
 SERVO_MID = 1.504 #ms
 SERVO_MAX = 2.010 #ms
 PWM_OUTPUT = [0,1] #Servo Rail Spots
-print('PWM Channels: ',PWM_OUTPUT)
 
 #Throttle - PWM Channel 1
-print('Initializing PMW channels')
 pwm1 = pwm.PWM(PWM_OUTPUT[0])
 pwm1.initialize()
 pwm1.set_period(50)
@@ -124,8 +116,6 @@ time.sleep(1)
 print('Setting up Time')
 StartTime = time.time()
 BAROTime = time.time()-StartTime
-GPScount = 0 #Counts how many time the GPS has been read per 0.25 sec
-GPStime = 0 #Increments every 0.25 sec
 
 #This runs on repeat until code is killed
 print('Running main loop....')
@@ -133,28 +123,25 @@ while (True):
     RunTime = time.time() - StartTime
     
     #Read in receiver commands
-    period = []
+    rcsignals = []
     for i in range(num_channels):
         value = rcin.read(i)
-        period.append(value)
-    #print period
+        rcsignals.append(value)
 
     #Turn receiver commands to floats
-    rollrc = float(period[0])/1000.
-    pitchrc = float(period[1])/1000.
-    throttlerc = float(period[2])/1000.
-    yawrc = float(period[3])/1000.
-    armswitch = float(period[4])/1000.
-    autopilot = float(period[6])/1000.
+    rollrc = float(rcsignals[0])/1000.
+    pitchrc = float(rcsignals[1])/1000.
+    throttlerc = float(rcsignals[2])/1000.
+    yawrc = float(rcsignals[3])/1000.
+    armswitch = float(rcsignals[4])/1000.
+    autopilot = float(rcsignals[6])/1000.
     #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
 
-    #Get GPS update every 0.25 s
-    if GPStime <= RunTime:
-        GPScount = 0
-        GPStime += 0.25
-    if(RunTime > 1.0) & (GPScount == 0):
-        gps_llh.update()
-        GPScount = 1
+    #Get acceleration, gyroscope, magnetometer & temperature data
+    a,g,m,rpy,temp = imu.getALL()
+
+    #Get GPS update if it's ready
+    gps_llh.poll(RunTime)
 
     #Barometer not needed
     #if BAROMODE == 2:
@@ -232,10 +219,9 @@ while (True):
     #print(armswitch,throttlerc,rollrc)
 
     #Print to Home
-    #print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude, d, phi, throttle_command,roll_command)
-    #Get acceleration, gyroscope, magnetometer & temperature data
-    a,g,m,rpy,temp = imu.getALL()
-    print(np.round(RunTime, 2), np.round(m[0], 2), np.round(m[1], 2), np.round(m[2], 2))
+    print(np.round(RunTime,2))
+    #print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude, d, rpy[0], throttle_command,roll_command)
+    #print(np.round(RunTime, 2), np.round(m[0], 2), np.round(m[1], 2), np.round(m[2], 2))
 
     #Log data
     outdata[0] = np.round(RunTime,5)

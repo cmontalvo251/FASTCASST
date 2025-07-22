@@ -48,6 +48,7 @@ class PWM():
             if not os.path.exists(self.channel_path):
                 with open(self.SYSFS_PWM_EXPORT_PATH, "a") as pwm_export:
                     pwm_export.write(str(self.channel))
+            print('Initializing pin.....',self.channel)
         self.is_initialized = True
 
     def enable(self):
@@ -56,6 +57,7 @@ class PWM():
         else:
             with open(self.channel_path + "enable", "w") as pwm_enable:
                 pwm_enable.write("1")
+            print('Enabling pin.....',self.channel)
         self.is_enabled = True
 
     def disable(self):
@@ -73,12 +75,14 @@ class PWM():
         else:
             with open(self.channel_path + "period",  "w") as pwm_period:
                 pwm_period.write(str(period_ns))
+            print('Setting frequency for pin....',freq,self.channel)
 
     def set_duty_cycle(self, period):
         if not self.is_initialized:
             raise RuntimeError("PWM not initialized. Call initialize first")
 
         period_ns = int(period*1e6)
-        with open(self.channel_path + "duty_cycle", "w") as pwm_duty:
-            pwm_duty.write(str(period_ns))
+        if not self.SIL:
+            with open(self.channel_path + "duty_cycle", "w") as pwm_duty:
+                pwm_duty.write(str(period_ns))
         

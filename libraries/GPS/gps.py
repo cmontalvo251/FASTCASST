@@ -25,12 +25,13 @@ class GPS():
         self.latO = 33.16
         self.lonO = -88.1
     def initialize(self):
-        self.GPSTime = 0.0
-        self.GPSNEXT = 1.0
+        self.GPSNEXT = 0.25
+        self.GPSTime = -self.GPSNEXT
         self.SIL = util.isSIL()
         if self.SIL:
             print('Running in SIL mode....emulating GPS')
         else:
+            print('Initializing GPS....')
             self.ubl = UBLX.UBlox("spi:0.0", baudrate=5000000, timeout=2)
             self.ubl.configure_poll_port()
             self.ubl.configure_poll(UBLX.CLASS_CFG, UBLX.MSG_CFG_USB)
@@ -64,6 +65,7 @@ class GPS():
             self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_TIMEGPS, 5)
             self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_CLOCK, 5)
             self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_DGPS, 5)
+            print('GPS initialized')
 
     def getfloat(self,instr):
         #print(instr)
@@ -96,22 +98,23 @@ class GPS():
         
         
     def update(self):
-        msg = self.ubl.receive_message()
-        if msg is None:
-            if opts.reopen:
-                self.ubl.close()
-                self.ubl = UBLX.UBlox("spi:0.0", baudrate=5000000, timeout=2)
-            return
-        #print(msg.name())
-        if msg.name() == "NAV_POSLLH":
-            outstr = str(msg).split(",")[1:]
-            outstr = "".join(outstr)
-            self.parse(outstr)
-            #print(outstr)
-#        if msg.name() == "NAV_STATUS":
-#            outstr = str(msg).split(",")[1:2]
-#            outstr = "".join(outstr)
-#            print(outstr)
+        if not self.SIL:
+            msg = self.ubl.receive_message()
+            if msg is None:
+                if opts.reopen:
+                    self.ubl.close()
+                    self.ubl = UBLX.UBlox("spi:0.0", baudrate=5000000, timeout=2)
+                return
+            #print(msg.name())
+            if msg.name() == "NAV_POSLLH":
+                outstr = str(msg).split(",")[1:]
+                outstr = "".join(outstr)
+                self.parse(outstr)
+                #print(outstr)
+    #        if msg.name() == "NAV_STATUS":
+    #            outstr = str(msg).split(",")[1:2]
+    #            outstr = "".join(outstr)
+    #            print(outstr)
         return
 
     def setOrigin(self,latO,lonO):

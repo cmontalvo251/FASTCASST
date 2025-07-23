@@ -11,12 +11,14 @@
 ################################################
 
 #####################PARAMETERS#################
-NUMOUTPUTS = 20  #Number of data outputs
-NUMPWM = 2 #Number of PWM signals
+NUMOUTPUTS = 22  #Number of data outputs (20 for car, 22 for airplane)
+#NUMPWM = 2 #Number of PWM signals for car
+NUMPWM = 4 #number of PWM signals for airplane
 
 ##Pick the vehicle you want to use
 import sys
-sys.path.append('../libraries/V_car')
+#sys.path.append('../libraries/V_car')
+sys.path.append('../libraries/V_airplane')
 import controller
 vehicle = controller.CONTROLLER()
 
@@ -119,6 +121,8 @@ while (True):
     logger.outdata[17] = g[2]
     logger.outdata[18] = controls[0]
     logger.outdata[19] = controls[1]
+    logger.outdata[20] = controls[2]
+    logger.outdata[21] = controls[3]
     logger.println()
 
     #sleep so we don't spontaneously explode

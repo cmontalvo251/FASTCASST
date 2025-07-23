@@ -5,8 +5,8 @@ class RCIO():
 	SERVO_MIN = 0.995 #ms
 	SERVO_MID = 1.504 #ms
 	SERVO_MAX = 2.010 #ms
-	def __init__(self,NUMRX,NUMPWM):
-		self.rcin = RCInput(self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX,NUMRX)
+	def __init__(self,NUMPWM):
+		self.rcin = RCInput(self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX,6)
 		self.rcout = []
 		self.NUMPWM = NUMPWM
 		for i in range(0,NUMPWM):
@@ -18,9 +18,9 @@ class RCIO():
 	def set_defaults(self):
 		for i in range(0,self.NUMPWM):
 			if i == 0:
-				self.rcout[i].set_duty_cycle(SERVO_MIN)
+				self.rcout[i].set_duty_cycle(self.SERVO_MIN)
 			else:
-				self.rcout[i].set_duty_cycle(SERVO_MID)
+				self.rcout[i].set_duty_cycle(self.SERVO_MID)
 
 	def set_commands(self):
 		for i in range(0,self.NUMPWM):
@@ -135,7 +135,7 @@ class RCInput():
         self.throttlerc = self.convert(self.rcsignals[2])
         self.yawrc = self.convert(self.rcsignals[3])
         self.armswitch = self.convert(self.rcsignals[4])
-        self.autopilot = self.convert(self.rcsignals[6])
+        self.autopilot = self.convert(self.rcsignals[5])
         #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
 
     def convert(self,signal):

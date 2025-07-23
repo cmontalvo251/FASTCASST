@@ -246,6 +246,7 @@ class MPU9250:
         self.gyroscope_data = [0.0, 0.0, 0.0]
         self.accelerometer_data = [0.0, 0.0, 0.0]
         self.magnetometer_data = [0.0, 0.0, 0.0]
+        self.rpy = np.zeros(3)
         self.initialize()
 
     def bus_open(self):
@@ -573,13 +574,13 @@ class MPU9250:
         if self.SIL:
             a = [0,0,9.81]
             g = [0,0,0]
-            m = [150,150,150]
+            m = [150,0,0]
             temp = 25.
         else:
             a,g,m = self.getMotion9()
             temp = self.temperature
-        rpy = self.imufusion(a,g,m)
-        return a,g,m,rpy,temp
+        self.imufusion(a,g,m)
+        return a,g,m,self.rpy,temp
     def imufusion(self,a,g,m):
         ay = a[0]
         ax = a[1]
@@ -595,8 +596,9 @@ class MPU9250:
         roll = phi * 180.0/np.pi
         pitch = theta * 180.0/np.pi
         yaw = psi * 180.0/np.pi
-        rpy = [roll,pitch,yaw]
-        return rpy
+        self.rpy[0] = roll
+        self.rpy[1] = pitch
+        self.rpy[2] = yaw
 
     def R123(self,phi,theta,psi):
         #%compute R such that v(inertial) = R v(body)

@@ -226,6 +226,10 @@ class MS5611:
 		return is_pressure_valid and is_temp_valid
 
 	def poll(self,RunTime):
+		if self.SIL:
+			self.PRES = 1013.25
+			self.convertPressure2Altitude()
+			return
 		if self.BAROMODE == 2:
 			#in here we want to make sure we wait 1 second before we set
 			#baromode back to zero

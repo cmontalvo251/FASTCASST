@@ -89,7 +89,7 @@ class GPS():
         #sign. There are a few ways to do this. We could use split again or we could find the = and grab everything
         #after it. I think I'll go with the grab everything after it.
         self.longitude = self.getfloat(lonstr)/10000000.0
-        self.latitude = self.getfloat(latstr)/10000000.0  ##I'm dividing by random numbers until shit looks right
+        self.latitude = self.getfloat(latstr)/10000000.0  ##I'm dividing by random numbers until it looks right
         self.altitude = self.getfloat(altstr)/1000.0
 
     def poll(self,RunTime):
@@ -116,6 +116,11 @@ class GPS():
     #            outstr = str(msg).split(",")[1:2]
     #            outstr = "".join(outstr)
     #            print(outstr)
+        else:
+            self.latitude = 30.69
+            self.longitude = -88.10
+            self.altitude = 0.0
+            self.speed = 0.0
         return
 
     def setOrigin(self,latO,lonO):
@@ -154,7 +159,7 @@ class GPS():
                 self.vx_vec[i] = self.vx_raw_vec[i]
                 self.vy_vec[i] = self.vy_raw_vec[i]
         self.v_raw_vec = np.sqrt(self.vx_raw_vec**2 + self.vy_raw_vec**2)
-        self.v_vec = np.sqrt(self.vx_vec**2 + self.vy_vec**2)
+        self.speed = np.sqrt(self.vx_vec**2 + self.vy_vec**2)
 
     def plot(self,plt):
         if len(self.latitude_vec) > 0:

@@ -11,8 +11,7 @@
 ################################################
 
 #####################PARAMETERS#################
-NUMOUTPUTS = 13  #Number of data outputs
-NUMRX = 9  #Receiver signals
+NUMOUTPUTS = 20  #Number of data outputs
 NUMPWM = 2 #Number of PWM signals
 
 ##Pick the vehicle you want to use
@@ -54,7 +53,7 @@ baro = ms5611.MS5611()
 #Setup RCIO (receiver signals and output pwmsignals)
 sys.path.append('../libraries/RCIO/Python')
 import rcio
-rc = rcio.RCIO(NUMRX,NUMPWM)
+rc = rcio.RCIO(NUMPWM)
 
 #Short break to build suspense
 print('Sleep for 1 second.....')
@@ -67,6 +66,7 @@ StartTime = time.time()
 
 #This runs on repeat until code is killed
 print('Running main loop....')
+import numpy as np
 while (True):
 
     #Get Time
@@ -96,24 +96,29 @@ while (True):
         rc.set_commands(controls)
 
     #Print to Home
-    print(np.round(RunTime,2))
-    #print(np.round(RunTime,2), throttlerc, rollrc, autopilot,gps_llh.longitude,gps_llh.latitude, d, rpy[0], throttle_command,roll_command)
-    #print(np.round(RunTime, 2), np.round(m[0], 2), np.round(m[1], 2), np.round(m[2], 2))
+    print(f"{RunTime:4.2f}",rc.rcin.rcsignals,gps_llh.latitude,gps_llh.longitude,gps_llh.altitude,baro.ALT,rpy,gps_llh.speed,g,controls)
 
     #Log data
     logger.outdata[0] = np.round(RunTime,5)
-    logger.outdata[1] = a[0]
-    logger.outdata[2] = a[1]
-    logger.outdata[3] = a[2]
-    logger.outdata[4] = g[0]
-    logger.outdata[5] = g[1]
-    logger.outdata[6] = g[2]
-    logger.outdata[7] = m[0]
-    logger.outdata[8] = m[1]
-    logger.outdata[9] = m[2]
-    logger.outdata[10] = rpy[0]
-    logger.outdata[11] = rpy[1]
-    logger.outdata[12] = rpy[2]
+    logger.outdata[1] = rc.rcin.rcsignals[0]
+    logger.outdata[2] = rc.rcin.rcsignals[1]
+    logger.outdata[3] = rc.rcin.rcsignals[2]
+    logger.outdata[4] = rc.rcin.rcsignals[3]
+    logger.outdata[5] = rc.rcin.rcsignals[4]
+    logger.outdata[6] = rc.rcin.rcsignals[5]
+    logger.outdata[7] = gps_llh.latitude
+    logger.outdata[8] = gps_llh.longitude
+    logger.outdata[9] = gps_llh.altitude
+    logger.outdata[10] = baro.ALT
+    logger.outdata[11] = rpy[0]
+    logger.outdata[12] = rpy[1]
+    logger.outdata[13] = rpy[2]
+    logger.outdata[14] = gps_llh.speed
+    logger.outdata[15] = g[0]
+    logger.outdata[16] = g[1]
+    logger.outdata[17] = g[2]
+    logger.outdata[18] = controls[0]
+    logger.outdata[19] = controls[1]
     logger.println()
 
     #sleep so we don't spontaneously explode

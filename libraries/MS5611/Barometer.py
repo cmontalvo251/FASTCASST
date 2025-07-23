@@ -18,7 +18,6 @@ import util
 util.check_apm()
 
 baro = ms5611.MS5611()
-baro.initialize()
 
 while(True):
 	baro.refreshPressure()

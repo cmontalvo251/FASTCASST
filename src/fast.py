@@ -10,76 +10,55 @@
 #
 ################################################
 
-#####################PARAMETERS##########################
+#####################PARAMETERS#################
 NUMOUTPUTS = 13  #Number of data outputs
 NUMRX = 9  #Receiver signals
 NUMPWM = 2 #Number of PWM signals
 
-#Add in all needed libraries and modules
-import sys, time
-import numpy as np
-
-sys.path.append('../libraries/Util')
-import util
-
-sys.path.append('../libraries/GPS')
-import gps
-
-sys.path.append('../libraries/MPU9250')
-import mpu9250
-
-sys.path.append('../libraries/Datalogger')
-import datalogger
-
-sys.path.append('../libraries/LED')
-import leds
-
-sys.path.append('../libraries/MS5611/')
-import ms5611
-
-sys.path.append('../libraries/RCIO/Python')
-import rcio
+##Pick the vehicle you want to use
+import sys
+sys.path.append('../libraries/V_car')
+import controller
+vehicle = controller.CONTROLLER()
 
 #Make sure Ardupilot is off
+sys.path.append('../libraries/Util')
+import util
 util.check_apm()
 
-#Setup datalogger
-logger = datalogger.Datalogger(NUMOUTPUTS)
-
 #Setup GPS
+sys.path.append('../libraries/GPS')
+import gps
 gps_llh = gps.GPS()
 
 #Setup IMU
+sys.path.append('../libraries/MPU9250')
+import mpu9250
 imu = mpu9250.MPU9250()
 
-#Setup RCIO (receiver signals and output pwmsignals)
-rc = rcio.RCIO(NUMRX,NUMPWM)
+#Setup datalogger
+sys.path.append('../libraries/Datalogger')
+import datalogger
+logger = datalogger.Datalogger(NUMOUTPUTS)
 
 #Setup LED
+sys.path.append('../libraries/LED')
+import leds
 led = leds.Led()
 
 #Setup the Barometer
-#print('Setting up the barometer....')
-#BARONEXT = 1.0
-#BAROWAIT = 0.01
-#baro = ms5611.MS5611()
-#baro.initialize()
-#baro.refreshPressure()
-#time.sleep(BAROWAIT)
-#baro.readPressure()
-#baro.calculatePressureAndTemperature()
-#pressure = baro.PRES
-#time.sleep(BARONEXT)
-#BAROMODE = 0
+sys.path.append('../libraries/MS5611/')
+import ms5611
+baro = ms5611.MS5611()
 
-#Waypoints
-wp = np.array([[-88.1755, 30.6906], [-88.1750, 30.6902], [-88.1745, 30.6906]])
-wp_index = 0 #Keeps track of which waypoint is being used
-wp_index_max = len(wp)
-R = 6371*10**3 #Radius of the Earth in m
+#Setup RCIO (receiver signals and output pwmsignals)
+sys.path.append('../libraries/RCIO/Python')
+import rcio
+rc = rcio.RCIO(NUMRX,NUMPWM)
 
 #Short break to build suspense
-print('Sleep for 1 second')
+print('Sleep for 1 second.....')
+import time
 time.sleep(1)
 
 #Create a time for elapsed time
@@ -102,80 +81,19 @@ while (True):
     #Get GPS update if it's ready
     gps_llh.poll(RunTime)
 
-    #Barometer not needed
-    #if BAROMODE == 2:
-        ##first we grab prassure
-        #pressure = baro.PRES
-        ##in here we want to make sure we wait 1 second before we set
-        ##baromode back to zero
-        #if (RunTime - BAROTime) > BARONEXT:
-            #BAROTime = RunTime
-            #BAROMODE = 0
-    #if BAROMODE == 1:
-        ##If baromode is 1 we read and calculate but only after 0.01 seconds has passed
-        #if (RunTime - BAROTime) > BAROWAIT:
-            #baro.readPressure()
-            #baro.calculatePressureAndTemperature()
-            #BAROTime = RunTime
-            ##and set the baromode to 2
-            #BAROMODE = 2
-    #if BAROMODE == 0:
-        ##initially the mode is zero
-        ##so we refresh the register
-        #baro.refreshPressure()
-        #BAROTime = RunTime
-        ##then we set the mode to 1
-        #BAROMODE = 1
+    #Get pressure for altitude
+    baro.poll(RunTime)
 
-    #Find the distance and angle from the car to the next waypoint
-    d_long = gps_llh.longitude - wp[wp_index, 0]
-    d_lat = gps_llh.latitude - wp[wp_index, 1]
-    dx = d_long * np.pi/180 * R
-    dy = d_lat * np.pi/180 * R
-    d = np.sqrt(dx**2 + dy**2) #Distance from car to waypoint
+    #Run your control loop
+    controls = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy,g,baro)
 
-    #Compute the controller values
-    if (rc.rcin.autopilot < 2):
-        throttle_command = rc.rcin.throttlerc
-        roll_command = rc.rcin.rollrc
-    else: #Remember to test this part of code!
-        throttle_command = 0
-        if wp_index >= wp_index_max:
-            break
-        if (d<=20): #If the distance is less than or equal to 20 m...
-            pwm2.set_duty_cycle(SERVO_MAX) #Turns the front wheels left
-            time.sleep(1) #Stops the car to signal it's reached its waypoint
-            wp_index += 1
-        else: #If the distance is greater than 20 m...
-            roll_command = SERVO_MID #... keep the wheels straight
-
-    ##Saturation blocks
-    if(throttle_command < rc.SERVO_MIN):
-        throttle_command = rc.SERVO_MIN
-    if(throttle_command > rc.SERVO_MAX):
-        throttle_command = rc.SERVO_MAX
-    if(roll_command < rc.SERVO_MIN):
-        roll_command = rc.SERVO_MIN
-    if(roll_command > rc.SERVO_MAX):
-        roll_command = rc.SERVO_MAX
-
-    #Set arm switch up for safety reasons
-    if(rc.rcin.armswitch < 1.495):
+    #Independent Safety precautions
+    if(rc.rcin.armswitch < 0):
         led.setColor('Red')
-        rc.pwms[0].set_duty_cycle(rc.SERVO_MIN)
-        rc.pwms[1].set_duty_cycle(rc.SERVO_MID)
-        #print('Disarmed for safety')
-    elif(1.495 < rcin.armswitch < 1.995):
+        rc.set_defaults()
+    elif(rcin.armswitch > 0):
         led.setColor('Green')
-        rc.pwms[0].set_duty_cycle(throttle_command)
-        rc.pwms[1].set_duty_cycle(roll_command)
-        #print('Open Loop Control')
-    elif(rcin.armswitch > 1.995):
-        led.setColor('Blue')
-        rc.pwms[0].set_duty_cycle(rc.SERVO_MIN)
-        rc.pwms[1].set_duty_cycle(rc.SERVO_MID)
-        #print('Autonomous Control')
-    #print(armswitch,throttlerc,rollrc)
+        rc.set_commands(controls)
 
     #Print to Home
     print(np.round(RunTime,2))

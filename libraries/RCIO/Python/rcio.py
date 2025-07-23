@@ -7,21 +7,25 @@ class RCIO():
 	SERVO_MAX = 2.010 #ms
 	def __init__(self,NUMRX,NUMPWM):
 		self.rcin = RCInput(self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX,NUMRX)
-		self.pwms = []
+		self.rcout = []
+		self.NUMPWM = NUMPWM
 		for i in range(0,NUMPWM):
-			self.pwms.append(PWM(i))
-			self.pwms[i].initialize()
-			self.pwms[i].set_period(50)
-			self.pwms[i].enable()
+			self.rcout.append(PWM(i))
+			self.rcout[i].initialize()
+			self.rcout[i].set_period(50)
+			self.rcout[i].enable()
 
-class CHANNELS():
-    def __init__(self,num_outputs):
-        channels = []
-        for i in range(0,num_outputs):
-            channels.append(PWM(i))
-            channels[i].initialize()
-            channels[i].set_period(50)
-            channels[i].enable()
+	def set_defaults(self):
+		for i in range(0,self.NUMPWM):
+			if i == 0:
+				self.rcout[i].set_duty_cycle(SERVO_MIN)
+			else:
+				self.rcout[i].set_duty_cycle(SERVO_MID)
+
+	def set_commands(self):
+		for i in range(0,self.NUMPWM):
+			if i == 0:
+				self.rcout[i].set_duty_cycle(controls[i]*(self.SERVO_MAX-self.SERVO_MID)+self.SERVO_MID)
 
 class PWM():
     SYSFS_PWM_PATH_BASE = "/sys/class/pwm/pwmchip0/"
@@ -125,14 +129,17 @@ class RCInput():
         for i in range(self.num_channels):
             value = self.read(i)
             self.rcsignals[i] = value
-        #Turn receiver commands to floats
-        self.rollrc = float(self.rcsignals[0])/1000.
-        self.pitchrc = float(self.rcsignals[1])/1000.
-        self.throttlerc = float(self.rcsignals[2])/1000.
-        self.yawrc = float(self.rcsignals[3])/1000.
-        self.armswitch = float(self.rcsignals[4])/1000.
-        self.autopilot = float(self.rcsignals[6])/1000.
+        #Turn receiver commands to floats between -1 and 1
+        self.rollrc = self.convert(self.rcsignals[0])
+        self.pitchrc = self.convert(self.rcsignals[1])
+        self.throttlerc = self.convert(self.rcsignals[2])
+        self.yawrc = self.convert(self.rcsignals[3])
+        self.armswitch = self.convert(self.rcsignals[4])
+        self.autopilot = self.convert(self.rcsignals[6])
         #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
+
+    def convert(self,signal):
+    	return 2*(float(signal)/1000. - self.SERVO_MID)/(self.SERVO_MAX-self.SERVO_MID)
     
     def read(self, ch):
         if not self.SIL:

@@ -30,6 +30,9 @@ import time
 
 from smbus import SMBus
 import spidev
+import sys
+sys.path.append('../libraries/Util')
+import util
 
 class MS5611:
 
@@ -100,7 +103,11 @@ class MS5611:
 	__MS5611_RA_D2_OSR_4096	  = 0x58
 
 	def __init__(self, I2C_bus_number = 1, address = 0x77, SPI_bus_number = 0, SPI_dev_number = 0, bus = "I2C"):
-		self.bus = self.I2CBus(I2C_bus_number, address) if bus == "I2C" else  \
+		self.SIL = util.isSIL()
+		if self.SIL:
+			print('Running in SIL mode......Emulating Barometer')
+		else:
+			self.bus = self.I2CBus(I2C_bus_number, address) if bus == "I2C" else  \
 				 self.SPIBus(SPI_bus_number, SPI_dev_number)
 		self.C1 = 0
 		self.C2 = 0
@@ -112,6 +119,14 @@ class MS5611:
 		self.D2 = 0
 		self.TEMP = 0.0 # Calculated temperature
 		self.PRES = 0.0 # Calculated Pressure
+		print('Setting up the barometer....')
+		self.BARONEXT = 1.0
+		self.BAROWAIT = 0.01
+		self.BAROMODE = 0
+		if not self.SIL:
+			self.initialize()
+			self.update()
+		print('Barometer initialized')
 
 	def initialize(self):
 		## The MS6511 Sensor stores 6 values in the EPROM memory that we need in order to calculate the actual temperature and pressure
@@ -136,8 +151,6 @@ class MS5611:
 		self.C4 = C4[0] * 256.0 + C4[1]
 		self.C5 = C5[0] * 256.0 + C5[1]
 		self.C6 = C6[0] * 256.0 + C6[1]
-
-		self.update()
 
 	def refreshPressure(self, OSR = __MS5611_RA_D1_OSR_4096):
 		self.bus.write_register(OSR)
@@ -189,15 +202,16 @@ class MS5611:
 
 	def update(self):
 		self.refreshPressure()
-		time.sleep(0.01) # Waiting for pressure data ready
+		time.sleep(self.BAROWAIT) # Waiting for pressure data ready
 		self.readPressure()
 
 		self.refreshTemperature()
-		time.sleep(0.01) # Waiting for temperature data ready
+		time.sleep(self.BAROWAIT) # Waiting for temperature data ready
 		self.readTemperature()
 
 		self.calculatePressureAndTemperature()
 		self.convertPressure2Altitude()
+		time.sleep(self.BARONEXT)
 
 	def convertPressure2Altitude(self):
 		pascals = self.PRES/0.01;
@@ -209,29 +223,14 @@ class MS5611:
 		self.update()
 		is_pressure_valid = 1000 <= self.PRES <= 1050
 		is_temp_valid = -40 <= self.TEMP <= 80
-
 		return is_pressure_valid and is_temp_valid
-
-	def start(self,timeIN):
-		self.BAROTime = 0.0
-		self.BARONEXT = 1.0
-		self.BAROWAIT = 0.01
-		self.initialize()
-		self.refreshPressure()
-		time.sleep(BAROWAIT)
-		self.readPressure()
-		self.calculatePressureAndTemperature()
-		self.pressure = baro.PRES
-		time.sleep(BARONEXT)
-		self.BAROMODE = 0
 
 	def poll(self,RunTime):
 		if self.BAROMODE == 2:
-			#first we grab prassure
-			self.pressure = self.PRES
 			#in here we want to make sure we wait 1 second before we set
 			#baromode back to zero
 			if (RunTime - self.BAROTime) > self.BARONEXT:
+				self.convertPressure2Altitude()
 				self.BAROTime = RunTime
 				self.BAROMODE = 0
 		if self.BAROMODE == 1:

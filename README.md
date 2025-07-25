@@ -2,7 +2,7 @@
 The Facility for Aerospace Systems and Technology (FAST) has put together a Configurable Autopilot and Simulation Software Tool (CASST) to simulate and test autopilots for multiple aerospace vehicles.
 
 This software is an open-source configurable software in the loop simulation environment developed in C++ programming language codenamed FASTCASST (Facility for
-Aerospace Systems and Technology Configurable Autopilot and Simulation Software Tool). This simulation environment simulates a real-world environment and is designed to test flight control software of a vehicle before flight testing of physical hardware. The software is designed to be modular by allowing the user to build a portfolio containing the simulation input files, CAD, aerodynamics and control system of the vehicle which allows the software to work with a wide variety of vehicles including but not limited to: airplanes, multicopters, satellites and ground vehicles. FASTCASST currently runs in four modes: simulation only (SIMONLY) mode, software in the loop mode (SIL), hardware in the loop mode (HIL) and (AUTO) mode. The SIMONLY mode allows the vehicle to be mathematically simulated for a specified time with the results being displayed as plots at the end of the simulation, whereas the SIL mode simulates the vehicle in a virtual environment in realtime with flight control software running in both modes. The AUTO mode is intended to run on the Raspberry Pi with Navio Emlid HAT however future revisions will allow the user to run this on the Arduino platform. The HIL requires the software to be compiled on a desktop and hardwired to a microcontroller also running FASTCASST in HIL mode. In this mode the dynamics are simulated on the desktop machine and data is sent to the microcontroller via serial to run the control dynamics. Communication runs back and forth from both machines. The SIMONLY and SIL modes have been tested on a laptop running Ubuntu 20.04 using a quadcopter, airplane, portalcube, satellite, tank and x8 drone. AUTO mode has been tested on a tank and an airplane. HIL is still a work in progress (WIP).
+Aerospace Systems and Technology Configurable Autopilot and Simulation Software Tool). This simulation environment simulates a real-world environment and is designed to test flight control software of a vehicle before flight testing of physical hardware. The software is designed to be modular by allowing the user to build a portfolio containing the simulation input files, CAD, aerodynamics and control system of the vehicle which allows the software to work with a wide variety of vehicles including but not limited to: airplanes, multicopters, satellites and ground vehicles. FASTCASST currently runs in four modes: simulation only (SIMONLY) mode, software in the loop mode (SIL), hardware in the loop mode (HIL) and (AUTO) mode. The SIMONLY mode allows the vehicle to be mathematically simulated for a specified time with the results being displayed as plots at the end of the simulation, whereas the SIL mode simulates the vehicle in a virtual environment in realtime with flight control software running in both modes. The AUTO mode is intended to run on the Raspberry Pi with Navio Emlid HAT however future revisions will allow the user to run this on the Arduino platform. The HIL requires the software to be compiled on a desktop and hardwired to a microcontroller also running FASTCASST in HIL mode. In this mode the dynamics are simulated on the desktop machine and data is sent to the microcontroller via serial to run the control dynamics. Communication runs back and forth from both machines. The SIMONLY and SIL modes have been tested on a laptop running Ubuntu 20.04 using a quadcopter, airplane, portalcube, satellite, tank and x8 drone. AUTO mode has been tested on a tank, car, boat and an airplane. HIL is still a work in progress (WIP). Note there is also a Python version in the src folder 
 
 Recommended steps to compile and contribute to this project
 
@@ -21,7 +21,9 @@ Recommended steps to compile and contribute to this project
 you will need a few packages before you can compile
 
 $ sudo apt install make
+
 $ sudo apt install g++
+
 $ sudo apt install libboost-all-dev
 
 if you get an error try
@@ -33,8 +35,6 @@ and then try
 $ sudo apt install [package_name] --fix-missing
 
 then you can compile the code
-
-$ make
 
 $ make simonly MODEL="airplane"
 
@@ -60,7 +60,9 @@ If you really don't want to make the switch to linux you can always use a virtua
 4.) VirtualBox and Install Ubuntu - If your computer can handle the extra memory it would be possible to install a virtual machine on your computer and run Ubuntu
 
 If you want to completely try linux or just switch completely try these options here
+
 5.) Dual Boot - Here you would partition your harddrive in half and install 2 operating systems on your machine
+
 6.) Switch to Linux completely - https://randomhacksdrc.blogspot.com/2014/10/thinking-of-making-switch-to-linux.html
 
 N.) For further reading on successes of this software please see the references below.

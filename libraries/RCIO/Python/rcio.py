@@ -139,7 +139,7 @@ class RCInput():
         #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
 
     def convert(self,signal):
-    	return 2*(float(signal)/1000. - self.SERVO_MID)/(self.SERVO_MAX-self.SERVO_MID)
+        return (float(signal) - self.SERVO_MID)/((self.SERVO_MAX-self.SERVO_MIN)/2)
     
     def read(self, ch):
         if not self.SIL:

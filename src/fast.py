@@ -94,7 +94,7 @@ while (True):
     if(rc.rcin.armswitch < 0):
         led.setColor('Red')
         rc.set_defaults()
-    elif(rcin.armswitch > 0):
+    elif(rc.rcin.armswitch > 0):
         led.setColor('Green')
         rc.set_commands(controls)
 
@@ -122,8 +122,9 @@ while (True):
     logger.outdata[17] = g[2]
     logger.outdata[18] = controls[0]
     logger.outdata[19] = controls[1]
-    logger.outdata[20] = controls[2]
-    logger.outdata[21] = controls[3]
+    if len(controls) > 2:
+        logger.outdata[20] = controls[2]
+        logger.outdata[21] = controls[3]
     logger.println()
 
     #sleep so we don't spontaneously explode

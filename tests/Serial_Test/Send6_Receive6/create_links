@@ -1,0 +1,10 @@
+#!/bin/bash
+
+CROOT=/home/carlos/Desktop/Git_Repos/C/
+#CROOT=/home/carlos/Documents/Git_Repos/Github/C++/
+
+rm Serial.* 
+for VAR in Serial.cpp Serial.h
+do
+	ln -s ${CROOT}${VAR} ${VAR}
+done

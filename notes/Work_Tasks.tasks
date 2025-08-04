@@ -1,11 +1,3 @@
- MIGRATING FASTSENSORS:
-
-   ☐ Move all the Arduino codes to the Microcontroller repos
-
-   ☐ Migrate FASTLogger into FASTCASST Archive 
-
-   ☐ Most of the sensor codes could be put into Microcontrollers honestly since it's plotting data
-   
 CAR/BOAT/PLANE (PY):
 
   ✔ Merge KATE, and ARAMIS @done (25-07-21 16:09)
@@ -279,6 +271,16 @@ BDE (FASTCASST++):
 
   ☐ Add Fault tolerant control?
 
+COMPLETED=================================================================:
+
+ MIGRATING FASTSENSORS:
+
+   ✔ Move all the Arduino codes to the Microcontroller repos @done (25-08-04 09:50)
+
+   ✔ Migrate FASTLogger into FASTCASST Archive (This was not done on the date to the right but I just forgot to check this box.) @done (25-08-04 09:50)
+
+   ✔ Most of the sensor codes could be put into Microcontrollers honestly since it's plotting data. Some of it went to the python repo as well @done (25-08-04 09:50)
+
 RENDERING:
 
   ✔ Create CAD for all vehicles you are using @done (21-11-06 11:30)
@@ -286,8 +288,6 @@ RENDERING:
     ✔ Plane #@done (21-10-31 22:13)
     ✔ Quad #@done (21-09-30 20:40)
     ✔ X8 @done (21-11-06 11:30)
-
-COMPLETED=================================================================:
 
 EXTRA STUFF:
   

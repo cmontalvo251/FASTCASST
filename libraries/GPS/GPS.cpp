@@ -228,7 +228,7 @@ void GPS::computeCOG(double current_time) {
   //Then proceed with the speed measurement
   double dx = X - xprev;
   double dy = Y - yprev;
-  double dz = Z - zprev; //For vertical speed controller only
+  double dz = Z - zprev; 
   double dt = current_time - prev_time;
   dist = sqrt((pow(dx,2)) + (pow(dy,2)));
 
@@ -245,21 +245,21 @@ void GPS::computeCOG(double current_time) {
 
   ///////////??COMPUTE RAW SPEED AND HEAVILY FILTERED SPEED
   if (dt > 0) {
-    vx = dx/dt; //Added to GPS.h file for X8 
-    vy = dy/dt; //Added to GPS.h file for X8
-    vz = dz/dt; //Added to GPS.h file for X8
+    //Compute x,y,z dots
+    vx = dx/dt; 
+    vy = dy/dt; 
+    vz = dz/dt; 
 
-    //Need to include heading for body frame velocity calculations - only do for x8 in case it breaks shit
-    #ifdef x8
-    double u = vx;
-    double v = vy;
-    vx = u * cos(heading_new) + v * sin(heading_new);
-    vy = -u * sin(heading_new) + v * cos(heading_new);
-
-    double w 
-    #endif
-
+    //Take speed parallel to the ground to be the total velocity of vx and vy
     speed = sqrt((vx*vx + vy*vy));
+    //speed = vx * cos(heading) + vy * sin(heading); //not implemented because we can just use norm(vx,vy)
+
+    //The sideslip velocity is a standard coordinate transformation based on heading
+    sideslip_speed = -vx * sin(heading) + vy * cos(heading);
+
+    //The vertical speed is just vz
+    vertical_speed = vz;
+    
   } else {
     speed = 0;
   } 

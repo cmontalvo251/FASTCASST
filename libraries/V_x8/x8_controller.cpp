@@ -106,30 +106,9 @@ controller::controller() {
     //Compute nominal and max thrusts and configuration matrix
     MotorsSetup(datapts); 
 
-    //Remove from most recent
-    //Used in IC test for thesis, see V_x8/Sim_Plots/4.2 for results
+    //Remove from motors from most recent to oldest added
     //RemoveMotors(4);
     
-    //Remove specific number of motors
-    motorsToRemove = 4;
-
-    //Initialize MOTORSOFF vector for removing specific motors
-    REMOVEMOTORS.zeros(motorsToRemove, 1, "Vector of motors to remove");
-
-    //Remove input - Make sure to change the first indices to start at 1 and increase to motorsToRemove
-    REMOVEMOTORS.set(1, 1, 1); //top_front_left
-    REMOVEMOTORS.set(2, 1, 2); //top_front_right
-    REMOVEMOTORS.set(3, 1, 3); //top_back_right
-    REMOVEMOTORS.set(4, 1, 4); //top_back_left
-    //REMOVEMOTORS.set(1, 1, 5); //bottom_front_left
-    //REMOVEMOTORS.set(2, 1, 6); //bottom_front_right
-    //REMOVEMOTORS.set(3, 1, 7); //bottom_back_right
-    //REMOVEMOTORS.set(4, 1, 8); //bottom_back_left
-    
-    //Test remove motor - remove specific
-    //Used for command test of thesis, see V_x8/Sim_Plots/4.3 for results
-    //RemoveMotors(motorsToRemove, REMOVEMOTORS);
-
     //Waypoint Control Flag
     WaypointControl = false;
 
@@ -388,7 +367,7 @@ void controller::RemoveMotors(int removemotors) {
     //HHT = 4x4
     
     //If four motors get turned off, it is a square matrix
-    if (MOTORSRUNNING == 4) {
+    if (MOTORSRUNNING == 4) { //Remember you cannot do less than 3 motors (not controllable)
         HTprime.transpose(Hprime);
     }
     else {
@@ -415,104 +394,6 @@ void controller::RemoveMotors(int removemotors) {
     //Finally we can get Q
     Qprime.mult(HT_inv_HHTprime, M);
     //Qprime.disp();
-}
-
-//Function to remove specific set number of motors
-void controller::RemoveMotors(int removemotors, MATLAB motorsRemoved) {
-    //Debug
-    //cout << "In RemoveMotors" << endl;
-
-    //Set MOTORSOFF
-    MOTORSOFF = removemotors;
-
-    //With motors removed we need to reinitialize all the control matrices
-    MOTORSRUNNING = NUMMOTORS - MOTORSOFF;
-
-    //Set operational flag = 0 for turned off motors
-    for (int i = 1; i <= MOTORSOFF; i++) {
-        int motorNum = motorsRemoved.get(i, 1);
-        
-        for (int j = 1; j <= NUMMOTORS; j++) {
-            if (j == motorNum) {
-                MOTORS[j - 1].op_flag = 0;
-
-                //Debug
-                printf("Setting motor %i op_flag to %i \n", motorNum, MOTORS[j - 1].op_flag);
-            }
-        }
-    }
-
-    //Debug
-    //PAUSE();
-
-    //Indicator statement
-    printf("Total Motors = %i, Removing %i motors. Running Motors = %i \n", NUMMOTORS, removemotors, MOTORSRUNNING);
-
-    //This is where we make our configuration matrices
-    Hprime.zeros(4, MOTORSRUNNING, "Configuration Matrix Prime");
-    HTprime.zeros(MOTORSRUNNING, 4, "Configuration Matrix Transposed Prime");
-    HHTprime.zeros(4, 4, "H*HT Prime");
-    HHT_invprime.zeros(4, 4, "Inv(HHTprime)");
-    HT_inv_HHTprime.zeros(MOTORSRUNNING, 4, "HT_inv_HHTprime");
-    Qprime.zeros(MOTORSRUNNING, 4, "Control Matrix Prime");
-    CHIprime.zeros(MOTORSRUNNING, 1, "Thrust Required Prime");
-
-    //Counter for adding on motors to Hprime
-    int ctr = 1;
-
-    //Set the H matrix for motors that are turned on
-    for (int i = 1; i <= NUMMOTORS; i++) {
-        if (MOTORS[i - 1].op_flag == 1) {
-            //From paper, H = [-1 -ryi rxi (sigmai * cq * Rrotor / ct)]^T
-            Hprime.set(1, ctr, - 1.0);
-            Hprime.set(2, ctr, -MOTORS[i - 1].r.get(2, 1));
-            Hprime.set(3, ctr, MOTORS[i - 1].r.get(1, 1));
-            Hprime.set(4, ctr, (MOTORS[i - 1].dir * cq * Rrotor / ct));
-
-            //Increment counter
-            ctr++;
-        }
-        else {
-            printf("Motor % i is off \n", i);
-        }
-    }
-
-    //HT*inv(HHT)*M
-    //H = 4xN
-    //HT = Nx4
-    //HHT = 4x4
-
-    //If four motors get turned off, it is a square matrix - I hate how this works
-    if (MOTORSRUNNING == 4) {
-        HTprime.transpose(Hprime);
-    }
-    else {
-        HTprime.transpose_not_square(Hprime);
-    }
-    
-    HHTprime.mult(Hprime, HTprime);
-
-    //M.disp();
-    //Hprime.disp();
-    //HTprime.disp();
-    //HHTprime.disp();
-
-    //Shit. Need a 4x4 inverse routine
-    //Alright added crazy shit inverse functions
-    HHT_invprime.matrix_inverse(HHTprime, 4);
-
-    //HHT_invprime.disp();
-
-    //Then we need HT*inv(HHT) == N-1 x 4 - 4 x 4
-    HT_inv_HHTprime.mult(HTprime, HHT_invprime);
-    //HT_inv_HHTprime.disp();
-
-    //Finally we can get Q
-    Qprime.mult(HT_inv_HHTprime, M);
-    //Qprime.disp();
-
-    //Debug
-    //cout << "Finished RemoveMotors" << endl;
 }
 
 //Function to compute reconfigurable matrix [CHI / CHIprime]
@@ -744,8 +625,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double z = sense_matrix.get(3, 1);
 
       //Measure xy velocity components - for waypoint control
-      double u = sense_matrix.get(7, 1);  //u and v in GPS.cpp were changed to body frame u and v instead of GPS u and v for x8
-      double v = -sense_matrix.get(8, 1); //it may be sensing v wrong, so added negative sign
+      double u = sense_matrix.get(7, 1);  //body frame u and v 
+      double v = sense_matrix.get(8, 1); 
 
       //Measure state - need all of these for both.
       double roll = sense_matrix.get(4, 1);
@@ -756,8 +637,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       double yaw_rate = sense_matrix.get(12, 1);   //Check IMU.cpp to see for HIL
 
       //Get Yaw from GPS and IMU - Sense Yaw and GPS Yaw reset every second. IMU yaw works
-      double GPS_heading = sense_matrix.get(19, 1);
-      double IMU_heading = sense_matrix.get(20, 1);
+      double GPS_heading = sense_matrix.get(19, 1); //GPS heading is atan2(dx,dy)
+      double IMU_heading = sense_matrix.get(20, 1); //IMU heading is magnetometer
+      //sense_matrix.get(6,1) is a filtered heading using GPS and IMU together (compass heading)
       //yaw = 1.0 * GPS_heading + 0.0 * IMU_heading;
 
       //Iniitalize altitude control gains to normal sim gains - Low gains for high altitude (sims) and high gains for low altitude (sims/real hardware)
@@ -990,10 +872,10 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
           //Anti-Integral Windup
           if (abs(uint) > 5) {
-              uint = 5 * sign(uint);
+              uint = copysign(5,uint);
           }
           if (abs(vint) > 5) {
-              vint = 5 * sign(vint);
+              vint = copysign(5,vint);
           }
 
           //Initialize derivative of velocity
@@ -1047,7 +929,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
               //roll_command = 7; //Triple Motor Failure
               roll_command = 0; //Quadruple Motor Failure
           }
-          else if (currentTime > 50 and currentTime < 75) {
+          else if (currentTime > 50 && currentTime < 75) {
               //pitch_command = 55; //Full Motor Control
               //pitch_command = 50; //Single Motor Failure
               //pitch_command = 33; //Dual Motor Failure

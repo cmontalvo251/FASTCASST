@@ -61,7 +61,7 @@ void ConvertXYZ2LLHSPHERICAL(double XYZ[],double LLH[]);
 void ConvertLLH2XYZSPHERICAL(double XYZ[],double LLH[]);
 double ConvertZ2Pressure(double Z);
 double ConvertPressure2Z(double P,double P0);
-int sign(double);
+//int sign(double); This function is not needed. C++11 implemented the copysign function in 2011
 
 #endif
 

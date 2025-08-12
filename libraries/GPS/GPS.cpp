@@ -262,6 +262,8 @@ void GPS::computeCOG(double current_time) {
     
   } else {
     speed = 0;
+    sideslip_speed = 0;
+    vertical_speed = 0;
   } 
   //printf("speed = %lf \n",speed);
 

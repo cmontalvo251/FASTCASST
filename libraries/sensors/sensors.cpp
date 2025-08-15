@@ -349,7 +349,7 @@ void sensors::populate(double currentTime,double elapsedTime) {
   sense_matrix.set(16,1,satellites.latitude);
   sense_matrix.set(17,1,satellites.longitude);
   sense_matrix.set(18,1,satellites.altitude);
-  sense_matrix.set(19,1,satellites.heading); //THe GPS Heading
+  sense_matrix.set(19,1,satellites.heading); //The GPS Heading
 
   //IMU
   sense_matrix.set(20,1,orientation.yaw); //IMU Heading

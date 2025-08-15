@@ -3,16 +3,16 @@
 6871393	!Initial X Position (m) (Radius of Earth = 6371393)
 0.0	!Initial Y Position (m) ///Sixdof Model with quaternions
 0.0	!Initial Z Position (m) 
-1.0	!Quaternion 0
+0.9239	!Quaternion 0
 0.0	!Quaternion 1
-0.0	!Quaternion 2
+0.3827	!Quaternion 2
 0.0	!Quaternion 3
 0.0	!Initial Xbody Velocity (m/s) 
 7616.18	!Initial Ybody Velocity (m/s) (For eq circular orbit = v = sqrt(mu/r))
 0.0	!Initial Zbody Velocity (m/s) (500 km is 7,616.18 m/s)
-0.2	!Initial Roll Rate (rad/s)
-0.2	!Initial Pitch Rate (rad/s)
-0.2	!Initial Yaw Rate (rad/s)
+0.0	!Initial Roll Rate (rad/s)
+0.0	!Initial Pitch Rate (rad/s)
+0.0	!Initial Yaw Rate (rad/s)
 1	!External Force Model (0=off,1=on) - 16
 0	!Gravity Flag (-1=off,0=point mass, 1=egm2008,2=point mass + sun,3=flat earth)
 0	!Magnetic Field Model (0=off, 1=emm2015)

@@ -86,7 +86,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   }
   //printf("CONTROLLER FLAG = %d \n",CONTROLLER_FLAG);
 
-  //Aircraft Control cases
+  //CubeSat Control cases
   // 0 = No Control
   // 1 = Proportional Control
   // 2 = Feedback Linearized Control

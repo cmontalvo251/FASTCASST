@@ -192,6 +192,13 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   BVECB.zeros(3,1,"Body Frame Magnetic Field (nT)");
   BVECB_Tesla.zeros(3,1,"Body Frame Magnetic Field (Teslas)");
 
+  //Quaternions and ptp need to be initialized
+  q0123.vecset(1,4,integrator.State,4);
+  //This is used to rotate things from body to inertial and vice versa
+  ine2bod321.L321(q0123, 1);
+  //Set ptp
+  ine2bod321.getptp(ptp);
+
   //Kick off the render loop in its own thread if open gl is on
   #ifdef OPENGL_H
   printf("Kicking off OpenGL \n");

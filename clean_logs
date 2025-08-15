@@ -1,9 +1,9 @@
 #!/bin/bash
 
 echo 'About to delete all text files in logs/'
-sudo rm *.csv
-sudo rm data/*.txt
-sudo rm data/*.csv
-sudo rm logs/*.txt
-sudo rm logs/*.csv
+rm *.csv
+rm data/*.txt
+rm data/*.csv
+rm logs/*.txt
+rm logs/*.csv
 echo 'Files deleted. Hope there was not anything important in there'

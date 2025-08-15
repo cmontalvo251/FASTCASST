@@ -255,7 +255,7 @@ void GPS::computeCOG(double current_time) {
     //speed = vx * cos(heading) + vy * sin(heading); //not implemented because we can just use norm(vx,vy)
 
     //The sideslip velocity is a standard coordinate transformation based on heading
-    sideslip_speed = -vx * sin(heading) + vy * cos(heading);
+    sideslip_speed = -vx * sin(heading*M_PI/180.0) + vy * cos(heading*M_PI/180.0);
 
     //The vertical speed is just vz
     vertical_speed = vz;

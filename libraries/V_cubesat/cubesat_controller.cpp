@@ -1,7 +1,7 @@
 //This is a portal cube template. You must adhere to these standards if you write your
 //own
 
-#include "controller.h"
+#include "cubesat_controller.h"
 
 controller::controller() {
 };

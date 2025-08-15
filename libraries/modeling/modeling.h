@@ -35,6 +35,9 @@
 #ifdef x8
 #include "x8_forces.h"
 #endif
+#ifdef cubesat
+#include "cubesat_forces.h"
+#endif
 
 ///Headers required to simulate the virtual environment
 #include <RK4/RK4.h>

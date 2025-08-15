@@ -8,7 +8,7 @@ functions otherwise the software will completely break.
 
 */
 
-#include "forces.h"
+#include "cubesat_forces.h"
 
 //Constructor
 forces::forces() {

@@ -1,19 +1,3 @@
-CAR/BOAT/PLANE (PY):
-
-  ✔ Merge KATE, and ARAMIS @done (25-07-21 16:09)
-  ✔ Make car.py run in SIL mode so you can run it on your computer @done (25-07-22 15:29)
-  ✔ Edit car.py, plane.py and boat.py to be a singular file with different settings at the top of the file (if it gets complex add extra .py files) @done (25-07-25 19:50)
-  ☐ Test car.py, plane.py and boat.py on HW (now known as fast.py)
-  ☐ Update the FASTCASST notes and README based on car.py and plane.py progress
-
-BUMBLEBEE (FASTCASST++):
-
-  ✔ Merge the reconfig branch @done (25-03-26 13:13)
-  ☐ Edit the x8_controller.cpp to be clean and test that it can simonly 
-  ☐ and sil
-  ☐ Since bumblebee flight testing broke a bunch of stuff - Grab an SD card and image a pi and upload it to Google Drive
-  ☐ Take a look at BDE FASTCASST and add Bumblebee flight tests since software has been rewritten and we need to make sure that BBee flies with the new software
-
 SATELLITE (FASTCASST++):
 
   ✔ Check that cubesat spinning with q=0,r=0 only spins about p when I is diagonal @done (22-10-28 09:43)
@@ -100,7 +84,55 @@ WOODEN DRONE (ARDUINO IDE):
     ☐ Point to a desired heading
     ☐ Waypoint controller
 
+CAR/PLANE/BOAT (FASTPY):
+
+  ✔ Merge KATE, and ARAMIS @done (25-07-21 16:09)
+  ✔ Make car.py run in SIL mode so you can run it on your computer @done (25-07-22 15:29)
+  ✔ Edit car.py, plane.py and boat.py to be a singular file with different settings atthe top of the file (if it gets complex add extra .py files) @done (25-07-25 19:50)
+  ✔ Update the FASTCASST notes and README based on car.py and plane.py progress @done (25-08-15 16:14)
+  ☐ Test car.py, plane.py and boat.py on HW (now known as fast.py)
+
+CAR (FASTCASST++):
+
+  ☐ Simulate waypoint control - SIMONLY
+
+  ☐ Need to actually measure the values of bias, noise and std
+  
+  ☐ Simulate waypoint control - SIMONLY with Sensor errors
+  
+  ☐ simulate waypoint control - SIL
+  
+  ☐ Test autopilot control laws in SIL mode with Sensor errors
+  
+  ☐ Thread the IMU and GPS
+  
+  ☐ Try running the integrator on the pi and send data to computer for rendering and create a new mode called RENDER
+  
+  ☐ Dan said it's possible the RK4 vector and control vector are asynchronous and causing issues. Might need to investigate the RK4 state and the control state and see if I'm dealing with that properly. To do that print time,state,control on both desktop and pi and see if you're off. Maxwell had a good idea to lower the timestep to see if that fixes it.
+
+  ☐ Investigate the Barometer delay and see if we can make it better
+
+  ☐ See why Ground station lags by two seconds. Possible source is updating the window (Turn some off and see what happens, actually the better option is to just thread the serial and update the GUI on a different thread using a queue)
+  
+  ☐ Simulate waypoint control - HIL
+  
+  ☐ Test autopilot controls laws in HIL mode with Sensor Errors
+
+  ☐ Two Way communication to update waypoints on the fly - Note that sending data from the Rpi to Desktop is working but Desktop to Rpi is broken if you use an Rpi3. This broke sometime between FASTPilot and FASTKit so circa 2019 to 2022. 
+
+  ☐ We can try systemd which is apparently what Arducopter uses
+
+  ☐ Have GPS origin point for simulation set inside Simulation.txt
+
+  ☐ Furtheremore, there are a ton of variables hardcoded for Telemetry. Either those variable need to be added into Config.txt or a new file must be added like Serial.txt or something. My vote is for Config.txt but we have to be careful because the mass matrix is in there. At the same time does it really matter?
+  
+  ☐ Test waypoint control - AUTO
+
 META (FASTCASST++):
+
+  ☐ Grab an SD card and image a pi and upload it to Google Drive
+  
+  ☐ SysID of carbon fiber airplane (Flights + simulation)
 
   ✔ Test autopilot control laws in SIMONLY mode @done (22-08-09 17:24)
     ✔ Program heading angle estimation and simulate @done (22-08-09 15:47)
@@ -111,17 +143,9 @@ META (FASTCASST++):
 
   ✔ Test autopilot control laws in SIL mode @done (22-08-14 17:28)
 
+  ☐ Test autopilot control laws in SIL with sensor errors
+
   ☐ Would be nice to add in the WRF model so you can simulate the aircraft in realistic wind environments
-
-  ☐ Test autopilot control laws in SIL mode with Sensor errors
-
-  ☐ Try running the integrator on the pi and send data to computer for rendering and create a new mode called RENDER
-
-  ☐ Dan said it's possible the RK4 vector and control vector are asynchronous and causing issues. Might need to investigate the RK4 state and the control state and see if I'm dealing with that properly. To do that print time,state,control on both desktop and pi and see if you're off. Maxwell had a good idea to lower the timestep to see if that fixes it.
-
-  ☐ Run SIL on Pi with Desktop mode - As in run FASTKit on Raspbian and do away with Emlid
-
-  ☐ Thread the IMU and GPS
 
   ✔ Call Panini and Dan at AREAI (see second note above) @done (22-12-02 10:07)
 
@@ -133,8 +157,6 @@ META (FASTCASST++):
 
   ☐ Test autopilot controls laws in HIL mode with Sensor Errors
 
-  ☐ Need to actually measure the values of bias, noise and std otherwise all the simulations above are kind of pointless
-
   ✔ Test autopilot on real systems - RCIO needs to be able to handle where to send ESC signals depending on #define in Makefile @done (22-11-10 20:59)
     ✔ Heading Angle Estimation and make sure we are adequately estimating heading in real life @done (22-11-10 21:00)
     ✔ (phi from accel only, theta from accel only, heading from mag only, Euler from gyro only, filtered roll and pitch from gyro and accel, heading from gps, filtered heading from mag, gyro, gps, Euler from AHRS, heading from AHRS and GPS) @done (22-11-10 20:59)
@@ -142,8 +164,6 @@ META (FASTCASST++):
     ☐ Test waypoint controller in real life
 
   ✔ Barometer calibration has screwed up the z altitude before calibration. Need a fix here @done (22-12-02 09:50)
-
-  ☐ SysID of carbon fiber airplane (Flights + simulation)
 
   ✔ Simulation of waypoint flights of single airplane @done (22-11-10 21:00)
 
@@ -155,21 +175,27 @@ META (FASTCASST++):
 
   ☐ Disconnecting and reconnecting - this would be insane.
 
-  ☐ Two Way communication to update waypoints on the fly - Note that sending data from the Rpi to Desktop is working but Desktop to Rpi is broken if you use an Rpi3. This broke sometime between FASTPilot and FASTKit so circa 2019 to 2022. 
+RECONFIGURABLE CONTROL for X8 (FASTCASST++):
 
-  ☐ Investigate the Barometer delay and see if we can make it better
+  ✔ Merge the reconfig branch @done (25-03-26 13:13)
+  
+  ☐ Edit the x8_controller.cpp to be clean and test that it can simonly 
+  
+  ✔ Take a look at BDE FASTCASST and add Bumblebee flight tests since software has been rewritten and we need to make sure that BBee flies with the new software @done (25-08-15 16:26)
 
-  ☐ See why Ground station lags by two seconds. Possible source is updating the window (Turn some off and see what happens, actually the better option is to just thread the serial and update the GUI on a different thread using a queue)
+  ☐ Test x8 controller in SIMONLY
 
-  ☐ We can try systemd which is apparently what Arducopter uses
+  ☐ Test x8 controller in SIMONLY with Sensor Errors
 
-  ☐ Have GPS origin point for simulation set inside Simulation.txt
+  ☐ Test x8 controller in SIL 
 
-  ☐ Furtheremore, there are a ton of variables hardcoded for Telemetry. Either those variable need to be added into Config.txt or a new file must be added like Serial.txt or something. My vote is for Config.txt but we have to be careful because the mass matrix is in there. At the same time does it really matter?
+  ☐ Test x8 controller in SIL with sensor errors
 
-  ☐ Update OpenGL rendering environment to Unreal engine or something like Godot or even Unity
+  ☐ Test x8 controller in HIL
 
-BDE (FASTCASST++):
+  ☐ Test x8 controller in HIL with sensors errors
+
+  ☐ Test x8 controller on Bumblebee
 
   ☐ Training wheels - PVC Booms with tennis balls strapped to bottom of frame to prevent roll over. Test roll over by physically trying to roll over drone.
 
@@ -270,6 +296,12 @@ BDE (FASTCASST++):
   ☐ Write a paper
 
   ☐ Add Fault tolerant control?
+
+EXTRAS: 
+
+  ☐ Run SIL on Pi with Desktop mode - As in run FASTKit on Raspbian and do away with Emlid
+
+  ☐ Update OpenGL rendering environment to Unreal engine or something like Godot or even Unity
 
 COMPLETED=================================================================:
 

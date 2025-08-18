@@ -119,7 +119,7 @@ $(MAIN): $(MAIN:.o=.cpp)
 	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(MODEL) -D$(RX) -D$(PLATFORM) -D$(TYPE) $(MAIN:.o=.cpp) -o $(MAIN) $(WIRINGPI)
 
 ##The rule for the objects depends on the sources
-.cpp.o: $(SOURCES)
+%.o: %.cpp $(SOURCES)
 	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(MODEL) -D$(RX) -D$(PLATFORM) -D$(TYPE) $(LIB) $(WIRINGPI) $< -o $@
 
 ##Clean function

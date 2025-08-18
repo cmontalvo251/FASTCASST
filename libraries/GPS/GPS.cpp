@@ -51,9 +51,9 @@ void GPS::decodeXYZ() {
   XYZ[0] = X;
   XYZ[1] = Y;
   XYZ[2] = Z;
-  //printf("GPS XYZ = %lf %lf %lf \n",X,Y,Z);
   //printf("GPS ORIGIN = %lf %lf \n",X_origin,Y_origin);
   #if defined (satellite) || (cubesat) 
+  //printf("Using Spherical conversion \n");
   ConvertXYZ2LLHSPHERICAL(XYZ,LLH);
   #else
   //Note we need to use the simulation coordinates so we know where we are on the planet
@@ -64,6 +64,7 @@ void GPS::decodeXYZ() {
   latitude = LLH[0];
   longitude = LLH[1];
   altitude = LLH[2];
+  //printf("GPS XYZ = %lf %lf %lf \n",X,Y,Z);
   //printf("GPS LLH = %lf %lf %lf \n",latitude,longitude,altitude);
   //PAUSE();  
 }

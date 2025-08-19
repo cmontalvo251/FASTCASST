@@ -44,7 +44,13 @@ To run the code you type
 
 and then run the associated python script to plot data
 
-$ python3 plotdata.py
+$ python3 plotdata.py 4
+
+Alternatively you can run
+
+$ ./plotdata.py 1
+
+which will invoke the python3 interpreter and clean, compile, run and plot the results
 
 Notes for Windows Users (10/10/2023)
 The following 2 virtual environments do not work at the time of this writing

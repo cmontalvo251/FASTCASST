@@ -20,7 +20,7 @@ tend = -99
 
 def printCodes():
     print('Command is....')
-    print('./plotdata_sim.py #')
+    print('./plotdata.py #')
     print('1 = clean, compile, run and plot')
     print('2 = compile, run and plot')
     print('3 = run and plot')

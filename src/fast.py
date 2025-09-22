@@ -78,27 +78,31 @@ while (True):
     rc.rcin.readALL()
 
     #Get acceleration, gyroscope, magnetometer & temperature data
-    a,g,m,rpy,temp = imu.getALL()
+    #a,g,m,rpy,temp = imu.getALL()
 
     #Get GPS update if it's ready
-    gps_llh.poll(RunTime)
+    #gps_llh.poll(RunTime)
 
     #Get pressure for altitude
-    baro.poll(RunTime)
+    #baro.poll(RunTime)
 
     #Run your control loop
-    controls = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy,g,baro)
+    #controls = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy,g,baro)
+    controls = vehicle.loop(RunTime,rc.rcin)
 
     #Independent Safety precautions
     if(rc.rcin.armswitch < 0):
         led.setColor('Red')
-        rc.set_defaults()
+        #send rc defaults
+        #rc.set_defaults()
     elif(rc.rcin.armswitch > 0):
         led.setColor('Green')
-        rc.set_commands(controls)
+        #send rc commands
+        #rc.set_commands(controls)
 
     #Print to Home
-    print(f"{RunTime:4.2f}",rc.rcin.rcsignals,gps_llh.latitude,gps_llh.longitude,gps_llh.altitude,baro.ALT,rpy,gps_llh.speed,g,controls)
+    #print(f"{RunTime:4.2f}",rc.rcin.rcsignals,gps_llh.latitude,gps_llh.longitude,gps_llh.altitude,baro.ALT,rpy,gps_llh.speed,g,controls)
+    print(f"{RunTime:4.2f}",rc.rcin.rcsignals)
 
     #Log data
     logger.outdata[0] = np.round(RunTime,5)
@@ -108,6 +112,7 @@ while (True):
     logger.outdata[4] = rc.rcin.rcsignals[3]
     logger.outdata[5] = rc.rcin.rcsignals[4]
     logger.outdata[6] = rc.rcin.rcsignals[5]
+    """
     logger.outdata[7] = gps_llh.latitude
     logger.outdata[8] = gps_llh.longitude
     logger.outdata[9] = gps_llh.altitude
@@ -124,6 +129,7 @@ while (True):
     if len(controls) > 2:
         logger.outdata[20] = controls[2]
         logger.outdata[21] = controls[3]
+    """
     logger.println()
 
     #sleep so we don't spontaneously explode

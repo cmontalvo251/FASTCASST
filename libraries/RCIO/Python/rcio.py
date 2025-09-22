@@ -22,10 +22,9 @@ class RCIO():
 			else:
 				self.rcout[i].set_duty_cycle(self.SERVO_MID)
 
-	def set_commands(self):
+	def set_commands(self,controls):
 		for i in range(0,self.NUMPWM):
-			if i == 0:
-				self.rcout[i].set_duty_cycle(controls[i]*(self.SERVO_MAX-self.SERVO_MID)+self.SERVO_MID)
+			self.rcout[i].set_duty_cycle(controls[i]*(self.SERVO_MAX-self.SERVO_MID)+self.SERVO_MID)
 
 class PWM():
     SYSFS_PWM_PATH_BASE = "/sys/class/pwm/pwmchip0/"

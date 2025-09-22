@@ -11,7 +11,7 @@ def check_apm():
 		print('APM is not running....')
 
 def isSIL():
-	if os.name == 'posix':
-		return 1
-	else:
+	if os.uname().nodename == 'navio':
 		return 0
+	else:
+		return 1

@@ -1,4 +1,4 @@
-SATELLITE (FASTCASST++):
+# SATELLITE (FASTCASST++):
 
   * [x] Check that cubesat spinning with q=0,r=0 only spins about p when I is diagonal @done (22-10-28 09:43)
 
@@ -18,7 +18,7 @@ SATELLITE (FASTCASST++):
   
   * [ ] Run the MultiSAT++ HIL sim with an Arduino and make sure that FASTKit has the same functionality so you don't have to use MultiSAT++ anymore for CubeSat stuff
 
-TOSIM INTEGRATION (FASTCASST++):
+# TOSIM INTEGRATION (FASTCASST++):
 
  * [x] Move TOSIM from Gitlab over to Github @done (24-01-11 09:33)
 
@@ -34,7 +34,7 @@ TOSIM INTEGRATION (FASTCASST++):
 
  * [ ] Simulate candidate TOSIM sim in FASTCASST++ and compare the simulations
 
-WOODEN DRONE (ARDUINO IDE):
+# WOODEN DRONE (ARDUINO IDE):
 
   * [x] From here I'd like to start editing the sensor routines to include Arduino hooks. The sensor.h file should work at the moment on both desktop and Rpi so it's time to get it to work on Arduino hooks. Edit the Sensor routine to use the newly formed folders. Think a bit more on how you want to have this sensor block. I'm assuming you'll just be importing all the sensors? Pitot, IMU, GPS, etc??? What if those sensors are not connected? Is there a way for the controller to ignore erroneous data? Or maybe just turn them on and off in the controller? @done (22-05-18 06:55)
 
@@ -84,7 +84,7 @@ WOODEN DRONE (ARDUINO IDE):
     * [ ] Point to a desired heading
     * [ ] Waypoint controller
 
-CAR/PLANE/BOAT (FASTPY):
+# CAR/PLANE/BOAT (FASTPY):
 
   * [x] Merge KATE, and ARAMIS @done (25-07-21 16:09)
   * [x] Make car.py run in SIL mode so you can run it on your computer @done (25-07-22 15:29)
@@ -92,7 +92,7 @@ CAR/PLANE/BOAT (FASTPY):
   * [x] Update the FASTCASST notes and README based on car.py and plane.py progress @done (25-08-15 16:14)
   * [ ] Test car.py, plane.py and boat.py on HW (now known as fast.py)
 
-CAR (FASTCASST++):
+# CAR (FASTCASST++):
 
   * [ ] Simulate waypoint control - SIMONLY
 
@@ -106,7 +106,8 @@ CAR (FASTCASST++):
   
   * [ ] Thread the IMU and GPS
   
-  * [ ] Try running the integrator on the pi and send data to computer for rendering and create a new mode called RENDER
+  * [ ] Try running the integrator on the pi and send data to computer for rendering and create a new mode called
+  RENDER
   
   * [ ] Dan said it's possible the RK4 vector and control vector are asynchronous and causing issues. Might need to investigate the RK4 state and the control state and see if I'm dealing with that properly. To do that print time,state,control on both desktop and pi and see if you're off. Maxwell had a good idea to lower the timestep to see if that fixes it.
 
@@ -128,9 +129,9 @@ CAR (FASTCASST++):
   
   * [ ] Test waypoint control - AUTO
 
-META (FASTCASST++):
+# META (FASTCASST++):
 
-  * [ ] Grab an SD card and image a pi and upload it to Google Drive
+  * [X] ~~*Grab an SD card and image a pi and upload it to Google Drive*~~ [2025-09-22]
   
   * [ ] SysID of carbon fiber airplane (Flights + simulation)
 
@@ -175,7 +176,7 @@ META (FASTCASST++):
 
   * [ ] Disconnecting and reconnecting - this would be insane.
 
-RECONFIGURABLE CONTROL for X8 (FASTCASST++):
+# RECONFIGURABLE CONTROL for X8 (FASTCASST++):
 
   * [x] Merge the reconfig branch @done (25-03-26 13:13)
   
@@ -297,15 +298,15 @@ RECONFIGURABLE CONTROL for X8 (FASTCASST++):
 
   * [ ] Add Fault tolerant control?
 
-EXTRAS: 
+# EXTRAS: 
 
   * [ ] Run SIL on Pi with Desktop mode - As in run FASTKit on Raspbian and do away with Emlid
 
   * [ ] Update OpenGL rendering environment to Unreal engine or something like Godot or even Unity
 
-COMPLETED=================================================================:
+# COMPLETED=================================================================:
 
- MIGRATING FASTSENSORS:
+# MIGRATING FASTSENSORS:
 
    * [x] Move all the Arduino codes to the Microcontroller repos @done (25-08-04 09:50)
 
@@ -313,7 +314,7 @@ COMPLETED=================================================================:
 
    * [x] Most of the sensor codes could be put into Microcontrollers honestly since it's plotting data. Some of it went to the python repo as well @done (25-08-04 09:50)
 
-RENDERING:
+# RENDERING:
 
   * [x] Create CAD for all vehicles you are using @done (21-11-06 11:30)
     * [x] Car (Tank) #@done (21-10-29 23:37)
@@ -321,7 +322,7 @@ RENDERING:
     * [x] Quad #@done (21-09-30 20:40)
     * [x] X8 @done (21-11-06 11:30)
 
-EXTRA STUFF:
+# EXTRA STUFF:
   
   * [x] Change the name to FASTCASST - Configurable Autopilot and Simulation Software Tool @done (23-01-30 16:13)
 
@@ -329,13 +330,13 @@ EXTRA STUFF:
 
   * [x] Hey the FASTDuino code is horribly hacked together. Would be nice to actually streamline the code. That is use the sensors and hardware class and rcio class so that the ino is a bit more high level. @done (23-12-05 10:39)  
 
-FASTPILOT:
+# FASTPILOT:
 
  * [x] Fork code to www.gitlab.com:Montalvo/FASTPilot.git - To do this just put the MODELS in FASTPilot. So all you need to do is edit the MakeFile to reference that FASTPilot folder but main.cpp will still be in github @done (22-12-02 09:50)
 
  * [x] Only fork code to FASTPilot in the event you are developing code that does not already exist in print @done (22-12-02 09:50)
 
-HIL:
+# HIL:
 
   * [x] For HIL - use the HIL code from MultiSAT++ for FASTsim @done (22-05-24 18:50)
 
@@ -377,7 +378,7 @@ HIL:
 
   * [x] Increase baudrate for HIL to 115200 @done (22-12-03 07:55)
 
-GROUND STATION:
+# GROUND STATION:
 
   * [x] Create a ground station in Python for AUTO Mode (right now this is in Processing) (This will work for HIL mode as well since the Pi will be sending telemetry data) @done (22-06-13 15:38)
 
@@ -385,7 +386,7 @@ GROUND STATION:
 
   * [x] For telemetry think about writing a groundstation in python using a GUI. That might a lot easier to plot given the fact that you can use matplotlib (take a look at LISA simulation for help on GUIs and plots) Would be cool to have GUI run in SIL mode. According to the docs online you can have C++ create a text file and then Python read the file. How do we prevent both programs reading the same file? Have C++ increment [NUM].txt and then have Python read the latest. That should work @done (22-06-04 17:59)
 
-AVIATION:
+# AVIATION:
 
  * [x] Update Quadcopter and Airplane dynamics @done (22-04-12 20:38)
  * [x] Run SIMONLY simulations with quadcopter and airplane models @done (22-04-22 16:21)
@@ -393,7 +394,7 @@ AVIATION:
  * [x] Run SIL airplane models @done (22-04-24 20:43)
  * [x] Plot all data and email to team @done (22-04-24 20:43)
 
-ANTX(DID NOT COMPLETE THESE TASKS):
+# ANTX(DID NOT COMPLETE THESE TASKS):
 
  * [x] Make sure that the Batwing is working properly in Demo mode using SIMPILOT @done (22-04-24 20:43)
  
@@ -405,7 +406,7 @@ ANTX(DID NOT COMPLETE THESE TASKS):
 
  * [x] Publish another paper? @done (22-04-24 20:44)
 
-FASTSim SysML:
+# FASTSim SysML:
 
    * [x] I think to make sure you have a simple transition you need to move all the C++ and HIL repos into MultiSAT as well. The reason being because HIL the simulation does not work right now in FASTSim. I think eventually you can deprecate the HIL simulation but just to make sure things still work properly you need to put a running copy into MultiSAT so it still works during the transition @done (21-12-28 22:19)
    * [x] Move HIL into C++ directory and delete HIL (call folder Hardware or something) @done (21-12-28 22:33)
@@ -443,7 +444,7 @@ FASTSim SysML:
    * [x] Merge all changes above @done (22-01-20 23:31)
    * [x] Delete HIL on Github. @done (22-01-20 23:35) I archived this instead
 
-FASTSim:
+# FASTSim:
 
   * [x] Have someone else walk through README and ensure they can compile code in SIMONLY mode and run process logs to plot done (21-08-24 14:46) #Running on Laptop but not Desktop - MJC
 
@@ -493,7 +494,7 @@ FASTSim:
 
  * [x] Add Keyboard inputs to RCIO so that you can control things with a keyboard #@done (21-11-07 04:56)
 
-BattleBot:
+# BattleBot:
 
   * [x] Create a CAD for the vehicle #@done (21-10-15 11:27)
 
@@ -509,7 +510,7 @@ BattleBot:
 
   * [x] Run AUTO mode on RPI for battle bot #@done (21-10-15 11:28)
 
-SIMPILOT:
+# SIMPILOT:
 
  * [x] Make sure the RCInput main.cpp test works in the Test_Scripts folder in HIL.git #@done (21-09-23 12:15)
 
@@ -535,7 +536,7 @@ SIMPILOT:
 
  * [x] Do the same for FASTsim SIMONLY, SIL #@done (21-10-01 12:39)
 
-FASTSim Extra Sensors:
+# FASTSim Extra Sensors:
 
  * [x] Add barometer @done (21-12-17 16:21)
  * [x] Add ADC @done (21-12-17 16:21)

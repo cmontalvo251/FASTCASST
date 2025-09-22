@@ -10,14 +10,16 @@ import numpy as np
 
 class GPS():
     def __init__(self):
+        ##Set defaults
         self.latitude = -99
         self.longitude = -99
+        self.altitude = -99
+        self.speed = -99
         self.latitude_vec = []
         self.longitude_vec = []
         self.time_vec = []
         self.x_vec = []
         self.y_vec = [] 
-        self.altitude = -99
         self.filterConstant = 0.2
         self.NM2FT=6076.115485560000
         self.FT2M=0.3048
@@ -96,7 +98,6 @@ class GPS():
         if (RunTime - self.GPSTime) > self.GPSNEXT:
             GPSTime = RunTime
             self.update()
-        
         
     def update(self):
         if not self.SIL:

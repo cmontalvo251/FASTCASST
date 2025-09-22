@@ -6,7 +6,7 @@ class RCIO():
 	SERVO_MID = 1.504 #ms
 	SERVO_MAX = 2.010 #ms
 	def __init__(self,NUMPWM):
-		self.rcin = RCInput(self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX,6)
+		self.rcin = RCInput(self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX)
 		self.rcout = []
 		self.NUMPWM = NUMPWM
 		for i in range(0,NUMPWM):
@@ -54,11 +54,12 @@ class PWM():
             pwm_unexport.write(str(self.channel))
 
     def initialize(self):
-        if not os.path.exists(self.SYSFS_PWM_PATH_BASE):
-            raise OSError("rcio_pwm module wasn't loaded")
         if self.SIL:
             print('Emulating PWM signal. Initializing pin.....',self.channel)
         else:
+            if not os.path.exists(self.SYSFS_PWM_PATH_BASE):
+                print("Looking for rcio_pwm module in PATH = ",self.SYSFS_PWM_PATH_BASE,"....couldn't find it")
+                raise OSError("rcio_pwm module wasn't loaded")
             if not os.path.exists(self.channel_path):
                 with open(self.SYSFS_PWM_EXPORT_PATH, "a") as pwm_export:
                     pwm_export.write(str(self.channel))
@@ -101,7 +102,6 @@ class PWM():
                 pwm_duty.write(str(period_ns))
 
 class RCInput():
-    CHANNEL_COUNT = 14
     channels = []
 
     def __init__(self,SERVO_MIN,SERVO_MID,SERVO_MAX,num_channels=9):
@@ -112,7 +112,7 @@ class RCInput():
         self.num_channels = num_channels
         self.rcsignals = [0]*num_channels
         self.SIL = util.isSIL()
-        for i in range(0, self.CHANNEL_COUNT):
+        for i in range(0, self.num_channels):
             try:
                 if self.SIL:
                     f = i

@@ -12,14 +12,13 @@
 
 #####################PARAMETERS#################
 NUMOUTPUTS = 20  #Number of data outputs (20 for car and boat, 22 for airplane)
-NUMPWM = 2 #Number of PWM signals for car and boat
-#NUMPWM = 4 #number of PWM signals for airplane
+NUMPWM = 2 #Number of PWM signals (2 for car and boat, 4 for airplane)
+VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
+################################################
 
-##Pick the vehicle you want to use
+##Import the vehicle controller based on your selection
 import sys
-#sys.path.append('../libraries/V_car')
-#sys.path.append('../libraries/V_airplane')
-sys.path.append('../libraries/V_boat')
+sys.path.append('../libraries/V_'+VEHICLE)
 import controller
 vehicle = controller.CONTROLLER()
 

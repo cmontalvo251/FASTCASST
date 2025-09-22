@@ -1,4 +1,8 @@
-===================3/18/2025==============
+# ===================9/22/2025==============
+
+Hello again. Took me a while to actually get back in here and code. Currently working on combining car.py, plane.py and boat.py into one large fast.py script. It currently works in SIL mode on a fresh install of ubuntu and I edited the readme to reflect subtle issues I ran into. 
+
+# ===================3/18/2025==============
 
 I have not touched the software in almost 2 years. However I had 3 students work on FASTCASST
 this past year
@@ -9,7 +13,7 @@ this past year
 
 tasks have been added to reflect that
 
-===================5/11/2023==============
+# ===================5/11/2023==============
 
 Alright the LPS22 is up and runnning in FASTCASST
 and the BNO055 is up and running in FASTCASST....independently 
@@ -74,8 +78,7 @@ Sense P(rad/s)  -0.0006188019342797353 0.0032256299791546864
 Sense Q(rad/s)  0.0009154440359708161 0.0023552036709843104
 Sense R(rad/s)  -0.0018263469826367287 0.002249936419091247
 
-
-===================5/8/2023===============
+# ===================5/8/2023===============
 
 LSP22 is definitely a better sensor. I also attached a bread board
 to the wooden drone so I can more easily plug and play sensors.

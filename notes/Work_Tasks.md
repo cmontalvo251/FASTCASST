@@ -91,7 +91,7 @@
   * [x] Edit car.py, plane.py and boat.py to be a singular file with different settings atthe top of the file (if it gets complex add extra .py files) @done (25-07-25 19:50)
   * [x] Update the FASTCASST notes and README based on car.py and plane.py progress @done (25-08-15 16:14)
   * [X] ~~*Test car.py, plane.py and boat.py on HW (now known as fast.py)*~~ [2025-09-22] - fast.py runs but no idea if it works
-  * [ ] Test receiver signals (6 channels work but I can't get the rest of the switches to work. Probably a TX setting.)
+  * [ ] Test receiver signals (5 channels work but I can't get the 6th channel to work. Probably a TX setting.)
   * [ ] Test servos
   * [ ] Test LED
   * [ ] Test IMU

@@ -116,10 +116,10 @@ class RCInput():
             try:
                 if self.SIL:
                     f = i
-                    print('Running in SIL mode....emulating RCinput = ',f)
+                    print('Running in SIL mode....emulating RCinput = ',i)
                 else:
                     f = open("/sys/kernel/rcio/rcin/ch%d" % i, "r")
-                    print('Opening RCinput channel = ',f)
+                    print('Opening RCinput channel = ',i)
                 self.channels.append(f)
             except: 
                 print ("Can't open file /sys/kernel/rcio/rcin/ch%d" % i)

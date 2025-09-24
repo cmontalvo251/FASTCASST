@@ -1,3 +1,7 @@
+# ===================9/24/2025==============
+
+Started testing the fast.py script on RPI and got the TX and RX to work properly. You need to setup the TX properly to get all the channels to work properly. Now on to the next hardware test. 
+
 # ===================9/22/2025==============
 
 Hello again. Took me a while to actually get back in here and code. Currently working on combining car.py, plane.py and boat.py into one large fast.py script. It currently works in SIL mode on a fresh install of ubuntu and I edited the readme to reflect subtle issues I ran into. 

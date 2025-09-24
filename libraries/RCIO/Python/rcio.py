@@ -102,6 +102,13 @@ class PWM():
 
 class RCInput():
     channels = []
+    #Note for the FS-TH9X receiver you need to make sure you setup the channels
+    #properly into the right order.  The order should be: TAER P1 3POS where
+    #P1 is a potentiometer for arming because one of the switches broke
+    #and then 3POS is the 3 position switch. Again the 2 auxiliary channels
+    #can be whatever you want but this code operates under the assumption
+    #that channel 5 is arming and channel 6 is autopilot mode
+    #the first 4 channels are then the standard TAER
 
     def __init__(self,SERVO_MIN,SERVO_MID,SERVO_MAX,num_channels=9):
         print('Initializing RCInput....')

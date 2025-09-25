@@ -92,8 +92,8 @@
   * [x] Update the FASTCASST notes and README based on car.py and plane.py progress @done (25-08-15 16:14)
   * [X] ~~*Test car.py, plane.py and boat.py on HW (now known as fast.py)*~~ [2025-09-22] - fast.py runs but no idea if it works
   * [X] ~~*Test receiver signals (All 6 channels work. Need to edit RX settings to make sure it works)*~~ [2025-09-24]
-  * [ ] Test servos
   * [ ] Test LED
+  * [ ] Test servos
   * [ ] Test IMU
   * [ ] Test barometer
   * [ ] Test GPS

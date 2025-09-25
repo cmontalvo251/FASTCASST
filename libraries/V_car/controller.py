@@ -12,10 +12,11 @@ class CONTROLLER():
         return
 
     def loop(self,RunTime,rcin):#,gps_llh,rpy,g,baro):
-        controls = [-1,0] #-1 is minimum and 0 is mid
+        defaults = [0,0] #-1 is minimum and 0 is mid, 1 is maximum
+        controls = [0,0] 
         controls[0] = rcin.throttlerc
         controls[1] = rcin.rollrc
-        return controls
+        return controls,defaults
 
         """
         #Find the distance and angle from the car to the next waypoint

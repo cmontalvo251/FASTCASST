@@ -88,13 +88,13 @@ while (True):
 
     #Run your control loop
     #controls = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy,g,baro)
-    controls = vehicle.loop(RunTime,rc.rcin)
+    controls,defaults = vehicle.loop(RunTime,rc.rcin)
 
     #Independent Safety precautions
     if(rc.rcin.armswitch < 1500):
         led.setColor('Red')
         #send rc defaults
-        #rc.set_defaults()
+        #rc.set_commands(defaults)
     elif(rc.rcin.armswitch > 1500) and (rc.rcin.throttle < 1100):
         led.setColor('Green')
         #send rc commands

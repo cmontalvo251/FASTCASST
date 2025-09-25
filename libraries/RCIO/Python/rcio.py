@@ -2,29 +2,29 @@ import util
 import os.path
 
 class RCIO():
-	SERVO_MIN = 0.995 #ms
-	SERVO_MID = 1.504 #ms
-	SERVO_MAX = 2.010 #ms
-	def __init__(self,NUMPWM):
-		self.rcin = RCInput(self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX)
-		self.rcout = []
-		self.NUMPWM = NUMPWM
-		for i in range(0,NUMPWM):
-			self.rcout.append(PWM(i))
-			self.rcout[i].initialize()
-			self.rcout[i].set_period(50)
-			self.rcout[i].enable()
+    SERVO_MIN = 0.995 #ms
+    SERVO_MID = 1.504 #ms
+    SERVO_MAX = 2.010 #ms
+    def __init__(self,NUMPWM):
+        self.rcin = RCInput(self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX)
+        self.rcout = []
+        self.NUMPWM = NUMPWM
+        for i in range(0,NUMPWM):
+            self.rcout.append(PWM(i))
+            self.rcout[i].initialize()
+            self.rcout[i].set_period(50)
+            self.rcout[i].enable()
 
-	def set_defaults(self):
-		for i in range(0,self.NUMPWM):
-			if i == 0:
-				self.rcout[i].set_duty_cycle(self.SERVO_MIN)
-			else:
-				self.rcout[i].set_duty_cycle(self.SERVO_MID)
-
-	def set_commands(self,controls):
-		for i in range(0,self.NUMPWM):
-			self.rcout[i].set_duty_cycle(controls[i]*(self.SERVO_MAX-self.SERVO_MID)+self.SERVO_MID)
+    def set_commands(self,commands):
+        for i in range(0,self.NUMPWM):
+            ##Compute command from -1 to 1
+            command = commands[i]*(self.SERVO_MAX-self.SERVO_MID)+self.SERVO_MID
+            #Saturation block
+            if(command < self.SERVO_MIN):
+                command = self.SERVO_MIN
+            if(command > self.SERVO_MAX):
+                command = self.SERVO_MAX
+            self.rcout[i].set_duty_cycle()
 
 class PWM():
     SYSFS_PWM_PATH_BASE = "/sys/class/pwm/pwmchip0/"

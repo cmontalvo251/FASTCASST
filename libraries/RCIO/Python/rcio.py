@@ -138,9 +138,9 @@ class RCInput():
             value = self.read(i)
             self.rcsignals[i] = value
         #Turn receiver commands to floats between -1 and 1
-        self.rollrc = self.convert(self.rcsignals[0])
-        self.pitchrc = self.convert(self.rcsignals[1])
-        self.throttlerc = self.convert(self.rcsignals[2])
+        self.throttlerc = self.convert(self.rcsignals[0])
+        self.rollrc = self.convert(self.rcsignals[1])
+        self.pitchrc = self.convert(self.rcsignals[2])
         self.yawrc = self.convert(self.rcsignals[3])
         #Except for the armswitch and autopilot - Need to at least convert them to floats
         self.armswitch = float(self.rcsignals[4])
@@ -150,7 +150,7 @@ class RCInput():
         ##Check and see if system is ARMED
         if self.ARMED:
             #System is armed. Do we want to disarm?
-            if rc.rcin.armswitch < 1500:
+            if self.armswitch < 1500:
                 self.ARMED = False
                 self.color = 'Red' #for no go
         else:

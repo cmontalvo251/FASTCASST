@@ -12,11 +12,26 @@ class CONTROLLER():
         return
 
     def loop(self,RunTime,rcin):#,gps_llh,rpy,g,baro):
+        ##Set defaults
         defaults = [0,0] #-1 is minimum and 0 is mid, 1 is maximum
-        controls = [0,0] 
-        controls[0] = rcin.throttlerc
-        controls[1] = rcin.rollrc
-        return controls,defaults
+        color = 'Red' #default to red color if something isn't working right
+
+        ##Initialize control commands
+        controls = [0,0]
+
+        ##Create controls commands based on input from receiver
+        if rcin.autopilot < 1500:
+            #Manual control
+            color = 'Green'
+            controls[0] = rcin.throttlerc
+            controls[1] = rcin.rollrc
+        elif rcin.autopilot > 1500:
+            #Autopilot
+            color = 'Blue'
+            controls[0] = 0
+            controls[1] = 1
+            
+        return controls,defaults,color
 
         """
         #Find the distance and angle from the car to the next waypoint

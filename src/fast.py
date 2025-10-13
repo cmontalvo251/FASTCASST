@@ -69,15 +69,16 @@ StartTime = time.time()
 #This runs on repeat until code is killed
 print('Running main loop....')
 import numpy as np
+
 while (True):
 
     #Get Time
     RunTime = time.time() - StartTime
     
     #Read in receiver commands
-    rc.rcin.readALL()
+    ARMED,safety_color = rc.rcin.readALL()
 
-    #Get acceleration, gyroscope, magnetometer & temperature data
+    #Get acceleration,gyroscope, magnetometer & temperature data
     #a,g,m,rpy,temp = imu.getALL()
 
     #Get GPS update if it's ready
@@ -88,21 +89,22 @@ while (True):
 
     #Run your control loop
     #controls = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy,g,baro)
-    controls,defaults = vehicle.loop(RunTime,rc.rcin)
+    controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin)
 
-    #Independent Safety precautions
-    if(rc.rcin.armswitch < 1500):
-        led.setColor('Red')
-        #send rc defaults
-        #rc.set_commands(defaults)
-    elif(rc.rcin.armswitch > 1500) and (rc.rcin.throttle < 1100):
-        led.setColor('Green')
-        #send rc commands
-        #rc.set_commands(controls)
+    #Check if we are armed or not
+    if ARMED:
+        led.setColor(control_color)
+        pwm_command = controls
+    else:
+        led.setColor(safety_color)
+        pwm_command = defaults
+
+    ##Send PWM signals to rcio
+    #rc.set_commands(pwm_command)
 
     #Print to Home
     #print(f"{RunTime:4.2f}",rc.rcin.rcsignals,gps_llh.latitude,gps_llh.longitude,gps_llh.altitude,baro.ALT,rpy,gps_llh.speed,g,controls)
-    print(f"{RunTime:4.2f}",rc.rcin.rcsignals)
+    print(f"{RunTime:4.2f}",rc.rcin.rcsignals,ARMED,safety_color,control_color)
 
     #Log data
     logger.outdata[0] = np.round(RunTime,5)

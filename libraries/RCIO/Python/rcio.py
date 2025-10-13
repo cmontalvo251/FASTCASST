@@ -118,6 +118,8 @@ class RCInput():
         self.num_channels = num_channels
         self.rcsignals = [0]*num_channels
         self.SIL = util.isSIL()
+        self.ARMED = False #set armed to false
+        self.color = 'Red' #for the LED
         for i in range(0, self.num_channels):
             try:
                 if self.SIL:
@@ -140,9 +142,31 @@ class RCInput():
         self.pitchrc = self.convert(self.rcsignals[1])
         self.throttlerc = self.convert(self.rcsignals[2])
         self.yawrc = self.convert(self.rcsignals[3])
-        self.armswitch = self.convert(self.rcsignals[4])
-        self.autopilot = self.convert(self.rcsignals[5])
+        #Except for the armswitch and autopilot - Need to at least convert them to floats
+        self.armswitch = float(self.rcsignals[4])
+        self.autopilot = float(self.rcsignals[5])
         #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
+
+        ##Check and see if system is ARMED
+        if self.ARMED:
+            #System is armed. Do we want to disarm?
+            if rc.rcin.armswitch < 1500:
+                self.ARMED = False
+                self.color = 'Red' #for no go
+        else:
+            #system is not armed. Let's try and arm it
+            #Independent Safety precautions to arm system
+            if (self.armswitch > 1500) and (self.throttlerc < 1100):
+                self.ARMED = True
+                self.color = 'Green' #for go
+            #Let's say armswitch is is >1500 but throttle is not down
+            if (self.armswitch > 1500) and (self.throttlerc > 1100):
+                #we aren't going to arm the system but....
+                #we are going to tell the user that you need to have throttle down
+                self.color = 'Yellow'
+                
+        return self.ARMED,self.color
+
 
     def convert(self,signal):
         return (float(signal) - self.SERVO_MID)/((self.SERVO_MAX-self.SERVO_MIN)/2)

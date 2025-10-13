@@ -110,7 +110,7 @@ class RCInput():
     #that channel 5 is arming and channel 6 is autopilot mode
     #the first 4 channels are then the standard TAER
 
-    def __init__(self,SERVO_MIN,SERVO_MID,SERVO_MAX,num_channels=9):
+    def __init__(self,SERVO_MIN,SERVO_MID,SERVO_MAX,num_channels=6):
         print('Initializing RCInput....')
         self.SERVO_MID = SERVO_MID
         self.SERVO_MAX = SERVO_MAX
@@ -137,39 +137,44 @@ class RCInput():
         for i in range(self.num_channels):
             value = self.read(i)
             self.rcsignals[i] = value
-        #Turn receiver commands to floats between -1 and 1
-        self.throttlerc = self.convert(self.rcsignals[0])
-        self.rollrc = self.convert(self.rcsignals[1])
-        self.pitchrc = self.convert(self.rcsignals[2])
-        self.yawrc = self.convert(self.rcsignals[3])
-        #Except for the armswitch and autopilot - Need to at least convert them to floats
+        ##Map rcsignals to TAER
+        self.throttle = float(self.rcsignals[0])
+        self.roll = float(self.rcsignals[1])
+        self.pitch = float(self.rcsignals[2])
+        self.yaw = float(self.rcsignals[3])
         self.armswitch = float(self.rcsignals[4])
         self.autopilot = float(self.rcsignals[5])
+        #Turn TAER commands to floats between -1 and 1
+        self.throttlerc = self.convert(self.throttle)
+        self.rollrc = self.convert(self.roll)
+        self.pitchrc = self.convert(self.pitch)
+        self.yawrc = self.convert(self.yaw)
         #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
 
         ##Check and see if system is ARMED
-        if self.ARMED:
-            #System is armed. Do we want to disarm?
-            if self.armswitch < 1500:
-                self.ARMED = False
-                self.color = 'Red' #for no go
-        else:
+        if not self.ARMED:
             #system is not armed. Let's try and arm it
             #Independent Safety precautions to arm system
-            if (self.armswitch > 1500) and (self.throttlerc < 1100):
+            if (self.armswitch > 1500) and (self.throttle < 1100):
                 self.ARMED = True
                 self.color = 'Green' #for go
             #Let's say armswitch is is >1500 but throttle is not down
-            if (self.armswitch > 1500) and (self.throttlerc > 1100):
+            if (self.armswitch > 1500) and (self.throttle > 1100):
                 #we aren't going to arm the system but....
                 #we are going to tell the user that you need to have throttle down
                 self.color = 'Yellow'
+
+        #No matter what though
+        if self.armswitch < 1500:
+            self.ARMED = False
+            self.color = 'Red' #for no go
+
                 
         return self.ARMED,self.color
 
 
     def convert(self,signal):
-        return (float(signal) - self.SERVO_MID)/((self.SERVO_MAX-self.SERVO_MIN)/2)
+        return (signal - self.SERVO_MID)/((self.SERVO_MAX-self.SERVO_MIN)/2)
     
     def read(self, ch):
         if not self.SIL:

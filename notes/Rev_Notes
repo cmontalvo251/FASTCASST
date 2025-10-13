@@ -1,3 +1,18 @@
+# ==================10/13/2025==============
+
+Finished testing the LEDs. Turns out the arming switch logic was a bit complex. This is what I have. 
+
+Red - disarmed
+Yellow - trying to arm but throttle is high
+Green - armed and manual control
+Blue - armed and autopilot control
+
+So the LED works and the arming logic is where I want it to be where the system won't arm unless throttle is low and you can't accidentally disarm by hitting the autopilot switch since they are different channels. 
+
+Also changed the RCIN num_channels to 6 instead of 9 since that's just unneccessry. 
+
+Next hardware test is to test the servos. That will require power to the servo rail which needs a battery. Shouldn't be a problem as there is a battery on the desk. 
+
 # ===================9/24/2025==============
 
 Started testing the fast.py script on RPI and got the TX and RX to work properly. You need to setup the TX properly to get all the channels to work properly. Now on to the next hardware test. 

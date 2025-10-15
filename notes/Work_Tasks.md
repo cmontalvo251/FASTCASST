@@ -18,6 +18,8 @@
   
   * [ ] Run the MultiSAT++ HIL sim with an Arduino and make sure that FASTKit has the same functionality so you don't have to use MultiSAT++ anymore for CubeSat stuff
 
+  * [ ] Think about speeding up HIL by sending a 16 bit quantized number rather than a 2 character bytes at a time. Would be a lot easier to create a range like -100,100 or something like that and then 65,535 numbers in between
+
 # TOSIM INTEGRATION (FASTCASST++):
 
  * [x] Move TOSIM from Gitlab over to Github @done (24-01-11 09:33)

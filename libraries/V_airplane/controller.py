@@ -10,7 +10,34 @@ class CONTROLLER():
         self.R = 6371*10**3 #Radius of the Earth in m
         self.NUMCONTROLS = 4 #throttle, aileron, elevator, rudder
         return
+    
+    def loop(self,RunTime,rcin):#,gps_llh,rpy,g,baro):
+        ##Set defaults
+        defaults = [-1,0,0,0] #-1 is minimum and 0 is mid, 1 is maximum
+        color = 'Red' #default to red color if something isn't working right
 
+        ##Initialize control commands
+        controls = [-1,0,0,0]
+
+        ##Create controls commands based on input from receiver
+        if rcin.autopilot < 1500:
+            #Manual control
+            color = 'Green'
+            controls[0] = rcin.throttlerc
+            controls[1] = rcin.rollrc
+            controls[2] = rcin.pitchrc
+            controls[3] = rcin.yawrc   
+        elif rcin.autopilot > 1500:
+            #Autopilot
+            color = 'Blue'
+            controls[0] = 0.5
+            controls[1] = 1
+            controls[2] = -1
+            controls[3] = 1
+            
+        return controls,defaults,color
+
+    """
     def loop(self,RunTime,rcin,gps_llh,rpy,g,baro):
         #Find the distance and angle from the car to the next waypoint
         d_long = gps_llh.longitude - self.wp[self.wp_index, 0]
@@ -53,3 +80,4 @@ class CONTROLLER():
                 controls[i] = 1
 
         return controls
+    """

@@ -24,7 +24,7 @@ class RCIO():
                 command = self.SERVO_MIN
             if(command > self.SERVO_MAX):
                 command = self.SERVO_MAX
-            self.rcout[i].set_duty_cycle()
+            self.rcout[i].set_duty_cycle(command)
 
 class PWM():
     SYSFS_PWM_PATH_BASE = "/sys/class/pwm/pwmchip0/"
@@ -94,9 +94,8 @@ class PWM():
     def set_duty_cycle(self, period):
         if not self.is_initialized:
             raise RuntimeError("PWM not initialized. Call initialize first")
-
-        period_ns = int(period*1e6)
         if not self.SIL:
+            period_ns = int(period*1e6)
             with open(self.channel_path + "duty_cycle", "w") as pwm_duty:
                 pwm_duty.write(str(period_ns))
 

@@ -12,8 +12,8 @@
 
 #####################PARAMETERS#################
 NUMOUTPUTS = 20  #Number of data outputs (20 for car and boat, 22 for airplane)
-NUMPWM = 2 #Number of PWM signals (2 for car and boat, 4 for airplane)
-VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
+NUMPWM = 4 #Number of PWM signals (2 for car and boat, 4 for airplane)
+VEHICLE = 'airplane'  #Options are 'car', 'boat', or 'airplane'
 ################################################
 
 ##Import the vehicle controller based on your selection
@@ -94,17 +94,19 @@ while (True):
     #Check if we are armed or not
     if ARMED:
         led.setColor(control_color)
-        pwm_command = controls
+        pwm_commands = controls
     else:
         led.setColor(safety_color)
-        pwm_command = defaults
+        pwm_commands = defaults
 
     ##Send PWM signals to rcio
-    #rc.set_commands(pwm_command)
+    rc.set_commands(pwm_commands)
 
     #Print to Home
     #print(f"{RunTime:4.2f}",rc.rcin.rcsignals,gps_llh.latitude,gps_llh.longitude,gps_llh.altitude,baro.ALT,rpy,gps_llh.speed,g,controls)
-    print(f"{RunTime:4.2f}",rc.rcin.rcsignals,ARMED,safety_color,control_color)
+    #print(f"{RunTime:4.2f}",rc.rcin.rcsignals,ARMED,safety_color,control_color)
+    print(f"{RunTime:4.2f}",rc.rcin.rcsignals,pwm_commands)
+
 
     #Log data
     logger.outdata[0] = np.round(RunTime,5)

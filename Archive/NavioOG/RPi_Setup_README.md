@@ -6,7 +6,7 @@ sudo systemclt disable arducopter
 
 Alright so I am attempting to use vi here and make a README file on board the raspberry pi. wish me luck.
 
-So first thing I did was install raspbian li
+So first thing I did was install raspbian lite
 
 ok fuck vi. using nano again.
 1.) Install Raspian Lite - Collin is going to try and use Emlid Raspbian but I am going to try just using Raspbian Lite and get arducopter from scratch

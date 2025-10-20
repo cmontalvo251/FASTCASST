@@ -1,31 +1,56 @@
 -----How to ssh with USB Ethernet adapter----
 
 On RPI:
+
 a. Plug in ethernet cable and power on
+
 b. Login
+
 c. sudo raspi-config
+
 d. 5 Interfacing options
+
 e. P2 SSH
+
 f. Enable
+
 g. Reboot
+
 h. type hostname into terminal
+
 This will show you what the hostname of the pi is. For the Navio2, the default is navio. You can also see this information by logging on to the RPI and looking at the bottom left.
+
 i. hostname -l
+
 This will show you the IP address from the ethernet cable.
 
+
 On Laptop running linux
+
 a. Plug in ethernet cable (Using ethernet to usb adapter)
+
 b. Go to settings
+
 c. Go to Network
+
 d. Click the settings under USB ethernet
+
 e. Click the IPv4 tab
+
 f. Change the IPv4 Method to "Link-Local Only"
+
 g. Click "Apply" at top right
+
 h. Open Terminal
+
 i. type hostname -l
+
 You need to make sure an IP address is now appearing with the same first 6-digits as the RPI's IP address.
+
 j. type ssh pi@navio.local
+
 k. Type "yes"
+
 l. Enter Password
 
 -------------How to turn off APM-------------

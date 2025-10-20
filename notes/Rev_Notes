@@ -1,3 +1,7 @@
+# ==================10/20/2025==============
+
+Finished testing the PWM signals. Had to edit quite a bit but it all works now. I also used the airplane code since I wanted to test all 4 servos. So I have 1 ESC for throttle and 3 servos for the rest of the airplane. Autopilot also works as well. Next step is the IMU
+
 # ==================10/13/2025==============
 
 Finished testing the LEDs. Turns out the arming switch logic was a bit complex. This is what I have. 

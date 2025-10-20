@@ -102,11 +102,12 @@ while (True):
     ##Send PWM signals to rcio
     rc.set_commands(pwm_commands)
 
-    #Print to Home
+    #DEBUG PRINTS
     #print(f"{RunTime:4.2f}",rc.rcin.rcsignals,gps_llh.latitude,gps_llh.longitude,gps_llh.altitude,baro.ALT,rpy,gps_llh.speed,g,controls)
     #print(f"{RunTime:4.2f}",rc.rcin.rcsignals,ARMED,safety_color,control_color)
-    print(f"{RunTime:4.2f}",rc.rcin.rcsignals,pwm_commands)
-
+    #print(f"{RunTime:4.2f}",rc.rcin.rcsignals[0],rc.rcin.throttle,rc.rcin.throttlerc,controls[0],defaults[0],pwm_commands[0])
+    #Print to Home
+    print(f"{RunTime:4.2f}",rc.rcin.rcsignals,[f"{pwm:1.3f}" for pwm in pwm_commands])
 
     #Log data
     logger.outdata[0] = np.round(RunTime,5)
@@ -128,11 +129,11 @@ while (True):
     logger.outdata[15] = g[0]
     logger.outdata[16] = g[1]
     logger.outdata[17] = g[2]
-    logger.outdata[18] = controls[0]
-    logger.outdata[19] = controls[1]
-    if len(controls) > 2:
-        logger.outdata[20] = controls[2]
-        logger.outdata[21] = controls[3]
+    logger.outdata[18] = pwm_commands[0]
+    logger.outdata[19] = pwm_commands[1]
+    if len(pwm_commands) > 2:
+        logger.outdata[20] = pwm_commands[2]
+        logger.outdata[21] = pwm_commands[3]
     """
     logger.println()
 

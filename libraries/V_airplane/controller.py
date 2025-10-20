@@ -34,7 +34,6 @@ class CONTROLLER():
             controls[1] = 1
             controls[2] = -1
             controls[3] = 1
-            
         return controls,defaults,color
 
     """

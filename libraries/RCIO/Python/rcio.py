@@ -149,7 +149,6 @@ class RCInput():
         self.pitchrc = self.convert(self.pitch)
         self.yawrc = self.convert(self.yaw)
         #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
-
         ##Check and see if system is ARMED
         if not self.ARMED:
             #system is not armed. Let's try and arm it
@@ -162,18 +161,14 @@ class RCInput():
                 #we aren't going to arm the system but....
                 #we are going to tell the user that you need to have throttle down
                 self.color = 'Yellow'
-
         #No matter what though
         if self.armswitch < 1500:
             self.ARMED = False
             self.color = 'Red' #for no go
-
-                
         return self.ARMED,self.color
 
-
     def convert(self,signal):
-        return (signal - self.SERVO_MID)/((self.SERVO_MAX-self.SERVO_MIN)/2)
+        return (signal/1000.0 - self.SERVO_MID)/((self.SERVO_MAX-self.SERVO_MIN)/2)
     
     def read(self, ch):
         if not self.SIL:

@@ -20,10 +20,9 @@ h. type hostname into terminal
 
 This will show you what the hostname of the pi is. For the Navio2, the default is navio. You can also see this information by logging on to the RPI and looking at the bottom left.
 
-i. hostname -l
+i. hostname -i
 
 This will show you the IP address from the ethernet cable.
-
 
 On Laptop running linux
 
@@ -43,7 +42,7 @@ g. Click "Apply" at top right
 
 h. Open Terminal
 
-i. type hostname -l
+i. type hostname -i
 
 You need to make sure an IP address is now appearing with the same first 6-digits as the RPI's IP address.
 

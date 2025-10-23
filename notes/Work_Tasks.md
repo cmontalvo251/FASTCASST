@@ -102,6 +102,7 @@
   * [ ] Test barometer
   * [ ] Test Vehicle controller - Car is fine
   * [ ] Test Data logger
+  * [ ] Test telemetry unit
   * [ ] Ground test of car
   
 # CAR (FASTCASST++):

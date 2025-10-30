@@ -1,4 +1,4 @@
-# SATELLITE (FASTCASST++):
+# SATELLITE (FASTCASST):
 
   * [x] Check that cubesat spinning with q=0,r=0 only spins about p when I is diagonal @done (22-10-28 09:43)
 
@@ -22,19 +22,17 @@
 
 # TOSIM INTEGRATION (FASTCASST++):
 
- * [x] Move TOSIM from Gitlab over to Github @done (24-01-11 09:33)
+  * [x] Move TOSIM from Gitlab over to Github @done (24-01-11 09:33)
 
- * [x] Compile TOSIM code and run a candidate simulation and generate plots @done (24-01-11 20:24)
+  * [x] Compile TOSIM code and run a candidate simulation and generate plots @done (24-01-11 20:24)
 
- * [ ] Add the capability to simulate multiple vehicles in FASTCASST
- 
- * [ ] Rename the Software FASTCASST++
+  * [ ] Add the tether model into FASTCASST from MultiSAT++ (Gitlab) and for now make the reel point at 0,0
 
- * [ ] Add the tether model into FASTCASST from MultiSAT++ (Gitlab)
+  * [ ] Add quadcopter and airplane mechanics from TOSIM
 
- * [ ] Add quadcopter and airplane mechanics from TOSIM
+  * [ ] At input files to the tether input file to make the reel point move and output the x,y,z position of the reel point and add it to the animation routine
 
- * [ ] Simulate candidate TOSIM sim in FASTCASST++ and compare the simulations
+  * [ ] Simulate candidate TOSIM sim in FASTCASST++ and compare the simulations
 
 # WOODEN DRONE (ARDUINO IDE):
 
@@ -316,7 +314,7 @@
 
   * [ ] Update OpenGL rendering environment to Unreal engine or something like Godot or even Unity
 
-# COMPLETED=================================================================:
+# ======================================COMPLETED==================================================:
 
 # MIGRATING FASTSENSORS:
 

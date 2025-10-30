@@ -1,3 +1,7 @@
+# ==================10/30/2025==============
+
+Finished testing the IMU and implementing Aramis' AHRS filter. I tested roll pitch and yaw as well as the angular velocities and made sure to convert to deg/s. It all works now which is nice. Next step is the barometer. Note I also crossed off the controller because I tested the logic already for the airplane. The waypoint or even inner loop controller for the airplane is not tested but the logic is there so you would just need to ground test that when you're ready. 
+
 # ==================10/20/2025==============
 
 Finished testing the PWM signals. Had to edit quite a bit but it all works now. I also used the airplane code since I wanted to test all 4 servos. So I have 1 ESC for throttle and 3 servos for the rest of the airplane. Autopilot also works as well. Next step is the IMU

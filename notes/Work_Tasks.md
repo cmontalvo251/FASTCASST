@@ -96,11 +96,10 @@
   * [X] ~~*Test receiver signals (All 6 channels work. Need to edit RX settings to make sure it works)*~~ [2025-09-24]
   * [X] ~~*Test LED(also added arm logic. See rev notes)*~~ [2025-10-13]
   * [X] ~~*Test servos - works for airplane. ESC and 3 servos*~~ [2025-10-20]
-  * [ ] Test IMU
+  * [X] ~~*Test IMU - implemented AHRS filter and was able to test on bench.*~~ [2025-10-30]
+  * [X] ~~*Test Vehicle controller - techinically I did this already with the airplane. It's not really a controller but it still works fundamentally*~~ [2025-10-30]
   * [ ] Test barometer
   * [ ] Test GPS
-  * [ ] Test barometer
-  * [ ] Test Vehicle controller - Car is fine
   * [ ] Test Data logger
   * [ ] Test telemetry unit
   * [ ] Ground test of car

@@ -16,8 +16,11 @@ NUMPWM = 4 #Number of PWM signals (2 for car and boat, 4 for airplane)
 VEHICLE = 'airplane'  #Options are 'car', 'boat', or 'airplane'
 ################################################
 
-##Import the vehicle controller based on your selection
+##Import basic utilities
+import numpy as np
 import sys
+
+##Import the vehicle controller based on your selection
 sys.path.append('../libraries/V_'+VEHICLE)
 import controller
 vehicle = controller.CONTROLLER()
@@ -65,21 +68,23 @@ time.sleep(1)
 #Create a time for elapsed time
 print('Setting up Time')
 StartTime = time.time()
+RunTime = 0.0
 
 #This runs on repeat until code is killed
 print('Running main loop....')
-import numpy as np
 
 while (True):
 
     #Get Time
+    LastTime = RunTime
     RunTime = time.time() - StartTime
+    elapsedTime = RunTime - LastTime
     
     #Read in receiver commands
     ARMED,safety_color = rc.rcin.readALL()
 
     #Get acceleration,gyroscope, magnetometer & temperature data
-    #a,g,m,rpy,temp = imu.getALL()
+    a,g,m,rpy,rpy_ahrs,temp = imu.getALL(elapsedTime)
 
     #Get GPS update if it's ready
     #gps_llh.poll(RunTime)
@@ -107,7 +112,7 @@ while (True):
     #print(f"{RunTime:4.2f}",rc.rcin.rcsignals,ARMED,safety_color,control_color)
     #print(f"{RunTime:4.2f}",rc.rcin.rcsignals[0],rc.rcin.throttle,rc.rcin.throttlerc,controls[0],defaults[0],pwm_commands[0])
     #Print to Home
-    print(f"{RunTime:4.2f}",rc.rcin.rcsignals,[f"{pwm:1.3f}" for pwm in pwm_commands])
+    print(f"{RunTime:4.2f}",f"{elapsedTime:1.2f}",rc.rcin.rcsignals,[f"{pwm:1.3f}" for pwm in pwm_commands],rpy,rpy_ahrs)
 
     #Log data
     logger.outdata[0] = np.round(RunTime,5)

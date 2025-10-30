@@ -74,7 +74,7 @@ for i in range(1,len(t)):
     pitch_[i] = theta_ * 180.0/np.pi
     yaw_[i] = psi_ * 180.0/np.pi
     if (yaw_[i] < 0):
-    	yaw_[i] += 360
+        yaw_[i] += 360
     rpy = [roll,pitch,yaw]
     dt = t[i]-t[i-1]
     angle_finder.update(ax[i], ay[i], az[i], gx[i], gy[i], gz[i], mx[i], my[i], mz[i], dt)

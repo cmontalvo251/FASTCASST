@@ -32,6 +32,9 @@ import struct
 import array
 import numpy as np
 import util
+import sys
+sys.path.append('../libraries/AHRS')
+import AHRS
 
 class MPU9250:
 
@@ -346,11 +349,13 @@ class MPU9250:
         [0x81, self.__MPUREG_I2C_SLV0_CTRL]  #Enable I2C and set 1 byte
         ]
 
+        #Initialize AHRS filter
+        self.ahrs = AHRS.AHRS()
+
         self.SIL = util.isSIL()
         if self.SIL:
             print('Running in SIL mode....emulating IMU')
         else:
-
             for i in range(0, MPU_InitRegNum):
                 self.WriteReg(MPU_Init_Data[i][1], MPU_Init_Data[i][0])
                 time.sleep(0.01) # I2C must slow down the write speed, otherwise it won't work
@@ -570,7 +575,7 @@ class MPU9250:
 # returns accel, gyro and mag values
 # -----------------------------------------------------------------------------------------------
 
-    def getALL(self):
+    def getALL(self,dt):
         if self.SIL:
             a = [0,0,9.81]
             g = [0,0,0]
@@ -579,9 +584,15 @@ class MPU9250:
         else:
             a,g,m = self.getMotion9()
             temp = self.temperature
-        self.imufusion(a,g,m)
-        return a,g,m,self.rpy,temp
-    def imufusion(self,a,g,m):
+        #Convert a,g,m to rpy using trigonometry
+        roll,pitch,yaw = self.trigonometry(a,g,m)
+        rpy = [roll,pitch,yaw]
+        #But also use the AHRS filter
+        self.ahrs.update(a[0], a[1], a[2], g[0], g[1], g[2], m[0], m[1], m[2], dt)
+        roll,pitch,yaw = self.ahrs.getEuler()
+        rpy_ahrs = [roll,pitch,yaw]
+        return a,g,m,rpy,rpy_ahrs,temp
+    def trigonometry(self,a,g,m):
         ay = a[0]
         ax = a[1]
         az = a[2]
@@ -596,9 +607,7 @@ class MPU9250:
         roll = phi * 180.0/np.pi
         pitch = theta * 180.0/np.pi
         yaw = psi * 180.0/np.pi
-        self.rpy[0] = roll
-        self.rpy[1] = pitch
-        self.rpy[2] = yaw
+        return roll,pitch,yaw
 
     def R123(self,phi,theta,psi):
         #%compute R such that v(inertial) = R v(body)

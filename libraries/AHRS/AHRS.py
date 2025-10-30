@@ -6,7 +6,9 @@ import numpy as np
 
 class AHRS:
 ##============================= Initial setup =================================
-
+    def __init__(self):
+        self.AHRS()
+        
     def AHRS(self):
 
         self.q0 = 1; self.q1 = 0; self.q2 = 0; self.q3 = 0; self.twoKi = 0; self.twoKp = 2;

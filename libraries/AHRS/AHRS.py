@@ -189,8 +189,8 @@ class AHRS:
     def getEuler(self): #(self, roll, pitch, yaw):
         
         #printf("Q = %lf %lf %lf %lf ",q0,q1,q2,q3);
-        roll = np.arctan2(2*(self.q0*self.q1+self.q2*self.q3), 1-2*(self.q1*self.q1+self.q2*self.q2)) * 180.0/np.pi;
-        pitch = np.arcsin(2*(self.q0*self.q2-self.q3*self.q1)) * 180.0/np.pi;
+        roll = np.arcsin(2*(self.q0*self.q2-self.q3*self.q1)) * 180.0/np.pi;
+        pitch = np.arctan2(2*(self.q0*self.q1+self.q2*self.q3), 1-2*(self.q1*self.q1+self.q2*self.q2)) * 180.0/np.pi;
         yaw = -np.arctan2(2*(self.q0*self.q3+self.q1*self.q2), 1-2*(self.q2*self.q2+self.q3*self.q3)) * 180.0/np.pi;
         return roll, pitch, yaw
 

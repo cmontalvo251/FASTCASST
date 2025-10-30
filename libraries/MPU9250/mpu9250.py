@@ -591,13 +591,15 @@ class MPU9250:
         self.ahrs.update(a[0], a[1], a[2], g[0], g[1], g[2], m[0], m[1], m[2], dt)
         roll,pitch,yaw = self.ahrs.getEuler()
         rpy_ahrs = [roll,pitch,yaw]
-        return a,g,m,rpy,rpy_ahrs,temp
+        ##Before returning g (angular velocity we need to fix the axis system and conver to deg/s
+        gdegs = np.array([g[1],g[0],-g[2]])*180.0/np.pi
+        return a,gdegs,m,rpy,rpy_ahrs,temp
     def trigonometry(self,a,g,m):
         ay = a[0]
         ax = a[1]
         az = a[2]
-        phi = np.arctan2(ay,az)
-        theta = np.arctan2(-ax, (ay*np.sin(phi)+az*np.cos(phi)))
+        phi = -np.arctan2(ay,az)
+        theta = -np.arctan2(-ax, (ay*np.sin(phi)+az*np.cos(phi)))
         bx = m[0]
         by = m[1]
         bz = m[2]

@@ -84,7 +84,10 @@ while (True):
     ARMED,safety_color = rc.rcin.readALL()
 
     #Get acceleration,gyroscope, magnetometer & temperature data
-    a,g,m,rpy,rpy_ahrs,temp = imu.getALL(elapsedTime)
+    #Note I do not recommend using rpy since that is solely using trigonometry
+    #in addition the yaw angle does not work.
+    #rpy_ahrs works really well for obtaining the yaw angle
+    a,gdegs,m,rpy,rpy_ahrs,temp = imu.getALL(elapsedTime) 
 
     #Get GPS update if it's ready
     #gps_llh.poll(RunTime)
@@ -93,7 +96,7 @@ while (True):
     #baro.poll(RunTime)
 
     #Run your control loop
-    #controls = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy,g,baro)
+    #controls = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,g,baro)
     controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin)
 
     #Check if we are armed or not
@@ -112,7 +115,10 @@ while (True):
     #print(f"{RunTime:4.2f}",rc.rcin.rcsignals,ARMED,safety_color,control_color)
     #print(f"{RunTime:4.2f}",rc.rcin.rcsignals[0],rc.rcin.throttle,rc.rcin.throttlerc,controls[0],defaults[0],pwm_commands[0])
     #Print to Home
-    print(f"{RunTime:4.2f}",f"{elapsedTime:1.2f}",rc.rcin.rcsignals,[f"{pwm:1.3f}" for pwm in pwm_commands],rpy,rpy_ahrs)
+    str_pwm = [f"{pwm:1.3f}" for pwm in pwm_commands]
+    str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs]
+    str_g = [f"{gi:2.3f}" for gi in gdegs]
+    print(f"{RunTime:4.2f}",f"{elapsedTime:1.2f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g)
 
     #Log data
     logger.outdata[0] = np.round(RunTime,5)

@@ -54,6 +54,8 @@ led = leds.Led()
 sys.path.append('../libraries/MS5611/')
 import ms5611
 baro = ms5611.MS5611()
+#Calibrate the barometer
+baro.calibrate() #if you don't calibrate sea level defaults to 1013.25
 
 #Setup RCIO (receiver signals and output pwmsignals)
 sys.path.append('../libraries/RCIO/Python')
@@ -85,18 +87,19 @@ while (True):
 
     #Get acceleration,gyroscope, magnetometer & temperature data
     #Note I do not recommend using rpy since that is solely using trigonometry
-    #in addition the yaw angle does not work.
+    #in addition the yaw angle does not work at all
     #rpy_ahrs works really well for obtaining the yaw angle
     a,gdegs,m,rpy,rpy_ahrs,temp = imu.getALL(elapsedTime) 
 
     #Get GPS update if it's ready
     #gps_llh.poll(RunTime)
 
-    #Get pressure for altitude
-    #baro.poll(RunTime)
+    #Get pressure which also converts to altitude (temperature is not currently working to speed up simulation)
+    #If you really want temperature check the baro.poll() function and uncomment the temperature routine
+    #Also keep in mind that the MPU9250 returns temperature automatically
+    baro.poll(RunTime)
 
     #Run your control loop
-    #controls = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,g,baro)
     controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin)
 
     #Check if we are armed or not
@@ -110,15 +113,11 @@ while (True):
     ##Send PWM signals to rcio
     rc.set_commands(pwm_commands)
 
-    #DEBUG PRINTS
-    #print(f"{RunTime:4.2f}",rc.rcin.rcsignals,gps_llh.latitude,gps_llh.longitude,gps_llh.altitude,baro.ALT,rpy,gps_llh.speed,g,controls)
-    #print(f"{RunTime:4.2f}",rc.rcin.rcsignals,ARMED,safety_color,control_color)
-    #print(f"{RunTime:4.2f}",rc.rcin.rcsignals[0],rc.rcin.throttle,rc.rcin.throttlerc,controls[0],defaults[0],pwm_commands[0])
     #Print to Home
-    str_pwm = [f"{pwm:1.3f}" for pwm in pwm_commands]
-    str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs]
-    str_g = [f"{gi:2.3f}" for gi in gdegs]
-    print(f"{RunTime:4.2f}",f"{elapsedTime:1.2f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g)
+    str_pwm = [f"{pwm:1.3f}" for pwm in pwm_commands] #convert pwm commands to 3 sig figs
+    str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
+    str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
+    print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.PRES:.3f}")
 
     #Log data
     logger.outdata[0] = np.round(RunTime,5)
@@ -149,4 +148,6 @@ while (True):
     logger.println()
 
     #sleep so we don't spontaneously explode
-    time.sleep(0.01)
+    #time.sleep(0.01) Since there are sleeps in the barometer you don't need this anymore.
+    #Also all the different sensor updates and calculations take so much time that the system won't spontaneously
+    #explode. However, if you start debugging and turning things off it easily could....

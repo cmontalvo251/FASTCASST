@@ -255,6 +255,10 @@ class MS5611:
 				self.readPressure()
 				
 				#and then do the same for temperature
+				#Currently have temperature comments to save
+				#BAROWAIT seconds in every loop
+				#Note if you comment these out you
+				#need to multiply BAROWAIT by 2 in the BaroTime calculation
 				#self.refreshTemperature()
 				#time.sleep(self.BAROWAIT)
 				#self.readTemperature()
@@ -265,7 +269,7 @@ class MS5611:
 				self.convertPressure2Altitude()
 
 				#Then save the current runTime + the offset of the other time sleeps
-				self.BAROTime = RunTime + self.BAROWAIT
+				self.BAROTime = RunTime + self.BAROWAIT*1 #*2 note if you want temperature you must multiply by 2 instead of 1
 				
 				#then we set the mode to 1
 				self.BAROMODE = 1

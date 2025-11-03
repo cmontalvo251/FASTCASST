@@ -1,3 +1,9 @@
+# ==================11/3/2025===============
+
+Finished testing the barometer. It finally works. There were a few timing and mode issues but I was able to get it to work now that I actually had some time to chill and get it done. Right now when you poll the barometer it adds an extra 0.01 seconds to the loop timer. I could add an extra mode and speed it up but I don't think it's worth it. It works and 0.01 seconds is not a huge amount of time. Right now the main loop is only 0.0046 seconds. I should keep that in mind when running the C++ version and seeing how long it takes to run that loop. What I'll do is make a note of the 0.01 seconds in the comments and change it if needed.
+
+Anyway, next step is to test the GPS module which I believe Aramis tested and it worked after he got the polling time sleeps to work. 
+
 # ==================10/30/2025==============
 
 Finished testing the IMU and implementing Aramis' AHRS filter. I tested roll pitch and yaw as well as the angular velocities and made sure to convert to deg/s. It all works now which is nice. Next step is the barometer. Note I also crossed off the controller because I tested the logic already for the airplane. The waypoint or even inner loop controller for the airplane is not tested but the logic is there so you would just need to ground test that when you're ready. 

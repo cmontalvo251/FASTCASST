@@ -235,6 +235,13 @@ class MS5611:
 		is_temp_valid = -40 <= self.TEMP <= 80
 		return is_pressure_valid and is_temp_valid
 
+	#This poll function currently uses 2 modes and everytime it is called in MODE 1,
+	#it will add BAROWAIT seconds to your loop timer
+	#it is possible that you could break this routine into 3 modes instead of 2 modes
+	#and potentially remove that BAROWAIT seconds. When I tried that back in 5/2025 it 
+	#did not work so either I had a bug or it just fundamentally cannot support a quick
+	#3 mode succession. Still, now that this 2 mode version works it would be interesting
+	#to try and get the 3 mode version to work if you need those precious BAROWAIT seconds
 	def poll(self,RunTime):
 		if self.SIL:
 			self.PRES = self.pressure_sea_level
@@ -249,13 +256,19 @@ class MS5611:
 				#initially the mode is zero
 				#so we refresh the register
 				self.refreshPressure()
+
+				##This is where you could potentially split this mode
+				#into 2 and have a total of 3 modes but for now we're 
+				#just going to keep this whole routine as 2 modes and this
+				#if statement as one mode
+
 				#wait the BAROWAIT seconds
 				time.sleep(self.BAROWAIT)
 				#Read the pressure
 				self.readPressure()
 				
 				#and then do the same for temperature
-				#Currently have temperature comments to save
+				#Currently have temperature commented to save
 				#BAROWAIT seconds in every loop
 				#Note if you comment these out you
 				#need to multiply BAROWAIT by 2 in the BaroTime calculation

@@ -96,7 +96,7 @@
   * [X] ~~*Test servos - works for airplane. ESC and 3 servos*~~ [2025-10-20]
   * [X] ~~*Test IMU - implemented AHRS filter and was able to test on bench.*~~ [2025-10-30]
   * [X] ~~*Test Vehicle controller - techinically I did this already with the airplane. It's not really a controller but it still works fundamentally*~~ [2025-10-30]
-  * [ ] Test barometer
+  * [X] ~~*Test barometer - works great. just adds an extra 0.01 seconds every time you poll it.*~~ [2025-11-03]
   * [ ] Test GPS
   * [ ] Test Data logger
   * [ ] Test telemetry unit
@@ -113,6 +113,8 @@
   * [ ] simulate waypoint control - SIL
   
   * [ ] Test autopilot control laws in SIL mode with Sensor errors
+
+  * [ ] Check the loop timer on fast.py; is it faster? Why?
   
   * [ ] Thread the IMU and GPS
   

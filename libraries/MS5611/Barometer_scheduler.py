@@ -11,25 +11,27 @@ This is an example edited by Carlos Montalvo - 2025
 
 """
 
-import time
-
-import ms5611
+##Check for APM
 import sys
 sys.path.append('../Util')
 import util
-
 util.check_apm()
 
+##Import barometer
+import ms5611
 baro = ms5611.MS5611()
-baro.initialize()
+
+#Calibrate barometer
+baro.calibrate() #if you don't calibrate (sea level defaults to 1013.25
+
+##Initialize time
+import time
+StartTime = time.time()
+RunTime = 0
 
 while(True):
-        baro.refreshPressure()
-        time.sleep(0.01)
-        baro.readPressure()
-        #baro.refreshTemperature()
-        #time.sleep(0.01)
-        #baro.readTemperature()
-        baro.calculatePressureAndTemperature()
-        print("Temperature(C): %.6f" % (baro.TEMP), "Pressure(millibar): %.6f" % (baro.PRES))
-        time.sleep(1)
+	RunTime = time.time() - StartTime
+	baro.poll(RunTime)
+	print("Time: %.3f" % (RunTime),"Pressure(millibar): %.3f" % (baro.PRES), "Altitude (m): %.3f" % (baro.ALT))
+	#time.sleep(0.01) -- Because there are sleeps in the barometer you don't need this anymore
+

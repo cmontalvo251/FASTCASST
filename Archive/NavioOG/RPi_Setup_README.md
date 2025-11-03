@@ -57,6 +57,19 @@ l. Enter Password
 sudo systemclt disable arducopter
 
 ------------------------------------------------
+-------Getting python tabbing to work-----------
+
+Put this in your ~/.emacs file and your ~/.emacs.d/init.el
+
+(setq-default indent-tabs-mode t)
+
+(add-hook 'python-mode-hook
+	  (lambda ()
+	    (setq indent-tabs-mode t
+		  python-indent-offset 8) ; Comments for lisp
+	    ))
+	    
+------------------------------------------------
 
 Alright so I am attempting to use vi here and make a README file on board the raspberry pi. wish me luck.
 

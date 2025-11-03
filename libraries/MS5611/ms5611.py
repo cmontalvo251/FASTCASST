@@ -32,6 +32,7 @@ from smbus import SMBus
 import spidev
 import sys
 sys.path.append('../libraries/Util')
+sys.path.append('../Util')
 import util
 
 class MS5611:
@@ -123,6 +124,7 @@ class MS5611:
 		self.BARONEXT = 1.0
 		self.BAROWAIT = 0.01
 		self.BAROMODE = 0
+		self.pressure_sea_level = 1013.25
 		if not self.SIL:
 			self.initialize()
 			self.update()
@@ -200,6 +202,16 @@ class MS5611:
 	def returnTemperature(self):
 		return self.TEMP
 
+	def calibrate(self):
+		print('Calibrating Pressure Sensor...')
+		pressure_sea_level = 0.0
+		for i in range(0,5):
+			self.update()
+			print(i+1,' out of 5. Pressure = ',self.PRES)
+			pressure_sea_level+=self.PRES
+		self.pressure_sea_level = pressure_sea_level/5.0
+		print('Barometer Calibrated. Sea Level Pressure = ',self.pressure_sea_level)
+
 	def update(self):
 		self.refreshPressure()
 		time.sleep(self.BAROWAIT) # Waiting for pressure data ready
@@ -214,9 +226,7 @@ class MS5611:
 		time.sleep(self.BARONEXT)
 
 	def convertPressure2Altitude(self):
-		pascals = self.PRES/0.01;
-		#pascals = 1010.0/0.01
-		self.ALT = (1.0-(pascals/101325.0)**(1.0/5.25588))/(2.2557*10**-5.0)
+		self.ALT = (1.0-(self.PRES/self.pressure_sea_level)**(1.0/5.25588))/(2.2557*10**-5.0)
 
 	def test(self):
 		self.initialize()
@@ -227,28 +237,35 @@ class MS5611:
 
 	def poll(self,RunTime):
 		if self.SIL:
-			self.PRES = 1013.25
+			self.PRES = self.pressure_sea_level
 			self.convertPressure2Altitude()
 			return
-		if self.BAROMODE == 2:
+		if self.BAROMODE == 1:
 			#in here we want to make sure we wait 1 second before we set
 			#baromode back to zero
 			if (RunTime - self.BAROTime) > self.BARONEXT:
-				self.convertPressure2Altitude()
-				self.BAROTime = RunTime
 				self.BAROMODE = 0
-		if self.BAROMODE == 1:
-			#If baromode is 1 we read and calculate but only after 0.01 seconds has passed
-			if (RunTime - self.BAROTime) > self.BAROWAIT:
-				self.readPressure()
-				self.calculatePressureAndTemperature()
-				self.BAROTime = RunTime
-				#and set the baromode to 2
-				self.BAROMODE = 2
 		if self.BAROMODE == 0:
 				#initially the mode is zero
 				#so we refresh the register
 				self.refreshPressure()
-				self.BAROTime = RunTime
+				#wait the BAROWAIT seconds
+				time.sleep(self.BAROWAIT)
+				#Read the pressure
+				self.readPressure()
+				
+				#and then do the same for temperature
+				#self.refreshTemperature()
+				#time.sleep(self.BAROWAIT)
+				#self.readTemperature()
+
+				#Then calculate Pressure and Temperature
+				self.calculatePressureAndTemperature()
+				#And convert pressure to altitude
+				self.convertPressure2Altitude()
+
+				#Then save the current runTime + the offset of the other time sleeps
+				self.BAROTime = RunTime + self.BAROWAIT
+				
 				#then we set the mode to 1
 				self.BAROMODE = 1

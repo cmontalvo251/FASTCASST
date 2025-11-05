@@ -13,7 +13,7 @@
 ################################################
 
 #####################PARAMETERS#################
-NUMOUTPUTS = 20  #Number of data outputs (20 for car and boat, 22 for airplane)
+NUMOUTPUTS = 22  #Number of data outputs (20 for car and boat, 22 for airplane)
 NUMPWM = 4 #Number of PWM signals (2 for car and boat, 4 for airplane)
 VEHICLE = 'airplane'  #Options are 'car', 'boat', or 'airplane'
 ################################################
@@ -73,6 +73,7 @@ time.sleep(1)
 print('Setting up Time')
 StartTime = time.time()
 RunTime = 0.0
+logTime = RunTime
 
 #This runs on repeat until code is killed
 print('Running main loop....')
@@ -119,35 +120,36 @@ while (True):
     str_pwm = [f"{pwm:1.3f}" for pwm in pwm_commands] #convert pwm commands to 3 sig figs
     str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
     str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
-    print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.PRES:.3f}",gps_llh.GPSTime)
+    #print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",gps_llh.latitude,gps_llh.longitude,gps_llh.altitude)
+    print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.ALT:.3f}",gps_llh.altitude)
 
     #Log data
-    logger.outdata[0] = np.round(RunTime,5)
-    logger.outdata[1] = rc.rcin.rcsignals[0]
-    logger.outdata[2] = rc.rcin.rcsignals[1]
-    logger.outdata[3] = rc.rcin.rcsignals[2]
-    logger.outdata[4] = rc.rcin.rcsignals[3]
-    logger.outdata[5] = rc.rcin.rcsignals[4]
-    logger.outdata[6] = rc.rcin.rcsignals[5]
-    """
-    logger.outdata[7] = gps_llh.latitude
-    logger.outdata[8] = gps_llh.longitude
-    logger.outdata[9] = gps_llh.altitude
-    logger.outdata[10] = baro.ALT
-    logger.outdata[11] = rpy[0]
-    logger.outdata[12] = rpy[1]
-    logger.outdata[13] = rpy[2]
-    logger.outdata[14] = gps_llh.speed
-    logger.outdata[15] = g[0]
-    logger.outdata[16] = g[1]
-    logger.outdata[17] = g[2]
-    logger.outdata[18] = pwm_commands[0]
-    logger.outdata[19] = pwm_commands[1]
-    if len(pwm_commands) > 2:
-        logger.outdata[20] = pwm_commands[2]
-        logger.outdata[21] = pwm_commands[3]
-    """
-    logger.println()
+    if (RunTime - logTime) > 0.1:
+	    logger.outdata[0] = np.round(RunTime,5)
+	    logger.outdata[1] = rc.rcin.rcsignals[0]
+	    logger.outdata[2] = rc.rcin.rcsignals[1]
+	    logger.outdata[3] = rc.rcin.rcsignals[2]
+	    logger.outdata[4] = rc.rcin.rcsignals[3]
+	    logger.outdata[5] = rc.rcin.rcsignals[4]
+	    logger.outdata[6] = rc.rcin.rcsignals[5]
+	    logger.outdata[7] = gps_llh.latitude
+	    logger.outdata[8] = gps_llh.longitude
+	    logger.outdata[9] = gps_llh.altitude
+	    logger.outdata[10] = baro.PRES
+	    logger.outdata[11] = rpy_ahrs[0]
+	    logger.outdata[12] = rpy_ahrs[1]
+	    logger.outdata[13] = rpy_ahrs[2]
+	    logger.outdata[14] = gps_llh.speed
+	    logger.outdata[15] = gdegs[0]
+	    logger.outdata[16] = gdegs[1]
+	    logger.outdata[17] = gdegs[2]
+	    logger.outdata[18] = pwm_commands[0]
+	    logger.outdata[19] = pwm_commands[1]
+	    if len(pwm_commands) > 2:
+		    logger.outdata[20] = pwm_commands[2]
+		    logger.outdata[21] = pwm_commands[3]
+	    logger.println()
+	    logTime = RunTime
 
     #sleep so we don't spontaneously explode
     #time.sleep(0.01) Since there are sleeps in the barometer you don't need this anymore.

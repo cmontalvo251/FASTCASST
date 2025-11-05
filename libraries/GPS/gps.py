@@ -91,6 +91,7 @@ class GPS():
         ##You'll then notice that each str is separated by an equal sign. We want everything after the equal
         #sign. There are a few ways to do this. We could use split again or we could find the = and grab everything
         #after it. I think I'll go with the grab everything after it.
+        self.speed = 0.0 #Revisit. this doesn't work right now
         self.longitude = self.getfloat(lonstr)/10000000.0
         self.latitude = self.getfloat(latstr)/10000000.0  ##I'm dividing by random numbers until it looks right
         self.altitude = self.getfloat(altstr)/1000.0
@@ -124,7 +125,7 @@ class GPS():
             self.latitude = 30.69
             self.longitude = -88.10
             self.altitude = 0.0
-            self.speed = self.GPSTime
+            self.speed = 0.0
         return
 
     def setOrigin(self,latO,lonO):

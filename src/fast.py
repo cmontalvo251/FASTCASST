@@ -92,7 +92,7 @@ while (True):
     a,gdegs,m,rpy,rpy_ahrs,temp = imu.getALL(elapsedTime) 
 
     #Get GPS update if it's ready
-    #gps_llh.poll(RunTime)
+    gps_llh.poll(RunTime)
 
     #Get pressure which also converts to altitude (temperature is not currently working to speed up simulation)
     #If you really want temperature check the baro.poll() function and uncomment the temperature routine
@@ -117,7 +117,7 @@ while (True):
     str_pwm = [f"{pwm:1.3f}" for pwm in pwm_commands] #convert pwm commands to 3 sig figs
     str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
     str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
-    print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.PRES:.3f}")
+    print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.PRES:.3f}",gps_llh.GPSTime)
 
     #Log data
     logger.outdata[0] = np.round(RunTime,5)

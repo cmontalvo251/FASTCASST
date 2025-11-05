@@ -63,21 +63,23 @@ MODELSOURCES=$(wildcard libraries/V_$(MODEL)/*.cpp)
 SOURCES=$(ALGSOURCES) $(RCSOURCES) $(COMMSOURCES) $(HELPERSOURCES) $(HARDWARESOURCES) $(MODELSOURCES) $(OPENGLSOURCES) $(MODELINGSOURCES)
 OBJECTS=$(SOURCES:.cpp=.o)
 
+###########MOVED TO ARCHIVE
 ##Logger SIL is on DESKTOP and basically takes and logs fictitious data
-loggersil:
-	make all TYPE="SIL" EXECUTABLE="loggersil.exe" MAIN="src/logger.o" MODELINGSOURCES=
+#loggersil:
+#	make all TYPE="SIL" EXECUTABLE="loggersil.exe" MAIN="src/logger.o" MODELINGSOURCES=
 
 ##Logger is on RPI but all it does is take data
-logger:
-	make all TYPE="AUTO" EXECUTABLE="logger.exe" PLATFORM="RPI" MAIN="src/logger.o" WIRINGPI="-lwiringPi"
+#logger:
+#	make all TYPE="AUTO" EXECUTABLE="logger.exe" PLATFORM="RPI" MAIN="src/logger.o" WIRINGPI="-lwiringPi"
 
 #Demo sil is on DESKTOP but only does RCIN>IMU>CONTROL>RCOUT
-demosil:
-	make all TYPE="SIL" EXECUTABLE="demosil.exe" MAIN="src/demo.o" MODELINGSOURCES=
+#demosil:
+#	make all TYPE="SIL" EXECUTABLE="demosil.exe" MAIN="src/demo.o" MODELINGSOURCES=
 
 #Demo is demosil but on rpi
-demo:
-	make all TYPE="AUTO" EXECUTABLE="demo.exe" PLATFORM="RPI" RX="FLYSKY" MAIN="src/demo.o" WIRINGPI="-lwiringPi"
+#demo:
+#	make all TYPE="AUTO" EXECUTABLE="demo.exe" PLATFORM="RPI" RX="FLYSKY" MAIN="src/demo.o" WIRINGPI="-lwiringPi"
+########################
 
 #Simonly is just a repeat of all but it is written here to be thorough
 simonly:

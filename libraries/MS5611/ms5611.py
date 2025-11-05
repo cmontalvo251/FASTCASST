@@ -211,22 +211,28 @@ class MS5611:
 			pressure_sea_level+=self.PRES
 		self.pressure_sea_level = pressure_sea_level/5.0
 		print('Barometer Calibrated. Sea Level Pressure = ',self.pressure_sea_level)
+		return
 
 	def update(self):
-		self.refreshPressure()
-		time.sleep(self.BAROWAIT) # Waiting for pressure data ready
-		self.readPressure()
+		if self.SIL:
+			self.defaults()
+		else:
+			self.refreshPressure()
+			time.sleep(self.BAROWAIT) # Waiting for pressure data ready
+			self.readPressure()
 
-		self.refreshTemperature()
-		time.sleep(self.BAROWAIT) # Waiting for temperature data ready
-		self.readTemperature()
+			self.refreshTemperature()
+			time.sleep(self.BAROWAIT) # Waiting for temperature data ready
+			self.readTemperature()
 
-		self.calculatePressureAndTemperature()
+			self.calculatePressureAndTemperature()
 		self.convertPressure2Altitude()
 		time.sleep(self.BARONEXT)
+		return
 
 	def convertPressure2Altitude(self):
 		self.ALT = (1.0-(self.PRES/self.pressure_sea_level)**(1.0/5.25588))/(2.2557*10**-5.0)
+		return
 
 	def test(self):
 		self.initialize()
@@ -234,6 +240,10 @@ class MS5611:
 		is_pressure_valid = 1000 <= self.PRES <= 1050
 		is_temp_valid = -40 <= self.TEMP <= 80
 		return is_pressure_valid and is_temp_valid
+	
+	def defaults(self):
+		self.PRES = self.pressure_sea_level
+		return
 
 	#This poll function currently uses 2 modes and everytime it is called in MODE 1,
 	#it will add BAROWAIT seconds to your loop timer
@@ -244,7 +254,7 @@ class MS5611:
 	#to try and get the 3 mode version to work if you need those precious BAROWAIT seconds
 	def poll(self,RunTime):
 		if self.SIL:
-			self.PRES = self.pressure_sea_level
+			self.defaults()
 			self.convertPressure2Altitude()
 			return
 		if self.BAROMODE == 1:

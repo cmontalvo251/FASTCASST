@@ -3,6 +3,7 @@ sys.path.append('../libraries/Ublox')
 sys.path.append('../libraries/Util')
 import util
 import ublox as UBLX
+import time
 import numpy as np
 
 ##NOTE THAT FUNCTIONS LIKE IFOV AND computeGeocentricLATLON functions are in
@@ -95,11 +96,13 @@ class GPS():
         self.altitude = self.getfloat(altstr)/1000.0
 
     def poll(self,RunTime):
+        #print('Polling GPS....',RunTime,self.GPSTime,self.GPSNEXT)
         if (RunTime - self.GPSTime) > self.GPSNEXT:
-            GPSTime = RunTime
+            self.GPSTime = RunTime
             self.update()
         
     def update(self):
+        #time.sleep(0.1)
         if not self.SIL:
             msg = self.ubl.receive_message()
             if msg is None:
@@ -121,7 +124,7 @@ class GPS():
             self.latitude = 30.69
             self.longitude = -88.10
             self.altitude = 0.0
-            self.speed = 0.0
+            self.speed = self.GPSTime
         return
 
     def setOrigin(self,latO,lonO):

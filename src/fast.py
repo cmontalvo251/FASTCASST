@@ -6,7 +6,9 @@
 #  Initially Created: Spring 2022
 #  Primary Author: Julia Nelson Spring 2022
 #  Secondary Author: Maxwell Cobar Spring 2023
-#  Tertiary Author : Aramis Hoffmann (car.py) and Kate Doiron (plane.py) Spring 2025
+#  Tertiary Authors: Aramis Hoffmann (car.py)
+#  Kate Doiron (plane.py) Spring 2025
+#  Quaternary Author: Carlos Montalvo Fall 2025
 #
 ################################################
 

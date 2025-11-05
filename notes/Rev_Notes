@@ -1,3 +1,11 @@
+# ==================11/5/2025===============
+
+gps.py is integrated into the code but I can't get a fix in my office. So.....unfortunately that means we need to do an experiment outside which doesn't really sound ideal but I guess that's the only way I'll be able to test this thing. I'll have to figure out an easy way to get the rpi outside or perhaps get the car updated with the code and put that outside and test it. We shall see if I have the time to do that. 
+
+On another note the speed calculation just doesn't exist. In order to get that to work we need to either use the GPS origin calculator where you set a GPS origin point and then convert to X/Y and then take a derivative to get speed. We will have to do that anyway for position calculation so either we hard code the GPS position or make it like an input in the python file or we have it just use the first point. I would rather have the user have the ability to set the GPS origin point instead of using the first point it grabs. That way you can set the waypoints easier. Anyway I've added a task where you need to get speed on the GPS working. 
+
+Ok finally, and here's some good news. I was able to test the datalogger for fast.py and that works with no problems really. So the only issues are testing the gps outside and seeing if we can get a lock and then also testing the telemetry and making sure that works in python. It's been a while but hopefully the code is still there.
+
 # ==================11/3/2025===============
 
 Finished testing the barometer. It finally works. There were a few timing and mode issues but I was able to get it to work now that I actually had some time to chill and get it done. Right now when you poll the barometer it adds an extra 0.01 seconds to the loop timer. I could add an extra mode and speed it up but I don't think it's worth it. It works and 0.01 seconds is not a huge amount of time. Right now the main loop is only 0.0046 seconds. I should keep that in mind when running the C++ version and seeing how long it takes to run that loop. What I'll do is make a note of the 0.01 seconds in the comments and change it if needed.

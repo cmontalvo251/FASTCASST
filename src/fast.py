@@ -125,31 +125,31 @@ while (True):
 
     #Log data
     if (RunTime - logTime) > 0.1:
-	    logger.outdata[0] = np.round(RunTime,5)
-	    logger.outdata[1] = rc.rcin.rcsignals[0]
-	    logger.outdata[2] = rc.rcin.rcsignals[1]
-	    logger.outdata[3] = rc.rcin.rcsignals[2]
-	    logger.outdata[4] = rc.rcin.rcsignals[3]
-	    logger.outdata[5] = rc.rcin.rcsignals[4]
-	    logger.outdata[6] = rc.rcin.rcsignals[5]
-	    logger.outdata[7] = gps_llh.latitude
-	    logger.outdata[8] = gps_llh.longitude
-	    logger.outdata[9] = gps_llh.altitude
-	    logger.outdata[10] = baro.PRES
-	    logger.outdata[11] = rpy_ahrs[0]
-	    logger.outdata[12] = rpy_ahrs[1]
-	    logger.outdata[13] = rpy_ahrs[2]
-	    logger.outdata[14] = gps_llh.speed
-	    logger.outdata[15] = gdegs[0]
-	    logger.outdata[16] = gdegs[1]
-	    logger.outdata[17] = gdegs[2]
-	    logger.outdata[18] = pwm_commands[0]
-	    logger.outdata[19] = pwm_commands[1]
-	    if len(pwm_commands) > 2:
-		    logger.outdata[20] = pwm_commands[2]
-		    logger.outdata[21] = pwm_commands[3]
-	    logger.println()
-	    logTime = RunTime
+        logger.outdata[0] = np.round(RunTime,5)
+        logger.outdata[1] = rc.rcin.rcsignals[0]
+        logger.outdata[2] = rc.rcin.rcsignals[1]
+        logger.outdata[3] = rc.rcin.rcsignals[2]
+        logger.outdata[4] = rc.rcin.rcsignals[3]
+        logger.outdata[5] = rc.rcin.rcsignals[4]
+        logger.outdata[6] = rc.rcin.rcsignals[5]
+        logger.outdata[7] = gps_llh.latitude
+        logger.outdata[8] = gps_llh.longitude
+        logger.outdata[9] = gps_llh.altitude
+        logger.outdata[10] = baro.PRES
+        logger.outdata[11] = rpy_ahrs[0]
+        logger.outdata[12] = rpy_ahrs[1]
+        logger.outdata[13] = rpy_ahrs[2]
+        logger.outdata[14] = gps_llh.speed #Does not work right now. Need to revisit gps.py to fix
+        logger.outdata[15] = gdegs[0]
+        logger.outdata[16] = gdegs[1]
+        logger.outdata[17] = gdegs[2]
+        logger.outdata[18] = pwm_commands[0]
+        logger.outdata[19] = pwm_commands[1]
+        if len(pwm_commands) > 2:
+            logger.outdata[20] = pwm_commands[2]
+            logger.outdata[21] = pwm_commands[3]
+        logger.println()
+        logTime = RunTime
 
     #sleep so we don't spontaneously explode
     #time.sleep(0.01) Since there are sleeps in the barometer you don't need this anymore.

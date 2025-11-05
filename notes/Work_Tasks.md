@@ -97,12 +97,16 @@
   * [X] ~~*Test IMU - implemented AHRS filter and was able to test on bench.*~~ [2025-10-30]
   * [X] ~~*Test Vehicle controller - techinically I did this already with the airplane. It's not really a controller but it still works fundamentally*~~ [2025-10-30]
   * [X] ~~*Test barometer - works great. just adds an extra 0.01 seconds every time you poll it.*~~ [2025-11-03]
-  * [ ] Test GPS
-  * [ ] Test Data logger
+  * [X] ~~*Test Data logger*~~ [2025-11-05]
+  * [ ] Test GPS (just need to test outside and see if I get a datalock)
   * [ ] Test telemetry unit
   * [ ] Ground test of car
   
-# CAR (FASTCASST++):
+# CAR (FASTCASST++ and FASTpy):
+
+  * [ ] In fast.py need to convert Lat/Lon to X/Y
+
+  * [ ] In Fast.py need to convert X/Y to VX/VY and total velocity
 
   * [ ] Simulate waypoint control - SIMONLY
 

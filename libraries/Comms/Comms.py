@@ -111,7 +111,7 @@ class Comms():
       hexdata = self.line[2:11]
       print('Hexdata = ',hexdata)
       integer = int(hexdata,16)
-      value = bitsToFloat(integer)
+      value = self.bitsToFloat(integer)
       position = 0
     else:
       value = 0

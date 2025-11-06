@@ -1,3 +1,7 @@
+# OVERALL 
+
+* [ ] Move all of these action items to issues on Github so they are easier to track and you can add comments to all of them. That way you don't have Rev_Notes and Work_Tasks.md separated in two different files.
+
 # SATELLITE (FASTCASST):
 
   * [x] Check that cubesat spinning with q=0,r=0 only spins about p when I is diagonal @done (22-10-28 09:43)
@@ -99,8 +103,7 @@
   * [X] ~~*Test barometer - works great. just adds an extra 0.01 seconds every time you poll it.*~~ [2025-11-03]
   * [X] ~~*Test Data logger*~~ [2025-11-05]
   * [ ] Test GPS (just need to test outside and see if I get a datalock)
-  * [ ] Test telemetry unit
-  * [ ] Ground test of car
+  * [ ] Test telemetry unit (This includes the ground station software otherwise it's pointless to test the telemetry unit)
   
 # CAR (FASTCASST++ and FASTpy):
 

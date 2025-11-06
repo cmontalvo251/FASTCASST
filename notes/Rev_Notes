@@ -1,3 +1,18 @@
+# ==================11/6/2025===============
+
+Ok so we have a few issues with the telemetry files. First, the ground station is split into 3 different files. This is what I think
+
+1 - ground_station_command_line.py - I think this prints the raw data to the command line
+2 - ground_station_csv.py - I think this runs in SIL mode where you run the software in real time and it creates a csv file that the ground station detects, opens and plots. This uses a GUI window that updates in real time
+3 - ground_station_serial.py - This is the same as the version above but it reads new data from the serial port. 
+
+All of these files need to be combined into 1 file and flags need to be set to get these to work. This is what I want
+
+SERIALFLAG = 0, 1 or 2 - 0 = use the serial port to read data, 1 = use a fictitious data file to read data, 2 = read csv files from SIL mode
+GUI = 0 or 1 - 0 = data just prints to command line, 1 = data also prints to a nice GUI
+
+Alright. get to coding......
+
 # ==================11/5/2025===============
 
 gps.py is integrated into the code but I can't get a fix in my office. So.....unfortunately that means we need to do an experiment outside which doesn't really sound ideal but I guess that's the only way I'll be able to test this thing. I'll have to figure out an easy way to get the rpi outside or perhaps get the car updated with the code and put that outside and test it. We shall see if I have the time to do that. 

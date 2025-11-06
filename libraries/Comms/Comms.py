@@ -142,7 +142,7 @@ class Comms():
     self.SerialPutc('\r');
   
 if __name__ == '__main__':
-  ser = Telemetry(57600,"/dev/ttyAMA0")
+  ser = Comms(57600,"/dev/ttyAMA0")
   number_array = [0,0]
   for n in range(0,2):
     number_array[n] = random.randint(1,100)

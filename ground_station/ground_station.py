@@ -4,10 +4,10 @@
 #0 = use fake data file to read data
 #1 = read csv files from SIL mode 
 #2 = use the serial port to read data
-SERIAL = 2 #0, 1 or 2
+SERIAL = 0 #0, 1 or 2
 #0 = data just prints to command line
 #1 = data also prints to a nice GUI
-GUI = 1  #0 or 1
+GUI = 0  #0 or 1
 
 import numpy as np
 import time
@@ -21,13 +21,42 @@ import sys
 sys.path.append('../libraries/')
 from Comms.Comms import Comms as U
 
+def readFile(filename):
+	##Alright when running in SIL mode we will need to read the csv files.
+	#First we are expecting 8 packets from FASTCASST
+	file = open(filename)
+	counter = 0
+	for line in file:
+		fast_packet[counter] = ser.lineToFloat(line)
+		counter+=1
+	file.close()
+	return fast_packet
+
+def getFileName(filenumber):
+	return '../' + str(filenumber) + '.csv'
+
+def maxFile(filenumber):
+	searching = 1
+	while searching:
+		try:
+			file = open(getFileName(filenumber))
+			file.close()
+			filenumber+=1
+		except:
+			#If you throw an error it means that
+			#you found the last file
+			searching = 0
+	if filenumber < 0:
+		filenumber = 1
+	return filenumber-1
+
 def ConvertPressure2Alt(pressure):
     pascals = pressure/0.01;
     altitude = (1.0-((pascals/101325.0)**(1.0/5.25588)))/(2.2557*(10**(-5.0)))
     return altitude
 
-def get_fake_data(counter,startTime):
-    t = time.time() - startTime
+def get_fake_data(counter):
+    t = time.monotonic()
     lat = 32.69 + 1.0 * np.sin(t)
     lon = -88.1 + 1.0*np.cos(t)
     gps_altitude = 50 + 10.0*np.sin(t)
@@ -58,17 +87,17 @@ def get_fake_data(counter,startTime):
     telemetry_packet[13] = rudder
     return telemetry_packet
 
-def updatePacket(value,position,bytestring):
+def updatePacket(value,position):
 	if position >= 0:
-		fastkit_packet[position] = value
-		telemetry_packet[0] = fastkit_packet[0] #time
-		telemetry_packet[1] = fastkit_packet[1] #roll
-		telemetry_packet[2] = fastkit_packet[2] #pitch
-		telemetry_packet[3] = fastkit_packet[3] #compass
-		telemetry_packet[4] = fastkit_packet[4] #lat
-		telemetry_packet[5] = fastkit_packet[5] #lon
-		telemetry_packet[6] = fastkit_packet[6] #baro altitude
-		telemetry_packet[7] = fastkit_packet[7] #gps speed
+		fast_packet[position] = value
+		telemetry_packet[0] = fast_packet[0] #time
+		telemetry_packet[1] = fast_packet[1] #roll
+		telemetry_packet[2] = fast_packet[2] #pitch
+		telemetry_packet[3] = fast_packet[3] #compass
+		telemetry_packet[4] = fast_packet[4] #lat
+		telemetry_packet[5] = fast_packet[5] #lon
+		telemetry_packet[6] = fast_packet[6] #baro altitude
+		telemetry_packet[7] = fast_packet[7] #gps speed
 		telemetry_packet[8] = -99 #GPS Altitude
 		telemetry_packet[9] = -99 #Pitot speed
 		telemetry_packet[10] = -99 #throttle
@@ -258,11 +287,14 @@ class WINDOW():
 
 ##CREATE EMPTY ARRAY PACKETS
 telemetry_packet = np.zeros(14)
-fastkit_packet = np.zeros(8)
+fast_packet = np.zeros(8)
 
 ##Initialize ground station log file
 outfilename = 'logs/Ground_Station_'+datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")+'.csv'
 outfile = open(outfilename,'w')
+
+#Create Empty serial object
+ser = U()
 
 if SERIAL == 2:
 	##Open Serial Window
@@ -270,7 +302,7 @@ if SERIAL == 2:
 	print('All available serial ports...')
 	os.system('ls /dev/ttyUSB*')
 	#ser = U(57600,"/dev/ttyUSB0",period=1.0) 
-	ser = U(9600,"/dev/ttyUSB1",period=1.0)
+	ser.SerialInit(9600,"/dev/ttyUSB0",period=1.0)	
 	print('Serial initialization done')
 
 ##If GUI is on create the window
@@ -282,8 +314,8 @@ if GUI:
 
 ##MAIN LOOP
 loop_counter = 0
+filenumber = 0
 NEW_DATA = False
-startTime = time.time()
 while True:
 	##Increment Loop counter
 	loop_counter += 1
@@ -293,16 +325,25 @@ while True:
 		#Use Fake data for reading data
 		case 0:
 			NEW_DATA = True
-			telemetry_packet = get_fake_data(loop_counter,startTime)
+			telemetry_packet = get_fake_data(loop_counter)
 		#Read data from csv file created by SIL
 		case 1:
-			pass
+			filenumberNEW = maxFile(filenumber)
+			print('Fast SIL at = ',filenumberNEW,' Python Time = ',time.monotonic())
+			if filenumberNEW != filenumber:
+				#This means we have a new file
+				filenumber = filenumberNEW
+				#Now this means though we need to read the file before
+				if filenumber > 0:
+					print('Reading File = ',filenumber-1)
+					fast_packet = readFile(getFileName(filenumber-1))	
+					telemetry_packet,NEW_DATA = updatePacket(fast_packet[0],0)
 		case 2:
 			position = -1
-			print('Reading Serial....',time.time()-startTime)
+			print('Reading Serial....',time.monotonic())
 			value,position,bytestring = ser.SerialGetNumber(0)
 			print('Value Received, Position, Bytes = ',value,position,bytestring)
-			telemetry_packet,NEW_DATA = updatePacket(value,position,bytestring)
+			telemetry_packet,NEW_DATA = updatePacket(value,position)
 
 	##Write data to file if we got new data
 	if NEW_DATA:

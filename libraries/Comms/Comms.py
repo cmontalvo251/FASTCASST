@@ -5,14 +5,9 @@ import random
 import numpy as np
 
 class Comms():
-  def __init__(self,BaudRate=57600,port="/dev/ttyAMA0",period=1.0):
+  def __init__(self):
     self.lastTime = 0.0
-    self.period = period #in seconds
     self.MAXLINE = 120
-    print('Creating Serial Port = ',port,' BaudRate = ',BaudRate)
-    self.SerialInit(port,BaudRate);
-    if self.hComm is not None:
-      self.hComm.flush()
     
   def bitsToFloat(self,b):
     if (b > 2147483647):
@@ -20,11 +15,27 @@ class Comms():
     s = struct.pack('>l', b)
     return struct.unpack('>f', s)[0]
 
-  def SerialInit(self,ComPortName,BaudRate):
+  def lineToFloat(self,line):
+    ##Ok this loop works. Time to unpack properly
+    #Remove first 2 chars because that's just the number
+    #followed by a colon (Also remove the trailing two characters. They are \r\n I think)
+    hexdata = line[2:-2]
+    #Ok now what we do is convert the hex number to an int
+    integer = int(hexdata,16)
+    #Then finally we convert the int bits to float
+    value = self.bitsToFloat(integer)
+    #And print it for debugging
+    #print('0x = ',hexdata,' intbits = ',integer,' float = ',value)
+    return value
+
+  def SerialInit(self,BaudRate=57600,ComPortName="/dev/ttyAMA0",period=1.0):
+    print('Creating Serial Port = ',ComPortName,' BaudRate = ',BaudRate)
+    self.period = period #in seconds
     try:
       print('Trying to open serial port.....')
       self.hComm = S.Serial(ComPortName,BaudRate);
       print('Success!!!!')
+      self.hComm.flush()
     except:
       print('Failed')
       self.hComm = None

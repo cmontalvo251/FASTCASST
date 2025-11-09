@@ -11,9 +11,9 @@ class Comms():
     self.MAXLINE = 120
     print('Creating Serial Port = ',port,' BaudRate = ',BaudRate)
     self.SerialInit(port,BaudRate);
-    self.hComm.flush()
-    #//Call this for higher level control
-
+    if self.hComm is not None:
+      self.hComm.flush()
+    
   def bitsToFloat(self,b):
     if (b > 2147483647):
       b = -2147483648 + (b - 2147483647)
@@ -28,6 +28,7 @@ class Comms():
     except:
       print('Failed')
       self.hComm = None
+      return
 
   def SerialGetLine(self):
     print('ser.readline()....')
@@ -54,6 +55,8 @@ class Comms():
       self.SerialPutc(s)
 
   def SerialGetNumber(self,echo=1):
+    if self.hComm is None:
+      return -1,-1,''
     bytestring = ''
     rxchar = ''
     ##Read Until \r

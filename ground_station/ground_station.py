@@ -4,25 +4,30 @@
 #0 = use fake data file to read data
 #1 = read csv files from SIL mode 
 #2 = use the serial port to read data
-SERIAL = 0 #0, 1 or 2
+SERIAL = 2 #0, 1 or 2
 #0 = data just prints to command line
 #1 = data also prints to a nice GUI
-GUI = 0  #0 or 1
+GUI = 1  #0 or 1
 
 import numpy as np
+import time
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.patches as pt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import os
+import sys
+sys.path.append('../libraries/')
+from Comms.Comms import Comms as U
 
 def ConvertPressure2Alt(pressure):
     pascals = pressure/0.01;
     altitude = (1.0-((pascals/101325.0)**(1.0/5.25588)))/(2.2557*(10**(-5.0)))
     return altitude
 
-def get_fake_data(counter):
-    t = counter/10.
+def get_fake_data(counter,startTime):
+    t = time.time() - startTime
     lat = 32.69 + 1.0 * np.sin(t)
     lon = -88.1 + 1.0*np.cos(t)
     gps_altitude = 50 + 10.0*np.sin(t)
@@ -52,6 +57,29 @@ def get_fake_data(counter):
     telemetry_packet[12] = elevator
     telemetry_packet[13] = rudder
     return telemetry_packet
+
+def updatePacket(value,position,bytestring):
+	if position >= 0:
+		fastkit_packet[position] = value
+		telemetry_packet[0] = fastkit_packet[0] #time
+		telemetry_packet[1] = fastkit_packet[1] #roll
+		telemetry_packet[2] = fastkit_packet[2] #pitch
+		telemetry_packet[3] = fastkit_packet[3] #compass
+		telemetry_packet[4] = fastkit_packet[4] #lat
+		telemetry_packet[5] = fastkit_packet[5] #lon
+		telemetry_packet[6] = fastkit_packet[6] #baro altitude
+		telemetry_packet[7] = fastkit_packet[7] #gps speed
+		telemetry_packet[8] = -99 #GPS Altitude
+		telemetry_packet[9] = -99 #Pitot speed
+		telemetry_packet[10] = -99 #throttle
+		telemetry_packet[11] = -99 #aileron
+		telemetry_packet[12] = -99 #elevator
+		telemetry_packet[13] = -99 #rudder
+		NEW_DATA = True
+	else:
+		NEW_DATA = False
+	return telemetry_packet,NEW_DATA
+
 
 class WINDOW():
 	def __init__(self,parent=None):
@@ -230,49 +258,71 @@ class WINDOW():
 
 ##CREATE EMPTY ARRAY PACKETS
 telemetry_packet = np.zeros(14)
+fastkit_packet = np.zeros(8)
 
 ##Initialize ground station log file
 outfilename = 'logs/Ground_Station_'+datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")+'.csv'
 outfile = open(outfilename,'w')
 
+if SERIAL == 2:
+	##Open Serial Window
+	print('Opening Serial port')
+	print('All available serial ports...')
+	os.system('ls /dev/ttyUSB*')
+	#ser = U(57600,"/dev/ttyUSB0",period=1.0) 
+	ser = U(9600,"/dev/ttyUSB1",period=1.0)
+	print('Serial initialization done')
+
 ##If GUI is on create the window
 if GUI:
-    ##Create window
-    print('Creating Window')
-    GND = WINDOW()
+	##Create window
+	print('Creating Window')
+	GND = WINDOW()
+	print('Window Created')
 
 ##MAIN LOOP
 loop_counter = 0
 NEW_DATA = False
+startTime = time.time()
 while True:
-    ##Increment Loop counter
-    loop_counter += 1
+	##Increment Loop counter
+	loop_counter += 1
+	
+	##READ DATA DEPENDING ON SERIAL FLAG
+	match SERIAL:
+		#Use Fake data for reading data
+		case 0:
+			NEW_DATA = True
+			telemetry_packet = get_fake_data(loop_counter,startTime)
+		#Read data from csv file created by SIL
+		case 1:
+			pass
+		case 2:
+			position = -1
+			print('Reading Serial....',time.time()-startTime)
+			value,position,bytestring = ser.SerialGetNumber(0)
+			print('Value Received, Position, Bytes = ',value,position,bytestring)
+			telemetry_packet,NEW_DATA = updatePacket(value,position,bytestring)
+
+	##Write data to file if we got new data
+	if NEW_DATA:
+		outstr = ''
+		for i in telemetry_packet:
+			outstr+=(str(i)+' ')
+		print('Packets Received (time) = ',telemetry_packet[0])
+		outfile.write(outstr)
+		outfile.write('\n')
+		##Reset new data flag
+		NEW_DATA = False
+	
+	##If the GUI is on update the window
+	if GUI:
+		GND.clearwindow()
+		GND.sendNewData(telemetry_packet)
+		GND.updatewindow()
+		plt.pause(0.0000000000001)
+
     
-    ##READ DATA DEPENDING ON SERIAL FLAG
-    match SERIAL:
-        #Use Fake data for reading data
-        case 0:
-            NEW_DATA = True
-            telemetry_packet = get_fake_data(loop_counter)
-
-    ##If the GUI is on update the window
-    if GUI:
-        GND.clearwindow()
-        GND.sendNewData(telemetry_packet)
-        GND.updatewindow()
-        plt.pause(0.0000000000001)
-
-    ##Write data to file if we got new data
-    if NEW_DATA:
-        outstr = ''
-        for i in telemetry_packet:
-            outstr+=(str(i)+' ')
-        print('Packets Received = ',outstr)
-        outfile.write(outstr)
-        outfile.write('\n')
-        ##Reset new data flag
-        NEW_DATA = False
-
 
     
         

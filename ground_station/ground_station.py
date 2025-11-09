@@ -27,10 +27,10 @@ def readFile(filename):
 	file = open(filename)
 	counter = 0
 	for line in file:
-		fast_packet[counter] = ser.lineToFloat(line)
+		ser.fast_packet[counter] = ser.lineToFloat(line)
 		counter+=1
 	file.close()
-	return fast_packet
+	return ser.fast_packet
 
 def getFileName(filenumber):
 	return '../' + str(filenumber) + '.csv'
@@ -56,58 +56,58 @@ def ConvertPressure2Alt(pressure):
     return altitude
 
 def get_fake_data(counter):
-    t = time.monotonic()
-    lat = 32.69 + 1.0 * np.sin(t)
-    lon = -88.1 + 1.0*np.cos(t)
-    gps_altitude = 50 + 10.0*np.sin(t)
-    baro_pressure = 1013 - 3.0*(np.sin(t)+1)
-    altitude = ConvertPressure2Alt(baro_pressure)
-    roll = 0.0 + 10.0*np.sin(t)
-    pitch = 0.0 + 20.0*np.sin(t)
-    compass = 0 + 45.0*np.sin(t)
-    gps_speed = 22.0 + 5.0*np.sin(t)
-    pitot_speed = 22.0 + 5.0*np.cos(t)
-    throttle = 1500. + 500*np.sin(t)
-    aileron = 1500. + 500*np.sin(t)
-    elevator = 1500. - 500*np.sin(t)
-    rudder = 1500. + 500*np.cos(t)
-    telemetry_packet[0] = t
-    telemetry_packet[1] = roll
-    telemetry_packet[2] = pitch
-    telemetry_packet[3] = compass
-    telemetry_packet[4] = lat
-    telemetry_packet[5] = lon
-    telemetry_packet[6] = altitude
-    telemetry_packet[7] = gps_speed
-    telemetry_packet[8] = gps_altitude
-    telemetry_packet[9] = pitot_speed
-    telemetry_packet[10] = throttle
-    telemetry_packet[11] = aileron
-    telemetry_packet[12] = elevator
-    telemetry_packet[13] = rudder
-    return telemetry_packet
+	t = time.monotonic()
+	lat = 32.69 + 1.0 * np.sin(t)
+	lon = -88.1 + 1.0*np.cos(t)
+	gps_altitude = 50 + 10.0*np.sin(t)
+	baro_pressure = 1013 - 3.0*(np.sin(t)+1)
+	altitude = ConvertPressure2Alt(baro_pressure)
+	roll = 0.0 + 10.0*np.sin(t)
+	pitch = 0.0 + 20.0*np.sin(t)
+	compass = 0 + 45.0*np.sin(t)
+	gps_speed = 22.0 + 5.0*np.sin(t)
+	pitot_speed = 22.0 + 5.0*np.cos(t)
+	throttle = 1500. + 500*np.sin(t)
+	aileron = 1500. + 500*np.sin(t)
+	elevator = 1500. - 500*np.sin(t)
+	rudder = 1500. + 500*np.cos(t)
+	gndstation_packet[0] = t
+	gndstation_packet[1] = roll
+	gndstation_packet[2] = pitch
+	gndstation_packet[3] = compass
+	gndstation_packet[4] = lat
+	gndstation_packet[5] = lon
+	gndstation_packet[6] = altitude
+	gndstation_packet[7] = gps_speed
+	gndstation_packet[8] = gps_altitude
+	gndstation_packet[9] = pitot_speed
+	gndstation_packet[10] = throttle
+	gndstation_packet[11] = aileron
+	gndstation_packet[12] = elevator
+	gndstation_packet[13] = rudder
+	return gndstation_packet
 
 def updatePacket(value,position):
 	if position >= 0:
-		fast_packet[position] = value
-		telemetry_packet[0] = fast_packet[0] #time
-		telemetry_packet[1] = fast_packet[1] #roll
-		telemetry_packet[2] = fast_packet[2] #pitch
-		telemetry_packet[3] = fast_packet[3] #compass
-		telemetry_packet[4] = fast_packet[4] #lat
-		telemetry_packet[5] = fast_packet[5] #lon
-		telemetry_packet[6] = fast_packet[6] #baro altitude
-		telemetry_packet[7] = fast_packet[7] #gps speed
-		telemetry_packet[8] = -99 #GPS Altitude
-		telemetry_packet[9] = -99 #Pitot speed
-		telemetry_packet[10] = -99 #throttle
-		telemetry_packet[11] = -99 #aileron
-		telemetry_packet[12] = -99 #elevator
-		telemetry_packet[13] = -99 #rudder
+		ser.fast_packet[position] = value
+		gndstation_packet[0] = ser.fast_packet[0] #time
+		gndstation_packet[1] = ser.fast_packet[1] #roll
+		gndstation_packet[2] = ser.fast_packet[2] #pitch
+		gndstation_packet[3] = ser.fast_packet[3] #compass
+		gndstation_packet[4] = ser.fast_packet[4] #lat
+		gndstation_packet[5] = ser.fast_packet[5] #lon
+		gndstation_packet[6] = ser.fast_packet[6] #baro altitude
+		gndstation_packet[7] = ser.fast_packet[7] #gps speed
+		gndstation_packet[8] = -99 #GPS Altitude
+		gndstation_packet[9] = -99 #Pitot speed
+		gndstation_packet[10] = -99 #throttle
+		gndstation_packet[11] = -99 #aileron
+		gndstation_packet[12] = -99 #elevator
+		gndstation_packet[13] = -99 #rudder
 		NEW_DATA = True
 	else:
 		NEW_DATA = False
-	return telemetry_packet,NEW_DATA
+	return gndstation_packet,NEW_DATA
 
 
 class WINDOW():
@@ -197,27 +197,27 @@ class WINDOW():
 		ax.get_yaxis().set_visible(False)
 		ax.get_zaxis().set_visible(False)
 
-	def sendNewData(self,telemetry_packet):
-		time = telemetry_packet[0] #time
+	def sendNewData(self,gndstation_packet):
+		time = gndstation_packet[0] #time
 		self.t.append(time)
-		self.roll = telemetry_packet[1]  #roll
-		self.pitch = telemetry_packet[2] #pitch
-		self.yaw = telemetry_packet[3] #yaw
-		latitude = telemetry_packet[4] #lat
-		longitude = telemetry_packet[5] #lon
+		self.roll = gndstation_packet[1]  #roll
+		self.pitch = gndstation_packet[2] #pitch
+		self.yaw = gndstation_packet[3] #yaw
+		latitude = gndstation_packet[4] #lat
+		longitude = gndstation_packet[5] #lon
 		if latitude > 30 and latitude < 40 and longitude < -80 and longitude > -90:
 			self.latitude.append(latitude)
 			self.longitude.append(longitude)
-		self.baro_altitude = telemetry_packet[6]
-		#baro_pressure = telemetry_packet[7]
+		self.baro_altitude = gndstation_packet[6]
+		#baro_pressure = gndstation_packet[7]
 		#self.baro_altitude = ConvertPressure2Alt(baro_pressure)
-		self.gps_speed = telemetry_packet[7]
-		self.gps_altitude = telemetry_packet[8]
-		self.pitot_speed = telemetry_packet[9]
-		self.throttle = telemetry_packet[10]
-		self.aileron = telemetry_packet[11]
-		self.elevator = telemetry_packet[12]
-		self.rudder = telemetry_packet[13]
+		self.gps_speed = gndstation_packet[7]
+		self.gps_altitude = gndstation_packet[8]
+		self.pitot_speed = gndstation_packet[9]
+		self.throttle = gndstation_packet[10]
+		self.aileron = gndstation_packet[11]
+		self.elevator = gndstation_packet[12]
+		self.rudder = gndstation_packet[13]
 
 	def clearwindow(self):
 		self.ax11.clear()
@@ -286,8 +286,7 @@ class WINDOW():
 		self.ax33.set_ylim([0,2400])
 
 ##CREATE EMPTY ARRAY PACKETS
-telemetry_packet = np.zeros(14)
-fast_packet = np.zeros(8)
+gndstation_packet = np.zeros(14)
 
 ##Initialize ground station log file
 outfilename = 'logs/Ground_Station_'+datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")+'.csv'
@@ -297,12 +296,12 @@ outfile = open(outfilename,'w')
 ser = U()
 
 if SERIAL == 2:
-	##Open Serial Window
+	##Open Serial Comms
 	print('Opening Serial port')
 	print('All available serial ports...')
 	os.system('ls /dev/ttyUSB*')
 	#ser = U(57600,"/dev/ttyUSB0",period=1.0) 
-	ser.SerialInit(9600,"/dev/ttyUSB0",period=1.0)	
+	ser.SerialInit(57600,"/dev/ttyUSB0",period=1.0)	
 	print('Serial initialization done')
 
 ##If GUI is on create the window
@@ -325,7 +324,7 @@ while True:
 		#Use Fake data for reading data
 		case 0:
 			NEW_DATA = True
-			telemetry_packet = get_fake_data(loop_counter)
+			gndstation_packet = get_fake_data(loop_counter)
 		#Read data from csv file created by SIL
 		case 1:
 			filenumberNEW = maxFile(filenumber)
@@ -336,21 +335,21 @@ while True:
 				#Now this means though we need to read the file before
 				if filenumber > 0:
 					print('Reading File = ',filenumber-1)
-					fast_packet = readFile(getFileName(filenumber-1))	
-					telemetry_packet,NEW_DATA = updatePacket(fast_packet[0],0)
+					ser.fast_packet = readFile(getFileName(filenumber-1))	
+					gndstation_packet,NEW_DATA = updatePacket(ser.fast_packet[0],0)
 		case 2:
 			position = -1
 			print('Reading Serial....',time.monotonic())
 			value,position,bytestring = ser.SerialGetNumber(0)
 			print('Value Received, Position, Bytes = ',value,position,bytestring)
-			telemetry_packet,NEW_DATA = updatePacket(value,position)
+			gndstation_packet,NEW_DATA = updatePacket(value,position)
 
 	##Write data to file if we got new data
 	if NEW_DATA:
 		outstr = ''
-		for i in telemetry_packet:
+		for i in gndstation_packet:
 			outstr+=(str(i)+' ')
-		print('Packets Received (time) = ',telemetry_packet[0])
+		print('Packets Received (time) = ',gndstation_packet[0])
 		outfile.write(outstr)
 		outfile.write('\n')
 		##Reset new data flag
@@ -359,7 +358,7 @@ while True:
 	##If the GUI is on update the window
 	if GUI:
 		GND.clearwindow()
-		GND.sendNewData(telemetry_packet)
+		GND.sendNewData(gndstation_packet)
 		GND.updatewindow()
 		plt.pause(0.0000000000001)
 

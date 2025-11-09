@@ -8,6 +8,7 @@ class Comms():
   def __init__(self):
     self.lastTime = 0.0
     self.MAXLINE = 120
+    self.fast_packet = np.zeros(8)
     
   def bitsToFloat(self,b):
     if (b > 2147483647):
@@ -132,6 +133,8 @@ class Comms():
       position = -1
     return value,position
 
+  def SerialSend(self,echo=1):
+    self.SerialSendArray(self.fast_packet,echo)
       
   def SerialSendArray(self,number_array,echo=1):
     #union inparser inputvar; ##Need to look up how to do union inparser

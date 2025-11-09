@@ -64,6 +64,12 @@ sys.path.append('../libraries/RCIO/Python')
 import rcio
 rc = rcio.RCIO(NUMPWM)
 
+##Setup Telemetry
+sys.path.append('../libraries/')
+from Comms.Comms import Comms as U
+ser = U()
+ser.SerialInit(57600,"/dev/ttyAMA0",period=1.0)
+
 #Short break to build suspense
 print('Sleep for 1 second.....')
 import time
@@ -74,6 +80,7 @@ print('Setting up Time')
 StartTime = time.time()
 RunTime = 0.0
 logTime = RunTime
+telemetryTime = RunTime
 
 #This runs on repeat until code is killed
 print('Running main loop....')
@@ -123,6 +130,18 @@ while (True):
     #print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",gps_llh.latitude,gps_llh.longitude,gps_llh.altitude)
     print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.ALT:.3f}",gps_llh.altitude)
 
+    ##Send Telemetry
+    if (RunTime - telemetryTime) > 1.0:
+        ser.fast_packet[0] = RunTime #//1 - Time
+        ser.fast_packet[1] = rpy_ahrs[0] #//2 - roll
+        ser.fast_packet[2] = rpy_ahrs[1] #//3 - pitch
+        ser.fast_packet[3] = rpy_ahrs[2] #//4 - yaw (compass)
+        ser.fast_packet[4] = gps_llh.latitude #//5 - latitude
+        ser.fast_packet[5] = gps_llh.longitude #//6 - longitude
+        ser.fast_packet[6] = baro.ALT #//7 - altitude (barometer)
+        ser.fast_packet[7] = gps_llh.speed #//8 - speed (GPS)
+        ser.SerialSend(0)
+    
     #Log data
     if (RunTime - logTime) > 0.1:
         logger.outdata[0] = np.round(RunTime,5)

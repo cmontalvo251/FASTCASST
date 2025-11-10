@@ -132,6 +132,8 @@ while (True):
 
     ##Send Telemetry
     if (RunTime - telemetryTime) > 1.0:
+        telemetryTime = RunTime	
+        print('Sending telemtry packet...',RunTime)
         ser.fast_packet[0] = RunTime #//1 - Time
         ser.fast_packet[1] = rpy_ahrs[0] #//2 - roll
         ser.fast_packet[2] = rpy_ahrs[1] #//3 - pitch

@@ -1,4 +1,4 @@
-import serial as S ##python3 -m pip install pyserial
+import serial as S ##sudo python3 -m pip install pyserial (sudo needed for rpi)
 import struct
 import time
 import random
@@ -57,14 +57,15 @@ class Comms():
     #print('Read')
     return rxchar;
 
-  def SerialPutc(self,txchar):
+  def SerialPutc(self,txchar,echo):
     if self.hComm is not None:
-      print("Sending ASCII Code = " + str(ord(txchar)))
+      if echo:
+        print("Sending ASCII Code = " + str(ord(txchar)))
       self.hComm.write(txchar.encode("ascii"))
 
-  def SerialPutString(self,string):
+  def SerialPutString(self,string,echo=1):
     for s in string:
-      self.SerialPutc(s)
+      self.SerialPutc(s,echo)
 
   def SerialGetNumber(self,echo=1):
     if self.hComm is None:
@@ -143,20 +144,23 @@ class Comms():
     for n in number_array:
       #inputvar.floatversion = number_array[i];
       int_var = int(self.binary(n),2)
-      print("Sending = " + str(n) + " " + str(int_var))
+      if echo:
+        print("Sending = " + str(n) + " " + str(int_var))
       #sprintf(outline,"n:%08x ",int_var);
       hexval=hex(int_var)
       hexval = hexval.replace('0x','')
       outline=str(i)+':'+hexval
-      print("Hex = " + outline)
-      self.SerialPutString(outline);
-      self.SerialPutc('\r');
+      if echo:
+        print("Hex = " + outline)
+      self.SerialPutString(outline,0);
+      self.SerialPutc('\r',0);
       i+=1
+      
   def binary(self,num):
     return ''.join('{:0>8b}'.format(c) for c in struct.pack('!f', num))
   def SerialPutHello(self,echo=1):
-    self.SerialPutc('w');
-    self.SerialPutc('\r');
+    self.SerialPutc('w',0);
+    self.SerialPutc('\r',0);
   
 if __name__ == '__main__':
   ser = Comms(57600,"/dev/ttyAMA0")

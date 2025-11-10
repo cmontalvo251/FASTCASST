@@ -79,7 +79,10 @@ class Comms():
       except:
         pass
       rxchar = self.SerialGetc(2)
-    #print('ByteString = ',bytestring)
+      if echo:
+        print('rxchar = ',rxchar)
+    if echo:
+      print('ByteString = ',bytestring)
     
     position = -1
     number = np.nan

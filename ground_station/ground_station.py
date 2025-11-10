@@ -4,7 +4,7 @@
 #0 = use fake data file to read data
 #1 = read csv files from SIL mode 
 #2 = use the serial port to read data
-SERIAL = 0 #0, 1 or 2
+SERIAL = 2 #0, 1 or 2
 #0 = data just prints to command line
 #1 = data also prints to a nice GUI
 GUI = 0  #0 or 1
@@ -320,29 +320,28 @@ while True:
 	loop_counter += 1
 	
 	##READ DATA DEPENDING ON SERIAL FLAG
-	match SERIAL:
-		#Use Fake data for reading data
-		case 0:
-			NEW_DATA = True
-			gndstation_packet = get_fake_data(loop_counter)
-		#Read data from csv file created by SIL
-		case 1:
-			filenumberNEW = maxFile(filenumber)
-			print('Fast SIL at = ',filenumberNEW,' Python Time = ',time.monotonic())
-			if filenumberNEW != filenumber:
-				#This means we have a new file
-				filenumber = filenumberNEW
-				#Now this means though we need to read the file before
-				if filenumber > 0:
-					print('Reading File = ',filenumber-1)
-					ser.fast_packet = readFile(getFileName(filenumber-1))	
-					gndstation_packet,NEW_DATA = updatePacket(ser.fast_packet[0],0)
-		case 2:
-			position = -1
-			print('Reading Serial....',time.monotonic())
-			value,position,bytestring = ser.SerialGetNumber(0)
-			print('Value Received, Position, Bytes = ',value,position,bytestring)
-			gndstation_packet,NEW_DATA = updatePacket(value,position)
+	#Use Fake data for reading data
+	if SERIAL==0:
+		NEW_DATA = True
+		gndstation_packet = get_fake_data(loop_counter)
+	#Read data from csv file created by SIL
+	elif SERIAL==1:
+		filenumberNEW = maxFile(filenumber)
+		print('Fast SIL at = ',filenumberNEW,' Python Time = ',time.monotonic())
+		if filenumberNEW != filenumber:
+			#This means we have a new file
+			filenumber = filenumberNEW
+			#Now this means though we need to read the file before
+			if filenumber > 0:
+				print('Reading File = ',filenumber-1)
+				ser.fast_packet = readFile(getFileName(filenumber-1))	
+				gndstation_packet,NEW_DATA = updatePacket(ser.fast_packet[0],0)
+	elif SERIAL==2:
+		position = -1
+		print('Reading Serial....',time.monotonic())
+		value,position,bytestring = ser.SerialGetNumber(1)
+		print('Value Received, Position, Bytes = ',value,position,bytestring)
+		gndstation_packet,NEW_DATA = updatePacket(value,position)
 
 	##Write data to file if we got new data
 	if NEW_DATA:

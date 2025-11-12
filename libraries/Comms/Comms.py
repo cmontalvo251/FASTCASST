@@ -3,6 +3,9 @@ import struct
 import time
 import random
 import numpy as np
+import sys
+sys.path.append('../Util')
+import util
 
 class Comms():
   def __init__(self):
@@ -73,12 +76,14 @@ class Comms():
     bytestring = ''
     rxchar = ''
     ##Read Until \r
-    while rxchar != b'\x00\r':
+    #while rxchar != b'\x00\r': #Also think we should stop once we get a \r? \r is 13 in ASCII
+    while rxchar != b'\r':
       try:
         bytestring += str(rxchar.decode())
       except:
         pass
-      rxchar = self.SerialGetc(2)
+      #rxchar = self.SerialGetc(2) #Why are we reading 2 bytes? I think we should be reading just 1 right?
+      rxchar = self.SerialGetc(1) #Just read 1 byte at a time
       if echo:
         print('rxchar = ',rxchar)
     if echo:
@@ -161,13 +166,95 @@ class Comms():
       
   def binary(self,num):
     return ''.join('{:0>8b}'.format(c) for c in struct.pack('!f', num))
+
   def SerialPutHello(self,echo=1):
     self.SerialPutc('w',0);
     self.SerialPutc('\r',0);
   
 if __name__ == '__main__':
-  ser = Comms(57600,"/dev/ttyAMA0")
-  number_array = [0,0]
-  for n in range(0,2):
-    number_array[n] = random.randint(1,100)
-  ser.SerialSendArray(number_array)
+
+    ##Alright when running this main routine I want it to sort of be a debug mode
+    ##So the pi will send numbers to the computer and the computer will read the numbers
+
+    ##Kick off the serial object
+    ser = Comms()
+
+    ##Check to see if you're on the computer or on the rpi
+    pc = util.isSIL()
+
+    #Open the com port and baudrate
+    baudRate = 57600
+    if pc:
+        port = "/dev/ttyUSB0"
+    else:
+        port = "/dev/ttyAMA0"
+    ser = Comms(baudRate,port)
+
+    ##Now run different routines depending on what computer we're on
+    while True:
+      if pc:
+        ##So how does SerialGetNumber work?
+        #Ok so basically the way the code works is it reads 2 bytes at a time
+        #until it reads \x00\r which is NULL,\r once it gets that it stops
+        #and returns the bytestring
+        #Once it has the bytestring it grabs everything between : and \r
+        #and converts that to a 32 bit integer. Then converts the 32 bits
+        #back to a 32 bit floating point number
+        #So.....I think the reason why this isn't working is because SerialGetNumber is reading
+        #2 bytes at a time and it's waiting for \x00\r
+        #So I'm changing the serialgetnumber routine to read 1 byte at a time and waiting for \r
+        
+        ###Read serial
+        value,position,bytestring = ser.SerialGetNumber(1)
+        print('Value = ',value,'Position = ',position,' bytestring = ',bytestring)
+      else:
+        ##Debug by sending two numbers
+        number_array = [0,0]
+        for n in range(0,2):
+          number_array[n] = random.randint(1,100)
+        print('Number Array = ',number_array)
+        ser.SerialSendArray(number_array)
+        ##Normally you would do this
+        #ser.fast_packet[0] = number
+        #....
+        #ser.fast_packet[7] = number
+        #ser.SerialSend(0)
+
+        #Let's dive into how SerialSend works
+        ##SerialSend(echo) is just SerialSendArray(self.fast_packet,echo)
+        #SerialSendArray loops through every number in the array
+        #First it converts the number to it's IEE 754 standard of 32 bits
+        #This is where you have the Sign (S-1bit), Exponent (E-8bits) and Fraction (M-23bits)
+        #Then it takes the 32 bit number and converts it to an integer
+        #Since it's 32 bits it would be a number between 0-4,294,967,295
+        #But if you take 32 bits and break it into 8 bit groups you get
+        # 8   8   8   8   so 4 groups of 8 bits. if you then further break down to 4 bits
+        # 4 4 4 4 4 4 4 4 so 8 groups of 4 bits. So 2**4 = 16 which means you can convert
+        # each set of 4 bits into hex values 0-F. Putting it all together you get
+        # a floating point number converted to a 32 bit hex number with 8 digits
+        # So wait. 8 digits? But like XXXX.XXXX is plenty of precision with 8 digits
+        # because the decimal would be implied. So why are we doing this? Hmmmm...
+        # Anyway. Say you take the number
+        # number = 45
+        # binary IEE 754 = 01000010001101000000000000000000
+        # hex = 0x42340000
+        # Then they take the index of the number in the array and append it and a :
+        # They also add a \r
+        # outline = 3:42340000\r
+        # Ok so now we have 11 digits (\r) is one digit.
+        # Once the string has been created the function SerialPutString is called
+        # SerialPutString loops through the outline string and calls SerialPutc for every character
+        # or in this case 11 times for the 11 digits from above
+        # SerialPutc sends 1 byte at a time by sending the ascii value of each character
+        # So you take a floating point number which is 32 bits or 8 bytes and you end up sending
+        # 11 bytes over serial (8 bytes for the hex digits and then 3 bytes for index,:,\r)
+        # Note that we can make this way better by just sending the byte array itself
+        # struct.pack('>f',number) and then send 4 bytes for the number
+        # If you have the hex values you can do this
+        # bytearray.fromhex(str(hex)[2:]) - the 2: ignores the 0x that supercedes hex values
+
+        ##Send numbers every second so you don't overload
+        #the pc
+        time.sleep(1.0)
+	    
+    

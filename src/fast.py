@@ -143,7 +143,6 @@ while (True):
         ser.fast_packet[6] = baro.ALT #//7 - altitude (barometer)
         ser.fast_packet[7] = gps_llh.speed #//8 - speed (GPS)
         ser.SerialSend(0)
-    
     #Log data
     if (RunTime - logTime) > 0.1:
         logger.outdata[0] = np.round(RunTime,5)

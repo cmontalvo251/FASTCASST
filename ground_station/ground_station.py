@@ -4,10 +4,10 @@
 #0 = use fake data file to read data
 #1 = read csv files from SIL mode 
 #2 = use the serial port to read data
-SERIAL = 0 #0, 1 or 2
+SERIAL = 2 #0, 1 or 2
 #0 = data just prints to command line
 #1 = data also prints to a nice GUI
-GUI =1  #0 or 1
+GUI = 0  #0 or 1
 
 import numpy as np
 import time

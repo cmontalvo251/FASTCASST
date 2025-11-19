@@ -158,6 +158,8 @@ class Comms():
       #sprintf(outline,"n:%08x ",int_var);
       hexval=hex(int_var)
       hexval = hexval.replace('0x','')
+      if int_var == 0:
+        hexval = '00000000'
       outline=str(i)+':'+hexval
       if echo:
         print("Hex = " + outline)

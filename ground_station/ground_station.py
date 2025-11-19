@@ -7,7 +7,7 @@
 SERIAL = 2 #0, 1 or 2
 #0 = data just prints to command line
 #1 = data also prints to a nice GUI
-GUI = 0  #0 or 1
+GUI = 1 #0 or 1
 
 import numpy as np
 import time
@@ -343,6 +343,18 @@ while True:
 		value,position,bytestring = ser.SerialGetNumber(1)
 		print('Value Received, Position, Bytes = ',value,position,bytestring)
 		gndstation_packet,NEW_DATA = updatePacket(value,position)
+		#print('HERE: GUI,NEW_DATA,position = ',GUI,NEW_DATA,position)
+		if position < 7:
+			NEW_DATA = False
+
+	##If the GUI is on update the window
+	#print('GUI,NEW_DATA,position = ',GUI,NEW_DATA,position)
+	if GUI==1 and NEW_DATA==True:
+		print("Updating GUI.....")
+		GND.clearwindow()
+		GND.sendNewData(gndstation_packet)
+		GND.updatewindow()
+		plt.pause(0.0000000000001)
 
 	##Write data to file if we got new data
 	if NEW_DATA:
@@ -355,12 +367,7 @@ while True:
 		##Reset new data flag
 		NEW_DATA = False
 	
-	##If the GUI is on update the window
-	if GUI:
-		GND.clearwindow()
-		GND.sendNewData(gndstation_packet)
-		GND.updatewindow()
-		plt.pause(0.0000000000001)
+	
 
     
 

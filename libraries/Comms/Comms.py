@@ -189,7 +189,7 @@ if __name__ == '__main__':
         port = "/dev/ttyUSB0"
     else:
         port = "/dev/ttyAMA0"
-    ser = Comms(baudRate,port)
+    ser.SerialInit(baudRate,port)
 
     ##Now run different routines depending on what computer we're on
     while True:

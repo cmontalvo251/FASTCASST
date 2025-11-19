@@ -4,7 +4,8 @@ import time
 import random
 import numpy as np
 import sys
-sys.path.append('../Util')
+sys.path.append('../Util') ##Assuming we're launching this from within the Comms folder ../ would bring us to the library folder and then Util will put us in the Util folder
+sys.path.append('../libraries/Util') ##Assuming we're importing this from either src/ or ground_station/ we need ../ to get to the parent folder and then libraries/Util to get to the Util folder
 import util
 
 class Comms():

@@ -191,6 +191,8 @@ if __name__ == '__main__':
         port = "/dev/ttyAMA0"
     ser.SerialInit(baudRate,port)
 
+    number_array = [0,0]
+
     ##Now run different routines depending on what computer we're on
     while True:
       if pc:
@@ -208,9 +210,10 @@ if __name__ == '__main__':
         ###Read serial
         value,position,bytestring = ser.SerialGetNumber(1)
         print('Value = ',value,'Position = ',position,' bytestring = ',bytestring)
+        number_array[position] = value
+        print('Number Array = ',number_array)
       else:
         ##Debug by sending two numbers
-        number_array = [0,0]
         for n in range(0,2):
           number_array[n] = random.randint(1,100)
         print('Number Array = ',number_array)
@@ -256,6 +259,6 @@ if __name__ == '__main__':
 
         ##Send numbers every second so you don't overload
         #the pc
-        time.sleep(1.0)
+        time.sleep(5.0)
 	    
     

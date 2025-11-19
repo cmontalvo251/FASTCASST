@@ -105,6 +105,7 @@ def updatePacket(value,position):
 		gndstation_packet[12] = -99 #elevator
 		gndstation_packet[13] = -99 #rudder
 		NEW_DATA = True
+		print('Fast Packet = ',ser.fast_packet)
 	else:
 		NEW_DATA = False
 	return gndstation_packet,NEW_DATA

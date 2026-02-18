@@ -13,8 +13,8 @@
 ################################################
 
 #####################PARAMETERS#################
-NUMOUTPUTS = 20  #Number of data outputs (20 for car and boat, 22 for airplane)
-NUMPWM = 2 #Number of PWM signals (2 for car and boat, 4 for airplane)
+NUMOUTPUTS = 21  #Number of data outputs (20 for car, 21 for boat, 22 for airplane)
+NUMPWM = 3 #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
 VEHICLE = 'boat'  #Options are 'car', 'boat', or 'airplane'
 ################################################
 
@@ -167,6 +167,7 @@ while (True):
         logger.outdata[19] = pwm_commands[1]
         if len(pwm_commands) > 2:
             logger.outdata[20] = pwm_commands[2]
+        if len(pwm_commands) > 3:
             logger.outdata[21] = pwm_commands[3]
         logger.println()
         logTime = RunTime

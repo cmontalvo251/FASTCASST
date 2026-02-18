@@ -3,26 +3,27 @@ import numpy as np
 class CONTROLLER():
 
     def __init__(self):
-        self.NUMCONTROLS = 2
+        #Waypoints
+        self.NUMCONTROLS = 2 #throttle_motor1, throttle_motor2
         return
+    
+    def loop(self,RunTime,rcin):#,gps_llh,rpy,g,baro):
+        ##Set defaults
+        defaults = [-1,-1] #-1 is full off, 0 is middle and +1 is full on
+        color = 'Red' #default to red color if something isn't working right
 
-    def loop(self,RunTime,rcin,gps_llh,rpy,g,baro):
-        controls = [0,0] #Put motors in the middle so off?
+        ##Initialize control commands
+        controls = [-1,-1]
 
-        #Compute the controller values
-        if (rcin.autopilot < 2):
+        ##Create controls commands based on input from receiver
+        if rcin.autopilot < 1500:
             #Manual control
+            color = 'Green'
             controls[0] = rcin.throttlerc + rcin.yawrc
             controls[1] = rcin.throttlerc - rcin.yawrc
-        else: #Remember to test this part of code!
-            controls[0] = -1  #Make the boat spin
-            controls[1] = 1 
-
-        ##Saturation blocks
-        for i in range(0,self.NUMCONTROLS):
-            if (controls[i] < -1):
-                controls[i] = -1
-            if (controls[i] > 1):
-                controls[i] = 1
-
-        return controls
+        elif rcin.autopilot > 1500:
+            #Autopilot
+            color = 'Blue'
+            controls[0] = -1 #make the boat spin
+            controls[1] = 1
+        return controls,defaults,color

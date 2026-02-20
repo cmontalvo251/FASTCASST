@@ -17,6 +17,9 @@ TIMER watch;
 hardware hw;
 
 //Controller is always running
+#ifdef car
+#include <car_controller.h>
+#endif
 #ifdef airplane
 #include "airplane_controller.h"
 #endif

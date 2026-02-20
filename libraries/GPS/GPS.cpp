@@ -56,10 +56,8 @@ void GPS::decodeXYZ() {
   //printf("Using Spherical conversion \n");
   ConvertXYZ2LLHSPHERICAL(XYZ,LLH);
   #else
-  //Note we need to use the simulation coordinates so we know where we are on the planet
-  //Probably need an overhaul where we set the GPS origin coordinates in Simulation.txt
-  //But I don't want to do that right now.
-  ConvertXYZ2LLH(XYZ,LLH,X_origin_SIMULATION,Y_origin_SIMULATION);
+  //Note we need to use the override coordinates so we know where we are on the planet
+  ConvertXYZ2LLH(XYZ,LLH,X_origin_OVERRIDE,Y_origin_OVERRIDE);
   #endif
   latitude = LLH[0];
   longitude = LLH[1];
@@ -135,11 +133,23 @@ void GPS::processGPSCoordinates(double currentTime) {
   }
 }
 
+void GPS::setOriginOverride(double latitude,double longitude) {
+  X_origin_OVERRIDE = latitude;
+  Y_origin_OVERRIDE = longitude;
+  printstdout("Override GPS Origin Set to = ");
+  printstdoutdbl(X_origin_OVERRIDE);
+  printstdout(" ");
+  printstdoutdbl(Y_origin_OVERRIDE);
+  printstdout("\n");
+  setOrigin(X_origin_OVERRIDE,Y_origin_OVERRIDE);
+  GPSORIGINSET = 1;
+}
+
 void GPS::reset() {
   if (!GPSORIGINSET){
     GPSORIGINSET = 1;
     printstdout("GPS Coordinate initialized. Resetting GPS Vals \n");
-    setOrigin(X_origin_SIMULATION,Y_origin_SIMULATION);
+    setOrigin(X_origin_OVERRIDE,Y_origin_OVERRIDE);
     xprev = X;
     yprev = Y;
   }

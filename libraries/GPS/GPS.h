@@ -30,7 +30,7 @@ class GPS {
    int GPSORIGINSET = 0;
    double XYZ[3],LLH[3];
    double X_origin=-99,Y_origin=-99; 
-   double X_origin_SIMULATION=GPSORIGINX,Y_origin_SIMULATION=GPSORIGINY; //These are set in mathp.h
+   double X_origin_OVERRIDE=GPSORIGINX,Y_origin_OVERRIDE=GPSORIGINY; //These are set in mathp.h
  public:
   void printLLH();
   void init();
@@ -70,6 +70,7 @@ class GPS {
   //void ConvertXYZ2LLH(); -- This has been moved to mathp.h as a helper function
   void setXYZ(double,double,double);
   void setOrigin(double,double);
+  void setOriginOverride(double,double);
 };
 
 #endif

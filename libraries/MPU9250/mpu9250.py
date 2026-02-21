@@ -250,6 +250,7 @@ class MPU9250:
         self.accelerometer_data = [0.0, 0.0, 0.0]
         self.magnetometer_data = [0.0, 0.0, 0.0]
         self.rpy = np.zeros(3)
+        self.compass = -999 #Default compass value is -999 until we get a reading from the magnetometer and gps
         self.initialize()
 
     def bus_open(self):
@@ -575,7 +576,7 @@ class MPU9250:
 # returns accel, gyro and mag values
 # -----------------------------------------------------------------------------------------------
 
-    def getALL(self,dt):
+    def getALL(self,dt,gps_heading = -999): #gps heading defaults to -999 if not available
         if self.SIL:
             a = [0,0,9.81]
             g = [0,0,0]
@@ -591,9 +592,20 @@ class MPU9250:
         self.ahrs.update(a[0], a[1], a[2], g[0], g[1], g[2], m[0], m[1], m[2], dt)
         roll,pitch,yaw = self.ahrs.getEuler()
         rpy_ahrs = [roll,pitch,yaw]
+        #Compass value is the yaw from the AHRS filter, but if GPS heading is available we will use it instead
+        #But let's filter everything 
+        #First let's assume the compass value updates from the AHRS filter
+        if self.compass == -999:
+            self.compass = yaw #default compass value is from AHRS filter
+        else:
+            filterConstant = 0.5
+            self.compass = self.compass*filterConstant + yaw*(1-filterConstant)
+        if gps_heading != -999:
+            #If we get a gps measurement we will trust it more than the AHRS filter, but we will still use the AHRS filter to smooth it out a bit
+            self.compass = gps_heading*0.98 + self.compass*0.02 
         ##Before returning g (angular velocity we need to fix the axis system and conver to deg/s
         gdegs = np.array([g[1],g[0],-g[2]])*180.0/np.pi
-        return a,gdegs,m,rpy,rpy_ahrs,temp
+        return a,gdegs,m,rpy,rpy_ahrs,temp,self.compass
     def trigonometry(self,a,g,m):
         ay = a[0]
         ax = a[1]

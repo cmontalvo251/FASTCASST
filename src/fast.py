@@ -13,9 +13,9 @@
 ################################################
 
 #####################PARAMETERS#################
-NUMOUTPUTS = 22  #Number of data outputs (20 for car and boat, 22 for airplane)
-NUMPWM = 4 #Number of PWM signals (2 for car and boat, 4 for airplane)
-VEHICLE = 'airplane'  #Options are 'car', 'boat', or 'airplane'
+NUMOUTPUTS = 20  #Number of data outputs (20 for car and boat, 22 for airplane)
+NUMPWM = 2 #Number of PWM signals (2 for car and boat, 4 for airplane)
+VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
 ################################################
 
 ##Import basic utilities
@@ -45,6 +45,7 @@ imu = mpu9250.MPU9250()
 #Setup datalogger
 sys.path.append('../libraries/Datalogger')
 import datalogger
+NUMOUTPUTS+=2 #Add 2 outputs for gps heading and compass
 logger = datalogger.Datalogger(NUMOUTPUTS)
 
 #Setup LED
@@ -95,14 +96,15 @@ while (True):
     #Read in receiver commands
     ARMED,safety_color = rc.rcin.readALL()
 
+    #Get GPS update if it's ready
+    gps_llh.poll(RunTime) 
+
     #Get acceleration,gyroscope, magnetometer & temperature data
     #Note I do not recommend using rpy since that is solely using trigonometry
     #in addition the yaw angle does not work at all
     #rpy_ahrs works really well for obtaining the yaw angle
-    a,gdegs,m,rpy,rpy_ahrs,temp = imu.getALL(elapsedTime) 
-
-    #Get GPS update if it's ready
-    gps_llh.poll(RunTime)
+    #compass is the ahrs magnetometer heading + the gps heading
+    a,gdegs,m,rpy,rpy_ahrs,temp,compass = imu.getALL(elapsedTime,gps_llh.heading) 
 
     #Get pressure which also converts to altitude (temperature is not currently working to speed up simulation)
     #If you really want temperature check the baro.poll() function and uncomment the temperature routine
@@ -159,15 +161,19 @@ while (True):
         logger.outdata[11] = rpy_ahrs[0]
         logger.outdata[12] = rpy_ahrs[1]
         logger.outdata[13] = rpy_ahrs[2]
-        logger.outdata[14] = gps_llh.speed #Does not work right now. Need to revisit gps.py to fix
+        logger.outdata[14] = gps_llh.speed 
         logger.outdata[15] = gdegs[0]
         logger.outdata[16] = gdegs[1]
         logger.outdata[17] = gdegs[2]
         logger.outdata[18] = pwm_commands[0]
         logger.outdata[19] = pwm_commands[1]
+        l = 19
         if len(pwm_commands) > 2:
             logger.outdata[20] = pwm_commands[2]
             logger.outdata[21] = pwm_commands[3]
+            l = 21
+        logger.outdata[l+1] = gps_llh.heading
+        logger.outdata[l+2] = compass
         logger.println()
         logTime = RunTime
 

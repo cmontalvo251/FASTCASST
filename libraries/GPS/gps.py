@@ -13,8 +13,11 @@ class GPS():
     def __init__(self):
         ##Set defaults
         self.latitude = -99
+        self.prev_latitude = -99
         self.longitude = -99
+        self.prev_longitude = -99
         self.altitude = -99
+        self.heading = -999
         self.speed = -99
         self.latitude_vec = []
         self.longitude_vec = []
@@ -96,9 +99,10 @@ class GPS():
         self.latitude = self.getfloat(latstr)/10000000.0  ##I'm dividing by random numbers until it looks right
         self.altitude = self.getfloat(altstr)/1000.0
 
-    def poll(self,RunTime):
+    def poll(self,RunTime): 
         #print('Polling GPS....',RunTime,self.GPSTime,self.GPSNEXT)
         if (RunTime - self.GPSTime) > self.GPSNEXT:
+            self.elapsedTime = RunTime - self.GPSTime
             self.GPSTime = RunTime
             self.update()
         
@@ -126,7 +130,37 @@ class GPS():
             self.longitude = -88.10
             self.altitude = 0.0
             self.speed = 0.0
+
+        #Then we compute speed and heading here
+        self.compute_heading_velocity()
         return
+    
+    def compute_heading_velocity(self):
+        if self.prev_latitude != -99 and self.prev_longitude != -99:
+            #Get delta lat and delta lon
+            dlat = self.latitude - self.prev_latitude
+            dlon = self.longitude - self.prev_longitude
+            if self.heading == -99:
+                self.heading = np.arctan2(dlon,dlat)*180/np.pi
+            else:
+                #Compute heading with filtering to smooth it out.
+                self.heading = np.arctan2(dlon,dlat)*180/np.pi*self.filterConstant + self.heading*(1-self.filterConstant)
+            if self.heading < 0:
+                self.heading += 360
+            #print('Heading:',self.heading)
+            #print('dlat:',dlat,'dlon:',dlon)
+            #print('prev lat:',self.prev_latitude,'prev lon:',self.prev_longitude)
+            #print('lat:',self.latitude,'lon:',self.longitude)
+            #print('delta lat (m):',dlat*111000,'delta lon (m):',dlon*111000*np.cos(self.latitude*np.pi/180))
+            if self.speed == -99:
+                self.speed = np.sqrt((dlat*111000)**2 + (dlon*111000*np.cos(self.latitude*np.pi/180))**2)/self.elapsedTime
+            else:
+                self.speed = np.sqrt((dlat*111000)**2 + (dlon*111000*np.cos(self.latitude*np.pi/180))**2)/self.elapsedTime*self.filterConstant + self.speed*(1-self.filterConstant)
+        else:
+            self.heading = -999
+            self.speed = -99
+        self.prev_latitude = self.latitude
+        self.prev_longitude = self.longitude
 
     def setOrigin(self,latO,lonO):
         self.latO = latO

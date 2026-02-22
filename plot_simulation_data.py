@@ -20,7 +20,7 @@ tend = -99
 
 def printCodes():
     print('Command is....')
-    print('./plotdata.py #')
+    print('./plot_simulation_data.py #')
     print('1 = clean, compile, run and plot')
     print('2 = compile, run and plot')
     print('3 = run and plot')
@@ -43,12 +43,12 @@ if counter == 1:
 if counter == 2:
     print('2 = compile,run and plot')
     counter+=1
-    os.system('make simonly MODEL="cubesat"')
+    os.system('make simonly MODEL="car"')
 if counter == 3:
     counter+=1
     print('3 = run and plot')
     os.system('./clean_logs')
-    os.system('./simonly.exe cubesat/')
+    os.system('./simonly.exe car/')
 if counter == 4:
     print('4 = plotting')
 

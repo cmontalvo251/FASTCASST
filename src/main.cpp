@@ -1,3 +1,41 @@
+/*####################################################################
+#
+#  FASTCASST++ - Facility for Aerial Systems and Technology
+#  Configurable Autopilot Simulation and Software Tool in C++
+#
+#  Initially Created by Carlos Montalvo during 
+#  his PhD at Georgia Tech 2008-2014
+
+#  A lot of inspiration though came from Eric Beyer 
+#  and his code he wrote for his PhD at Georgia Tech
+#  especially the OpenGL model
+
+#  Brandon Troub heavily helped with the meta aircraft code in 2016
+
+#  Lisa Schibelius added a quadcopter dynamic model in 2016
+
+#  Nghia Huynh and Alicia Ratcliffe added cubesat and glider 
+#  aerodynamics in 2017
+
+#  Matthew Simmons added a bit of E-Sail recycled code in 2018/2019
+
+#  Maxwell Cobar did a lot to add to the car and airplane heading
+#  and waypoint controller code in 2021-2023. He was also instrumental
+#  in the development of telemetry. He also added more cubesat code
+
+#  In 2023 Carlos Montalvo added Arduino support for the SW
+#  and then in 2024 many different separate softwares were merged 
+#  into this one such as the x8 code called SUAM
+
+#  Collin Carithers initially helped develop SUAM in 2019 and then
+#  Andrew Wearran helped integrate the x8 controller into this SW from
+#  2024-2025
+
+#  Current development is being done by Carlos Montalvo to text the 
+#  waypoint controller of the car - 2026
+# 
+######################################################################*/
+
 ///The Main source files have no header files
 //Everything is contained in here
 #include <stdio.h>

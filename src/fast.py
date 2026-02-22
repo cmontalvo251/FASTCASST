@@ -8,7 +8,7 @@
 #  Secondary Author: Maxwell Cobar Spring 2023
 #  Tertiary Authors: Aramis Hoffmann (car.py)
 #  Kate Doiron (plane.py) Spring 2025
-#  Quaternary Author: Carlos Montalvo Fall 2025
+#  Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026
 #
 ################################################
 

@@ -19,13 +19,17 @@ LIB=-L/usr/local/lib -L./
 THREAD=-lpthread -lboost_system -lboost_thread -lboost_date_time 
 MODELPATH=libraries/V_$(MODEL)/
 INCLUDE=-Ilibraries/ -I${MODELPATH} -I./
+
 ###HELPER
 HELPERSOURCES=libraries/Datalogger/Datalogger.cpp libraries/MATLAB/MATLAB.cpp libraries/Mathp/mathp.cpp libraries/Timer/timer.cpp
+HELPEROBJECTS=$(HELPERSOURCES:.cpp=.o)
+
 ###ALGORITHMS OR SENSOR HELPERS
 AHRSSOURCES=$(wildcard libraries/AHRS/*.cpp)
 UBLOXSOURCES=$(wildcard libraries/Ublox/*.cpp)
 UTILSOURCES=$(wildcard libraries/Util/*.cpp)
 ALGSOURCES=$(AHRSSOURCES) $(UBLOXSOURCES) $(UTILSOURCES)
+ALGOBJECTS=$(ALGSOURCES:.cpp=.o)
 
 ##RCSOURCES
 RCIOSOURCES=$(wildcard libraries/RCIO/*.cpp)
@@ -33,12 +37,14 @@ RCINPUTSOURCES=$(wildcard libraries/RCInput/*.cpp)
 RCOUTPUTSOURCES=$(wildcard libraries/RCOutput/*.cpp)
 PWMSOURCES=$(wildcard libraries/PWMSIGNALS/*.cpp)
 RCSOURCES=$(RCIOSOURCES) $(RCINPUTSOURCES) $(RCOUTPUTSOURCES) $(PWMSOURCES)
+RCOBJECTS=$(RCSOURCES:.cpp=.o)
 
 ##COMMS
 COMMSSOURCES=$(wildcard libraries/Comms/*.cpp)
 SERIALSOURCES=$(wildcard libraries/SerialComms/*.cpp)
 I2CSOURCES=$(wildcard libraries/I2Cdev/*.cpp)
 COMMSOURCES=$(COMMSSOURCES) $(SERIALSOURCES) $(I2CSOURCES)
+COMMOBJECTS=$(COMMSOURCES:.cpp=.o)
 
 ###SENSORS
 IMUSOURCES=$(wildcard libraries/IMU/*.cpp)
@@ -50,18 +56,23 @@ MS5611SOURCES=$(wildcard libraries/MS5611/*.cpp)
 ADCSOURCES=$(wildcard libraries/ADC/*.cpp)
 HWSOURCES=libraries/sensors/sensors.cpp libraries/hardware/hardware.cpp
 HARDWARESOURCES=$(MPUSOURCES) $(LSMSOURCES) $(IMUSOURCES) $(GPSSOURCES) $(PTHSOURCES) $(ADCSOURCES) $(HWSOURCES) $(MS5611SOURCES)
+HARDWAREOBJECTS=$(HARDWARESOURCES:.cpp=.o)
+
 ##MODELING
 ENVSOURCES=$(wildcard libraries/Environment/*.cpp)
 GEOSOURCES=$(wildcard libraries/GeographicLib/*.cpp)
 RK4SOURCES=$(wildcard libraries/RK4/*.cpp)
 ROTSOURCES=$(wildcard libraries/Rotation/*.cpp)
 MODELINGSOURCES=$(ENVSOURCES) $(GEOSOURCES) $(RK4SOURCES) $(ROTSOURCES) libraries/modeling/modeling.cpp
+MODELINGOBJECTS=$(MODELINGSOURCES:.cpp=.o)
+
 ###MODEL
 MODELSOURCES=$(wildcard libraries/V_$(MODEL)/*.cpp)
+MODELOBJECTS=$(MODELSOURCES:.cpp=.o)
 
-###COMBINE ALL SOURCES
-SOURCES=$(ALGSOURCES) $(RCSOURCES) $(COMMSOURCES) $(HELPERSOURCES) $(HARDWARESOURCES) $(MODELSOURCES) $(OPENGLSOURCES) $(MODELINGSOURCES)
-OBJECTS=$(SOURCES:.cpp=.o)
+###COMBINE ALL OBJECTS
+#SOURCES=$(ALGSOURCES) $(RCSOURCES) $(COMMSOURCES) $(HELPERSOURCES) $(HARDWARESOURCES) $(MODELSOURCES) $(OPENGLSOURCES) $(MODELINGSOURCES)
+OBJECTS=$(ALGOBJECTS) $(RCOBJECTS) $(COMMOBJECTS) $(HELPEROBJECTS) $(HARDWAREOBJECTS) $(MODELOBJECTS) $(MODELINGOBJECTS) $(OPENGLSOURCES:.cpp=.o)
 
 ###########MOVED TO ARCHIVE
 ##Logger SIL is on DESKTOP and basically takes and logs fictitious data
@@ -121,7 +132,21 @@ $(MAIN): $(MAIN:.o=.cpp)
 	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(MODEL) -D$(RX) -D$(PLATFORM) -D$(TYPE) $(MAIN:.o=.cpp) -o $(MAIN) $(WIRINGPI)
 
 ##The rule for the objects depends on the sources
-%.o: %.cpp $(SOURCES)
+%.o: %.cpp $(ALGSOURCES)
+	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(MODEL) -D$(RX) -D$(PLATFORM) -D$(TYPE) $(LIB) $(WIRINGPI) $< -o $@
+%.o: %.cpp $(RCSOURCES)
+	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(MODEL) -D$(RX) -D$(PLATFORM) -D$(TYPE) $(LIB) $(WIRINGPI) $< -o $@
+%.o: %.cpp $(COMMSOURCES)
+	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(MODEL) -D$(RX) -D$(PLATFORM) -D$(TYPE) $(LIB) $(WIRINGPI) $< -o $@
+%.o: %.cpp $(HELPERSOURCES)
+	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(MODEL) -D$(RX) -D$(PLATFORM) -D$(TYPE) $(LIB) $(WIRINGPI) $< -o $@
+%.o: %.cpp $(HARDWARESOURCES)
+	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(MODEL) -D$(RX) -D$(PLATFORM) -D$(TYPE) $(LIB) $(WIRINGPI) $< -o $@
+%.o: %.cpp $(MODELSOURCES)
+	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(MODEL) -D$(RX) -D$(PLATFORM) -D$(TYPE) $(LIB) $(WIRINGPI) $< -o $@
+%.o: %.cpp $(OPENGLSOURCES)
+	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(MODEL) -D$(RX) -D$(PLATFORM) -D$(TYPE) $(LIB) $(WIRINGPI) $< -o $@
+%.o: %.cpp $(MODELINGSOURCES)
 	$(CC) $(COMPILE) $(FLAGS) $(INCLUDE) -D$(MODEL) -D$(RX) -D$(PLATFORM) -D$(TYPE) $(LIB) $(WIRINGPI) $< -o $@
 
 ##Clean function

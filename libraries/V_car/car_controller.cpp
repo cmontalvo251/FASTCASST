@@ -34,6 +34,12 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Default Control Signals
   set_defaults();
 
+  /*sense_matrix.disp();
+  control_matrix.disp();
+  PAUSE();*/
+  control_matrix.set(1,1,STICK_MAX); //full throttle debug
+  return;
+
   //I want to keep track of timeElapsed so that I can run integrators
   //and compute derivates
   elapsedTime = currentTime - lastTime;
@@ -126,7 +132,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //Set motor commands to the ctlcomms values
   control_matrix.set(1,1,motor);
   control_matrix.set(2,1,servo);
-  //control_matrix.disp();
 }
 
 void controller::WaypointLoop(MATLAB sense_matrix) {

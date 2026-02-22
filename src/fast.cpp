@@ -57,21 +57,18 @@ hardware hw;
 //Controller is always running
 #ifdef car
 #include <car_controller.h>
-#endif
-#ifdef airplane
+#elif airplane
 #include "airplane_controller.h"
-#endif
-#ifdef quadcopter
+#elif quadcopter
 #include "quadcopter_controller.h"
-#endif
-#ifdef hybrid
+#elif hybrid
 #include "hybrid_controller.h"
-#endif
-#ifdef x8
+#elif x8
 #include "x8_controller.h"
-#endif
-#ifdef cubesat
+#elif cubesat
 #include "cubesat_controller.h"
+#else
+#include "controller.h" //This is here just to keep the compiler happy but will probably thow an error anyway
 #endif
 controller control;
 
@@ -265,7 +262,9 @@ void loop() {
       #ifndef AUTO //If we're running on hardware we run as fast as possible
       //but if not we need to throttle the control loop
       if (watch.currentTime > lastControltime) {
+        #ifdef MODELING //Adding this to keep VScode happy
         lastControltime = watch.currentTime + model.TIMESTEP; //Run as fast as the timestep
+        #endif
       #endif
         control.loop(watch.currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
       #ifndef AUTO

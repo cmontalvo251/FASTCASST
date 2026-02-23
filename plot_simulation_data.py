@@ -20,21 +20,23 @@ tend = -99
 
 def printCodes():
     print('Command is....')
-    print('./plot_simulation_data.py #')
+    print('./plot_simulation_data.py # MODEL')
     print('1 = clean, compile, run and plot')
     print('2 = compile, run and plot')
     print('3 = run and plot')
     print('4 = just plot')
+    print('MODEL is either "car","cubesat","airplane" or "x8"')
     sys.exit()
 if len(sys.argv) == 1:
     print('No input arguments given.')
     printCodes()
 try:
     counter = int(sys.argv[1])
+    MODEL = sys.argv[2]
 except:
     counter = 0
 if counter == 0 or counter > 4 or counter < 0:
-    print('Invalid code')
+    print('Invalid code and/or MODEL')
     printCodes()
 if counter == 1:
     print('1 = clean,compile,run and plot')
@@ -43,12 +45,12 @@ if counter == 1:
 if counter == 2:
     print('2 = compile,run and plot')
     counter+=1
-    os.system('make simonly MODEL="car"')
+    os.system('make simonly MODEL="'+MODEL+'"')
 if counter == 3:
     counter+=1
     print('3 = run and plot')
     os.system('./clean_logs')
-    os.system('./simonly.exe car/')
+    os.system('./simonly.exe '+MODEL+'/')
 if counter == 4:
     print('4 = plotting')
 
@@ -141,52 +143,50 @@ plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 
 ###JUST FOR CUBESAT PLOT MOMENTS AND PQR
-fig = plt.figure()
-plti = fig.add_subplot(1,1,1)
-plti.plot(model_time[istart_model:iend_sense],model_data[istart_model:iend_model,10],label='P')
-plti.plot(model_time[istart_model:iend_sense],model_data[istart_model:iend_model,11],label='Q')
-plti.plot(model_time[istart_model:iend_sense],model_data[istart_model:iend_model,12],label='R')
-plti.grid()
-plti.legend()
-plti.set_xlabel('Time (sec)')
-plti.set_ylabel('Angular Velocity (rad/s)')
-pp.savefig()
+if MODEL == 'cubesat':
+    fig = plt.figure()
+    plti = fig.add_subplot(1,1,1)
+    plti.plot(model_time[istart_model:iend_sense],model_data[istart_model:iend_model,10],label='P')
+    plti.plot(model_time[istart_model:iend_sense],model_data[istart_model:iend_model,11],label='Q')
+    plti.plot(model_time[istart_model:iend_sense],model_data[istart_model:iend_model,12],label='R')
+    plti.grid()
+    plti.legend()
+    plti.set_xlabel('Time (sec)')
+    plti.set_ylabel('Angular Velocity (rad/s)')
+    pp.savefig()
 
-STICK_MAX = 2016.
-STICK_MID = 1500.
-STICK_MIN = 992.
-dOmega_max = 10.
-dPWM = (STICK_MAX-STICK_MIN)
-IpwmC = (dOmega_max/dPWM)
-try:
-    control_signals = model_data[istart_model:iend_model,35:38]
-except:
-    control_signals = model_data[istart_model:iend_model,35:37]
-moments = (control_signals - STICK_MID)*IpwmC
-fig = plt.figure()    
-plti = fig.add_subplot(1,1,1)
-#plti.plot(sense_time[istart_sense:iend_sense],control_signals)
-axis = ['L','M','N']
-try:
-    for i in range(0,3):
-        plti.plot(model_time[istart_model:iend_model],moments[:,i],label=axis[i])
-except:
-    pass
-plti.grid()
-plti.legend()
-plti.set_xlabel('Time (sec)')
-#plti.set_ylabel('Control Signals (us)')
-plti.set_ylabel('Moments (N-m)')
-pp.savefig()
+    STICK_MAX = 2016.
+    STICK_MID = 1500.
+    STICK_MIN = 992.
+    dOmega_max = 10.
+    dPWM = (STICK_MAX-STICK_MIN)
+    IpwmC = (dOmega_max/dPWM)
+    try:
+        control_signals = model_data[istart_model:iend_model,35:38]
+    except:
+        control_signals = model_data[istart_model:iend_model,35:37]
+    moments = (control_signals - STICK_MID)*IpwmC
+    fig = plt.figure()    
+    plti = fig.add_subplot(1,1,1)
+    #plti.plot(sense_time[istart_sense:iend_sense],control_signals)
+    axis = ['L','M','N']
+    try:
+        for i in range(0,3):
+            plti.plot(model_time[istart_model:iend_model],moments[:,i],label=axis[i])
+    except:
+        pass
+    plti.grid()
+    plti.legend()
+    plti.set_xlabel('Time (sec)')
+    #plti.set_ylabel('Control Signals (us)')
+    plti.set_ylabel('Moments (N-m)')
+    pp.savefig()
 
 ##Plot a world
 modelX = model_data[istart_model:iend_model,1]
 modelY = model_data[istart_model:iend_model,2]
 modelZ = model_data[istart_model:iend_model,3]
 REARTH = 6371000 #meters Earth
-X0 = modelX[0]
-Y0 = modelY[0]
-Z0 = modelZ[0]
 norm = np.sqrt(modelX[0]**2 + modelY[0]**2 + modelZ[0]**2)
 if norm > REARTH:
     senseX = sense_data[istart_sense:iend_sense,1]

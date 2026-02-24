@@ -64,7 +64,8 @@ void GPS::decodeXYZ() {
   altitude = LLH[2];
   //printf("GPS XYZ = %lf %lf %lf \n",X,Y,Z);
   //printf("GPS LLH = %lf %lf %lf \n",latitude,longitude,altitude);
-  //PAUSE();  
+  //printf("Override X,Y = %lf %lf \n",X_origin_OVERRIDE,Y_origin_OVERRIDE);
+  //PAUSE();
 }
 
 void GPS::poll(float currentTime) {

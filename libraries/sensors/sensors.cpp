@@ -76,9 +76,9 @@ void sensors::init(MATLAB in_configuration_matrix,MATLAB in_simulation_matrix) {
 
   //Initialize GPS
   satellites.init();
-  //If the length of in_configuration_matrix is greater than 15 then we have GPS origin override values
-  if (in_configuration_matrix.length() > 15) {
-    satellites.setOriginOverride(in_configuration_matrix.get(16,1),in_configuration_matrix.get(17,1));
+  //If the length of in_configuration_matrix is greater than 18 then we have GPS origin override values
+  if (in_configuration_matrix.length() > 18) {
+    satellites.setOriginOverride(in_configuration_matrix.get(19,1),in_configuration_matrix.get(20,1));
   }
 
   //Initialize Barometer
@@ -292,7 +292,7 @@ void sensors::poll(double currentTime,double elapsedTime) {
   //Read the GPS
   if (currentTime >= nextGPStime) {
     //printf("Polling GPS %lf \n",currentTime);
-    satellites.poll(currentTime); //This will compute XYZ as well. For now we are using
+    satellites.poll(currentTime); //This will compute XYZ as well.
     if (currentTime >= nextGPSOffset) {
       heading_offset = satellites.heading - orientation.yaw;
       //printf("Setting Offset = %lf \n",heading_offset);

@@ -13,5 +13,8 @@
 0.056    !Ixx //(kg-m^2)
 0.035    !Iyy //(kg-m^2)
 0.077    !Izz //(kg-m^2)
+0        !Ixy //(kg-m^2)
+0        !Ixz //(kg-m^2)
+0        !Iyz //(kg-m^2)
 30.0     !Override Latitude Origin (deg)
 -88.0    !Override Latitude Origin (deg)

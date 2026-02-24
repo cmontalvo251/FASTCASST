@@ -163,6 +163,10 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //Initialize X and Y Origin of GPS
   //origin set in the header file
   //And then set GPS coordinates
+  if (in_configuration_matrix.length() > 18) {
+    X_origin = in_configuration_matrix.get(19,1);
+    Y_origin = in_configuration_matrix.get(20,1);
+  }
   SetGPS();
 
   //Initialize Integrator

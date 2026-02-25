@@ -147,6 +147,8 @@ class GPS():
                 self.heading = np.arctan2(dlon,dlat)*180/np.pi*self.filterConstant + self.heading*(1-self.filterConstant)
             if self.heading < 0:
                 self.heading += 360
+            if self.heading > 360:
+                self.heading -= 360
             #print('Heading:',self.heading)
             #print('dlat:',dlat,'dlon:',dlon)
             #print('prev lat:',self.prev_latitude,'prev lon:',self.prev_longitude)

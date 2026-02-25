@@ -47,8 +47,12 @@ class GPS {
   //Origin is set in mathp.h
   double latitude=-99,longitude=-99,altitude=0.0,X=0,Y=0,Z=0;
   double xprev=0,yprev=0,zprev=0,prev_time=0;
+  double latitude_prev=-99,longitude_prev=-99,altitude_prev=-99;
   double headingFilterConstant = 0.0;
-  double heading;
+  double heading=0;
+  int headingFLAG = 0;
+  int speedFLAG = 0;
+  int vertical_speedFLAG = 0;
   int ok;
   int end_pt = NGPS;
   int start_pt = 1;
@@ -65,6 +69,7 @@ class GPS {
   int status();
   void computeSpeed(double);
   void computeGroundTrack(double);
+  void compute_heading_velocity(double);
   void computeCOG(double);
   void ConvertGPS2XY();
   //void ConvertXYZ2LLH(); -- This has been moved to mathp.h as a helper function

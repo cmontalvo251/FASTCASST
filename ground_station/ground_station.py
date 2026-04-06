@@ -467,7 +467,7 @@ if SERIAL == 2:
 	print('Opening Serial port')
 	import platform
 	if platform.system() == 'Windows':
-		GROUND_RADIO_PORT = 'COM5'  # Change to your COM port number
+		GROUND_RADIO_PORT = 'COM3'
 	else:
 		GROUND_RADIO_PORT = '/dev/ttyUSB0'
 	ser.SerialInit(57600, GROUND_RADIO_PORT, period=1.0)

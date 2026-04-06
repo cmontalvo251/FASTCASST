@@ -498,11 +498,9 @@ while True:
 				gndstation_packet, NEW_DATA = updatePacket(ser.fast_packet[0], 0)
 	elif SERIAL == 2:
 		position = -1
-		print('Reading Serial....', time.monotonic())
-		value, position, bytestring = ser.SerialGetNumber(1)
-		print('Value Received, Position, Bytes = ', value, position, bytestring)
+		value, position, bytestring = ser.SerialGetNumber(0)
 		gndstation_packet, NEW_DATA = updatePacket(value, position)
-		if position < 7:
+		if position < 11:
 			NEW_DATA = False
 
 	##Update GUI if we have new data

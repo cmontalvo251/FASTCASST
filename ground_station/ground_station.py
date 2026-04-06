@@ -465,9 +465,12 @@ ser = U(packet_size=12)
 
 if SERIAL == 2:
 	print('Opening Serial port')
-	print('All available serial ports...')
-	os.system('ls /dev/ttyUSB*')
-	ser.SerialInit(57600, "/dev/ttyUSB0", period=1.0)
+	import platform
+	if platform.system() == 'Windows':
+		GROUND_RADIO_PORT = 'COM5'  # Change to your COM port number
+	else:
+		GROUND_RADIO_PORT = '/dev/ttyUSB0'
+	ser.SerialInit(57600, GROUND_RADIO_PORT, period=1.0)
 	print('Serial initialization done')
 
 ##If GUI is on create the window

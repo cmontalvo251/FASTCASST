@@ -8,9 +8,9 @@ import util
 
 ##NOTE: This library supports NMEA GPS antennas connected via serial (USB or UART).
 ## Common setups:
-##   USB GPS dongle    -> /dev/ttyUSB0
-##   UART GPS (NEO-6M) -> /dev/ttyAMA1 or /dev/ttyS0  (NOT ttyAMA0, that's the radio)
-## Baud rate is typically 9600 for most GPS modules.
+##   NEO-M8N via USB   -> /dev/ttyACM0   (USB cable, most common)
+##   NEO-M8N via UART  -> /dev/ttyAMA1 or /dev/ttyS0  (GPIO pins, NOT ttyAMA0 - that's the radio)
+## Baud rate is 9600 for NEO-M8N default.
 ## Install pyserial if needed: sudo pip3 install pyserial
 
 try:
@@ -69,8 +69,8 @@ class GPS():
             return
 
         ##Try the user-specified port first, then common fallbacks
-        ports_to_try = [self.port, '/dev/ttyAMA0', '/dev/ttyUSB0',
-                        '/dev/ttyUSB1', '/dev/ttyAMA1', '/dev/ttyS0']
+        ports_to_try = [self.port, '/dev/ttyACM0', '/dev/ttyACM1',
+                        '/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyAMA1', '/dev/ttyS0']
         ##Remove duplicates while preserving order
         seen = set()
         unique_ports = []

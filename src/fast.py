@@ -18,10 +18,10 @@ NUMPWM = 3       #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
 VEHICLE = 'boat' #Options are 'car', 'boat', or 'airplane'
 
 ##GPS port: set to the serial port your GPS antenna is connected to.
-##  USB GPS dongle    -> '/dev/ttyUSB0'   (most common)
-##  UART GPIO GPS     -> '/dev/ttyAMA1'   (secondary UART, NOT ttyAMA0 - that's the radio)
+##  NEO-M8N via USB   -> '/dev/ttyACM0'   (most common for NEO-M8N USB cable)
+##  NEO-M8N via UART  -> '/dev/ttyAMA1'   (GPIO pins, NOT ttyAMA0 - that's the radio)
 ##  Mini-UART GPIO    -> '/dev/ttyS0'
-GPS_PORT = '/dev/ttyAMA0'  # Navio2 GPS port → Pi UART
+GPS_PORT = '/dev/ttyACM0'  # NEO-M8N connected via USB
 GPS_BAUD = 9600            # NEO-M8N default baud rate
 ################################################
 

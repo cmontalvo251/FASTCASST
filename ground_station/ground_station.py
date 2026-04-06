@@ -89,20 +89,20 @@ def get_fake_data(counter):
 def updatePacket(value,position):
 	if position >= 0:
 		ser.fast_packet[position] = value
-		gndstation_packet[0] = ser.fast_packet[0] #time
-		gndstation_packet[1] = ser.fast_packet[1] #roll
-		gndstation_packet[2] = ser.fast_packet[2] #pitch
-		gndstation_packet[3] = ser.fast_packet[3] #compass
-		gndstation_packet[4] = ser.fast_packet[4] #lat
-		gndstation_packet[5] = ser.fast_packet[5] #lon
-		gndstation_packet[6] = ser.fast_packet[6] #baro altitude
-		gndstation_packet[7] = ser.fast_packet[7] #gps speed (m/s)
-		gndstation_packet[8] = -99  #GPS Altitude (not in current packet)
-		gndstation_packet[9] = -99  #Pitot speed
-		gndstation_packet[10] = -99 #throttle
-		gndstation_packet[11] = -99 #aileron
-		gndstation_packet[12] = -99 #elevator
-		gndstation_packet[13] = -99 #rudder
+		gndstation_packet[0]  = ser.fast_packet[0]  #time
+		gndstation_packet[1]  = ser.fast_packet[1]  #roll
+		gndstation_packet[2]  = ser.fast_packet[2]  #pitch
+		gndstation_packet[3]  = ser.fast_packet[3]  #compass heading
+		gndstation_packet[4]  = ser.fast_packet[4]  #lat
+		gndstation_packet[5]  = ser.fast_packet[5]  #lon
+		gndstation_packet[6]  = ser.fast_packet[6]  #baro altitude
+		gndstation_packet[7]  = ser.fast_packet[7]  #gps speed (m/s)
+		gndstation_packet[8]  = -99                 #GPS Altitude (not in packet)
+		gndstation_packet[9]  = -99                 #Pitot speed
+		gndstation_packet[10] = ser.fast_packet[8]  #motor 1
+		gndstation_packet[11] = ser.fast_packet[9]  #motor 2
+		gndstation_packet[12] = ser.fast_packet[10] #rudder/servo
+		gndstation_packet[13] = ser.fast_packet[11] #gps fix quality
 		NEW_DATA = True
 		print('Fast Packet = ', ser.fast_packet)
 	else:
@@ -460,8 +460,8 @@ outfilename = ('logs/Ground_Station_'
                + '.csv')
 outfile = open(outfilename, 'w')
 
-#Create Empty serial object
-ser = U()
+#Create Empty serial object (12-slot packet: time,roll,pitch,compass,lat,lon,alt,speed,motor1,motor2,rudder,fix)
+ser = U(packet_size=12)
 
 if SERIAL == 2:
 	print('Opening Serial port')

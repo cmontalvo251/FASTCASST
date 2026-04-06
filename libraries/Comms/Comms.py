@@ -9,10 +9,10 @@ sys.path.append('../libraries/Util') ##Assuming we're importing this from either
 import util
 
 class Comms():
-  def __init__(self):
+  def __init__(self, packet_size=12):
     self.lastTime = 0.0
     self.MAXLINE = 120
-    self.fast_packet = np.zeros(8)
+    self.fast_packet = np.zeros(packet_size)
     
   def bitsToFloat(self,b):
     if (b > 2147483647):

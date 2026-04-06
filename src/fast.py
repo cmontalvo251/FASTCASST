@@ -75,7 +75,7 @@ rc = rcio.RCIO(NUMPWM)
 sys.path.append('../libraries/')
 from Comms.Comms import Comms as U
 ser = U()
-ser.SerialInit(57600, "/dev/ttyUSB0", period=1.0)  # telemetry radio (USB)
+ser.SerialInit(57600, "/dev/ttyAMA0", period=1.0)  # telemetry radio (UART)
 
 #Short break to build suspense
 print('Sleep for 1 second.....')

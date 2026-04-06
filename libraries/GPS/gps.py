@@ -1,207 +1,272 @@
 import sys
-sys.path.append('../libraries/Ublox')
-sys.path.append('../libraries/Util')
-import util
-import ublox as UBLX
 import time
 import numpy as np
 
-##NOTE THAT FUNCTIONS LIKE IFOV AND computeGeocentricLATLON functions are in
-##gpscomms.py which is over in aerospace.git/satcomms/gpscomms.py
+sys.path.append('../Util')
+sys.path.append('../libraries/Util')
+import util
+
+##NOTE: This library supports NMEA GPS antennas connected via serial (USB or UART).
+## Common setups:
+##   USB GPS dongle    -> /dev/ttyUSB0
+##   UART GPS (NEO-6M) -> /dev/ttyAMA1 or /dev/ttyS0  (NOT ttyAMA0, that's the radio)
+## Baud rate is typically 9600 for most GPS modules.
+## Install pyserial if needed: sudo pip3 install pyserial
+
+try:
+    import serial
+    SERIAL_AVAILABLE = True
+except ImportError:
+    SERIAL_AVAILABLE = False
+    print('WARNING: pyserial not installed. Run: sudo pip3 install pyserial')
+
 
 class GPS():
-    def __init__(self):
+    def __init__(self, port='/dev/ttyUSB0', baud=9600):
         ##Set defaults
         self.latitude = -99
         self.longitude = -99
         self.altitude = -99
         self.speed = -99
+        self.fix_quality = 0      # 0=no fix, 1=GPS, 2=DGPS
+        self.num_satellites = 0
+        self.has_fix = False
+
+        ##For historical data / utility methods
         self.latitude_vec = []
         self.longitude_vec = []
         self.time_vec = []
         self.x_vec = []
-        self.y_vec = [] 
+        self.y_vec = []
         self.filterConstant = 0.2
-        self.NM2FT=6076.115485560000
-        self.FT2M=0.3048
-        self.GPSVAL = 60.0*self.NM2FT*self.FT2M
+        self.NM2FT = 6076.115485560000
+        self.FT2M = 0.3048
+        self.GPSVAL = 60.0 * self.NM2FT * self.FT2M
         self.latO = 33.16
         self.lonO = -88.1
-        self.initialize()
-    def initialize(self):
-        self.GPSNEXT = 0.25
+
+        ##Serial connection
+        self.port = port
+        self.baud = baud
+        self._ser = None
+        self._buffer = ''
+
+        ##Polling timing
+        self.GPSNEXT = 0.1   # poll every 100ms
         self.GPSTime = -self.GPSNEXT
+
         self.SIL = util.isSIL()
+        self.initialize()
+
+    def initialize(self):
         if self.SIL:
-            print('Running in SIL mode....emulating GPS')
-        else:
-            print('Initializing GPS....')
-            self.ubl = UBLX.UBlox("spi:0.0", baudrate=5000000, timeout=2)
-            self.ubl.configure_poll_port()
-            self.ubl.configure_poll(UBLX.CLASS_CFG, UBLX.MSG_CFG_USB)
-            #ubl.configure_poll(UBLX.CLASS_MON, UBLX.MSG_MON_HW)
+            print('Running in SIL mode.... emulating GPS')
+            return
 
-            self.ubl.configure_port(port=UBLX.PORT_SERIAL1, inMask=1, outMask=0)
-            self.ubl.configure_port(port=UBLX.PORT_USB, inMask=1, outMask=1)
-            self.ubl.configure_port(port=UBLX.PORT_SERIAL2, inMask=1, outMask=0)
-            self.ubl.configure_poll_port()
-            self.ubl.configure_poll_port(UBLX.PORT_SERIAL1)
-            self.ubl.configure_poll_port(UBLX.PORT_SERIAL2)
-            self.ubl.configure_poll_port(UBLX.PORT_USB)
-            self.ubl.configure_solution_rate(rate_ms=1000)
+        if not SERIAL_AVAILABLE:
+            print('ERROR: pyserial not available. Cannot connect to GPS antenna.')
+            print('Install with: sudo pip3 install pyserial')
+            return
 
-            self.ubl.set_preferred_dynamic_model(None)
-            self.ubl.set_preferred_usePPP(None)
-            
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_POSLLH, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_PVT, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_STATUS, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_SOL, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_VELNED, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_SVINFO, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_VELECEF, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_POSECEF, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_RXM, UBLX.MSG_RXM_RAW, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_RXM, UBLX.MSG_RXM_SFRB, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_RXM, UBLX.MSG_RXM_SVSI, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_RXM, UBLX.MSG_RXM_ALM, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_RXM, UBLX.MSG_RXM_EPH, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_TIMEGPS, 5)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_CLOCK, 5)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_DGPS, 5)
-            print('GPS initialized')
+        ##Try the user-specified port first, then common fallbacks
+        ports_to_try = [self.port, '/dev/ttyAMA0', '/dev/ttyUSB0',
+                        '/dev/ttyUSB1', '/dev/ttyAMA1', '/dev/ttyS0']
+        ##Remove duplicates while preserving order
+        seen = set()
+        unique_ports = []
+        for p in ports_to_try:
+            if p not in seen:
+                seen.add(p)
+                unique_ports.append(p)
 
-    def getfloat(self,instr):
-        #print(instr)
-        loc = instr.find('=')
-        #print(loc)
-        raw = instr[loc+1:]
-        return np.float(raw)
+        print('Initializing GPS antenna....')
+        for p in unique_ports:
+            try:
+                self._ser = serial.Serial(p, self.baud, timeout=0.1)
+                self.port = p
+                print(f'GPS connected on {p} at {self.baud} baud')
+                return
+            except Exception as e:
+                print(f'  GPS: Could not open {p}: {e}')
 
-    ##This function will parse a line
-    def parse(self,instr):
-        #You'll notice that the line is separated by spaces so first use the line.split command
-        list = instr.split(' ')
-        #print(list)
-        #Then we extract the relevant data sets
-        lonstr = list[1]
-        latstr = list[2]
-        altstr = list[3]
-        #print(lonstr,latstr,altstr)
-        ##You'll then notice that each str is separated by an equal sign. We want everything after the equal
-        #sign. There are a few ways to do this. We could use split again or we could find the = and grab everything
-        #after it. I think I'll go with the grab everything after it.
-        self.speed = 0.0 #Revisit. this doesn't work right now
-        self.longitude = self.getfloat(lonstr)/10000000.0
-        self.latitude = self.getfloat(latstr)/10000000.0  ##I'm dividing by random numbers until it looks right
-        self.altitude = self.getfloat(altstr)/1000.0
+        print('WARNING: Could not connect to GPS antenna on any serial port!')
+        print('GPS will report default values. Check your wiring and port.')
 
-    def poll(self,RunTime):
-        #print('Polling GPS....',RunTime,self.GPSTime,self.GPSNEXT)
+    # -------------------------------------------------------------------------
+    # NMEA PARSING
+    # -------------------------------------------------------------------------
+
+    def _validate_checksum(self, sentence):
+        """Validate NMEA checksum. Returns True if valid or no checksum present."""
+        if '*' not in sentence:
+            return True
+        try:
+            data, chk = sentence[1:].rsplit('*', 1)
+            calc = 0
+            for c in data:
+                calc ^= ord(c)
+            return f'{calc:02X}' == chk.strip().upper()
+        except Exception:
+            return False
+
+    def _parse_latlon(self, value_str, direction, is_lat):
+        """Convert NMEA DDMM.MMMM or DDDMM.MMMM string to decimal degrees."""
+        val = float(value_str)
+        deg = int(val / 100)
+        minutes = val - deg * 100
+        decimal = deg + minutes / 60.0
+        if direction in ('S', 'W'):
+            decimal = -decimal
+        return decimal
+
+    def _parse_nmea(self, sentence):
+        """Parse a single NMEA sentence and update GPS state."""
+        sentence = sentence.strip()
+        if len(sentence) < 6 or not sentence.startswith('$'):
+            return
+        if not self._validate_checksum(sentence):
+            return
+        ##Strip checksum for parsing
+        if '*' in sentence:
+            sentence = sentence[:sentence.rfind('*')]
+
+        parts = sentence.split(',')
+        msg_type = parts[0]
+
+        ##GGA - Fix data: lat, lon, fix quality, satellites, altitude
+        if msg_type in ('$GPGGA', '$GNGGA', '$GLGGA'):
+            try:
+                if len(parts) >= 10 and parts[2] and parts[4]:
+                    self.fix_quality = int(parts[6]) if parts[6] else 0
+                    self.num_satellites = int(parts[7]) if parts[7] else 0
+                    self.has_fix = self.fix_quality > 0
+                    if self.has_fix:
+                        self.latitude = self._parse_latlon(parts[2], parts[3], is_lat=True)
+                        self.longitude = self._parse_latlon(parts[4], parts[5], is_lat=False)
+                        if parts[9]:
+                            self.altitude = float(parts[9])
+            except (ValueError, IndexError):
+                pass
+
+        ##RMC - Recommended minimum: lat, lon, speed, validity flag
+        elif msg_type in ('$GPRMC', '$GNRMC', '$GLRMC'):
+            try:
+                if len(parts) >= 9:
+                    self.has_fix = (parts[2] == 'A')   # A=Active/valid, V=Void
+                    if self.has_fix and parts[3] and parts[5]:
+                        self.latitude = self._parse_latlon(parts[3], parts[4], is_lat=True)
+                        self.longitude = self._parse_latlon(parts[5], parts[6], is_lat=False)
+                        if parts[7]:
+                            self.speed = float(parts[7]) * 0.514444  # knots -> m/s
+            except (ValueError, IndexError):
+                pass
+
+    # -------------------------------------------------------------------------
+    # POLLING / UPDATING
+    # -------------------------------------------------------------------------
+
+    def poll(self, RunTime):
         if (RunTime - self.GPSTime) > self.GPSNEXT:
             self.GPSTime = RunTime
             self.update()
-        
+
     def update(self):
-        #time.sleep(0.1)
-        if not self.SIL:
-            msg = self.ubl.receive_message()
-            if msg is None:
-                if opts.reopen:
-                    self.ubl.close()
-                    self.ubl = UBLX.UBlox("spi:0.0", baudrate=5000000, timeout=2)
-                return
-            #print(msg.name())
-            if msg.name() == "NAV_POSLLH":
-                outstr = str(msg).split(",")[1:]
-                outstr = "".join(outstr)
-                self.parse(outstr)
-                #print(outstr)
-    #        if msg.name() == "NAV_STATUS":
-    #            outstr = str(msg).split(",")[1:2]
-    #            outstr = "".join(outstr)
-    #            print(outstr)
-        else:
+        if self.SIL:
             self.latitude = 30.69
             self.longitude = -88.10
             self.altitude = 0.0
             self.speed = 0.0
-        return
+            self.has_fix = True
+            self.fix_quality = 1
+            self.num_satellites = 6
+            return
 
-    def setOrigin(self,latO,lonO):
+        if self._ser is None:
+            return
+
+        try:
+            waiting = self._ser.in_waiting
+            if waiting > 0:
+                raw = self._ser.read(waiting)
+                self._buffer += raw.decode('ascii', errors='ignore')
+                ##Parse all complete lines
+                while '\n' in self._buffer:
+                    line, self._buffer = self._buffer.split('\n', 1)
+                    self._parse_nmea(line)
+        except Exception as e:
+            print(f'GPS read error: {e}')
+
+    # -------------------------------------------------------------------------
+    # UTILITY METHODS (unchanged from original)
+    # -------------------------------------------------------------------------
+
+    def setOrigin(self, latO, lonO):
         self.latO = latO
         self.lonO = lonO
 
-    def convertXYZ2LATLON(self,x,y,z):
-        self.lat = x/self.GPSVAL + self.latO
-        self.lon = y/(self.GPSVAL*np.cos(self.latO*np.pi/180)) + self.lonO
+    def convertXYZ2LATLON(self, x, y, z):
+        self.lat = x / self.GPSVAL + self.latO
+        self.lon = y / (self.GPSVAL * np.cos(self.latO * np.pi / 180)) + self.lonO
         self.alt = -z
-        return self.lat,self.lon,self.alt
+        return self.lat, self.lon, self.alt
 
-    def convertLATLONVEC2XY(self,*argv):
+    def convertLATLONVEC2XY(self, *argv):
         if len(argv) == 2:
             self.latitude_vec = argv[0]
             self.longitude_vec = argv[1]
-        self.x_vec = (self.latitude_vec - self.latO)*60*self.NM2FT*self.FT2M; #%%//North direction - Xf , meters
-        self.y_vec = (self.longitude_vec - self.lonO)*60*self.NM2FT*self.FT2M*np.cos(self.latO*np.pi/180); #%%//East direction - Yf, meters
+        self.x_vec = (self.latitude_vec - self.latO) * 60 * self.NM2FT * self.FT2M
+        self.y_vec = (self.longitude_vec - self.lonO) * 60 * self.NM2FT * self.FT2M * np.cos(self.latO * np.pi / 180)
 
-    def setFilterConstant(self,s):
+    def setFilterConstant(self, s):
         self.filterConstant = s
 
     def computeVelocityVec(self):
-        self.vx_raw_vec = np.zeros(len(self.x_vec)-1)
-        self.vy_raw_vec = np.zeros(len(self.y_vec)-1)
-        self.vx_vec = 0*self.vx_raw_vec
-        self.vy_vec = 0*self.vy_raw_vec
-        for i in range(0,len(self.time_vec)-2):
-            dt = self.time_vec[i+1]-self.time_vec[i]
-            self.vx_raw_vec[i] = (self.x_vec[i+1] - self.x_vec[i])/dt
-            self.vy_raw_vec[i] = (self.y_vec[i+1] - self.y_vec[i])/dt
+        self.vx_raw_vec = np.zeros(len(self.x_vec) - 1)
+        self.vy_raw_vec = np.zeros(len(self.y_vec) - 1)
+        self.vx_vec = 0 * self.vx_raw_vec
+        self.vy_vec = 0 * self.vy_raw_vec
+        for i in range(0, len(self.time_vec) - 2):
+            dt = self.time_vec[i + 1] - self.time_vec[i]
+            self.vx_raw_vec[i] = (self.x_vec[i + 1] - self.x_vec[i]) / dt
+            self.vy_raw_vec[i] = (self.y_vec[i + 1] - self.y_vec[i]) / dt
             if i > 0:
-                self.vx_vec[i] = self.vx_vec[i-1]*self.filterConstant + self.vx_raw_vec[i]*(1-self.filterConstant)
-                self.vy_vec[i] = self.vy_vec[i-1]*self.filterConstant + self.vy_raw_vec[i]*(1-self.filterConstant)
+                self.vx_vec[i] = self.vx_vec[i - 1] * self.filterConstant + self.vx_raw_vec[i] * (1 - self.filterConstant)
+                self.vy_vec[i] = self.vy_vec[i - 1] * self.filterConstant + self.vy_raw_vec[i] * (1 - self.filterConstant)
             else:
                 self.vx_vec[i] = self.vx_raw_vec[i]
                 self.vy_vec[i] = self.vy_raw_vec[i]
-        self.v_raw_vec = np.sqrt(self.vx_raw_vec**2 + self.vy_raw_vec**2)
-        self.speed = np.sqrt(self.vx_vec**2 + self.vy_vec**2)
+        self.v_raw_vec = np.sqrt(self.vx_raw_vec ** 2 + self.vy_raw_vec ** 2)
+        self.speed = np.sqrt(self.vx_vec ** 2 + self.vy_vec ** 2)
 
-    def plot(self,plt):
+    def plot(self, plt):
         if len(self.latitude_vec) > 0:
             fig = plt.figure()
-            plti = fig.add_subplot(1,1,1)
+            plti = fig.add_subplot(1, 1, 1)
             plti.grid()
             plti.set_xlabel('Longitude (deg)')
             plti.set_ylabel('Latitude (deg)')
             plti.get_yaxis().get_major_formatter().set_useOffset(False)
             plti.get_xaxis().get_major_formatter().set_useOffset(False)
             plt.gcf().subplots_adjust(left=0.18)
-            plti.plot(self.longitude_vec,self.latitude_vec)
+            plti.plot(self.longitude_vec, self.latitude_vec)
         if len(self.x_vec) > 0:
             fig = plt.figure()
-            plti = fig.add_subplot(1,1,1)
+            plti = fig.add_subplot(1, 1, 1)
             plti.grid()
             plti.set_xlabel('Y (m) E-W')
             plti.set_ylabel('X (m) N-S')
             plti.get_yaxis().get_major_formatter().set_useOffset(False)
             plti.get_xaxis().get_major_formatter().set_useOffset(False)
             plt.gcf().subplots_adjust(left=0.18)
-            plti.plot(self.y_vec,self.x_vec)
+            plti.plot(self.y_vec, self.x_vec)
         if len(self.vx_raw_vec) > 0:
             fig = plt.figure()
-            plti = fig.add_subplot(1,1,1)
+            plti = fig.add_subplot(1, 1, 1)
             plti.grid()
             plti.set_xlabel('Time (sec)')
             plti.set_ylabel('Velocity (m/s)')
-            plti.plot(self.time_vec[0:-1],self.vx_raw_vec,label='Raw X')
-            plti.plot(self.time_vec[0:-1],self.vy_raw_vec,label='Raw Y')
-            #plti.plot(self.time_vec[0:-1],self.v_raw_vec,label='Raw Total')
-            plti.plot(self.time_vec[0:-1],self.vx_vec,label='X')
-            plti.plot(self.time_vec[0:-1],self.vy_vec,label='Y')
-            #plti.plot(self.time_vec[0:-1],self.v_vec,label='Total')
-        
+            plti.plot(self.time_vec[0:-1], self.vx_raw_vec, label='Raw X')
+            plti.plot(self.time_vec[0:-1], self.vy_raw_vec, label='Raw Y')
+            plti.plot(self.time_vec[0:-1], self.vx_vec, label='X')
+            plti.plot(self.time_vec[0:-1], self.vy_vec, label='Y')
             plti.legend()
-
-
-
-

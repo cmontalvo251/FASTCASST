@@ -29,8 +29,10 @@ import sys
 import time
 import math
 
-sys.path.append('../libraries/')
-sys.path.append('../libraries/Util')
+import os
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(ROOT, 'libraries'))
+sys.path.append(os.path.join(ROOT, 'libraries', 'Util'))
 from Comms.Comms import Comms
 import util
 

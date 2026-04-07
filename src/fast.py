@@ -94,11 +94,6 @@ RunTime = 0.0
 logTime = RunTime
 telemetryTime = RunTime
 
-##TEST: set a waypoint to verify Blue LED and autopilot engage
-##Replace with coordinates ~50m from your current position
-##Remove this when using ground station radio to send waypoints
-vehicle.set_waypoint(30.6920, -88.1760)
-
 print('Running main loop....')
 
 while (True):

@@ -24,11 +24,14 @@ from pymavlink import mavutil
 PIXHAWK_PORT = '/dev/ttyACM0'
 PIXHAWK_BAUD = 115200
 
+## ArduPilot 4.x renamed GPS_TYPE to GPS1_TYPE — try both
 REQUIRED = {
-    'GPS_TYPE':         1,
+    'GPS1_TYPE':        1,   # ArduPilot 4.x+
     'SERIAL3_PROTOCOL': 5,
     'SERIAL3_BAUD':     38,
 }
+## Fallback name for older firmware
+GPS_TYPE_FALLBACK = 'GPS_TYPE'
 
 FIX_MODE = '--fix' in sys.argv
 
@@ -73,6 +76,11 @@ needs_reboot = False
 
 for param, required in REQUIRED.items():
     current = get_param(param)
+    ## If GPS1_TYPE times out, fall back to old GPS_TYPE name
+    if current is None and param == 'GPS1_TYPE':
+        current = get_param(GPS_TYPE_FALLBACK)
+        if current is not None:
+            param = GPS_TYPE_FALLBACK
     if current is None:
         print(f'{param:<22} {"TIMEOUT":>10}  {required:>10}  !! could not read')
         continue

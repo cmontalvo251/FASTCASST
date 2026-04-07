@@ -19,24 +19,31 @@ Press Ctrl+C to stop.
 import sys
 import time
 import math
-import serial
 import struct
+sys.path.append('/home/pi/FASTCASST/libraries/Ublox')
+import ublox
 from pymavlink import mavutil
 
-GPS_PORT     = '/dev/ttyAMA0'
-GPS_BAUD     = 9600
+GPS_PORT     = 'spi:0.0'
+GPS_BAUD     = 5000000
 PIXHAWK_PORT = '/dev/ttyACM0'
 PIXHAWK_BAUD = 115200
 
 # -------------------------------------------------------------------------
-# Connect Navio2 GPS (ttyAMA0)
+# Connect Navio2 GPS (SPI)
 # -------------------------------------------------------------------------
-print(f'Opening Navio2 GPS on {GPS_PORT}...')
+print(f'Opening Navio2 GPS via {GPS_PORT}...')
 try:
-    gps_ser = serial.Serial(GPS_PORT, GPS_BAUD, timeout=1)
-    print('GPS port open.\n')
+    ubl = ublox.UBlox(GPS_PORT, baudrate=GPS_BAUD, timeout=2)
+    ubl.configure_poll_port()
+    ubl.configure_port(port=ublox.PORT_SERIAL1, inMask=1, outMask=0)
+    ubl.configure_port(port=ublox.PORT_USB,     inMask=1, outMask=1)
+    ubl.configure_port(port=ublox.PORT_SERIAL2, inMask=1, outMask=0)
+    ubl.configure_solution_rate(rate_ms=1000)
+    ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_PVT, 1)
+    print('GPS initialized.\n')
 except Exception as e:
-    print(f'ERROR: Could not open GPS port {GPS_PORT}: {e}')
+    print(f'ERROR: Could not open GPS: {e}')
     sys.exit(1)
 
 # -------------------------------------------------------------------------
@@ -55,15 +62,6 @@ px.mav.request_data_stream_send(
 # -------------------------------------------------------------------------
 # Helpers
 # -------------------------------------------------------------------------
-def parse_latlon(value_str, direction, is_lat):
-    val = float(value_str)
-    deg = int(val / 100)
-    minutes = val - deg * 100
-    decimal = deg + minutes / 60.0
-    if direction in ('S', 'W'):
-        decimal = -decimal
-    return decimal
-
 def float_to_hex(num):
     bin_str = ''.join('{:0>8b}'.format(c) for c in struct.pack('!f', num))
     int_val = int(bin_str, 2)
@@ -115,28 +113,19 @@ last_send = -5.0
 
 try:
     while True:
-        ##--- Read Navio2 GPS NMEA from ttyAMA0 ---
-        raw = gps_ser.read(gps_ser.in_waiting or 1)
-        if raw:
-            gps_buf += raw.decode('ascii', errors='ignore')
-
-        while '\n' in gps_buf:
-            line, gps_buf = gps_buf.split('\n', 1)
-            line = line.strip()
-            if not line.startswith('$'):
-                continue
-            parts = line.split(',')
-            if parts[0] in ('$GPGGA', '$GNGGA', '$GLGGA'):
-                try:
-                    if len(parts) >= 10:
-                        fix  = int(parts[6]) if parts[6] else 0
-                        sats = int(parts[7]) if parts[7] else 0
-                        if fix > 0 and parts[2] and parts[4]:
-                            lat = parse_latlon(parts[2], parts[3], is_lat=True)
-                            lon = parse_latlon(parts[4], parts[5], is_lat=False)
-                            alt = float(parts[9]) if parts[9] else 0.0
-                except (ValueError, IndexError):
-                    pass
+        ##--- Read Navio2 GPS via SPI ---
+        try:
+            gps_msg = ubl.receive_message()
+            if gps_msg and gps_msg.name() == 'NAV_PVT':
+                gps_msg.unpack()
+                fix  = gps_msg._fields.get('fixType', 0)
+                sats = gps_msg._fields.get('numSV',   0)
+                if fix >= 3:
+                    lat = gps_msg._fields.get('lat', 0) * 1e-7
+                    lon = gps_msg._fields.get('lon', 0) * 1e-7
+                    alt = gps_msg._fields.get('height', 0) * 1e-3
+        except Exception:
+            pass
 
         ##--- Read Pixhawk compass (ATTITUDE) ---
         msg = px.recv_match(type='ATTITUDE', blocking=False)
@@ -166,4 +155,4 @@ try:
 except KeyboardInterrupt:
     print('\nStopped.')
 finally:
-    gps_ser.close()
+    ubl.close()

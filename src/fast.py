@@ -22,9 +22,9 @@ VEHICLE = 'boat' #Options are 'car', 'boat', or 'airplane'
 PIXHAWK_PORT = '/dev/ttyACM0'
 PIXHAWK_BAUD = 115200
 
-##Navio2 built-in GPS — UART on ttyAMA0 (freed now that radio is on Pixhawk)
-GPS_PORT = '/dev/ttyAMA0'
-GPS_BAUD = 9600
+##Navio2 built-in GPS — SPI bus 0, chip select 0
+GPS_PORT = 'spi:0.0'
+GPS_BAUD = 5000000
 ################################################
 
 ##Import basic utilities

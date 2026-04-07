@@ -2,100 +2,98 @@
 """
 test_gps_fix.py
 ----------------
-Reads GPS from the Navio2 built-in NEO-M8N via ttyAMA0 (NMEA sentences).
+Reads GPS from the Navio2 built-in NEO-M8N via SPI using the ublox library.
 Prints fix status and satellite count continuously.
 
-Requirements:
-    sudo pip3 install pyserial
+The Navio2 GPS chip is connected via SPI (spi:0.0), NOT UART.
 
 Usage:
     sudo python3 src/test_gps_fix.py
 
 Take the antenna outdoors with clear sky view.
-You need fix_quality >= 1 and sats >= 6 to navigate.
+You need fix_type >= 3 and sats >= 6 to navigate.
 Press Ctrl+C to stop.
 """
 
+import sys
 import time
-import serial
 
-GPS_PORT = '/dev/ttyAMA0'
-GPS_BAUD = 9600
+sys.path.append('/home/pi/FASTCASST/libraries/Ublox')
+sys.path.append('/home/pi/FASTCASST/libraries/Util')
 
-def parse_latlon(value_str, direction, is_lat):
-    val = float(value_str)
-    deg = int(val / 100)
-    minutes = val - deg * 100
-    decimal = deg + minutes / 60.0
-    if direction in ('S', 'W'):
-        decimal = -decimal
-    return decimal
-
-print(f'Opening Navio2 GPS on {GPS_PORT} at {GPS_BAUD} baud...')
 try:
-    ser = serial.Serial(GPS_PORT, GPS_BAUD, timeout=2)
-    print('Port opened.\n')
+    import ublox
+except ImportError as e:
+    print(f'ERROR: Could not import ublox library: {e}')
+    print('Make sure you are running from the Pi with FASTCASST at /home/pi/FASTCASST')
+    sys.exit(1)
+
+FIX_NAMES = {
+    0: 'NO FIX',
+    1: 'DEAD REC',
+    2: '2D FIX',
+    3: '3D FIX',
+    4: 'GPS+DR',
+    5: 'TIME ONLY',
+}
+
+print('Opening Navio2 GPS via SPI (spi:0.0)...')
+try:
+    ubl = ublox.UBlox('spi:0.0', baudrate=5000000, timeout=2)
 except Exception as e:
-    print(f'ERROR: Could not open {GPS_PORT}: {e}')
-    print('Make sure ttyAMA0 is enabled and the SiK radio has been moved to Pixhawk TELEM1.')
-    raise SystemExit(1)
+    print(f'ERROR: Could not open SPI GPS: {e}')
+    print('Make sure SPI is enabled: sudo raspi-config -> Interface Options -> SPI')
+    sys.exit(1)
 
-FIX_NAMES = {0: 'NO FIX', 1: 'GPS', 2: 'DGPS', 3: 'PPS', 4: 'RTK Fixed',
-             5: 'RTK Float', 6: 'Dead Reckoning'}
+print('Configuring GPS...')
+ubl.configure_poll_port()
+ubl.configure_port(port=ublox.PORT_SERIAL1, inMask=1, outMask=0)
+ubl.configure_port(port=ublox.PORT_USB,     inMask=1, outMask=1)
+ubl.configure_port(port=ublox.PORT_SERIAL2, inMask=1, outMask=0)
+ubl.configure_solution_rate(rate_ms=1000)
 
-print('Waiting for GPS data — make sure antenna has clear sky view...')
-print('You need fix_quality >= 1 and sats >= 6 to navigate.\n')
-print(f'{"Time":>8}  {"Fix":<12} {"Sats":>5}  {"Lat":>12} {"Lon":>13}  {"Alt(m)":>8}  {"HDOP":>6}')
+##Request NAV_PVT — has lat, lon, fix type, sats, speed, altitude all in one
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_PVT, 1)
+##Also request NAV_SOL for satellite count
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SOL, 1)
+ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SVINFO, 1)
+print('GPS configured.\n')
+
+print('Waiting for GPS messages — take antenna outdoors with clear sky view...')
+print('You need fix_type=3 and sats >= 6 to navigate.\n')
+print(f'{"Time":>8}  {"Fix":<10} {"Sats":>5}  {"Lat":>12} {"Lon":>13}  {"Alt(m)":>8}  {"Speed":>7}')
 print('-' * 80)
 
-start   = time.time()
-buffer  = ''
-lat     = 0.0
-lon     = 0.0
-alt     = 0.0
-sats    = 0
-fix     = 0
-hdop    = 99.99
+start = time.time()
 
 try:
     while True:
-        raw = ser.read(ser.in_waiting or 1)
-        if raw:
-            buffer += raw.decode('ascii', errors='ignore')
+        msg = ubl.receive_message()
+        if msg is None:
+            continue
 
-        while '\n' in buffer:
-            line, buffer = buffer.split('\n', 1)
-            line = line.strip()
-            if not line.startswith('$'):
-                continue
+        name = msg.name()
 
-            parts = line.split(',')
-            msg = parts[0]
+        if name == 'NAV_PVT':
+            msg.unpack()
+            fix   = msg._fields.get('fixType', 0)
+            sats  = msg._fields.get('numSV', 0)
+            lat   = msg._fields.get('lat',   0) * 1e-7   # degrees
+            lon   = msg._fields.get('lon',   0) * 1e-7
+            alt   = msg._fields.get('height',0) * 1e-3   # mm -> m
+            speed = msg._fields.get('gSpeed',0) * 1e-3   # mm/s -> m/s
 
-            ##GGA — fix quality, sats, lat, lon, alt, hdop
-            if msg in ('$GPGGA', '$GNGGA', '$GLGGA'):
-                try:
-                    if len(parts) >= 10:
-                        fix  = int(parts[6]) if parts[6] else 0
-                        sats = int(parts[7]) if parts[7] else 0
-                        hdop = float(parts[8]) if parts[8] else 99.99
-                        if fix > 0 and parts[2] and parts[4]:
-                            lat = parse_latlon(parts[2], parts[3], is_lat=True)
-                            lon = parse_latlon(parts[4], parts[5], is_lat=False)
-                            alt = float(parts[9]) if parts[9] else 0.0
+            elapsed  = time.time() - start
+            fix_name = FIX_NAMES.get(fix, f'TYPE={fix}')
+            bar = '#' * sats + '.' * max(0, 12 - sats)
 
-                        elapsed  = time.time() - start
-                        fix_name = FIX_NAMES.get(fix, f'TYPE={fix}')
-                        bar = '#' * sats + '.' * max(0, 12 - sats)
-                        print(f'{elapsed:8.1f}  {fix_name:<12} [{bar}] {sats:>2}  '
-                              f'{lat:>12.6f} {lon:>13.6f}  {alt:>8.1f}  {hdop:>6.2f}')
+            print(f'{elapsed:8.1f}  {fix_name:<10} [{bar}] {sats:>2}  '
+                  f'{lat:>12.6f} {lon:>13.6f}  {alt:>8.1f}  {speed:>6.2f}')
 
-                        if fix >= 1 and sats >= 6:
-                            print(f'          *** GPS FIX — {sats} satellites ***')
-                except (ValueError, IndexError):
-                    pass
+            if fix >= 3 and sats >= 6:
+                print(f'          *** 3D FIX — {sats} satellites ***')
 
 except KeyboardInterrupt:
     print('\nStopped.')
 finally:
-    ser.close()
+    ubl.close()

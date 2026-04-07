@@ -17,13 +17,14 @@ NUMOUTPUTS = 21  #Number of data outputs (20 for car, 21 for boat, 22 for airpla
 NUMPWM = 3       #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
 VEHICLE = 'boat' #Options are 'car', 'boat', or 'airplane'
 
-##Pixhawk connected to Pi via USB
+##Pixhawk connected to Pi via USB — used for compass heading only
+##  SiK telemetry radio is connected to Pixhawk TELEM1 port
 PIXHAWK_PORT = '/dev/ttyACM0'
 PIXHAWK_BAUD = 115200
 
-##Telemetry radio connected to Pi via UART
-RADIO_PORT = '/dev/ttyAMA0'
-RADIO_BAUD = 57600
+##Navio2 built-in GPS — UART on ttyAMA0 (freed now that radio is on Pixhawk)
+GPS_PORT = '/dev/ttyAMA0'
+GPS_BAUD = 9600
 ################################################
 
 ##Import basic utilities
@@ -41,7 +42,23 @@ sys.path.append('../libraries/Util')
 import util
 util.check_apm()
 
-##Setup Pixhawk (GPS + IMU + Baro all come from Pixhawk via MAVLink)
+##Setup GPS (Navio2 built-in NEO-M8N via ttyAMA0)
+sys.path.append('../libraries')
+from GPS.gps import GPS
+gps_sensor = GPS(port=GPS_PORT, baud=GPS_BAUD)
+
+##Setup IMU (Navio2 MPU9250 via SPI)
+sys.path.append('../libraries/MPU9250')
+from mpu9250 import MPU9250
+imu = MPU9250()
+
+##Setup Barometer (Navio2 MS5611)
+sys.path.append('../libraries/MS5611')
+from ms5611 import MS5611
+baro = MS5611()
+baro.calibrate()
+
+##Setup Pixhawk (compass/yaw only + telemetry radio injection via TELEM1)
 sys.path.append('../libraries/Pixhawk')
 import pixhawk
 px = pixhawk.PIXHAWK(port=PIXHAWK_PORT, baud=PIXHAWK_BAUD)
@@ -60,12 +77,6 @@ led = leds.Led()
 sys.path.append('../libraries/RCIO/Python')
 import rcio
 rc = rcio.RCIO(NUMPWM)
-
-##Setup Telemetry (radio serial link to ground station)
-sys.path.append('../libraries/')
-from Comms.Comms import Comms as U
-ser = U()
-ser.SerialInit(RADIO_BAUD, RADIO_PORT, period=1.0)
 
 ##Short break to build suspense
 print('Sleep for 1 second.....')
@@ -91,19 +102,28 @@ while (True):
     ##Read in receiver commands
     ARMED, safety_color = rc.rcin.readALL()
 
-    ##Get attitude, GPS, and baro from Pixhawk via MAVLink
-    a, gdegs, m, rpy, rpy_ahrs, temp = px.getALL(elapsedTime)
+    ##Get IMU data from Navio2 MPU9250 (accel, gyro, mag, attitude)
+    a, gdegs, m, rpy, rpy_ahrs, temp = imu.getALL(elapsedTime)
 
-    ##Poll GPS update from Pixhawk
+    ##Poll barometer
+    baro.poll(RunTime)
+
+    ##Poll GPS (Navio2 ttyAMA0)
+    gps_sensor.poll(RunTime)
+
+    ##Poll Pixhawk for compass heading (yaw)
     px.poll(RunTime)
+
+    ##Use Pixhawk compass heading as the authoritative yaw for navigation
+    rpy_ahrs[2] = px.yaw
 
     ##Run the control loop
     controls, defaults, control_color = vehicle.loop(
         RunTime,
         rc.rcin,
-        gps_lat=px.latitude,
-        gps_lon=px.longitude,
-        heading_deg=rpy_ahrs[2]
+        gps_lat=gps_sensor.latitude,
+        gps_lon=gps_sensor.longitude,
+        heading_deg=px.yaw
     )
 
     ##Check if we are armed or not
@@ -121,41 +141,32 @@ while (True):
     str_pwm = [f"{pwm:1.3f}" for pwm in pwm_commands]
     str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs]
     str_g   = [f"{gi:2.3f}" for gi in gdegs]
-    gps_fix_str = f"FIX={px.fix_quality} SATS={px.num_satellites}"
+    gps_fix_str = f"FIX={gps_sensor.fix_quality} SATS={gps_sensor.num_satellites}"
     print(f"{RunTime:4.4f}", f"{elapsedTime:1.4f}",
-          f"GPS={px.latitude:.6f},{px.longitude:.6f}", gps_fix_str,
+          f"GPS={gps_sensor.latitude:.6f},{gps_sensor.longitude:.6f}", gps_fix_str,
           str_pwm, str_rpy, str_g,
-          f"BARO={px.ALT:.3f}")
+          f"BARO={baro.ALT:.3f}")
 
-    ##Check for incoming waypoint commands from ground station
-    ##  Format: "W:LAT:LON\r"  (e.g. "W:32.694500:-88.100000\r")
-    if ser.hComm is not None:
-        try:
-            if ser.hComm.in_waiting > 0:
-                raw = ser.hComm.readline()
-                line = raw.decode('ascii', errors='ignore').strip()
-                if line.startswith('W:'):
-                    parts = line.split(':')
-                    if len(parts) == 3:
-                        wp_lat = float(parts[1])
-                        wp_lon = float(parts[2])
-                        vehicle.set_waypoint(wp_lat, wp_lon)
-        except Exception as e:
-            print(f'Waypoint receive error: {e}')
-
-    ##Send Telemetry to ground station (every 1 second)
+    ##Send Telemetry to ground station via Pixhawk TELEM1 → SiK radio (every 1 second)
+    ##NOTE: Waypoint receive from ground station is not supported in this config —
+    ##      the SiK radio is bridged through Pixhawk TELEM1 (MAVLink port).
     if (RunTime - telemetryTime) > 1.0:
         telemetryTime = RunTime
+        packet = np.zeros(12)
+        packet[0]  = RunTime                   # 0 - Time
+        packet[1]  = rpy_ahrs[0]               # 1 - roll
+        packet[2]  = rpy_ahrs[1]               # 2 - pitch
+        packet[3]  = px.yaw                    # 3 - compass heading
+        packet[4]  = gps_sensor.latitude       # 4 - latitude
+        packet[5]  = gps_sensor.longitude      # 5 - longitude
+        packet[6]  = baro.ALT                  # 6 - baro altitude (m)
+        packet[7]  = gps_sensor.speed          # 7 - GPS speed (m/s)
+        packet[8]  = pwm_commands[0]           # 8 - motor 1
+        packet[9]  = pwm_commands[1]           # 9 - motor 2
+        packet[10] = pwm_commands[2] if len(pwm_commands) > 2 else 0.0  # 10 - rudder
+        packet[11] = float(gps_sensor.fix_quality)  # 11 - GPS fix quality
         print('Sending telemetry packet...', RunTime)
-        ser.fast_packet[0] = RunTime          # 0 - Time
-        ser.fast_packet[1] = rpy_ahrs[0]      # 1 - roll
-        ser.fast_packet[2] = rpy_ahrs[1]      # 2 - pitch
-        ser.fast_packet[3] = rpy_ahrs[2]      # 3 - yaw (compass heading)
-        ser.fast_packet[4] = px.latitude       # 4 - latitude
-        ser.fast_packet[5] = px.longitude      # 5 - longitude
-        ser.fast_packet[6] = px.ALT            # 6 - altitude (barometer)
-        ser.fast_packet[7] = px.speed          # 7 - speed (GPS, m/s)
-        ser.SerialSend(0)
+        px.send_to_radio(packet)
 
     ##Log data
     if (RunTime - logTime) > 0.1:
@@ -167,14 +178,14 @@ while (True):
         logger.outdata[4]  = rc.rcin.rcsignals[3]
         logger.outdata[5]  = rc.rcin.rcsignals[4]
         logger.outdata[6]  = rc.rcin.rcsignals[5]
-        logger.outdata[7]  = px.latitude
-        logger.outdata[8]  = px.longitude
-        logger.outdata[9]  = px.altitude
-        logger.outdata[10] = px.PRES
+        logger.outdata[7]  = gps_sensor.latitude
+        logger.outdata[8]  = gps_sensor.longitude
+        logger.outdata[9]  = gps_sensor.altitude
+        logger.outdata[10] = baro.PRES
         logger.outdata[11] = rpy_ahrs[0]
         logger.outdata[12] = rpy_ahrs[1]
         logger.outdata[13] = rpy_ahrs[2]
-        logger.outdata[14] = px.speed
+        logger.outdata[14] = gps_sensor.speed
         logger.outdata[15] = gdegs[0]
         logger.outdata[16] = gdegs[1]
         logger.outdata[17] = gdegs[2]

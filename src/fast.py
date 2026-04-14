@@ -35,7 +35,7 @@ import sys
 import time
 
 ##Vehicle controller
-sys.path.append('../libraries/V_'+VEHICLE)
+sys.path.insert(0, '../libraries/V_'+VEHICLE)
 import controller
 vehicle = controller.CONTROLLER()
 

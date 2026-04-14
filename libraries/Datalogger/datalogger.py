@@ -15,6 +15,7 @@ class Datalogger():
 		self.open()
 		#create an array for data
 		self.outdata = np.zeros(NUMOUTPUTS)
+		self._write_count = 0
 
 	def findfile(self,directory,extension='.txt'):
 		found = 0
@@ -52,7 +53,11 @@ class Datalogger():
 			ctr+=1
 			self.outfile.write(s)
 		self.outfile.write("\n")
-		self.outfile.flush()
+		self._write_count += 1
+		##Flush to SD card every 50 writes (~5 sec at 10 Hz) instead of every write.
+		##Flushing every write causes 50-300 ms SD card stalls that block RC and PWM.
+		if self._write_count % 50 == 0:
+			self.outfile.flush()
 
 	#Close function
 	def close(self):

@@ -93,6 +93,7 @@ StartTime = time.time()
 RunTime = 0.0
 logTime = RunTime
 telemetryTime = RunTime
+printTime = RunTime
 
 print('Running main loop....')
 
@@ -154,11 +155,14 @@ while (True):
         wp_str = f'WP={vehicle.target_lat:.5f},{vehicle.target_lon:.5f}'
     else:
         wp_str = 'WP=none'
-    print(f"{RunTime:4.4f}", f"{elapsedTime:1.4f}",
-          f"GPS={gps_sensor.latitude:.6f},{gps_sensor.longitude:.6f}",
-          f"FIX={gps_sensor.fix_quality} SATS={gps_sensor.num_satellites}",
-          f"HDG={px.yaw:.1f}", wp_str, str_pwm, str_rpy,
-          f"BARO={baro.ALT:.3f}")
+    ##Console print at 1 Hz to prevent stdout blocking the loop
+    if (RunTime - printTime) > 1.0:
+        printTime = RunTime
+        print(f"{RunTime:4.4f}", f"{elapsedTime:1.4f}",
+              f"GPS={gps_sensor.latitude:.6f},{gps_sensor.longitude:.6f}",
+              f"FIX={gps_sensor.fix_quality} SATS={gps_sensor.num_satellites}",
+              f"HDG={px.yaw:.1f}", wp_str, str_pwm, str_rpy,
+              f"BARO={baro.ALT:.3f}")
 
     ##Receive waypoint commands from ground station
     ##  Ground station sends: "W:LAT:LON\r"

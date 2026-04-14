@@ -251,4 +251,7 @@ class CONTROLLER():
                 color = 'Yellow'
                 controls = [-1, -1, 0]
 
+        ##Servo is mounted upside down — invert rudder so left command turns left
+        controls[2] = -controls[2]
+
         return controls, defaults, color

@@ -98,6 +98,8 @@ print('Running main loop....')
 
 while (True):
 
+  try:
+
     ##Time
     LastTime = RunTime
     RunTime  = time.time() - StartTime
@@ -238,3 +240,8 @@ while (True):
         if len(pwm_commands) > 2:
             logger.outdata[20] = pwm_commands[2]
         logger.println()
+
+  except KeyboardInterrupt:
+      raise
+  except Exception as e:
+      print(f'[LOOP ERROR] {type(e).__name__}: {e}')

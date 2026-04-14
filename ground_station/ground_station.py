@@ -132,11 +132,12 @@ class WINDOW():
 		print('Initializing Window')
 		self.fig = plt.figure(figsize=(144, 81))
 
-		##Leave room at the bottom for waypoint controls
-		self.fig.subplots_adjust(bottom=0.12)
+		##Leave room at the bottom for mission planner controls
+		self.fig.subplots_adjust(bottom=0.17)
 
-		##Autopilot waypoint state
-		self.target_lat = None
+		##Mission planner state
+		self._mission_waypoints = []   # list of (lat, lon) added by operator
+		self.target_lat = None         # first waypoint (for map/readout display)
 		self.target_lon = None
 		self._pending_lat = ''
 		self._pending_lon = ''
@@ -182,31 +183,47 @@ class WINDOW():
 		self.longitude = []
 		self.latitude = []
 
-		####WAYPOINT CONTROL WIDGETS (bottom strip)
-		print('Creating waypoint controls...')
-		##Text box for latitude input
-		ax_lat_box = self.fig.add_axes([0.10, 0.03, 0.15, 0.04])
-		self.tb_lat = mwidgets.TextBox(ax_lat_box, 'Target Lat: ', initial='')
+		####MISSION PLANNER WIDGETS (bottom two rows)
+		print('Creating mission planner controls...')
+
+		##Row 1 (y~0.10): coordinate entry + Add WP button
+		ax_lat_box = self.fig.add_axes([0.05, 0.10, 0.13, 0.04])
+		self.tb_lat = mwidgets.TextBox(ax_lat_box, 'Lat: ', initial='')
 		self.tb_lat.on_submit(self._on_lat_submit)
 
-		##Text box for longitude input
-		ax_lon_box = self.fig.add_axes([0.35, 0.03, 0.15, 0.04])
-		self.tb_lon = mwidgets.TextBox(ax_lon_box, 'Target Lon: ', initial='')
+		ax_lon_box = self.fig.add_axes([0.27, 0.10, 0.13, 0.04])
+		self.tb_lon = mwidgets.TextBox(ax_lon_box, 'Lon: ', initial='')
 		self.tb_lon.on_submit(self._on_lon_submit)
 
-		##Send waypoint button
-		ax_btn = self.fig.add_axes([0.55, 0.02, 0.12, 0.06])
-		self.btn_send = mwidgets.Button(ax_btn, 'Send Waypoint', color='lightblue', hovercolor='deepskyblue')
-		self.btn_send.on_clicked(self._on_send_waypoint)
+		ax_btn_add = self.fig.add_axes([0.44, 0.09, 0.10, 0.06])
+		self.btn_add = mwidgets.Button(ax_btn_add, 'Add WP',
+		                               color='lightgreen', hovercolor='mediumseagreen')
+		self.btn_add.on_clicked(self._on_add_waypoint)
 
-		##Status label (updates after send)
-		ax_status = self.fig.add_axes([0.70, 0.03, 0.25, 0.04])
+		##Row 2 (y~0.02): mission control buttons
+		ax_btn_remove = self.fig.add_axes([0.05, 0.02, 0.10, 0.06])
+		self.btn_remove = mwidgets.Button(ax_btn_remove, 'Remove\nLast',
+		                                  color='lightyellow', hovercolor='gold')
+		self.btn_remove.on_clicked(self._on_remove_last)
+
+		ax_btn_send = self.fig.add_axes([0.20, 0.02, 0.12, 0.06])
+		self.btn_send = mwidgets.Button(ax_btn_send, 'Send Mission',
+		                                color='lightblue', hovercolor='deepskyblue')
+		self.btn_send.on_clicked(self._on_send_mission)
+
+		ax_btn_clear = self.fig.add_axes([0.37, 0.02, 0.12, 0.06])
+		self.btn_clear = mwidgets.Button(ax_btn_clear, 'Clear Mission',
+		                                 color='lightsalmon', hovercolor='tomato')
+		self.btn_clear.on_clicked(self._on_clear_mission)
+
+		##Status / mission list display
+		ax_status = self.fig.add_axes([0.55, 0.01, 0.43, 0.14])
 		ax_status.get_xaxis().set_visible(False)
 		ax_status.get_yaxis().set_visible(False)
 		ax_status.set_xlim([0, 1])
 		ax_status.set_ylim([0, 1])
-		self._status_text = ax_status.text(0, 0.5, 'No waypoint sent yet.',
-		                                    fontsize=10, va='center')
+		self._status_text = ax_status.text(0.01, 0.85, 'No mission loaded.',
+		                                    fontsize=8, va='top')
 		self._ax_status = ax_status
 
 		print('Window created.')
@@ -221,48 +238,114 @@ class WINDOW():
 	def _on_lon_submit(self, text):
 		self._pending_lon = text.strip()
 
-	def _on_send_waypoint(self, event):
-		"""Send waypoint to the boat via serial radio link."""
+	def _on_add_waypoint(self, event):
+		"""Validate and add a coordinate to the local mission list."""
 		lat_str = self._pending_lat or self.tb_lat.text.strip()
 		lon_str = self._pending_lon or self.tb_lon.text.strip()
 
 		if not lat_str or not lon_str:
-			self._status_text.set_text('ERROR: Enter both Lat and Lon first.')
-			self.fig.canvas.draw_idle()
+			self._update_status('ERROR: Enter both Lat and Lon first.')
 			return
 
 		try:
 			wp_lat = float(lat_str)
 			wp_lon = float(lon_str)
 		except ValueError:
-			self._status_text.set_text('ERROR: Invalid coordinates (use decimal degrees).')
-			self.fig.canvas.draw_idle()
+			self._update_status('ERROR: Invalid coordinates (use decimal degrees).')
 			return
 
 		if not (-90 <= wp_lat <= 90) or not (-180 <= wp_lon <= 180):
-			self._status_text.set_text('ERROR: Lat must be -90..90, Lon -180..180.')
+			self._update_status('ERROR: Lat must be -90..90, Lon -180..180.')
+			return
+
+		self._mission_waypoints.append((wp_lat, wp_lon))
+		##Track first WP as the display target
+		if len(self._mission_waypoints) == 1:
+			self.target_lat = wp_lat
+			self.target_lon = wp_lon
+
+		##Clear entry boxes for next waypoint
+		self._pending_lat = ''
+		self._pending_lon = ''
+		self.tb_lat.set_val('')
+		self.tb_lon.set_val('')
+
+		self._update_status(self._mission_summary())
+		self.fig.canvas.draw_idle()
+
+	def _on_remove_last(self, event):
+		"""Remove the most recently added waypoint from the local list."""
+		if self._mission_waypoints:
+			removed = self._mission_waypoints.pop()
+			##Keep display target in sync
+			if self._mission_waypoints:
+				self.target_lat = self._mission_waypoints[0][0]
+				self.target_lon = self._mission_waypoints[0][1]
+			else:
+				self.target_lat = None
+				self.target_lon = None
+			print(f'[GND STATION] Removed WP: {removed[0]:.6f}, {removed[1]:.6f}')
+		self._update_status(self._mission_summary())
+		self.fig.canvas.draw_idle()
+
+	def _on_send_mission(self, event):
+		"""Send the full ordered waypoint list to the vehicle."""
+		if not self._mission_waypoints:
+			self._update_status('ERROR: Add at least one waypoint before sending.')
 			self.fig.canvas.draw_idle()
 			return
 
-		##Store as current target for display on map
-		self.target_lat = wp_lat
-		self.target_lon = wp_lon
+		##Build: MISSION:lat1:lon1:lat2:lon2:...\r
+		parts = ['MISSION']
+		for lat, lon in self._mission_waypoints:
+			parts.append(f'{lat:.6f}')
+			parts.append(f'{lon:.6f}')
+		cmd = ':'.join(parts) + '\r'
 
-		##Send over serial radio link: "W:LAT:LON\r"
-		cmd = f'W:{wp_lat:.6f}:{wp_lon:.6f}\r'
+		n = len(self._mission_waypoints)
 		if ser.hComm is not None:
 			try:
 				ser.SerialPutString(cmd, echo=0)
-				status_msg = f'Waypoint sent: {wp_lat:.5f}, {wp_lon:.5f}'
-				print(f'[GND STATION] {status_msg}')
+				status_msg = (f'Mission sent: {n} WP(s) + return to start.\n'
+				              + self._mission_summary())
+				print(f'[GND STATION] Mission sent ({n} waypoints).')
 			except Exception as e:
 				status_msg = f'Send ERROR: {e}'
 				print(f'[GND STATION] {status_msg}')
 		else:
-			status_msg = f'[SIM] Waypoint: {wp_lat:.5f}, {wp_lon:.5f} (no serial)'
+			status_msg = (f'[SIM] Mission queued: {n} WP(s) + return to start.\n'
+			              + self._mission_summary())
 			print(f'[GND STATION] {status_msg}')
 
-		self._status_text.set_text(status_msg)
+		self._update_status(status_msg)
+		self.fig.canvas.draw_idle()
+
+	def _on_clear_mission(self, event):
+		"""Clear the local mission list and send CLEAR to the vehicle."""
+		self._mission_waypoints = []
+		self.target_lat = None
+		self.target_lon = None
+		cmd = 'CLEAR\r'
+		if ser.hComm is not None:
+			try:
+				ser.SerialPutString(cmd, echo=0)
+			except Exception as e:
+				print(f'[GND STATION] Clear send error: {e}')
+		self._update_status('Mission cleared.')
+		self.fig.canvas.draw_idle()
+
+	def _mission_summary(self):
+		"""Return a compact text summary of the current mission list."""
+		if not self._mission_waypoints:
+			return 'No mission loaded.'
+		lines = [f'Mission ({len(self._mission_waypoints)} WP + return to start):']
+		for i, (la, lo) in enumerate(self._mission_waypoints, 1):
+			lines.append(f'  WP{i}: {la:.5f}, {lo:.5f}')
+		lines.append('  --> Return to start')
+		return '\n'.join(lines)
+
+	def _update_status(self, msg):
+		self._status_text.set_text(msg)
 		self.fig.canvas.draw_idle()
 
 	# -------------------------------------------------------------------------
@@ -360,18 +443,22 @@ class WINDOW():
 			cur_lat, cur_lon = None, None
 		self.ax11.text(0, 0.56, f'GPS Speed = {self.gps_speed:.2f} m/s', fontsize=9)
 		self.ax11.text(0, 0.38, f'Baro Alt  = {self.baro_altitude:.1f} m', fontsize=9)
-		##Show distance/bearing to waypoint if one is active
-		if self.target_lat is not None and cur_lat is not None:
+		##Show distance/bearing to WP1 when a mission is loaded
+		if self._mission_waypoints and cur_lat is not None:
+			wp1_lat, wp1_lon = self._mission_waypoints[0]
+			dist = _gps_distance(cur_lat, cur_lon, wp1_lat, wp1_lon)
+			brng = _gps_bearing(cur_lat, cur_lon, wp1_lat, wp1_lon)
+			self.ax11.text(0, 0.20,
+			               f'WP1 Dist  = {dist:.1f} m', fontsize=9, color='blue')
+			self.ax11.text(0, 0.02,
+			               f'WP1 Brng  = {brng:.1f} °', fontsize=9, color='blue')
+		elif self.target_lat is not None and cur_lat is not None:
 			dist = _gps_distance(cur_lat, cur_lon, self.target_lat, self.target_lon)
 			brng = _gps_bearing(cur_lat, cur_lon, self.target_lat, self.target_lon)
 			self.ax11.text(0, 0.20,
 			               f'WP Dist   = {dist:.1f} m', fontsize=9, color='blue')
 			self.ax11.text(0, 0.02,
 			               f'WP Bearing= {brng:.1f} °', fontsize=9, color='blue')
-		elif self.target_lat is not None:
-			self.ax11.text(0, 0.20,
-			               f'WP: {self.target_lat:.5f}, {self.target_lon:.5f}',
-			               fontsize=9, color='blue')
 
 		##GRID 1,2 — LAT/LON MAP
 		self.ax12.plot(self.longitude, self.latitude, 'b-', linewidth=1, label='Track')
@@ -381,10 +468,21 @@ class WINDOW():
 			               'go', markersize=8, label='Current')
 		except IndexError:
 			pass
-		##Waypoint marker
-		if self.target_lat is not None:
-			self.ax12.plot(self.target_lon, self.target_lat,
-			               'r*', markersize=14, label='Waypoint')
+		##Mission waypoints: numbered markers + connecting lines (incl. return-to-start)
+		if self._mission_waypoints:
+			wp_lats = [la for la, lo in self._mission_waypoints]
+			wp_lons = [lo for la, lo in self._mission_waypoints]
+			##Draw line through all WPs and back to WP1 (return-to-start)
+			route_lats = wp_lats + [wp_lats[0]]
+			route_lons = wp_lons + [wp_lons[0]]
+			self.ax12.plot(route_lons, route_lats, 'r--', linewidth=1,
+			               alpha=0.6, label='Mission route')
+			##Numbered markers
+			for i, (la, lo) in enumerate(self._mission_waypoints, 1):
+				self.ax12.plot(lo, la, 'r*', markersize=12)
+				self.ax12.annotate(f'WP{i}', xy=(lo, la),
+				                   fontsize=7, color='red',
+				                   xytext=(3, 3), textcoords='offset points')
 		self.ax12.set_xlabel('Longitude (deg)')
 		self.ax12.set_ylabel('Latitude (deg)')
 		self.ax12.legend(fontsize=7, loc='best')
@@ -415,14 +513,21 @@ class WINDOW():
 
 		##GRID 2,3 — Autopilot status
 		self.ax23.set_title('Autopilot', fontsize=10, fontweight='bold')
-		self.ax23.text(0, 0.75, f'Time (sec) = {self.t[-1]:.1f}', fontsize=9)
-		if self.target_lat is not None:
+		self.ax23.text(0, 0.90, f'Time (sec) = {self.t[-1]:.1f}', fontsize=9)
+		n_wps = len(self._mission_waypoints)
+		if n_wps > 0:
+			self.ax23.text(0, 0.70,
+			               f'Mission WPs  = {n_wps}', fontsize=9, color='blue')
 			self.ax23.text(0, 0.50,
-			               f'Target Lat = {self.target_lat:.6f}', fontsize=9, color='blue')
-			self.ax23.text(0, 0.25,
-			               f'Target Lon = {self.target_lon:.6f}', fontsize=9, color='blue')
+			               f'Route: WP1 -> WP{n_wps} -> start', fontsize=9, color='blue')
+			for i, (la, lo) in enumerate(self._mission_waypoints, 1):
+				y_pos = 0.35 - (i - 1) * 0.15
+				if y_pos > -0.05:
+					self.ax23.text(0, y_pos,
+					               f'  WP{i}: {la:.5f}, {lo:.5f}',
+					               fontsize=7, color='darkblue')
 		else:
-			self.ax23.text(0, 0.50, 'No waypoint active', fontsize=9, color='grey')
+			self.ax23.text(0, 0.70, 'No mission loaded.', fontsize=9, color='grey')
 
 		##GRID 3,1 — Speed text
 		self.ax31.text(0, 0.8,  f'GPS Speed (m/s)   = {self.gps_speed:.2f}')

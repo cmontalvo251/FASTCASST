@@ -15,6 +15,11 @@ class CONTROLLER():
         self.waypoint_active = False
         self.arrived = False
 
+        ##Multi-waypoint mission state
+        self._mission = []          # list of (lat, lon) including return-to-start
+        self._wp_index = 0
+        self._mission_complete = False
+
         ##Autopilot tuning gains
         ##  Kp_motor:   heading error (deg) -> motor differential command
         ##              e.g. 90 deg error * 0.008 = 0.72 diff (clipped to max_differential)
@@ -43,13 +48,58 @@ class CONTROLLER():
         self.arrived = False
         print(f'[AUTOPILOT] Waypoint set -> lat={self.target_lat:.6f}, lon={self.target_lon:.6f}')
 
+    def set_mission(self, waypoints, start_lat, start_lon):
+        """
+        Load an ordered list of GPS waypoints. The vehicle navigates each
+        in sequence then returns to (start_lat, start_lon).
+
+        waypoints  : list of (lat, lon) tuples — the operator-defined stops
+        start_lat  : latitude  of the return-home point (current GPS at upload)
+        start_lon  : longitude of the return-home point (current GPS at upload)
+        """
+        if not waypoints:
+            print('[AUTOPILOT] set_mission: empty waypoint list, ignored.')
+            return
+        self._mission = [(float(la), float(lo)) for la, lo in waypoints]
+        self._mission.append((float(start_lat), float(start_lon)))  # return-to-start
+        self._wp_index = 0
+        self._mission_complete = False
+        self.target_lat = self._mission[0][0]
+        self.target_lon = self._mission[0][1]
+        self.waypoint_active = True
+        self.arrived = False
+        total = len(self._mission)
+        print(f'[AUTOPILOT] Mission loaded: {total - 1} waypoint(s) + '
+              f'return to start ({start_lat:.6f}, {start_lon:.6f})')
+
+    def _advance_waypoint(self):
+        """Advance to the next waypoint in the mission, or end the mission."""
+        self._wp_index += 1
+        if self._wp_index < len(self._mission):
+            self.target_lat = self._mission[self._wp_index][0]
+            self.target_lon = self._mission[self._wp_index][1]
+            self.arrived = False
+            is_last = (self._wp_index == len(self._mission) - 1)
+            label = 'Return to Start' if is_last else f'WP {self._wp_index + 1}'
+            print(f'[AUTOPILOT] Advancing to {label}: '
+                  f'{self.target_lat:.6f}, {self.target_lon:.6f}')
+        else:
+            self.waypoint_active = False
+            self._mission_complete = True
+            self.target_lat = None
+            self.target_lon = None
+            print('[AUTOPILOT] Mission complete — returned to start.')
+
     def clear_waypoint(self):
-        """Cancel the active waypoint and stop autopilot navigation."""
+        """Cancel the active waypoint or mission and stop autopilot navigation."""
         self.waypoint_active = False
         self.arrived = False
         self.target_lat = None
         self.target_lon = None
-        print('[AUTOPILOT] Waypoint cleared')
+        self._mission = []
+        self._wp_index = 0
+        self._mission_complete = False
+        print('[AUTOPILOT] Waypoint/mission cleared')
 
     # -------------------------------------------------------------------------
     # NAVIGATION MATH
@@ -129,8 +179,13 @@ class CONTROLLER():
         ##Check arrival
         if dist < self.arrival_radius:
             if not self.arrived:
-                self.arrived = True
                 print(f'[AUTOPILOT] Arrived at waypoint! Distance = {dist:.1f} m')
+                if self._mission:
+                    ##Mission mode: advance to the next waypoint automatically
+                    self._advance_waypoint()
+                else:
+                    ##Single-waypoint mode: hold idle
+                    self.arrived = True
             return [-1, -1, 0]
 
         ##Heading error: positive = need to turn right, negative = need to turn left

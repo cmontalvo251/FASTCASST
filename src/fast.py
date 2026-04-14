@@ -142,8 +142,16 @@ while (True):
     ##Console print
     str_pwm = [f"{pwm:1.3f}" for pwm in pwm_commands]
     str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs]
-    wp_str  = (f"WP={vehicle.target_lat:.5f},{vehicle.target_lon:.5f}"
-               if vehicle.waypoint_active else "WP=none")
+    if vehicle._mission and vehicle.waypoint_active:
+        total_wps = len(vehicle._mission)
+        wp_str = (f'WP={vehicle._wp_index+1}/{total_wps} '
+                  f'({vehicle.target_lat:.5f},{vehicle.target_lon:.5f})')
+    elif vehicle._mission and vehicle._mission_complete:
+        wp_str = 'MISSION_COMPLETE'
+    elif vehicle.waypoint_active and vehicle.target_lat is not None:
+        wp_str = f'WP={vehicle.target_lat:.5f},{vehicle.target_lon:.5f}'
+    else:
+        wp_str = 'WP=none'
     print(f"{RunTime:4.4f}", f"{elapsedTime:1.4f}",
           f"GPS={gps_sensor.latitude:.6f},{gps_sensor.longitude:.6f}",
           f"FIX={gps_sensor.fix_quality} SATS={gps_sensor.num_satellites}",
@@ -164,9 +172,25 @@ while (True):
                         wp_lon = float(parts[2])
                         vehicle.set_waypoint(wp_lat, wp_lon)
                         print(f'[AUTOPILOT] Waypoint received from ground station: {wp_lat:.6f}, {wp_lon:.6f}')
+                elif line.startswith('MISSION:'):
+                    ##Format: MISSION:lat1:lon1:lat2:lon2:...\r
+                    parts = line.split(':')
+                    coords = parts[1:]
+                    if len(coords) >= 2 and len(coords) % 2 == 0:
+                        waypoints = []
+                        for i in range(0, len(coords), 2):
+                            waypoints.append((float(coords[i]), float(coords[i+1])))
+                        ##Use current GPS position as the return-to-start coordinate
+                        start_lat = gps_sensor.latitude
+                        start_lon = gps_sensor.longitude
+                        vehicle.set_mission(waypoints, start_lat, start_lon)
+                        print(f'[AUTOPILOT] Mission received: {len(waypoints)} waypoint(s), '
+                              f'return to {start_lat:.6f},{start_lon:.6f}')
+                    else:
+                        print(f'[AUTOPILOT] Invalid MISSION command: {line}')
                 elif line == 'CLEAR':
                     vehicle.clear_waypoint()
-                    print('[AUTOPILOT] Waypoint cleared by ground station')
+                    print('[AUTOPILOT] Waypoint/mission cleared by ground station')
         except Exception as e:
             print(f'Waypoint receive error: {e}')
 

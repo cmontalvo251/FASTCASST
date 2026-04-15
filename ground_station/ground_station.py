@@ -608,7 +608,7 @@ class WINDOW():
 		self.CubeDraw(self.ax22,
 		              self.roll  * np.pi/180.,
 		              self.pitch * np.pi/180.,
-		              self.yaw   * np.pi/180.)
+		              self.heading * np.pi/180.)
 
 		##GRID 2,3 — Autopilot status
 		self.ax23.set_title('Autopilot', fontsize=10, fontweight='bold')

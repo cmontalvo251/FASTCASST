@@ -148,7 +148,9 @@ class RCInput():
         self.rollrc = self.convert(self.roll)
         self.pitchrc = self.convert(self.pitch)
         self.yawrc = self.convert(self.yaw)
-        #print(throttlerc,rollrc,pitchrc,yawrc,armswitch)
+        ##Signal loss detection: valid PWM is always >= 995 us.
+        ##If throttle reads below 800, the receiver has lost the transmitter.
+        self.signal_lost = (self.throttle < 800)
         ##Check and see if system is ARMED
         if not self.ARMED:
             #system is not armed. Let's try and arm it

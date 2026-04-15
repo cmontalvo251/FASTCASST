@@ -138,8 +138,9 @@ while (True):
         heading_deg=px.yaw
     )
 
-    ##Armed check
-    if ARMED:
+    ##Armed check — failsafe overrides disarm so the boat can finish its mission
+    ##if the RC transmitter goes out of range.
+    if ARMED or vehicle.failsafe_active:
         led.setColor(control_color)
         pwm_commands = controls
     else:

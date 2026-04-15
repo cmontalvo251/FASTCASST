@@ -24,6 +24,10 @@ class CONTROLLER():
         ##pitchrc must be below this threshold to activate (0.0 = center, -1.0 = full down).
         self.REVERSE_THRESHOLD = -0.9
 
+        ##Set True by loop() when RC signal is lost and failsafe autopilot takes over.
+        ##fast.py reads this to allow motor output even when ARMED is False.
+        self.failsafe_active = False
+
         ##Autopilot tuning gains
         ##  Kp_motor:   heading error (deg) -> motor differential command
         ##              e.g. 90 deg error * 0.008 = 0.72 diff (clipped to max_differential)
@@ -237,6 +241,22 @@ class CONTROLLER():
         defaults = [-1, -1, 0]   # motors idle, rudder centered
         color = 'Red'
         controls = [-1, -1, 0]
+        self.failsafe_active = False
+
+        ##RC signal lost — transmitter out of range or powered off.
+        ##If a mission is loaded, continue it so the boat returns home on its own.
+        ##If no mission is active, idle the motors safely.
+        if getattr(rcin, 'signal_lost', False):
+            self.failsafe_active = True
+            if self.waypoint_active and not self.arrived:
+                print('[FAILSAFE] RC signal lost — continuing autopilot mission.')
+                color = 'Blue'
+                controls = self._autopilot_commands(gps_lat, gps_lon, heading_deg)
+            else:
+                print('[FAILSAFE] RC signal lost — no mission active, holding idle.')
+                color = 'Yellow'
+                controls = [-1, -1, 0]
+            return controls, defaults, color
 
         if rcin.autopilot < 1500:
             if rcin.pitchrc < self.REVERSE_THRESHOLD:

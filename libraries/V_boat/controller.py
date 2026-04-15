@@ -20,6 +20,10 @@ class CONTROLLER():
         self._wp_index = 0
         self._mission_complete = False
 
+        ##Right stick full-down triggers full reverse on both motors.
+        ##pitchrc must be below this threshold to activate (0.0 = center, -1.0 = full down).
+        self.REVERSE_THRESHOLD = -0.9
+
         ##Autopilot tuning gains
         ##  Kp_motor:   heading error (deg) -> motor differential command
         ##              e.g. 90 deg error * 0.008 = 0.72 diff (clipped to max_differential)
@@ -235,11 +239,20 @@ class CONTROLLER():
         controls = [-1, -1, 0]
 
         if rcin.autopilot < 1500:
-            ##Manual control: pilot drives with throttle + yaw (skid-steer) and rudder
-            color = 'Green'
-            controls[0] = rcin.throttlerc + rcin.yawrc
-            controls[1] = rcin.throttlerc - rcin.yawrc
-            controls[2] = rcin.rollrc
+            if rcin.pitchrc < self.REVERSE_THRESHOLD:
+                ##Full reverse — right stick pushed fully down.
+                ##Left stick is ignored; both motors commanded to full reverse.
+                ##Rudder still responds so the boat can steer while backing up.
+                color = 'Red'
+                controls[0] = -1.0
+                controls[1] = -1.0
+                controls[2] = rcin.rollrc
+            else:
+                ##Normal manual control: left stick = throttle + skid-steer, right stick = rudder
+                color = 'Green'
+                controls[0] = rcin.throttlerc + rcin.yawrc
+                controls[1] = rcin.throttlerc - rcin.yawrc
+                controls[2] = rcin.rollrc
 
         elif rcin.autopilot > 1500:
             ##GPS Autopilot mode

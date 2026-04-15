@@ -22,6 +22,13 @@ import sys
 sys.path.append('../libraries/')
 from Comms.Comms import Comms as U
 
+try:
+	import contextily as cx
+	CONTEXTILY_AVAILABLE = True
+except ImportError:
+	CONTEXTILY_AVAILABLE = False
+	print('WARNING: contextily not installed — map tiles disabled. Run: pip install contextily')
+
 EARTH_RADIUS_M = 6371000.0
 
 def readFile(filename):
@@ -460,33 +467,59 @@ class WINDOW():
 			self.ax11.text(0, 0.02,
 			               f'WP Bearing= {brng:.1f} °', fontsize=9, color='blue')
 
-		##GRID 1,2 — LAT/LON MAP
-		self.ax12.plot(self.longitude, self.latitude, 'b-', linewidth=1, label='Track')
-		try:
-			##Current position marker
+		##GRID 1,2 — MAP
+		self.ax12.set_title('Map', fontsize=10, fontweight='bold')
+		if len(self.latitude) >= 1:
+			##Set map extent with padding around the full track
+			lat_min, lat_max = min(self.latitude), max(self.latitude)
+			lon_min, lon_max = min(self.longitude), max(self.longitude)
+			lat_pad = max(0.0008, (lat_max - lat_min) * 0.25)
+			lon_pad = max(0.0008, (lon_max - lon_min) * 0.25)
+			self.ax12.set_xlim([lon_min - lon_pad, lon_max + lon_pad])
+			self.ax12.set_ylim([lat_min - lat_pad, lat_max + lat_pad])
+
+			##Track line + current position marker
+			self.ax12.plot(self.longitude, self.latitude,
+			               'b-', linewidth=2, zorder=5, label='Track')
 			self.ax12.plot(self.longitude[-1], self.latitude[-1],
-			               'go', markersize=8, label='Current')
-		except IndexError:
-			pass
-		##Mission waypoints: numbered markers + connecting lines (incl. return-to-start)
-		if self._mission_waypoints:
-			wp_lats = [la for la, lo in self._mission_waypoints]
-			wp_lons = [lo for la, lo in self._mission_waypoints]
-			##Draw line through all WPs and back to WP1 (return-to-start)
-			route_lats = wp_lats + [wp_lats[0]]
-			route_lons = wp_lons + [wp_lons[0]]
-			self.ax12.plot(route_lons, route_lats, 'r--', linewidth=1,
-			               alpha=0.6, label='Mission route')
-			##Numbered markers
-			for i, (la, lo) in enumerate(self._mission_waypoints, 1):
-				self.ax12.plot(lo, la, 'r*', markersize=12)
-				self.ax12.annotate(f'WP{i}', xy=(lo, la),
-				                   fontsize=7, color='red',
-				                   xytext=(3, 3), textcoords='offset points')
-		self.ax12.set_xlabel('Longitude (deg)')
-		self.ax12.set_ylabel('Latitude (deg)')
-		self.ax12.legend(fontsize=7, loc='best')
-		self.ax12.grid()
+			               'go', markersize=10, zorder=6, label='Boat')
+
+			##Mission waypoints + route
+			if self._mission_waypoints:
+				wp_lats = [la for la, lo in self._mission_waypoints]
+				wp_lons = [lo for la, lo in self._mission_waypoints]
+				route_lats = wp_lats + [wp_lats[0]]
+				route_lons = wp_lons + [wp_lons[0]]
+				self.ax12.plot(route_lons, route_lats, 'r--',
+				               linewidth=1.5, alpha=0.8, zorder=4, label='Mission')
+				for i, (la, lo) in enumerate(self._mission_waypoints, 1):
+					self.ax12.plot(lo, la, 'r*', markersize=14, zorder=7)
+					self.ax12.annotate(f'WP{i}', xy=(lo, la), fontsize=8,
+					                   color='red', fontweight='bold',
+					                   xytext=(4, 4), textcoords='offset points',
+					                   zorder=8)
+
+			##OSM basemap tiles (cached locally after first download)
+			if CONTEXTILY_AVAILABLE:
+				try:
+					cx.add_basemap(self.ax12, crs='EPSG:4326',
+					               source=cx.providers.OpenStreetMap.Mapnik,
+					               zoom='auto', attribution=False)
+				except Exception as e:
+					self.ax12.grid()
+					self.ax12.text(0.01, 0.01, f'Map tiles unavailable: {e}',
+					               fontsize=6, transform=self.ax12.transAxes,
+					               color='red')
+			else:
+				self.ax12.grid()
+
+			self.ax12.set_xlabel('Longitude')
+			self.ax12.set_ylabel('Latitude')
+			self.ax12.legend(fontsize=7, loc='best')
+		else:
+			self.ax12.text(0.5, 0.5, 'Waiting for GPS fix...',
+			               ha='center', va='center', fontsize=10,
+			               transform=self.ax12.transAxes)
 
 		##GRID 1,3 — Altitude
 		self.ax13.plot([-10,10], [self.gps_altitude, self.gps_altitude],

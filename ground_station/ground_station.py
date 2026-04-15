@@ -63,34 +63,32 @@ def ConvertPressure2Alt(pressure):
 
 def get_fake_data(counter):
 	t = time.monotonic()
-	lat = 32.69 + 1.0 * np.sin(t)
-	lon = -88.1 + 1.0*np.cos(t)
-	gps_altitude = 50 + 10.0*np.sin(t)
+	lat = 32.69 + 0.001 * np.sin(t * 0.2)
+	lon = -88.1 + 0.001 * np.cos(t * 0.2)
 	baro_pressure = 1013 - 3.0*(np.sin(t)+1)
 	altitude = ConvertPressure2Alt(baro_pressure)
-	roll = 0.0 + 10.0*np.sin(t)
-	pitch = 0.0 + 20.0*np.sin(t)
-	compass = 0 + 45.0*np.sin(t)
-	gps_speed = 22.0 + 5.0*np.sin(t)
-	pitot_speed = 22.0 + 5.0*np.cos(t)
-	throttle = 1500. + 500*np.sin(t)
-	aileron = 1500. + 500*np.sin(t)
-	elevator = 1500. - 500*np.sin(t)
-	rudder = 1500. + 500*np.cos(t)
-	gndstation_packet[0] = t
-	gndstation_packet[1] = roll
-	gndstation_packet[2] = pitch
-	gndstation_packet[3] = compass
-	gndstation_packet[4] = lat
-	gndstation_packet[5] = lon
-	gndstation_packet[6] = altitude
-	gndstation_packet[7] = gps_speed
-	gndstation_packet[8] = gps_altitude
-	gndstation_packet[9] = pitot_speed
-	gndstation_packet[10] = throttle
-	gndstation_packet[11] = aileron
-	gndstation_packet[12] = elevator
-	gndstation_packet[13] = rudder
+	roll    = 5.0 * np.sin(t * 0.5)
+	pitch   = 3.0 * np.sin(t * 0.3)
+	compass = (180.0 + 45.0 * np.sin(t * 0.1)) % 360.0
+	gps_speed = 2.0 + 1.0 * np.sin(t * 0.4)
+	motor1  = 1500. + 400 * np.sin(t)
+	motor2  = 1500. + 400 * np.sin(t)
+	rudder  = 1500. + 400 * np.cos(t)
+	fix_quality = 3.0
+	gndstation_packet[0]  = t
+	gndstation_packet[1]  = roll
+	gndstation_packet[2]  = pitch
+	gndstation_packet[3]  = compass
+	gndstation_packet[4]  = lat
+	gndstation_packet[5]  = lon
+	gndstation_packet[6]  = altitude
+	gndstation_packet[7]  = gps_speed
+	gndstation_packet[8]  = 0.0          # unused
+	gndstation_packet[9]  = 0.0          # unused
+	gndstation_packet[10] = motor1
+	gndstation_packet[11] = motor2
+	gndstation_packet[12] = rudder
+	gndstation_packet[13] = fix_quality
 	return gndstation_packet
 
 def updatePacket(value,position):
@@ -104,12 +102,12 @@ def updatePacket(value,position):
 		gndstation_packet[5]  = ser.fast_packet[5]  #lon
 		gndstation_packet[6]  = ser.fast_packet[6]  #baro altitude
 		gndstation_packet[7]  = ser.fast_packet[7]  #gps speed (m/s)
-		gndstation_packet[8]  = -99                 #GPS Altitude (not in packet)
-		gndstation_packet[9]  = -99                 #Pitot speed
-		gndstation_packet[10] = ser.fast_packet[8]  #motor 1
-		gndstation_packet[11] = ser.fast_packet[9]  #motor 2
-		gndstation_packet[12] = ser.fast_packet[10] #rudder/servo
-		gndstation_packet[13] = ser.fast_packet[11] #gps fix quality
+		gndstation_packet[8]  = 0.0                 # unused
+		gndstation_packet[9]  = 0.0                 # unused
+		gndstation_packet[10] = ser.fast_packet[8]  # motor 1
+		gndstation_packet[11] = ser.fast_packet[9]  # motor 2
+		gndstation_packet[12] = ser.fast_packet[10] # rudder
+		gndstation_packet[13] = ser.fast_packet[11] # gps fix quality
 		NEW_DATA = True
 		print('Fast Packet = ', ser.fast_packet)
 	else:
@@ -189,6 +187,8 @@ class WINDOW():
 		self.t = []
 		self.longitude = []
 		self.latitude = []
+		self.speed_history = []
+		self.time_history  = []
 
 		####MISSION PLANNER WIDGETS (bottom two rows)
 		print('Creating mission planner controls...')
@@ -396,29 +396,89 @@ class WINDOW():
 		ax.get_yaxis().set_visible(False)
 		ax.get_zaxis().set_visible(False)
 
+	def CompassDraw(self, ax, heading_deg):
+		ax.set_xlim(-1.4, 1.4)
+		ax.set_ylim(-1.4, 1.4)
+		ax.set_aspect('equal')
+		ax.axis('off')
+		ax.set_facecolor('#f0f4f8')
+
+		##Outer ring
+		theta = np.linspace(0, 2*np.pi, 200)
+		ax.fill(np.cos(theta), np.sin(theta), color='white', zorder=1)
+		ax.plot(np.cos(theta), np.sin(theta), 'k-', linewidth=2, zorder=2)
+
+		##Tick marks and cardinal labels
+		cardinals = {0: 'N', 90: 'E', 180: 'S', 270: 'W'}
+		for deg in range(0, 360, 5):
+			rad = np.radians(90.0 - deg)
+			if deg % 90 == 0:
+				r0, lw = 0.78, 2.5
+			elif deg % 45 == 0:
+				r0, lw = 0.82, 1.5
+			else:
+				r0, lw = 0.88, 0.8
+			ax.plot([r0*np.cos(rad), np.cos(rad)],
+			        [r0*np.sin(rad), np.sin(rad)],
+			        'k-', linewidth=lw, zorder=3)
+			if deg in cardinals:
+				ax.text(1.18*np.cos(rad), 1.18*np.sin(rad), cardinals[deg],
+				        ha='center', va='center', fontsize=11,
+				        fontweight='bold', zorder=4)
+
+		##Degree labels at 30° intervals (skip cardinals)
+		for deg in range(30, 360, 30):
+			if deg % 90 != 0:
+				rad = np.radians(90.0 - deg)
+				ax.text(1.30*np.cos(rad), 1.30*np.sin(rad), str(deg),
+				        ha='center', va='center', fontsize=6, color='#555555', zorder=4)
+
+		##Heading needle — red forward, white back
+		h_rad = np.radians(90.0 - heading_deg)
+		ax.annotate('', xy=(0.72*np.cos(h_rad), 0.72*np.sin(h_rad)),
+		            xytext=(-0.30*np.cos(h_rad), -0.30*np.sin(h_rad)),
+		            arrowprops=dict(arrowstyle='->', color='red',
+		                            lw=3, mutation_scale=20), zorder=5)
+		ax.plot(-0.30*np.cos(h_rad), -0.30*np.sin(h_rad),
+		        'o', color='white', markersize=8, markeredgecolor='k',
+		        markeredgewidth=1, zorder=6)
+		ax.plot(0, 0, 'ko', markersize=5, zorder=7)
+
+		##Heading readout
+		ax.text(0, -1.38, f'{heading_deg:.1f}°',
+		        ha='center', va='center', fontsize=10, fontweight='bold')
+		ax.set_title('Heading', fontsize=10, fontweight='bold')
+
 	# -------------------------------------------------------------------------
 	# DATA INGESTION
 	# -------------------------------------------------------------------------
 
 	def sendNewData(self, gndstation_packet):
-		time_val   = gndstation_packet[0]
+		time_val        = gndstation_packet[0]
 		self.t.append(time_val)
-		self.roll  = gndstation_packet[1]
-		self.pitch = gndstation_packet[2]
-		self.yaw   = gndstation_packet[3]
-		latitude   = gndstation_packet[4]
-		longitude  = gndstation_packet[5]
-		if latitude > 30 and latitude < 40 and longitude < -80 and longitude > -90:
+		self.roll       = gndstation_packet[1]
+		self.pitch      = gndstation_packet[2]
+		self.heading    = gndstation_packet[3]
+		latitude        = gndstation_packet[4]
+		longitude       = gndstation_packet[5]
+		if latitude != 0.0 and longitude != 0.0:
 			self.latitude.append(latitude)
 			self.longitude.append(longitude)
-		self.baro_altitude = gndstation_packet[6]
-		self.gps_speed     = gndstation_packet[7]
-		self.gps_altitude  = gndstation_packet[8]
-		self.pitot_speed   = gndstation_packet[9]
-		self.throttle      = gndstation_packet[10]
-		self.aileron       = gndstation_packet[11]
-		self.elevator      = gndstation_packet[12]
-		self.rudder        = gndstation_packet[13]
+		self.baro_altitude  = gndstation_packet[6]
+		self.gps_speed      = gndstation_packet[7]
+		self.motor1         = gndstation_packet[10]
+		self.motor2         = gndstation_packet[11]
+		self.rudder         = gndstation_packet[12]
+		self.fix_quality    = int(gndstation_packet[13])
+
+		##Rolling 90-second speed history
+		self.speed_history.append(self.gps_speed)
+		self.time_history.append(time_val)
+		if len(self.time_history) > 1:
+			cutoff = self.time_history[-1] - 90.0
+			while len(self.time_history) > 1 and self.time_history[0] < cutoff:
+				self.time_history.pop(0)
+				self.speed_history.pop(0)
 
 	# -------------------------------------------------------------------------
 	# DISPLAY
@@ -437,35 +497,42 @@ class WINDOW():
 
 	def updatewindow(self):
 
-		##GRID 1,1 — GPS READOUT
-		self.ax11.set_title('GPS Readout', fontsize=10, fontweight='bold')
+		##GRID 1,1 — GPS / STATUS READOUT
+		self.ax11.set_title('Navigation', fontsize=10, fontweight='bold')
+		self.ax11.set_xlim([0, 1])
+		self.ax11.set_ylim([0, 1])
+		fix_labels = {0: 'NO FIX', 1: 'GPS', 2: 'DGPS', 3: 'PPS', 4: 'RTK', 5: 'Float RTK'}
+		fix_colors = {0: 'red', 1: 'orange', 2: 'yellowgreen', 3: 'green', 4: 'green', 5: 'yellowgreen'}
+		fix_str   = fix_labels.get(self.fix_quality, str(self.fix_quality))
+		fix_color = fix_colors.get(self.fix_quality, 'grey')
 		try:
 			cur_lat = self.latitude[-1]
 			cur_lon = self.longitude[-1]
-			self.ax11.text(0, 0.92, f'Latitude  = {cur_lat:.6f} °', fontsize=9)
-			self.ax11.text(0, 0.74, f'Longitude = {cur_lon:.6f} °', fontsize=9)
+			self.ax11.text(0.02, 0.92, f'Lat       = {cur_lat:.6f} °', fontsize=9)
+			self.ax11.text(0.02, 0.78, f'Lon       = {cur_lon:.6f} °', fontsize=9)
 		except IndexError:
-			self.ax11.text(0, 0.92, 'Latitude  = (no fix)', fontsize=9)
-			self.ax11.text(0, 0.74, 'Longitude = (no fix)', fontsize=9)
+			self.ax11.text(0.02, 0.92, 'Lat       = (no fix)', fontsize=9, color='red')
+			self.ax11.text(0.02, 0.78, 'Lon       = (no fix)', fontsize=9, color='red')
 			cur_lat, cur_lon = None, None
-		self.ax11.text(0, 0.56, f'GPS Speed = {self.gps_speed:.2f} m/s', fontsize=9)
-		self.ax11.text(0, 0.38, f'Baro Alt  = {self.baro_altitude:.1f} m', fontsize=9)
-		##Show distance/bearing to WP1 when a mission is loaded
+		self.ax11.text(0.02, 0.64, f'Speed     = {self.gps_speed:.2f} m/s  ({self.gps_speed*1.944:.1f} kts)', fontsize=9)
+		self.ax11.text(0.02, 0.50, f'Heading   = {self.heading:.1f} °', fontsize=9)
+		self.ax11.text(0.02, 0.36, f'Baro Alt  = {self.baro_altitude:.1f} m', fontsize=9)
+		self.ax11.text(0.02, 0.22, f'GPS Fix   = ', fontsize=9)
+		self.ax11.text(0.30, 0.22, fix_str, fontsize=9, color=fix_color, fontweight='bold')
+		##Distance/bearing to next waypoint
 		if self._mission_waypoints and cur_lat is not None:
 			wp1_lat, wp1_lon = self._mission_waypoints[0]
 			dist = _gps_distance(cur_lat, cur_lon, wp1_lat, wp1_lon)
 			brng = _gps_bearing(cur_lat, cur_lon, wp1_lat, wp1_lon)
-			self.ax11.text(0, 0.20,
-			               f'WP1 Dist  = {dist:.1f} m', fontsize=9, color='blue')
-			self.ax11.text(0, 0.02,
-			               f'WP1 Brng  = {brng:.1f} °', fontsize=9, color='blue')
+			self.ax11.text(0.02, 0.08,
+			               f'WP1  {dist:.0f} m  /  {brng:.1f} °',
+			               fontsize=9, color='blue', fontweight='bold')
 		elif self.target_lat is not None and cur_lat is not None:
 			dist = _gps_distance(cur_lat, cur_lon, self.target_lat, self.target_lon)
 			brng = _gps_bearing(cur_lat, cur_lon, self.target_lat, self.target_lon)
-			self.ax11.text(0, 0.20,
-			               f'WP Dist   = {dist:.1f} m', fontsize=9, color='blue')
-			self.ax11.text(0, 0.02,
-			               f'WP Bearing= {brng:.1f} °', fontsize=9, color='blue')
+			self.ax11.text(0.02, 0.08,
+			               f'WP   {dist:.0f} m  /  {brng:.1f} °',
+			               fontsize=9, color='blue', fontweight='bold')
 
 		##GRID 1,2 — MAP
 		self.ax12.set_title('Map', fontsize=10, fontweight='bold')
@@ -521,22 +588,21 @@ class WINDOW():
 			               ha='center', va='center', fontsize=10,
 			               transform=self.ax12.transAxes)
 
-		##GRID 1,3 — Altitude
-		self.ax13.plot([-10,10], [self.gps_altitude, self.gps_altitude],
-		               'b-', label='GPS Alt')
-		self.ax13.plot([-10,10], [self.baro_altitude, self.baro_altitude],
-		               'r-', label='Baro Alt')
-		comm_altitude = 50.0
-		self.ax13.plot([-10,10], [comm_altitude, comm_altitude], 'g--', label='Command')
-		self.ax13.legend()
-		self.ax13.set_ylabel('Altitude (m)')
-		self.ax13.grid()
-		self.ax13.set_ylim([0, 100])
+		##GRID 1,3 — Compass dial
+		self.CompassDraw(self.ax13, self.heading)
 
 		##GRID 2,1 — Attitude text
-		self.ax21.text(0, 0.9,  f'Roll  (deg) = {self.roll:.2f}')
-		self.ax21.text(0, 0.45, f'Pitch (deg) = {self.pitch:.2f}')
-		self.ax21.text(0, 0,    f'Yaw   (deg) = {self.yaw:.2f}')
+		self.ax21.set_title('Attitude', fontsize=10, fontweight='bold')
+		self.ax21.set_xlim([0, 1])
+		self.ax21.set_ylim([0, 1])
+		roll_color  = 'red' if abs(self.roll)  > 20 else 'black'
+		pitch_color = 'red' if abs(self.pitch) > 15 else 'black'
+		self.ax21.text(0.05, 0.72, f'Roll',    fontsize=10, color='grey')
+		self.ax21.text(0.05, 0.52, f'Pitch',   fontsize=10, color='grey')
+		self.ax21.text(0.05, 0.32, f'Heading', fontsize=10, color='grey')
+		self.ax21.text(0.45, 0.72, f'{self.roll:+.1f} °',    fontsize=12, fontweight='bold', color=roll_color)
+		self.ax21.text(0.45, 0.52, f'{self.pitch:+.1f} °',   fontsize=12, fontweight='bold', color=pitch_color)
+		self.ax21.text(0.45, 0.32, f'{self.heading:.1f} °',  fontsize=12, fontweight='bold')
 
 		##GRID 2,2 — 3D Cube attitude viz
 		self.CubeDraw(self.ax22,
@@ -562,31 +628,46 @@ class WINDOW():
 		else:
 			self.ax23.text(0, 0.70, 'No mission loaded.', fontsize=9, color='grey')
 
-		##GRID 3,1 — Speed text
-		self.ax31.text(0, 0.8,  f'GPS Speed (m/s)   = {self.gps_speed:.2f}')
-		self.ax31.text(0, 0.4,  f'Pitot Speed (m/s) = {self.pitot_speed:.2f}')
+		##GRID 3,1 — Motor / control text
+		self.ax31.set_title('Controls', fontsize=10, fontweight='bold')
+		self.ax31.set_xlim([0, 1])
+		self.ax31.set_ylim([0, 1])
+		self.ax31.text(0.05, 0.78, 'Motor 1', fontsize=10, color='grey')
+		self.ax31.text(0.05, 0.52, 'Motor 2', fontsize=10, color='grey')
+		self.ax31.text(0.05, 0.26, 'Rudder',  fontsize=10, color='grey')
+		self.ax31.text(0.45, 0.78, f'{self.motor1:.0f} µs', fontsize=12, fontweight='bold')
+		self.ax31.text(0.45, 0.52, f'{self.motor2:.0f} µs', fontsize=12, fontweight='bold')
+		self.ax31.text(0.45, 0.26, f'{self.rudder:.0f} µs', fontsize=12, fontweight='bold')
 
-		##GRID 3,2 — Speed bars
-		self.ax32.plot([-10,10], [self.gps_speed,   self.gps_speed],   'b-', label='GPS')
-		self.ax32.plot([-10,10], [self.pitot_speed, self.pitot_speed], 'r-', label='Pitot')
-		comm_speed = 15.0
-		self.ax32.plot([-10,10], [comm_speed, comm_speed], 'g--', label='Command')
+		##GRID 3,2 — Speed history
+		self.ax32.set_title('Speed History (90 s)', fontsize=10, fontweight='bold')
+		if len(self.speed_history) > 1:
+			t0 = self.time_history[0]
+			t_rel = [t - t0 for t in self.time_history]
+			self.ax32.plot(t_rel, self.speed_history, 'b-', linewidth=2)
+			self.ax32.fill_between(t_rel, self.speed_history, alpha=0.15, color='blue')
+			peak = max(self.speed_history)
+			self.ax32.set_ylim([0, max(1.0, peak * 1.3)])
+		else:
+			self.ax32.set_ylim([0, 5])
 		self.ax32.set_ylabel('Speed (m/s)')
-		self.ax32.set_ylim([0, 30])
-		self.ax32.grid()
-		self.ax32.legend()
+		self.ax32.set_xlabel('Time (s)')
+		self.ax32.grid(True, alpha=0.4)
 
-		##GRID 3,3 — PWM bars
+		##GRID 3,3 — PWM bars (Motor 1, Motor 2, Rudder)
 		width = 10
-		self.ax33.add_patch(pt.Rectangle([0,        0], width, self.throttle, fc='b'))
-		self.ax33.add_patch(pt.Rectangle([width,    0], width, self.aileron,  fc='r'))
-		self.ax33.add_patch(pt.Rectangle([2*width,  0], width, self.elevator, fc='g'))
-		self.ax33.add_patch(pt.Rectangle([3*width,  0], width, self.rudder,   fc='m'))
-		self.ax33.grid()
-		self.ax33.set_ylabel('PWM (us)')
-		self.ax33.set_xlabel('Throttle   Aileron   Elevator  Rudder')
-		self.ax33.set_xlim([0, 40])
-		self.ax33.set_ylim([0, 2400])
+		self.ax33.set_title('PWM Output', fontsize=10, fontweight='bold')
+		self.ax33.add_patch(pt.Rectangle([0,       0], width, self.motor1, fc='steelblue'))
+		self.ax33.add_patch(pt.Rectangle([width,   0], width, self.motor2, fc='steelblue'))
+		self.ax33.add_patch(pt.Rectangle([2*width, 0], width, self.rudder, fc='darkorange'))
+		##1500 µs neutral line
+		self.ax33.axhline(1500, color='green', linestyle='--', linewidth=1, alpha=0.7)
+		self.ax33.grid(True, axis='y', alpha=0.4)
+		self.ax33.set_ylabel('PWM (µs)')
+		self.ax33.set_xticks([width/2, width + width/2, 2*width + width/2])
+		self.ax33.set_xticklabels(['Motor 1', 'Motor 2', 'Rudder'])
+		self.ax33.set_xlim([0, 30])
+		self.ax33.set_ylim([1000, 2000])
 
 
 ##CREATE EMPTY ARRAY PACKETS

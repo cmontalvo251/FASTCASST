@@ -570,8 +570,8 @@ class WINDOW():
 					                   xytext=(4, 4), textcoords='offset points',
 					                   zorder=8)
 
-			##OSM basemap tiles (cached locally after first download)
-			if CONTEXTILY_AVAILABLE:
+			##OSM basemap tiles — only fetch when extent is non-zero (needs a real GPS fix)
+			if CONTEXTILY_AVAILABLE and (lon_max - lon_min > 0 or lat_max - lat_min > 0):
 				try:
 					cx.add_basemap(self.ax12, crs='EPSG:4326',
 					               source=cx.providers.OpenStreetMap.Mapnik,

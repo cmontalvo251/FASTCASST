@@ -466,10 +466,14 @@ class WINDOW():
 			self.longitude.append(longitude)
 		self.baro_altitude  = gndstation_packet[6]
 		self.gps_speed      = gndstation_packet[7]
-		self.motor1         = gndstation_packet[10]
-		self.motor2         = gndstation_packet[11]
-		self.rudder         = gndstation_packet[12]
-		self.fix_quality    = int(gndstation_packet[13])
+		##Telemetry sends motor/rudder as [-1, 1]. Convert to µs for display.
+		##Inverse of rcio convert(): µs = (val * half_range + mid) * 1000
+		_mid  = 1.504
+		_half = (2.010 - 0.995) / 2.0   # 0.5075 ms
+		self.motor1      = (gndstation_packet[10] * _half + _mid) * 1000.0
+		self.motor2      = (gndstation_packet[11] * _half + _mid) * 1000.0
+		self.rudder      = (gndstation_packet[12] * _half + _mid) * 1000.0
+		self.fix_quality = int(gndstation_packet[13])
 
 		##Rolling 90-second speed history
 		self.speed_history.append(self.gps_speed)

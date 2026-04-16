@@ -119,6 +119,7 @@ RunTime = 0.0
 logTime = RunTime
 telemetryTime = RunTime
 printTime = RunTime
+wpStatusTime = RunTime
 
 print('Running main loop....')
 

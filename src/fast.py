@@ -119,9 +119,10 @@ while (True):
     gps_sensor.poll(RunTime)
 
     ##Attitude from Pixhawk EKF (roll, pitch, yaw) — replaces Navio2 AHRS
+    ##Offsets zero roll/pitch when boat is on flat ground.
     px.poll(RunTime)
-    rpy_ahrs[0] = px.roll
-    rpy_ahrs[1] = px.pitch
+    rpy_ahrs[0] = px.roll  - 5.6
+    rpy_ahrs[1] = px.pitch - 0.8
     rpy_ahrs[2] = px.yaw
 
     ##Autopilot / manual control

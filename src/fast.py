@@ -20,7 +20,7 @@ VEHICLE = 'boat' #Options are 'car', 'boat', or 'airplane'
 ##Waypoints file — loaded on startup. Path is relative to the src/ directory.
 ##Format: one  lat, lon  per line. Blank lines and # comments are ignored.
 ##If the file is missing or empty, no default mission is set.
-WAYPOINTS_FILE = '../waypoints.txt'
+WAYPOINTS_FILE = '../ground_station/waypoints.txt'
 
 ##Pixhawk connected to Pi via USB — provides roll, pitch, and yaw via EKF
 PIXHAWK_PORT = '/dev/ttyACM0'

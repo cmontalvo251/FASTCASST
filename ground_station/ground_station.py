@@ -460,7 +460,8 @@ class WINDOW():
 		self.heading    = gndstation_packet[3]
 		latitude        = gndstation_packet[4]
 		longitude       = gndstation_packet[5]
-		if latitude != 0.0 and longitude != 0.0:
+		if (latitude != 0.0 and longitude != 0.0
+		        and abs(latitude) != 99 and abs(longitude) != 99):
 			self.latitude.append(latitude)
 			self.longitude.append(longitude)
 		##GPS course-over-ground: bearing between the last two valid GPS positions

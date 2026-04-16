@@ -17,10 +17,10 @@ NUMOUTPUTS = 21  #Number of data outputs (20 for car, 21 for boat, 22 for airpla
 NUMPWM = 3       #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
 VEHICLE = 'boat' #Options are 'car', 'boat', or 'airplane'
 
-##Default waypoint — automatically set on startup so autopilot is ready immediately.
-##Override at any time by sending a waypoint from the ground station.
-DEFAULT_WAYPOINT_LAT =  30.6914263
-DEFAULT_WAYPOINT_LON = -88.1754964
+##Waypoints file — loaded on startup. Path is relative to the src/ directory.
+##Format: one  lat, lon  per line. Blank lines and # comments are ignored.
+##If the file is missing or empty, no default mission is set.
+WAYPOINTS_FILE = '../waypoints.txt'
 
 ##Pixhawk connected to Pi via USB — provides roll, pitch, and yaw via EKF
 PIXHAWK_PORT = '/dev/ttyACM0'
@@ -38,12 +38,31 @@ RADIO_BAUD = 57600
 import numpy as np
 import sys
 import time
+import re
+import os
+
+##Load waypoints from file
+def load_waypoints(path):
+    if not os.path.exists(path):
+        print(f'[WAYPOINTS] File not found: {path} — no default mission.')
+        return []
+    pairs = []
+    with open(path) as f:
+        for line in f:
+            line = line.split('#')[0].strip()
+            nums = re.findall(r'-?\d+\.?\d*', line)
+            if len(nums) >= 2:
+                pairs.append((float(nums[0]), float(nums[1])))
+    print(f'[WAYPOINTS] Loaded {len(pairs)} waypoint(s) from {path}')
+    return pairs
+
+_waypoints_from_file = load_waypoints(WAYPOINTS_FILE)
+_mission_loaded      = False   # set True once GPS fix arms the mission
 
 ##Vehicle controller
 sys.path.insert(0, '../libraries/V_'+VEHICLE)
 import controller
 vehicle = controller.CONTROLLER()
-vehicle.set_waypoint(DEFAULT_WAYPOINT_LAT, DEFAULT_WAYPOINT_LON)
 
 ##Make sure Ardupilot is off
 sys.path.append('../libraries/Util')
@@ -123,6 +142,16 @@ while (True):
 
     ##GPS (Navio2 SPI)
     gps_sensor.poll(RunTime)
+
+    ##Load waypoint file mission once we have a valid GPS fix (sets correct return-to-home)
+    if not _mission_loaded and _waypoints_from_file and gps_sensor.fix_quality > 0:
+        _mission_loaded = True
+        start_lat = gps_sensor.latitude
+        start_lon = gps_sensor.longitude
+        if len(_waypoints_from_file) == 1:
+            vehicle.set_waypoint(_waypoints_from_file[0][0], _waypoints_from_file[0][1])
+        else:
+            vehicle.set_mission(_waypoints_from_file, start_lat, start_lon)
 
     ##Attitude from Pixhawk EKF (roll, pitch, yaw) — replaces Navio2 AHRS
     ##Offsets zero roll/pitch when boat is on flat ground.

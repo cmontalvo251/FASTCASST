@@ -187,9 +187,10 @@ class WINDOW():
 		self.t = []
 		self.longitude = []
 		self.latitude = []
-		self.speed_history = []
-		self.time_history  = []
-		self.gps_heading   = None
+		self.speed_history   = []
+		self.time_history    = []
+		self.gps_heading     = None
+		self._last_map_extent = None   # cached basemap extent — only refetch when it changes
 
 		####MISSION PLANNER WIDGETS (bottom two rows)
 		print('Creating mission planner controls...')
@@ -576,18 +577,23 @@ class WINDOW():
 					                   xytext=(4, 4), textcoords='offset points',
 					                   zorder=8)
 
-			##OSM basemap tiles — only fetch when extent is non-zero (needs a real GPS fix)
-			if CONTEXTILY_AVAILABLE and (lon_max - lon_min > 0 or lat_max - lat_min > 0):
+			##OSM basemap tiles — only re-fetch when the map extent shifts enough
+			##to need new tiles (avoids blocking the GUI every second).
+			new_extent = (round(lon_min - lon_pad, 4), round(lon_max + lon_pad, 4),
+			              round(lat_min - lat_pad, 4), round(lat_max + lat_pad, 4))
+			extent_changed = (self._last_map_extent != new_extent)
+			if CONTEXTILY_AVAILABLE and extent_changed and (lon_max - lon_min > 0 or lat_max - lat_min > 0):
 				try:
 					cx.add_basemap(self.ax12, crs='EPSG:4326',
 					               source=cx.providers.OpenStreetMap.Mapnik,
 					               zoom='auto', attribution=False)
+					self._last_map_extent = new_extent
 				except Exception as e:
 					self.ax12.grid()
 					self.ax12.text(0.01, 0.01, f'Map tiles unavailable: {e}',
 					               fontsize=6, transform=self.ax12.transAxes,
 					               color='red')
-			else:
+			elif not CONTEXTILY_AVAILABLE:
 				self.ax12.grid()
 
 			self.ax12.set_xlabel('Longitude')
@@ -747,7 +753,9 @@ while True:
 		GND.clearwindow()
 		GND.sendNewData(gndstation_packet)
 		GND.updatewindow()
-		plt.pause(0.0000000000001)
+		plt.pause(0.05)   # 50 ms — enough for the event loop to stay responsive
+	elif GUI == 1:
+		plt.pause(0.01)   # keep window responsive even when no new data
 
 	##Write data to log file
 	if NEW_DATA:

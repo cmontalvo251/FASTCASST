@@ -655,16 +655,22 @@ class WINDOW():
 		else:
 			self.ax23.text(0, 0.70, 'No mission loaded.', fontsize=9, color='grey')
 
-		##GRID 3,1 — Motor / control text
-		self.ax31.set_title('Controls', fontsize=10, fontweight='bold')
+		##GRID 3,1 — Heading readout (compass + GPS course-over-ground)
+		self.ax31.set_title('Heading', fontsize=10, fontweight='bold')
 		self.ax31.set_xlim([0, 1])
 		self.ax31.set_ylim([0, 1])
-		self.ax31.text(0.05, 0.78, 'Motor 1', fontsize=10, color='grey')
-		self.ax31.text(0.05, 0.52, 'Motor 2', fontsize=10, color='grey')
-		self.ax31.text(0.05, 0.26, 'Rudder',  fontsize=10, color='grey')
-		self.ax31.text(0.45, 0.78, f'{self.motor1:.0f} µs', fontsize=12, fontweight='bold')
-		self.ax31.text(0.45, 0.52, f'{self.motor2:.0f} µs', fontsize=12, fontweight='bold')
-		self.ax31.text(0.45, 0.26, f'{self.rudder:.0f} µs', fontsize=12, fontweight='bold')
+		self.ax31.text(0.05, 0.68, 'Compass',   fontsize=10, color='grey')
+		self.ax31.text(0.05, 0.22, 'GPS Track', fontsize=10, color='grey')
+		self.ax31.text(0.55, 0.68, f'{self.heading:.1f} °',
+		               fontsize=16, fontweight='bold')
+		if self.gps_heading is not None:
+			self.ax31.text(0.55, 0.22, f'{self.gps_heading:.1f} °',
+			               fontsize=16, fontweight='bold', color='steelblue')
+		else:
+			self.ax31.text(0.55, 0.22, 'no fix',
+			               fontsize=12, color='#aaaaaa')
+		##Divider between the two
+		self.ax31.plot([0.03, 0.97], [0.48, 0.48], color='#cccccc', linewidth=0.8)
 
 		##GRID 3,2 — Speed history
 		self.ax32.set_title('Speed History (90 s)', fontsize=10, fontweight='bold')

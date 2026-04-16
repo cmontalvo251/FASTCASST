@@ -17,12 +17,7 @@ NUMOUTPUTS = 21  #Number of data outputs (20 for car, 21 for boat, 22 for airpla
 NUMPWM = 3       #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
 VEHICLE = 'boat' #Options are 'car', 'boat', or 'airplane'
 
-##IMU mounting offsets — set these so roll/pitch read 0 when boat is level.
-##Place the boat on flat ground, read the raw values, and negate them here.
-ROLL_OFFSET_DEG  =  80.40   # negate the raw roll  reading on flat ground
-PITCH_OFFSET_DEG =  82.22   # negate the raw pitch reading on flat ground
-
-##Pixhawk connected to Pi via USB — compass only
+##Pixhawk connected to Pi via USB — provides roll, pitch, and yaw via EKF
 PIXHAWK_PORT = '/dev/ttyACM0'
 PIXHAWK_BAUD = 115200
 
@@ -114,10 +109,8 @@ while (True):
     ##RC input
     ARMED, safety_color = rc.rcin.readALL()
 
-    ##IMU
+    ##IMU (Navio2) — only used for raw sensor logging; attitude comes from Pixhawk EKF
     a, gdegs, m, rpy, rpy_ahrs, temp = imu.getALL(elapsedTime)
-    rpy_ahrs[0] += ROLL_OFFSET_DEG
-    rpy_ahrs[1] += PITCH_OFFSET_DEG
 
     ##Barometer
     baro.poll(RunTime)
@@ -125,8 +118,10 @@ while (True):
     ##GPS (Navio2 SPI)
     gps_sensor.poll(RunTime)
 
-    ##Compass from Pixhawk
+    ##Attitude from Pixhawk EKF (roll, pitch, yaw) — replaces Navio2 AHRS
     px.poll(RunTime)
+    rpy_ahrs[0] = px.roll
+    rpy_ahrs[1] = px.pitch
     rpy_ahrs[2] = px.yaw
 
     ##Autopilot / manual control

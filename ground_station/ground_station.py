@@ -136,14 +136,6 @@ class WINDOW():
 	def __init__(self, parent=None):
 		print('Initializing Window')
 		self.fig = plt.figure(figsize=(144, 81))
-		try:
-			mgr = plt.get_current_fig_manager()
-			mgr.window.state('zoomed')        # TkAgg (most common on Windows/Linux)
-		except Exception:
-			try:
-				mgr.window.showMaximized()     # Qt backends
-			except Exception:
-				pass
 
 		##Leave room at the bottom for mission planner controls
 		self.fig.subplots_adjust(bottom=0.17)

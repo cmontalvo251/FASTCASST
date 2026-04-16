@@ -19,6 +19,13 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import os
 import sys
+import threading
+try:
+	import requests
+	REQUESTS_AVAILABLE = True
+except ImportError:
+	REQUESTS_AVAILABLE = False
+	print('WARNING: requests not installed — ground station location disabled. Run: pip install requests')
 sys.path.append('../libraries/')
 from Comms.Comms import Comms as U
 
@@ -187,10 +194,13 @@ class WINDOW():
 		self.t = []
 		self.longitude = []
 		self.latitude = []
-		self.speed_history   = []
-		self.time_history    = []
-		self.gps_heading     = None
+		self.speed_history    = []
+		self.time_history     = []
+		self.gps_heading      = None
 		self._last_map_extent = None   # cached basemap extent — only refetch when it changes
+		self.gs_lat           = None   # ground station location (fetched via IP geolocation)
+		self.gs_lon           = None
+		self._fetch_gs_location()
 
 		####MISSION PLANNER WIDGETS (bottom two rows)
 		print('Creating mission planner controls...')
@@ -236,6 +246,28 @@ class WINDOW():
 		self._ax_status = ax_status
 
 		print('Window created.')
+
+	# -------------------------------------------------------------------------
+	# GROUND STATION LOCATION
+	# -------------------------------------------------------------------------
+
+	def _fetch_gs_location(self):
+		"""Fetch ground station lat/lon via IP geolocation in a background thread."""
+		if not REQUESTS_AVAILABLE:
+			return
+		def _fetch():
+			try:
+				r = requests.get('http://ip-api.com/json/', timeout=5)
+				data = r.json()
+				if data.get('status') == 'success':
+					self.gs_lat = data['lat']
+					self.gs_lon = data['lon']
+					print(f'[GND STATION] Location acquired: {self.gs_lat:.5f}, {self.gs_lon:.5f}')
+				else:
+					print('[GND STATION] IP geolocation returned no result.')
+			except Exception as e:
+				print(f'[GND STATION] Could not fetch location: {e}')
+		threading.Thread(target=_fetch, daemon=True).start()
 
 	# -------------------------------------------------------------------------
 	# WAYPOINT CALLBACKS
@@ -562,6 +594,15 @@ class WINDOW():
 			               'b-', linewidth=2, zorder=5, label='Track')
 			self.ax12.plot(self.longitude[-1], self.latitude[-1],
 			               'go', markersize=10, zorder=6, label='Boat')
+
+			##Ground station location
+			if self.gs_lat is not None and self.gs_lon is not None:
+				self.ax12.plot(self.gs_lon, self.gs_lat,
+				               's', color='orange', markersize=10, zorder=6,
+				               label='Ground Station')
+				self.ax12.annotate('GS', xy=(self.gs_lon, self.gs_lat),
+				                   fontsize=7, color='orange', fontweight='bold',
+				                   xytext=(4, 4), textcoords='offset points', zorder=7)
 
 			##Mission waypoints + route
 			if self._mission_waypoints:

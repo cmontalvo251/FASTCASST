@@ -5,14 +5,24 @@ Send waypoints to the boat over the SiK telemetry radio.
 Single waypoint:
     python waypoint.py 30.6914263 -88.1754964
 
-Mission (multiple waypoints, boat returns to start when done):
-    python waypoint.py mission 30.691 -88.175 30.692 -88.176 30.693 -88.177
+Mission from a text file (one  lat, lon  per line):
+    python waypoint.py mission waypoints.txt
+
+Mission from inline coordinates:
+    python waypoint.py mission 30.691 -88.175 30.692 -88.176
 
 Clear active waypoint/mission:
     python waypoint.py clear
+
+Text file format (blank lines and # comments are ignored):
+    # my test route
+    30.6914263, -88.1754964
+    30.6914230, -88.1754970
+    30.6914350, -88.1754970
 """
 
 import sys
+import os
 import platform
 import serial
 import re
@@ -37,9 +47,40 @@ def send(cmd):
         print(f'ERROR: Could not open {PORT} — {e}')
         sys.exit(1)
 
-def parse_all_coords(args):
-    """Extract all lat/lon pairs from the argument list."""
-    raw = ' '.join(args).replace('(', '').replace(')', '').replace(',', ' ')
+def parse_line(line):
+    """Parse a single 'lat, lon' line. Returns (lat, lon) or None."""
+    line = line.split('#')[0].strip()   # strip inline comments
+    if not line:
+        return None
+    nums = re.findall(r'-?\d+\.?\d*', line)
+    if len(nums) < 2:
+        return None
+    return float(nums[0]), float(nums[1])
+
+def load_file(path):
+    """Load waypoints from a text file."""
+    if not os.path.exists(path):
+        print(f'ERROR: File not found: {path}')
+        sys.exit(1)
+    pairs = []
+    with open(path) as f:
+        for lineno, line in enumerate(f, 1):
+            result = parse_line(line)
+            if result is None:
+                continue
+            lat, lon = result
+            if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+                print(f'ERROR: Invalid coordinates on line {lineno}: {lat}, {lon}')
+                sys.exit(1)
+            pairs.append((lat, lon))
+    if not pairs:
+        print(f'ERROR: No valid waypoints found in {path}')
+        sys.exit(1)
+    return pairs
+
+def parse_inline_coords(args):
+    """Extract all lat/lon pairs from inline arguments."""
+    raw = ' '.join(args).replace('(','').replace(')','').replace(',',' ')
     nums = re.findall(r'-?\d+\.?\d*', raw)
     if len(nums) < 2 or len(nums) % 2 != 0:
         print('ERROR: Need an even number of values (lat lon pairs).')
@@ -53,6 +94,19 @@ def parse_all_coords(args):
         pairs.append((lat, lon))
     return pairs
 
+def send_mission(pairs):
+    parts = ['MISSION']
+    for lat, lon in pairs:
+        parts.append(f'{lat:.6f}')
+        parts.append(f'{lon:.6f}')
+    print(f'Sending mission: {len(pairs)} waypoint(s) + return to start')
+    for i, (lat, lon) in enumerate(pairs, 1):
+        print(f'  WP{i}: {lat:.6f}, {lon:.6f}')
+    print(f'  --> Return to start')
+    send(':'.join(parts) + '\r')
+
+# ---------------------------------------------------------------------------
+
 if len(sys.argv) < 2:
     print(__doc__)
     sys.exit(0)
@@ -63,23 +117,19 @@ if cmd == 'clear':
     send('CLEAR\r')
 
 elif cmd == 'mission':
-    pairs = parse_all_coords(sys.argv[2:])
-    if not pairs:
-        print('ERROR: Provide at least one waypoint after "mission".')
+    if len(sys.argv) < 3:
+        print('ERROR: Provide a file path or coordinates after "mission".')
         sys.exit(1)
-    parts = ['MISSION']
-    for lat, lon in pairs:
-        parts.append(f'{lat:.6f}')
-        parts.append(f'{lon:.6f}')
-    mission_cmd = ':'.join(parts) + '\r'
-    print(f'Sending mission: {len(pairs)} waypoint(s) + return to start')
-    for i, (lat, lon) in enumerate(pairs, 1):
-        print(f'  WP{i}: {lat:.6f}, {lon:.6f}')
-    send(mission_cmd)
+    ##If next arg looks like a file, load it; otherwise parse inline coords
+    if os.path.exists(sys.argv[2]) or sys.argv[2].endswith('.txt'):
+        pairs = load_file(sys.argv[2])
+    else:
+        pairs = parse_inline_coords(sys.argv[2:])
+    send_mission(pairs)
 
 else:
     ##Single waypoint
-    pairs = parse_all_coords(sys.argv[1:])
+    pairs = parse_inline_coords(sys.argv[1:])
     lat, lon = pairs[0]
     print(f'Sending waypoint: {lat:.6f}, {lon:.6f} -> {PORT}')
     send(f'W:{lat:.6f}:{lon:.6f}\r')

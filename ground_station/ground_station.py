@@ -189,6 +189,7 @@ class WINDOW():
 		self.latitude = []
 		self.speed_history = []
 		self.time_history  = []
+		self.gps_heading   = None
 
 		####MISSION PLANNER WIDGETS (bottom two rows)
 		print('Creating mission planner controls...')
@@ -396,9 +397,9 @@ class WINDOW():
 		ax.get_yaxis().set_visible(False)
 		ax.get_zaxis().set_visible(False)
 
-	def CompassDraw(self, ax, heading_deg):
+	def CompassDraw(self, ax, heading_deg, gps_heading=None):
 		ax.set_xlim(-1.4, 1.4)
-		ax.set_ylim(-1.4, 1.4)
+		ax.set_ylim(-1.75, 1.4)
 		ax.set_aspect('equal')
 		ax.axis('off')
 		ax.set_facecolor('#f0f4f8')
@@ -444,10 +445,24 @@ class WINDOW():
 		        markeredgewidth=1, zorder=6)
 		ax.plot(0, 0, 'ko', markersize=5, zorder=7)
 
-		##Heading readout
+		##Compass heading readout
 		ax.text(0, -1.38, f'{heading_deg:.1f}°',
 		        ha='center', va='center', fontsize=10, fontweight='bold')
 		ax.set_title('Heading', fontsize=10, fontweight='bold')
+
+		##GPS course-over-ground readout below the dial
+		ax.plot([-1.3, 1.3], [-1.52, -1.52], color='#cccccc', linewidth=0.8, zorder=1)
+		if gps_heading is not None:
+			ax.text(0, -1.63, 'GPS Track',
+			        ha='center', va='center', fontsize=8, color='#555555')
+			ax.text(0, -1.74, f'{gps_heading:.1f}°',
+			        ha='center', va='center', fontsize=10,
+			        fontweight='bold', color='steelblue')
+		else:
+			ax.text(0, -1.63, 'GPS Track',
+			        ha='center', va='center', fontsize=8, color='#555555')
+			ax.text(0, -1.74, 'no fix',
+			        ha='center', va='center', fontsize=9, color='#aaaaaa')
 
 	# -------------------------------------------------------------------------
 	# DATA INGESTION
@@ -464,6 +479,14 @@ class WINDOW():
 		if latitude != 0.0 and longitude != 0.0:
 			self.latitude.append(latitude)
 			self.longitude.append(longitude)
+		##GPS course-over-ground: bearing between the last two valid GPS positions
+		if len(self.latitude) >= 2:
+			self.gps_heading = _gps_bearing(
+				self.latitude[-2], self.longitude[-2],
+				self.latitude[-1], self.longitude[-1]
+			)
+		else:
+			self.gps_heading = None
 		self.baro_altitude  = gndstation_packet[6]
 		self.gps_speed      = gndstation_packet[7]
 		##Telemetry sends motor/rudder as [-1, 1]. Convert to µs for display.
@@ -593,7 +616,7 @@ class WINDOW():
 			               transform=self.ax12.transAxes)
 
 		##GRID 1,3 — Compass dial
-		self.CompassDraw(self.ax13, self.heading)
+		self.CompassDraw(self.ax13, self.heading, gps_heading=self.gps_heading)
 
 		##GRID 2,1 — Attitude text
 		self.ax21.set_title('Attitude', fontsize=10, fontweight='bold')

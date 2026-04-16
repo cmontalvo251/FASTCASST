@@ -136,6 +136,14 @@ class WINDOW():
 	def __init__(self, parent=None):
 		print('Initializing Window')
 		self.fig = plt.figure(figsize=(144, 81))
+		try:
+			mgr = plt.get_current_fig_manager()
+			mgr.window.state('zoomed')        # TkAgg (most common on Windows/Linux)
+		except Exception:
+			try:
+				mgr.window.showMaximized()     # Qt backends
+			except Exception:
+				pass
 
 		##Leave room at the bottom for mission planner controls
 		self.fig.subplots_adjust(bottom=0.17)
@@ -397,9 +405,9 @@ class WINDOW():
 		ax.get_yaxis().set_visible(False)
 		ax.get_zaxis().set_visible(False)
 
-	def CompassDraw(self, ax, heading_deg, gps_heading=None):
+	def CompassDraw(self, ax, heading_deg):
 		ax.set_xlim(-1.4, 1.4)
-		ax.set_ylim(-1.75, 1.4)
+		ax.set_ylim(-1.4, 1.4)
 		ax.set_aspect('equal')
 		ax.axis('off')
 		ax.set_facecolor('#f0f4f8')
@@ -445,24 +453,7 @@ class WINDOW():
 		        markeredgewidth=1, zorder=6)
 		ax.plot(0, 0, 'ko', markersize=5, zorder=7)
 
-		##Compass heading readout
-		ax.text(0, -1.38, f'{heading_deg:.1f}°',
-		        ha='center', va='center', fontsize=10, fontweight='bold')
 		ax.set_title('Heading', fontsize=10, fontweight='bold')
-
-		##GPS course-over-ground readout below the dial
-		ax.plot([-1.3, 1.3], [-1.52, -1.52], color='#cccccc', linewidth=0.8, zorder=1)
-		if gps_heading is not None:
-			ax.text(0, -1.63, 'GPS Track',
-			        ha='center', va='center', fontsize=8, color='#555555')
-			ax.text(0, -1.74, f'{gps_heading:.1f}°',
-			        ha='center', va='center', fontsize=10,
-			        fontweight='bold', color='steelblue')
-		else:
-			ax.text(0, -1.63, 'GPS Track',
-			        ha='center', va='center', fontsize=8, color='#555555')
-			ax.text(0, -1.74, 'no fix',
-			        ha='center', va='center', fontsize=9, color='#aaaaaa')
 
 	# -------------------------------------------------------------------------
 	# DATA INGESTION
@@ -616,7 +607,7 @@ class WINDOW():
 			               transform=self.ax12.transAxes)
 
 		##GRID 1,3 — Compass dial
-		self.CompassDraw(self.ax13, self.heading, gps_heading=self.gps_heading)
+		self.CompassDraw(self.ax13, self.heading)
 
 		##GRID 2,1 — Attitude text
 		self.ax21.set_title('Attitude', fontsize=10, fontweight='bold')

@@ -19,9 +19,24 @@ class Datalogger():
 		self._write_count = 0
 
 	def setfilename(self,directory,extension='.txt'):
-		timestamp = datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
-		self.filename = directory + timestamp + extension
-		print("Log file = " + self.filename)
+		##Use datetime name only if the system clock looks valid (year >= 2024).
+		##Without NTP or an RTC the Pi boots to a wrong date, so fall back to
+		##incremental numbering (0.txt, 1.txt, …) instead.
+		if datetime.datetime.now().year >= 2024:
+			timestamp = datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+			self.filename = directory + timestamp + extension
+			print("Log file = " + self.filename)
+		else:
+			print("System clock not synced — using incremental filename.")
+			number = 0
+			while True:
+				self.filename = directory + str(number) + extension
+				try:
+					open(self.filename, 'r').close()
+					number += 1
+				except FileNotFoundError:
+					break
+			print("Log file = " + self.filename)
 
 	def open(self):
 		print("Attempting to open" + self.filename);

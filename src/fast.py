@@ -19,8 +19,8 @@ VEHICLE = 'boat' #Options are 'car', 'boat', or 'airplane'
 
 ##IMU mounting offsets — set these so roll/pitch read 0 when boat is level.
 ##Place the boat on flat ground, read the raw values, and negate them here.
-ROLL_OFFSET_DEG  =  76.70   # negate the raw roll  reading on flat ground
-PITCH_OFFSET_DEG =  -5.78   # negate the raw pitch reading on flat ground
+ROLL_OFFSET_DEG  =  80.40   # negate the raw roll  reading on flat ground
+PITCH_OFFSET_DEG =  82.22   # negate the raw pitch reading on flat ground
 
 ##Pixhawk connected to Pi via USB — compass only
 PIXHAWK_PORT = '/dev/ttyACM0'

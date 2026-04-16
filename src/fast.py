@@ -17,6 +17,11 @@ NUMOUTPUTS = 21  #Number of data outputs (20 for car, 21 for boat, 22 for airpla
 NUMPWM = 3       #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
 VEHICLE = 'boat' #Options are 'car', 'boat', or 'airplane'
 
+##Default waypoint — automatically set on startup so autopilot is ready immediately.
+##Override at any time by sending a waypoint from the ground station.
+DEFAULT_WAYPOINT_LAT =  30.6914263
+DEFAULT_WAYPOINT_LON = -88.1754964
+
 ##Pixhawk connected to Pi via USB — provides roll, pitch, and yaw via EKF
 PIXHAWK_PORT = '/dev/ttyACM0'
 PIXHAWK_BAUD = 115200
@@ -38,6 +43,7 @@ import time
 sys.path.insert(0, '../libraries/V_'+VEHICLE)
 import controller
 vehicle = controller.CONTROLLER()
+vehicle.set_waypoint(DEFAULT_WAYPOINT_LAT, DEFAULT_WAYPOINT_LON)
 
 ##Make sure Ardupilot is off
 sys.path.append('../libraries/Util')

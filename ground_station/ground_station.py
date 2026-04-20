@@ -200,6 +200,7 @@ class WINDOW():
 		self._last_map_extent = None   # cached basemap extent — only refetch when it changes
 		self.gs_lat           = None   # ground station location (fetched via IP geolocation)
 		self.gs_lon           = None
+		self._boat_waypoints  = []     # waypoints currently loaded on the boat (received via radio)
 		self._fetch_gs_location()
 
 		####MISSION PLANNER WIDGETS (bottom two rows)
@@ -619,6 +620,17 @@ class WINDOW():
 					                   xytext=(4, 4), textcoords='offset points',
 					                   zorder=8)
 
+			##Boat's active waypoints (received via 2-way radio link)
+			if self._boat_waypoints:
+				bwp_lats = [la for la, lo in self._boat_waypoints]
+				bwp_lons = [lo for la, lo in self._boat_waypoints]
+				self.ax12.plot(bwp_lons, bwp_lats, 'c^', markersize=10, zorder=8, label='Boat WPs')
+				for i, (bla, blo) in enumerate(self._boat_waypoints, 1):
+					self.ax12.annotate(f'B{i}', xy=(blo, bla), fontsize=8,
+					                   color='darkcyan', fontweight='bold',
+					                   xytext=(4, -10), textcoords='offset points',
+					                   zorder=9)
+
 			##OSM basemap tiles — only re-fetch when the map extent shifts enough
 			##to need new tiles (avoids blocking the GUI every second).
 			new_extent = (round(lon_min - lon_pad, 4), round(lon_max + lon_pad, 4),
@@ -670,21 +682,42 @@ class WINDOW():
 
 		##GRID 2,3 — Autopilot status
 		self.ax23.set_title('Autopilot', fontsize=10, fontweight='bold')
-		self.ax23.text(0, 0.90, f'Time (sec) = {self.t[-1]:.1f}', fontsize=9)
+		self.ax23.set_xlim([0, 1])
+		self.ax23.set_ylim([0, 1])
+		self.ax23.text(0, 0.95, f'Time (sec) = {self.t[-1]:.1f}', fontsize=9)
+
+		##Top half: ground station pending mission
 		n_wps = len(self._mission_waypoints)
+		self.ax23.text(0, 0.84, 'Ground Mission:', fontsize=8, color='navy', fontweight='bold')
 		if n_wps > 0:
-			self.ax23.text(0, 0.70,
-			               f'Mission WPs  = {n_wps}', fontsize=9, color='blue')
-			self.ax23.text(0, 0.50,
-			               f'Route: WP1 -> WP{n_wps} -> start', fontsize=9, color='blue')
+			self.ax23.text(0, 0.74,
+			               f'{n_wps} WP(s) + return to start', fontsize=8, color='blue')
 			for i, (la, lo) in enumerate(self._mission_waypoints, 1):
-				y_pos = 0.35 - (i - 1) * 0.15
-				if y_pos > -0.05:
-					self.ax23.text(0, y_pos,
-					               f'  WP{i}: {la:.5f}, {lo:.5f}',
+				y_pos = 0.64 - (i - 1) * 0.10
+				if y_pos > 0.50:
+					self.ax23.text(0.02, y_pos,
+					               f'WP{i}: {la:.5f}, {lo:.5f}',
 					               fontsize=7, color='darkblue')
 		else:
-			self.ax23.text(0, 0.70, 'No mission loaded.', fontsize=9, color='grey')
+			self.ax23.text(0, 0.74, 'None queued.', fontsize=8, color='grey')
+
+		##Divider
+		self.ax23.plot([0, 1], [0.48, 0.48], color='#cccccc', linewidth=0.8)
+
+		##Bottom half: boat's active waypoints (received over radio)
+		n_bwps = len(self._boat_waypoints)
+		self.ax23.text(0, 0.43, 'Boat Active WPs:', fontsize=8, color='darkcyan', fontweight='bold')
+		if n_bwps > 0:
+			self.ax23.text(0, 0.33,
+			               f'{n_bwps} WP(s) loaded on boat', fontsize=8, color='teal')
+			for i, (bla, blo) in enumerate(self._boat_waypoints, 1):
+				y_pos = 0.23 - (i - 1) * 0.10
+				if y_pos > -0.02:
+					self.ax23.text(0.02, y_pos,
+					               f'B{i}: {bla:.5f}, {blo:.5f}',
+					               fontsize=7, color='darkcyan')
+		else:
+			self.ax23.text(0, 0.33, 'None reported yet.', fontsize=8, color='grey')
 
 		##GRID 3,1 — Heading readout (compass + GPS course-over-ground)
 		self.ax31.set_title('Heading', fontsize=10, fontweight='bold')
@@ -788,6 +821,19 @@ while True:
 		gndstation_packet, NEW_DATA = updatePacket(value, position)
 		if position < 11:
 			NEW_DATA = False
+		##Parse WPS status broadcast from the boat ("WPS:N:lat1:lon1:...\r" stripped to bytestring)
+		if bytestring.startswith('WPS:'):
+			try:
+				parts = bytestring.split(':')
+				count = int(parts[1])
+				wps = []
+				for i in range(count):
+					wps.append((float(parts[2 + i*2]), float(parts[3 + i*2])))
+				if GUI:
+					GND._boat_waypoints = wps
+				print(f'[GND] Boat WPs received: {wps}')
+			except Exception as _e:
+				print(f'[GND] WPS parse error: {_e}  raw={bytestring}')
 
 	##Update GUI if we have new data
 	if GUI == 1 and NEW_DATA == True:

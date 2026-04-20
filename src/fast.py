@@ -154,12 +154,13 @@ while (True):
         else:
             vehicle.set_mission(_waypoints_from_file, start_lat, start_lon)
 
-    ##Attitude from Pixhawk EKF (roll, pitch, yaw) — replaces Navio2 AHRS
-    ##Offsets zero roll/pitch when boat is on flat ground.
+    ##Attitude from Pixhawk EKF — Pixhawk is mounted rotated 90° CW (right),
+    ##so axes are remapped: boat_roll = -px.pitch, boat_pitch = px.roll.
+    ##Yaw corrected by -90°. Small flat-ground offsets applied after remapping.
     px.poll(RunTime)
-    rpy_ahrs[0] = px.roll  - 5.6
-    rpy_ahrs[1] = px.pitch - 0.8
-    rpy_ahrs[2] = px.yaw
+    rpy_ahrs[0] = -px.pitch - 0.0   # boat roll  (re-zero on flat ground after confirming)
+    rpy_ahrs[1] =  px.roll  - 0.0   # boat pitch (re-zero on flat ground after confirming)
+    rpy_ahrs[2] = (px.yaw - 90.0) % 360.0
 
     ##Autopilot / manual control
     controls, defaults, control_color = vehicle.loop(
@@ -257,6 +258,23 @@ while (True):
         ser.fast_packet[11] = float(gps_sensor.fix_quality)
         print('Sending telemetry...', RunTime)
         ser.SerialSend(0)
+
+    ##Waypoint status broadcast to ground station (every 5 seconds)
+    if (RunTime - wpStatusTime) > 5.0 and ser.hComm is not None:
+        wpStatusTime = RunTime
+        try:
+            if vehicle._mission:
+                wps = vehicle._mission[:-1]  # exclude the return-to-start appended entry
+            elif vehicle.target_lat is not None:
+                wps = [(vehicle.target_lat, vehicle.target_lon)]
+            else:
+                wps = []
+            parts = ['WPS', str(len(wps))]
+            for lat, lon in wps:
+                parts.extend([f'{lat:.6f}', f'{lon:.6f}'])
+            ser.hComm.write((':'.join(parts) + '\r').encode('ascii'))
+        except Exception as e:
+            print(f'[WP STATUS] Send error: {e}')
 
     ##Log data
     if (RunTime - logTime) > 0.1:

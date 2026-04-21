@@ -830,23 +830,26 @@ while True:
 				gndstation_packet, NEW_DATA = updatePacket(ser.fast_packet[0], 0)
 	elif SERIAL == 2:
 		position = -1
-		value, position, bytestring = ser.SerialGetNumber(0)
-		gndstation_packet, NEW_DATA = updatePacket(value, position)
-		if position < 11:
-			NEW_DATA = False
-		##Parse WPS status broadcast from the boat ("WPS:N:lat1:lon1:...\r" stripped to bytestring)
-		if bytestring.startswith('WPS:'):
-			try:
-				parts = bytestring.split(':')
-				count = int(parts[1])
-				wps = []
-				for i in range(count):
-					wps.append((float(parts[2 + i*2]), float(parts[3 + i*2])))
-				if GUI:
-					GND._boat_waypoints = wps
-				print(f'[GND] Boat WPs received: {wps}')
-			except Exception as _e:
-				print(f'[GND] WPS parse error: {_e}  raw={bytestring}')
+		bytestring = ''
+		##Only read if bytes are waiting — avoids blocking when boat is silent
+		if ser.hComm is not None and ser.hComm.in_waiting > 0:
+			value, position, bytestring = ser.SerialGetNumber(0)
+			gndstation_packet, NEW_DATA = updatePacket(value, position)
+			if position < 11:
+				NEW_DATA = False
+			##Parse WPS status broadcast from the boat ("WPS:N:lat1:lon1:...\r" stripped to bytestring)
+			if bytestring.startswith('WPS:'):
+				try:
+					parts = bytestring.split(':')
+					count = int(parts[1])
+					wps = []
+					for i in range(count):
+						wps.append((float(parts[2 + i*2]), float(parts[3 + i*2])))
+					if GUI:
+						GND._boat_waypoints = wps
+					print(f'[GND] Boat WPs received: {wps}')
+				except Exception as _e:
+					print(f'[GND] WPS parse error: {_e}  raw={bytestring}')
 
 	##Ingest new telemetry when available
 	if GUI == 1 and NEW_DATA:

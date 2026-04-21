@@ -191,7 +191,7 @@ class WINDOW():
 		self.ax33 = self.fig.add_subplot(339)
 
 		##Empty history arrays
-		self.t = []
+		self.t = [0.0]
 		self.longitude = []
 		self.latitude = []
 		self.speed_history    = []
@@ -201,6 +201,19 @@ class WINDOW():
 		self.gs_lat           = None   # ground station location (fetched via IP geolocation)
 		self.gs_lon           = None
 		self._boat_waypoints  = []     # waypoints currently loaded on the boat (received via radio)
+		self._last_draw_time  = 0.0    # throttle redraws when no new data
+
+		##Default display values — shown before first telemetry packet arrives
+		self.roll         = 0.0
+		self.pitch        = 0.0
+		self.heading      = 0.0
+		self.baro_altitude = 0.0
+		self.gps_speed    = 0.0
+		self.fix_quality  = 0
+		self.motor1       = 1504.0
+		self.motor2       = 1504.0
+		self.rudder       = 1504.0
+
 		self._fetch_gs_location()
 
 		####MISSION PLANNER WIDGETS (bottom two rows)
@@ -835,15 +848,20 @@ while True:
 			except Exception as _e:
 				print(f'[GND] WPS parse error: {_e}  raw={bytestring}')
 
-	##Update GUI if we have new data
-	if GUI == 1 and NEW_DATA == True:
-		print("Updating GUI.....")
-		GND.clearwindow()
+	##Ingest new telemetry when available
+	if GUI == 1 and NEW_DATA:
 		GND.sendNewData(gndstation_packet)
-		GND.updatewindow()
-		plt.pause(0.05)   # 50 ms — enough for the event loop to stay responsive
-	elif GUI == 1:
-		plt.pause(0.01)   # keep window responsive even when no new data
+
+	##Redraw at ~2 Hz regardless of data so the window always appears
+	if GUI == 1:
+		_now = time.monotonic()
+		if _now - GND._last_draw_time >= 0.5:
+			GND._last_draw_time = _now
+			GND.clearwindow()
+			GND.updatewindow()
+			plt.pause(0.05)
+		else:
+			plt.pause(0.01)
 
 	##Write data to log file
 	if NEW_DATA:

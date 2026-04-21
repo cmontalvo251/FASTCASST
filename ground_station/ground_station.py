@@ -644,23 +644,19 @@ class WINDOW():
 					                   xytext=(4, -10), textcoords='offset points',
 					                   zorder=9)
 
-			##OSM basemap tiles — only re-fetch when the map extent shifts enough
-			##to need new tiles (avoids blocking the GUI every second).
-			new_extent = (round(lon_min - lon_pad, 4), round(lon_max + lon_pad, 4),
-			              round(lat_min - lat_pad, 4), round(lat_max + lat_pad, 4))
-			extent_changed = (self._last_map_extent != new_extent)
-			if CONTEXTILY_AVAILABLE and extent_changed and (lon_max - lon_min > 0 or lat_max - lat_min > 0):
+			##OSM basemap tiles — re-add every draw (axis is cleared each frame).
+			##Contextily caches tiles on disk so repeat calls are fast.
+			if CONTEXTILY_AVAILABLE:
 				try:
 					cx.add_basemap(self.ax12, crs='EPSG:4326',
 					               source=cx.providers.OpenStreetMap.Mapnik,
 					               zoom='auto', attribution=False)
-					self._last_map_extent = new_extent
 				except Exception as e:
 					self.ax12.grid()
 					self.ax12.text(0.01, 0.01, f'Map tiles unavailable: {e}',
 					               fontsize=6, transform=self.ax12.transAxes,
 					               color='red')
-			elif not CONTEXTILY_AVAILABLE:
+			else:
 				self.ax12.grid()
 
 			self.ax12.set_xlabel('Longitude')

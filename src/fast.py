@@ -15,7 +15,7 @@
 #####################PARAMETERS#################
 NUMOUTPUTS = 20  #Number of data outputs (20 for car and boat, 22 for airplane)
 NUMPWM = 2 #Number of PWM signals (2 for car and boat, 4 for airplane)
-VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
+VEHICLE = 'boat'  #Options are 'car', 'boat', or 'airplane'
 ################################################
 
 ##Import basic utilities
@@ -112,7 +112,7 @@ while (True):
     baro.poll(RunTime)
 
     #Run your control loop
-    controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin)
+    controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,gdegs,baro)
 
     #Check if we are armed or not
     if ARMED:

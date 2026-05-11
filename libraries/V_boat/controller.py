@@ -8,13 +8,17 @@ class CONTROLLER():
 
     def loop(self,RunTime,rcin,gps_llh,rpy,g,baro):
         controls = [0,0] #Put motors in the middle so off?
+        defaults = [0,0]
+        color = 'Red'
 
         #Compute the controller values
-        if (rcin.autopilot < 2):
+        if (rcin.autopilot < 1500):
             #Manual control
+            color = 'Green'
             controls[0] = rcin.throttlerc + rcin.yawrc
             controls[1] = rcin.throttlerc - rcin.yawrc
-        else: #Remember to test this part of code!
+        elif rcin.autopilot > 1500:
+            color = 'Blue'
             controls[0] = -1  #Make the boat spin
             controls[1] = 1 
 
@@ -25,4 +29,4 @@ class CONTROLLER():
             if (controls[i] > 1):
                 controls[i] = 1
 
-        return controls
+        return controls,defaults,color

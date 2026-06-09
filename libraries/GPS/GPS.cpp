@@ -56,17 +56,16 @@ void GPS::decodeXYZ() {
   //printf("Using Spherical conversion \n");
   ConvertXYZ2LLHSPHERICAL(XYZ,LLH);
   #else
-  //Note we need to use the simulation coordinates so we know where we are on the planet
-  //Probably need an overhaul where we set the GPS origin coordinates in Simulation.txt
-  //But I don't want to do that right now.
-  ConvertXYZ2LLH(XYZ,LLH,X_origin_SIMULATION,Y_origin_SIMULATION);
+  //Note we need to use the override coordinates so we know where we are on the planet
+  ConvertXYZ2LLH(XYZ,LLH,X_origin_OVERRIDE,Y_origin_OVERRIDE);
   #endif
   latitude = LLH[0];
   longitude = LLH[1];
   altitude = LLH[2];
   //printf("GPS XYZ = %lf %lf %lf \n",X,Y,Z);
   //printf("GPS LLH = %lf %lf %lf \n",latitude,longitude,altitude);
-  //PAUSE();  
+  //printf("Override X,Y = %lf %lf \n",X_origin_OVERRIDE,Y_origin_OVERRIDE);
+  //PAUSE();
 }
 
 void GPS::poll(float currentTime) {
@@ -117,9 +116,9 @@ void GPS::processGPSCoordinates(double currentTime) {
     if (GPSORIGINSET) {
       //Get Speed
       #ifdef ARDUINO
-      speed = AdaGPS->speed;
+      speed = AdaGPS->speed; //What about heading?
       #else
-      computeCOG(currentTime);
+      compute_heading_velocity(currentTime);
       #endif
     } else {
       GPSORIGINSET = 1;
@@ -135,11 +134,23 @@ void GPS::processGPSCoordinates(double currentTime) {
   }
 }
 
+void GPS::setOriginOverride(double latitude,double longitude) {
+  X_origin_OVERRIDE = latitude;
+  Y_origin_OVERRIDE = longitude;
+  printstdout("Override GPS Origin Set to = ");
+  printstdoutdbl(X_origin_OVERRIDE);
+  printstdout(" ");
+  printstdoutdbl(Y_origin_OVERRIDE);
+  printstdout("\n");
+  setOrigin(X_origin_OVERRIDE,Y_origin_OVERRIDE);
+  GPSORIGINSET = 1;
+}
+
 void GPS::reset() {
   if (!GPSORIGINSET){
     GPSORIGINSET = 1;
     printstdout("GPS Coordinate initialized. Resetting GPS Vals \n");
-    setOrigin(X_origin_SIMULATION,Y_origin_SIMULATION);
+    setOrigin(X_origin_OVERRIDE,Y_origin_OVERRIDE);
     xprev = X;
     yprev = Y;
   }
@@ -220,6 +231,55 @@ void GPS::ConvertGPS2XY()  {
     Y = XYZ[1];
     Z = XYZ[2];
   }
+}
+
+void GPS::compute_heading_velocity(double current_time) {
+  //#Get delta lat and delta lon
+  if (latitude_prev != -99) {
+    double dlat = latitude - latitude_prev;
+    double dlon = longitude - longitude_prev;
+    //Compute Heading
+    if (headingFLAG == 0) {
+      heading = atan2(dlon,dlat)*180.0/M_PI;
+      headingFLAG = 1;
+    } else {
+      //Compute heading with filtering to smooth it out.
+      heading = atan2(dlon,dlat)*180.0/M_PI*(1-headingFilterConstant) + heading*(headingFilterConstant);
+    }
+    if (heading < 0) {
+      heading += 360;
+    }
+    if (heading > 360) {
+      heading -= 360;
+    }
+    //Compute Speed
+    if (speedFLAG == 0) {
+      speedFLAG = 1;
+      speed = sqrt((dlat*111000)*(dlat*111000) + (dlon*111000*cos(latitude*M_PI/180))*(dlon*111000*cos(latitude*M_PI/180)))/abs(current_time - prev_time);
+    } else {
+      speed = sqrt((dlat*111000)*(dlat*111000) + (dlon*111000*cos(latitude*M_PI/180))*(dlon*111000*cos(latitude*M_PI/180)))/abs(current_time - prev_time)*(1-headingFilterConstant) + speed*(headingFilterConstant);
+    }
+    //Get Vx and Vy
+    vx = speed * cos(heading*M_PI/180.0);
+    vy = speed * sin(heading*M_PI/180.0);
+  }
+  //Reset the lat/lon values
+  latitude_prev = latitude;
+  longitude_prev = longitude;    
+  //Compute altitude and vertical speed
+  if (altitude_prev != -99) {
+    double dalt = -altitude + altitude_prev; //negative because z is down
+    if (vertical_speedFLAG == 0) {
+      vertical_speedFLAG = 1;
+      vertical_speed = dalt/abs(current_time - prev_time);
+    } else {
+      vertical_speed = dalt/abs(current_time - prev_time)*(1-headingFilterConstant) + vertical_speed*(headingFilterConstant);
+    }
+  }
+  //Reset altitude
+  altitude_prev = altitude;
+  //Reset time
+  prev_time = current_time;
 }
 
 void GPS::computeCOG(double current_time) {

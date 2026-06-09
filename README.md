@@ -12,7 +12,7 @@ $ pip3 install <module name>
 
 Be sure to edit lines 14-16 to select the vehicle you want to use
 
-Recommended steps to compile and contribute to this project
+If you'd like to compile the C++ version here are the recommended steps:
 
 1.) Create a Github account and download this repo. If you're reading this I'm assuming you've already done this. Just in case you may want to check out my tutorial on Github. http://fastlabtutorials.blogspot.com/2015/07/github-basics.html
 

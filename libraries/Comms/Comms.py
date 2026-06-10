@@ -9,10 +9,10 @@ sys.path.append('../libraries/Util') ##Assuming we're importing this from either
 import util
 
 class Comms():
-  def __init__(self):
+  def __init__(self, packet_size=12):
     self.lastTime = 0.0
     self.MAXLINE = 120
-    self.fast_packet = np.zeros(8)
+    self.fast_packet = np.zeros(packet_size)
     
   def bitsToFloat(self,b):
     if (b > 2147483647):
@@ -92,15 +92,17 @@ class Comms():
     
     position = -1
     number = np.nan
-    if len(bytestring) > 9:
-      if bytestring[1] == ':':
-        ##GET POSITION
-        position = int(bytestring[0])
-        ##CONVERT TO FLOATS
-        hexdata = bytestring[2:10]
-        #print('Hexdata = ',hexdata)
-        integer = int(hexdata,16)
-        number = self.bitsToFloat(integer)
+    ##Parse "INDEX:HEXVALUE" — index can be 1 or 2 digits
+    if ':' in bytestring:
+      try:
+        idx_str, hex_str = bytestring.split(':', 1)
+        hex_str = hex_str.strip()
+        if len(hex_str) >= 8:
+          position = int(idx_str)
+          integer  = int(hex_str[:8], 16)
+          number   = self.bitsToFloat(integer)
+      except Exception:
+        pass
     return number,position,bytestring
 
   def SerialGetLine_DEPRECATED(self,echo=1):

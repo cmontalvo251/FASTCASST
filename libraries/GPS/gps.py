@@ -1,78 +1,77 @@
 import sys
-sys.path.append('../libraries/Ublox')
-sys.path.append('../libraries/Util')
-import util
-import ublox as UBLX
 import time
 import numpy as np
 
-##NOTE THAT FUNCTIONS LIKE IFOV AND computeGeocentricLATLON functions are in
-##gpscomms.py which is over in aerospace.git/satcomms/gpscomms.py
+sys.path.append('../Util')
+sys.path.append('../libraries/Util')
+sys.path.append('../Ublox')
+sys.path.append('../libraries/Ublox')
+import util
+
+try:
+    import ublox
+    UBLOX_AVAILABLE = True
+except ImportError:
+    UBLOX_AVAILABLE = False
+    print('WARNING: ublox library not found.')
 
 class GPS():
-    def __init__(self):
+    def __init__(self, port='spi:0.0', baud=5000000):
         ##Set defaults
-        self.latitude = -99
+        self.latitude       = -99
         self.prev_latitude = -99
-        self.longitude = -99
+        self.longitude      = -99
         self.prev_longitude = -99
-        self.altitude = -99
+        self.altitude       = -99
         self.heading = -999
-        self.speed = -99
+        self.speed          = -99
+        self.fix_quality    = 0
+        self.num_satellites = 0
+        self.has_fix        = False
+        ##For historical data / utility methods
+        self.latitude_vec  = []
         self.latitude_vec = []
         self.longitude_vec = []
-        self.time_vec = []
-        self.x_vec = []
-        self.y_vec = [] 
+        self.time_vec      = []
+        self.x_vec         = []
+        self.y_vec         = []
         self.filterConstant = 0.2
-        self.NM2FT=6076.115485560000
-        self.FT2M=0.3048
-        self.GPSVAL = 60.0*self.NM2FT*self.FT2M
-        self.latO = 33.16
-        self.lonO = -88.1
-        self.initialize()
-    def initialize(self):
-        self.GPSNEXT = 0.25
+        self.NM2FT  = 6076.115485560000
+        self.FT2M   = 0.3048
+        self.GPSVAL = 60.0 * self.NM2FT * self.FT2M
+        self.latO   = 33.16
+        self.lonO   = -88.1
+
+        ##Polling timing
+        self.GPSNEXT = 0.1
         self.GPSTime = -self.GPSNEXT
-        self.SIL = util.isSIL()
+
+        self.ubl = None
+        self.SIL  = util.isSIL()
+        self.initialize(port, baud)
+
+    def initialize(self, port='spi:0.0', baud=5000000):
         if self.SIL:
-            print('Running in SIL mode....emulating GPS')
-        else:
-            print('Initializing GPS....')
-            self.ubl = UBLX.UBlox("spi:0.0", baudrate=5000000, timeout=2)
-            self.ubl.configure_poll_port()
-            self.ubl.configure_poll(UBLX.CLASS_CFG, UBLX.MSG_CFG_USB)
-            #ubl.configure_poll(UBLX.CLASS_MON, UBLX.MSG_MON_HW)
+            print('Running in SIL mode — emulating GPS')
+            return
 
-            self.ubl.configure_port(port=UBLX.PORT_SERIAL1, inMask=1, outMask=0)
-            self.ubl.configure_port(port=UBLX.PORT_USB, inMask=1, outMask=1)
-            self.ubl.configure_port(port=UBLX.PORT_SERIAL2, inMask=1, outMask=0)
-            self.ubl.configure_poll_port()
-            self.ubl.configure_poll_port(UBLX.PORT_SERIAL1)
-            self.ubl.configure_poll_port(UBLX.PORT_SERIAL2)
-            self.ubl.configure_poll_port(UBLX.PORT_USB)
-            self.ubl.configure_solution_rate(rate_ms=1000)
+        if not UBLOX_AVAILABLE:
+            print('ERROR: ublox library not available.')
+            return
 
-            self.ubl.set_preferred_dynamic_model(None)
-            self.ubl.set_preferred_usePPP(None)
-            
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_POSLLH, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_PVT, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_STATUS, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_SOL, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_VELNED, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_SVINFO, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_VELECEF, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_POSECEF, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_RXM, UBLX.MSG_RXM_RAW, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_RXM, UBLX.MSG_RXM_SFRB, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_RXM, UBLX.MSG_RXM_SVSI, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_RXM, UBLX.MSG_RXM_ALM, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_RXM, UBLX.MSG_RXM_EPH, 1)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_TIMEGPS, 5)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_CLOCK, 5)
-            self.ubl.configure_message_rate(UBLX.CLASS_NAV, UBLX.MSG_NAV_DGPS, 5)
-            print('GPS initialized')
+        print(f'Initializing Navio2 GPS via {port}...')
+        try:
+            self.ubl = ublox.UBlox(port, baudrate=baud, timeout=2)
+            self.ubl.configure_poll_port()
+            self.ubl.configure_port(port=ublox.PORT_SERIAL1, inMask=1, outMask=0)
+            self.ubl.configure_port(port=ublox.PORT_USB,     inMask=1, outMask=1)
+            self.ubl.configure_port(port=ublox.PORT_SERIAL2, inMask=1, outMask=0)
+            self.ubl.configure_solution_rate(rate_ms=200)   # 5 Hz
+            self.ubl.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_PVT, 1)
+            print('GPS initialized.')
+        except Exception as e:
+            print(f'ERROR: Could not initialize GPS: {e}')
+            self.ubl = None
 
     def getfloat(self,instr):
         #print(instr)
@@ -121,6 +120,23 @@ class GPS():
                 outstr = "".join(outstr)
                 self.parse(outstr)
                 #print(outstr)
+            if msg.name() == 'NAV_PVT':
+                msg.unpack()
+                fix  = msg._fields.get('fixType', 0)
+                sats = msg._fields.get('numSV',   0)
+                lat  = msg._fields.get('lat',     0) * 1e-7
+                lon  = msg._fields.get('lon',     0) * 1e-7
+                alt  = msg._fields.get('height',  0) * 1e-3   # mm -> m
+                spd  = msg._fields.get('gSpeed',  0) * 1e-3   # mm/s -> m/s
+
+                self.fix_quality    = fix
+                self.num_satellites = sats
+                self.has_fix        = fix >= 3
+                if self.has_fix:
+                    self.latitude  = lat
+                    self.longitude = lon
+                    self.altitude  = alt
+                    self.speed     = spd
     #        if msg.name() == "NAV_STATUS":
     #            outstr = str(msg).split(",")[1:2]
     #            outstr = "".join(outstr)
@@ -130,6 +146,10 @@ class GPS():
             self.longitude = -88.10
             self.altitude = 0.0
             self.speed = 0.0
+            self.has_fix        = True
+            self.fix_quality    = 1
+            self.num_satellites = 6
+
 
         #Then we compute speed and heading here
         self.compute_heading_velocity()
@@ -164,80 +184,48 @@ class GPS():
         self.prev_latitude = self.latitude
         self.prev_longitude = self.longitude
 
-    def setOrigin(self,latO,lonO):
+    def update(self):
+        except Exception as e:
+            print(f'GPS read error: {e}')
+
+    # -------------------------------------------------------------------------
+    # UTILITY METHODS
+    # -------------------------------------------------------------------------
+
+    def setOrigin(self, latO, lonO):
         self.latO = latO
         self.lonO = lonO
 
-    def convertXYZ2LATLON(self,x,y,z):
-        self.lat = x/self.GPSVAL + self.latO
-        self.lon = y/(self.GPSVAL*np.cos(self.latO*np.pi/180)) + self.lonO
+    def convertXYZ2LATLON(self, x, y, z):
+        self.lat = x / self.GPSVAL + self.latO
+        self.lon = y / (self.GPSVAL * np.cos(self.latO * np.pi / 180)) + self.lonO
         self.alt = -z
-        return self.lat,self.lon,self.alt
+        return self.lat, self.lon, self.alt
 
-    def convertLATLONVEC2XY(self,*argv):
+    def convertLATLONVEC2XY(self, *argv):
         if len(argv) == 2:
-            self.latitude_vec = argv[0]
+            self.latitude_vec  = argv[0]
             self.longitude_vec = argv[1]
-        self.x_vec = (self.latitude_vec - self.latO)*60*self.NM2FT*self.FT2M; #%%//North direction - Xf , meters
-        self.y_vec = (self.longitude_vec - self.lonO)*60*self.NM2FT*self.FT2M*np.cos(self.latO*np.pi/180); #%%//East direction - Yf, meters
+        self.x_vec = (self.latitude_vec  - self.latO) * 60 * self.NM2FT * self.FT2M
+        self.y_vec = (self.longitude_vec - self.lonO) * 60 * self.NM2FT * self.FT2M * np.cos(self.latO * np.pi / 180)
 
-    def setFilterConstant(self,s):
+    def setFilterConstant(self, s):
         self.filterConstant = s
 
     def computeVelocityVec(self):
-        self.vx_raw_vec = np.zeros(len(self.x_vec)-1)
-        self.vy_raw_vec = np.zeros(len(self.y_vec)-1)
-        self.vx_vec = 0*self.vx_raw_vec
-        self.vy_vec = 0*self.vy_raw_vec
-        for i in range(0,len(self.time_vec)-2):
-            dt = self.time_vec[i+1]-self.time_vec[i]
-            self.vx_raw_vec[i] = (self.x_vec[i+1] - self.x_vec[i])/dt
-            self.vy_raw_vec[i] = (self.y_vec[i+1] - self.y_vec[i])/dt
+        self.vx_raw_vec = np.zeros(len(self.x_vec) - 1)
+        self.vy_raw_vec = np.zeros(len(self.y_vec) - 1)
+        self.vx_vec = 0 * self.vx_raw_vec
+        self.vy_vec = 0 * self.vy_raw_vec
+        for i in range(0, len(self.time_vec) - 2):
+            dt = self.time_vec[i + 1] - self.time_vec[i]
+            self.vx_raw_vec[i] = (self.x_vec[i + 1] - self.x_vec[i]) / dt
+            self.vy_raw_vec[i] = (self.y_vec[i + 1] - self.y_vec[i]) / dt
             if i > 0:
-                self.vx_vec[i] = self.vx_vec[i-1]*self.filterConstant + self.vx_raw_vec[i]*(1-self.filterConstant)
-                self.vy_vec[i] = self.vy_vec[i-1]*self.filterConstant + self.vy_raw_vec[i]*(1-self.filterConstant)
+                self.vx_vec[i] = self.vx_vec[i-1] * self.filterConstant + self.vx_raw_vec[i] * (1 - self.filterConstant)
+                self.vy_vec[i] = self.vy_vec[i-1] * self.filterConstant + self.vy_raw_vec[i] * (1 - self.filterConstant)
             else:
                 self.vx_vec[i] = self.vx_raw_vec[i]
                 self.vy_vec[i] = self.vy_raw_vec[i]
         self.v_raw_vec = np.sqrt(self.vx_raw_vec**2 + self.vy_raw_vec**2)
-        self.speed = np.sqrt(self.vx_vec**2 + self.vy_vec**2)
-
-    def plot(self,plt):
-        if len(self.latitude_vec) > 0:
-            fig = plt.figure()
-            plti = fig.add_subplot(1,1,1)
-            plti.grid()
-            plti.set_xlabel('Longitude (deg)')
-            plti.set_ylabel('Latitude (deg)')
-            plti.get_yaxis().get_major_formatter().set_useOffset(False)
-            plti.get_xaxis().get_major_formatter().set_useOffset(False)
-            plt.gcf().subplots_adjust(left=0.18)
-            plti.plot(self.longitude_vec,self.latitude_vec)
-        if len(self.x_vec) > 0:
-            fig = plt.figure()
-            plti = fig.add_subplot(1,1,1)
-            plti.grid()
-            plti.set_xlabel('Y (m) E-W')
-            plti.set_ylabel('X (m) N-S')
-            plti.get_yaxis().get_major_formatter().set_useOffset(False)
-            plti.get_xaxis().get_major_formatter().set_useOffset(False)
-            plt.gcf().subplots_adjust(left=0.18)
-            plti.plot(self.y_vec,self.x_vec)
-        if len(self.vx_raw_vec) > 0:
-            fig = plt.figure()
-            plti = fig.add_subplot(1,1,1)
-            plti.grid()
-            plti.set_xlabel('Time (sec)')
-            plti.set_ylabel('Velocity (m/s)')
-            plti.plot(self.time_vec[0:-1],self.vx_raw_vec,label='Raw X')
-            plti.plot(self.time_vec[0:-1],self.vy_raw_vec,label='Raw Y')
-            #plti.plot(self.time_vec[0:-1],self.v_raw_vec,label='Raw Total')
-            plti.plot(self.time_vec[0:-1],self.vx_vec,label='X')
-            plti.plot(self.time_vec[0:-1],self.vy_vec,label='Y')
-            #plti.plot(self.time_vec[0:-1],self.v_vec,label='Total')
-        
-            plti.legend()
-
-
-
-
+        self.speed     = np.sqrt(self.vx_vec**2    + self.vy_vec**2)

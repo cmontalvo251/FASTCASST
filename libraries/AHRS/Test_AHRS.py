@@ -86,13 +86,13 @@ for i in range(1,len(t)):
     	yaw[i] += 360
 
 plt.figure()    
-plt.plot(t, roll, t,roll_,)
+plt.plot(t, roll, t,pitch_,)
 plt.legend(["Roll AHRS","Roll Accel"])
 plt.grid()
 plt.xlabel("Time (s)"); plt.ylabel("Angle (Degrees)")
 
 plt.figure()    
-plt.plot(t, pitch, t,pitch_,)
+plt.plot(t, pitch, t,roll_,)
 plt.legend(["Pitch AHRS","Pitch Accel"])
 plt.grid()
 plt.xlabel("Time (s)"); plt.ylabel("Angle (Degrees)")

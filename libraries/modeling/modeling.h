@@ -38,6 +38,9 @@
 #ifdef cubesat
 #include "cubesat_forces.h"
 #endif
+#ifdef car
+#include "car_forces.h"
+#endif
 
 ///Headers required to simulate the virtual environment
 #include <RK4/RK4.h>

@@ -2,8 +2,6 @@ import numpy as np
 
 ##Earth radius in meters (for haversine distance calculation)
 EARTH_RADIUS_M = 6371000.0
-
-
 class CONTROLLER():
 
     def __init__(self):
@@ -218,7 +216,7 @@ class CONTROLLER():
     # MAIN CONTROL LOOP
     # -------------------------------------------------------------------------
 
-    def loop(self, RunTime, rcin, gps_lat=-99, gps_lon=-99, heading_deg=0.0):
+    def waypoint_loop(self, RunTime, rcin, gps_lat=-99, gps_lon=-99, heading_deg=0.0):
         """
         Called every control loop iteration.
 
@@ -257,7 +255,7 @@ class CONTROLLER():
                 color = 'Yellow'
                 controls = [-1, -1, 0]
             return controls, defaults, color
-
+    
         if rcin.autopilot < 1500:
             if rcin.pitchrc < self.REVERSE_THRESHOLD:
                 ##Full reverse — right stick pushed fully down.
@@ -273,7 +271,6 @@ class CONTROLLER():
                 controls[0] = rcin.throttlerc + rcin.yawrc
                 controls[1] = rcin.throttlerc - rcin.yawrc
                 controls[2] = rcin.rollrc
-
         elif rcin.autopilot > 1500:
             ##GPS Autopilot mode
             if self.waypoint_active and not self.arrived:
@@ -288,3 +285,31 @@ class CONTROLLER():
         controls[2] = -controls[2]
 
         return controls, defaults, color
+
+    def loop(self,RunTime,rcin,gps_llh,rpy,g,baro):
+        ##Set defaults
+        defaults = [-1,-1]#,0] #-1 is full off, 0 is middle and +1 is full on
+        color = 'Red' #default to red color if something isn't working right        
+        controls = [-1,-1]#,0] ##Initialize control commands
+
+        if rcin.autopilot < 1500:
+            #Manual control
+            color = 'Green'
+            controls[0] = rcin.throttlerc + rcin.yawrc ##mixing from rudder rc command
+            controls[1] = rcin.throttlerc - rcin.yawrc
+            #controls[2] = rcin.rollrc ##Aileron to control physical rudder
+        elif rcin.autopilot > 1500:
+            #Autopilot
+            color = 'Blue'
+            controls[0] = 0.5  #half speed
+            controls[1] = 0.5  #+ 
+            #controls[2] = 1 #make the boat spin
+
+        ##Saturation blocks
+        for i in range(0,self.NUMCONTROLS):
+            if (controls[i] < -1):
+                controls[i] = -1
+            if (controls[i] > 1):
+                controls[i] = 1
+
+        return controls,defaults,color

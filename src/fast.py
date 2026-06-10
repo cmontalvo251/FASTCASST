@@ -53,17 +53,17 @@ sys.path.append('../libraries/LED')
 import leds
 led = leds.Led()
 
+#Setup RCIO (receiver signals and output pwmsignals)
+sys.path.append('../libraries/RCIO/Python')
+import rcio
+rc = rcio.RCIO(NUMPWM)
+
 #Setup the Barometer
 sys.path.append('../libraries/MS5611/')
 import ms5611
 baro = ms5611.MS5611()
 #Calibrate the barometer
 baro.calibrate() #if you don't calibrate sea level defaults to 1013.25
-
-#Setup RCIO (receiver signals and output pwmsignals)
-sys.path.append('../libraries/RCIO/Python')
-import rcio
-rc = rcio.RCIO(NUMPWM)
 
 ##Setup Telemetry
 sys.path.append('../libraries/')

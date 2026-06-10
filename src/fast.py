@@ -13,8 +13,8 @@
 ################################################
 
 #####################PARAMETERS#################
-NUMOUTPUTS = 21  #Number of data outputs (20 for car, 21 for boat, 22 for airplane)
-NUMPWM = 3 #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
+NUMOUTPUTS = 20  #Number of data outputs (20 for car, 21 for boat, 22 for airplane)
+NUMPWM = 2 #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
 VEHICLE = 'boat'  #Options are 'car', 'boat', or 'airplane'
 ################################################
 

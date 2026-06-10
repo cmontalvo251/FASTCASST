@@ -150,7 +150,6 @@ class GPS():
             self.fix_quality    = 1
             self.num_satellites = 6
 
-
         #Then we compute speed and heading here
         self.compute_heading_velocity()
         return
@@ -183,10 +182,6 @@ class GPS():
             self.speed = -99
         self.prev_latitude = self.latitude
         self.prev_longitude = self.longitude
-
-    def update(self):
-        except Exception as e:
-            print(f'GPS read error: {e}')
 
     # -------------------------------------------------------------------------
     # UTILITY METHODS

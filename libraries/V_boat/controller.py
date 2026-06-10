@@ -5,8 +5,6 @@ EARTH_RADIUS_M = 6371000.0
 class CONTROLLER():
 
     def __init__(self):
-        self.NUMCONTROLS = 3  # throttle_motor1, throttle_motor2, rudder
-
         ##Waypoint / autopilot state
         self.target_lat = None
         self.target_lon = None
@@ -306,7 +304,7 @@ class CONTROLLER():
             #controls[2] = 1 #make the boat spin
 
         ##Saturation blocks
-        for i in range(0,self.NUMCONTROLS):
+        for i in range(0,len(controls)):
             if (controls[i] < -1):
                 controls[i] = -1
             if (controls[i] > 1):

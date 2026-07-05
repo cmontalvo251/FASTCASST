@@ -235,6 +235,7 @@ void GPS::ConvertGPS2XY()  {
 
 void GPS::compute_heading_velocity(double current_time) {
   //#Get delta lat and delta lon
+  double dt = abs(current_time - prev_time);
   if (latitude_prev != -99) {
     double dlat = latitude - latitude_prev;
     double dlon = longitude - longitude_prev;
@@ -252,12 +253,14 @@ void GPS::compute_heading_velocity(double current_time) {
     if (heading > 360) {
       heading -= 360;
     }
-    //Compute Speed
-    if (speedFLAG == 0) {
-      speedFLAG = 1;
-      speed = sqrt((dlat*111000)*(dlat*111000) + (dlon*111000*cos(latitude*M_PI/180))*(dlon*111000*cos(latitude*M_PI/180)))/abs(current_time - prev_time);
-    } else {
-      speed = sqrt((dlat*111000)*(dlat*111000) + (dlon*111000*cos(latitude*M_PI/180))*(dlon*111000*cos(latitude*M_PI/180)))/abs(current_time - prev_time)*(1-headingFilterConstant) + speed*(headingFilterConstant);
+    //Compute Speed — guard against dt==0 to prevent NaN (fix for issue #59)
+    if (dt > 0) {
+      if (speedFLAG == 0) {
+        speedFLAG = 1;
+        speed = sqrt((dlat*111000)*(dlat*111000) + (dlon*111000*cos(latitude*M_PI/180))*(dlon*111000*cos(latitude*M_PI/180)))/dt;
+      } else {
+        speed = sqrt((dlat*111000)*(dlat*111000) + (dlon*111000*cos(latitude*M_PI/180))*(dlon*111000*cos(latitude*M_PI/180)))/dt*(1-headingFilterConstant) + speed*(headingFilterConstant);
+      }
     }
     //Get Vx and Vy
     vx = speed * cos(heading*M_PI/180.0);
@@ -266,14 +269,14 @@ void GPS::compute_heading_velocity(double current_time) {
   //Reset the lat/lon values
   latitude_prev = latitude;
   longitude_prev = longitude;    
-  //Compute altitude and vertical speed
-  if (altitude_prev != -99) {
+  //Compute altitude and vertical speed — guard against dt==0 to prevent NaN (fix for issue #59)
+  if (altitude_prev != -99 && dt > 0) {
     double dalt = -altitude + altitude_prev; //negative because z is down
     if (vertical_speedFLAG == 0) {
       vertical_speedFLAG = 1;
-      vertical_speed = dalt/abs(current_time - prev_time);
+      vertical_speed = dalt/dt;
     } else {
-      vertical_speed = dalt/abs(current_time - prev_time)*(1-headingFilterConstant) + vertical_speed*(headingFilterConstant);
+      vertical_speed = dalt/dt*(1-headingFilterConstant) + vertical_speed*(headingFilterConstant);
     }
   }
   //Reset altitude
@@ -454,8 +457,13 @@ void GPS::computeSpeed(double current_time) {
   double del_time = time_vec.get(end_pt,1) - time_vec.get(start_pt,1);
 
   //printf("%lf %lf %lf %lf %lf %lf \n",dist_vec.get(end_pt,1),dist_vec.get(start_pt,1),time_vec.get(end_pt,1),time_vec.get(start_pt,1),del_dist,del_time);
-  
-  speed = del_dist/del_time;
+
+  //Guard against del_time==0 to prevent NaN (fix for issue #59)
+  if (del_time == 0) {
+    speed = 0;
+  } else {
+    speed = del_dist/del_time;
+  }
   
   end_pt += 1;
   start_pt += 1;

@@ -37,8 +37,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   /*sense_matrix.disp();
   control_matrix.disp();
   PAUSE();*/
-  control_matrix.set(1,1,STICK_MAX); //full throttle debug
-  return;
 
   //I want to keep track of timeElapsed so that I can run integrators
   //and compute derivates

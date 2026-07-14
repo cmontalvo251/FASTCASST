@@ -9,6 +9,7 @@
 #  Tertiary Authors: Aramis Hoffmann (car.py)
 #  Kate Doiron (plane.py) Spring 2025
 #  Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026
+#  Quinary Author: Vinicius da Luz Summer 2026 (car waypoint navigation)
 #
 ################################################
 

@@ -31,9 +31,13 @@
 #  Andrew Wearran helped integrate the x8 controller into this SW from
 #  2024-2025
 
-#  Current development is being done by Carlos Montalvo to text the 
+#  Current development is being done by Carlos Montalvo to text the
 #  waypoint controller of the car - 2026
-# 
+
+#  Vinicius da Luz fixed a GPS NaN bug and enabled/validated the car's
+#  waypoint controller in SIL, then ported the boat's GPS waypoint
+#  navigation to the car's Python controller - 2026
+#
 ######################################################################*/
 
 ///The Main source files have no header files

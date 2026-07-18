@@ -12,7 +12,8 @@ void controller::init(MATLAB in_configuration_matrix) {
   printf("Controller Received Configuration Matrix \n");
   //in_configuration_matrix.disp();
   CONTROLLER_FLAG = in_configuration_matrix.get(11,1);
-  printf("Controller Setup \n");
+  printf("Controller Setup. CONTROLLER_FLAG = %d \n", CONTROLLER_FLAG);
+  //PAUSE();
 }
 
 void controller::set_defaults() {
@@ -37,8 +38,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   /*sense_matrix.disp();
   control_matrix.disp();
   PAUSE();*/
-  control_matrix.set(1,1,STICK_MAX); //full throttle debug
-  return;
+  //control_matrix.set(1,1,STICK_MAX); //full throttle debug
+  //return;
 
   //I want to keep track of timeElapsed so that I can run integrators
   //and compute derivates
@@ -86,6 +87,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
   WAYPOINTS_X[3] = 0;
   WAYPOINTS_Y[3] = 0;
+
+  //printstdoutint(icontrol);
 
   switch (icontrol) {
     case 3:
@@ -147,7 +150,7 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
     PRINTER = 0;
   }
   PRINTER+=1;
-  if (distance < 150) {
+  if (distance < 50) {
     printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,heading_command,distance);
     WAYINDEX += 1;
     if (WAYINDEX > NUMWAYPOINTS-1) {

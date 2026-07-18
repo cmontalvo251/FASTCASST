@@ -150,8 +150,10 @@ int main(int argc,char* argv[]) {
     sprintf(root_folder_name,"%s","libraries/V_");
     strcat(root_folder_name,argv[1]);
   } else {
-    printf("Using Default Root Folder Name\n");
-    sprintf(root_folder_name,"%s","libraries/V_portalcube/");
+    printf("No root folder name was given...exiting \n");
+    exit(1);
+    //printf("Using Default Root Folder Name\n");
+    //sprintf(root_folder_name,"%s","libraries/V_portalcube/");
   }
   //strcat(root_folder_name,"/");
   //printf("Root Folder Name = %s \n",root_folder_name);

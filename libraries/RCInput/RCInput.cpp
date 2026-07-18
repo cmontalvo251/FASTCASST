@@ -36,6 +36,7 @@ void RCInput::initialize() {
   }
   #endif
 
+  printstdout("Setting up RCIO System \n");
   printstdout("Allocating Axes \n");
   printstdout("Number of Axes = ");
   printstdoutint(num_of_axis);

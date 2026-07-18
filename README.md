@@ -6,6 +6,14 @@ Aerospace Systems and Technology Configurable Autopilot and Simulation Software 
 
 $ python3 fast.py ../data/
 
+You may have ardupilot turned on by default to turn it off type
+
+$ sudo systemctl disable arducopter
+
+Of course first check and see what is running by typing
+
+$ sudo emlidtool ardupilot
+
 It should automatically run in SIL mode. If you don't have a module just run 
 
 $ pip3 install <module name>

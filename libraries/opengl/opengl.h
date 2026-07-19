@@ -14,7 +14,7 @@
 //#include <GL/glaux.h>
 #endif 
 #if (__linux__)
-#include <GL/gl.h> 
+#include <GL/gl.h> //sudo apt-get install freeglut3-dev
 #include <GL/glut.h>
 #include <GL/glu.h>
 #endif

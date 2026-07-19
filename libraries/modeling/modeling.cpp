@@ -267,8 +267,11 @@ void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix) {
     //integrate faster than the real time clock
     return;
   } else if ((currentTime > integrationTime) && (abs(currentTime-integrationTime)>TIMESTEP)) {
-    //We're integrating too slowly
-    printf("Actual Time = %lf Integration Time = %lf \n",currentTime,integrationTime);
+    //We're integrating too slowly but only print if it's badddddd
+    double deltaTime = currentTime-integrationTime;
+    if (deltaTime > 0.1) { // Only print if the lag is significant
+      printf("System Lagging....Delta Time = %lf \n", currentTime-integrationTime);
+    }
   }
 
   //printf("Modeling Loop \n");

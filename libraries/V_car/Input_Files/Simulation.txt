@@ -18,7 +18,7 @@
 0	!Magnetic Field Model (0=off, 1=emm2015)
 -99	!Update Rate of Magnetic Field Model (sec) (-99=update once,0=everytimestep)
 2018	!Year
-0		!Sensor Errors (0=off,1=on)
+1		!Sensor Errors (0=off,1=on)
 2.0 	!Bias Pos (m) 
 0.5 	!Std Pos (m)
 1.0 	!Noise Pos (m)

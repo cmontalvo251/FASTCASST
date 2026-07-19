@@ -13,6 +13,11 @@
 0.23083252176875	!Ixx(kg-m^2)
 0.12326181467115 	!Iyy(kg-m^2)
 0.261842767316082 	!Izz(kg-m^2)
+0	 !Ixy (kg-m^2)
+0	 !Ixz (kg-m^2)
+0	 !Iyz (kg-m^2)
+30.0	 !Override Latitude Origin (deg)
+-88.0	 !Override Longitude Origin (deg)
 
 !Note that the IMU, PWM out and control loop run as fast as possible
 !in my opinion those are the most crucial items

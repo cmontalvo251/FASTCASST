@@ -167,6 +167,9 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
     X_origin = in_configuration_matrix.get(19,1);
     Y_origin = in_configuration_matrix.get(20,1);
   }
+  //in_configuration_matrix.disp();
+  //printf("GPS Origin = %lf %lf \n",X_origin,Y_origin);
+  //PAUSE();
   SetGPS();
 
   //Initialize Integrator

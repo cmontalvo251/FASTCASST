@@ -4,19 +4,24 @@ import numpy as np
 import datetime
 
 class Datalogger():
-	def __init__(self,NUMOUTPUTS):
+	def __init__(self,NUMOUTPUTS,directory=None,extension='.txt'):
 		self.number = 0
 		self.SIL = util.isSIL()
-		print('Input arguments = ',sys.argv)
-		if len(sys.argv) > 1:
-			print('Using Directory = ',sys.argv[1])
-		else:
-		    sys.exit('No input argument given for datalogging directory')
-		self.setfilename(sys.argv[1])
+		if directory is None:
+			print('Input arguments = ',sys.argv)
+			if len(sys.argv) > 1:
+				print('Using Directory = ',sys.argv[1])
+			else:
+			    sys.exit('No input argument given for datalogging directory')
+			directory = sys.argv[1]
+		self.setfilename(directory,extension)
 		self.open()
 		#create an array for data
 		self.outdata = np.zeros(NUMOUTPUTS)
 		self._write_count = 0
+
+	def writeheader(self,names):
+		self.outfile.write(','.join(names) + "\n")
 
 	def setfilename(self,directory,extension='.txt'):
 		##Use datetime name only if the system clock looks valid (year >= 2024).

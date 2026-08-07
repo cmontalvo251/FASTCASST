@@ -34,9 +34,9 @@
 #  Current development is being done by Carlos Montalvo to text the
 #  waypoint controller of the car - 2026
 
-#  Vinicius da Luz fixed a GPS NaN bug and enabled/validated the car's
+#  Vinicius da Luz (mostly an undisclosed AI tool) fixed a GPS NaN bug and enabled/validated the car's
 #  waypoint controller in SIL, then ported the boat's GPS waypoint
-#  navigation to the car's Python controller - 2026
+#  navigation to the car's Python controller - Summer 2026
 #
 ######################################################################*/
 

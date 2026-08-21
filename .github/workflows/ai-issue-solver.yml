@@ -30,8 +30,7 @@ jobs:
           aider --model gemini/gemini-1.5-flash \
                 --auto-commits \
                 --yes-always \
-                --message "Fix issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }}. Details: ${{ github.event.issue.body }}" \
-                $(git ls-files)
+                --message "Fix issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }}. Details: ${{ github.event.issue.body }}"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6

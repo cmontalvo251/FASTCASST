@@ -30,6 +30,7 @@ jobs:
           aider --model gemini/gemini-1.5-flash \
                 --auto-commits \
                 --yes-always \
+                --ignore "Archive/**" \
                 --message "Fix issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }}. Details: ${{ github.event.issue.body }}"
 
       - name: Create Pull Request

@@ -5,7 +5,7 @@ To set up your joystick/gamepad for realistic flight simulation control:
 1. Connect your joystick or gamepad.
 2. Install pygame dependencies:
    ```
-   pip3 install pygame
+   pip3 install pygame or sudo apt install python3-pygame
    ```
 3. Run the interactive joystick calibration script:
    ```

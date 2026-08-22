@@ -15,7 +15,7 @@ try:
     import pygame
 except ImportError:
     print("Pygame is required for joystick calibration.")
-    print("Please install it using: pip3 install pygame")
+    print("Please install it using: pip3 install pygame or sudo apt install python3-pygame")
     sys.exit(1)
 
 
@@ -25,8 +25,12 @@ def main():
 
     joystick_count = pygame.joystick.get_count()
     if joystick_count == 0:
+        print("----------------------------------------")
+        print("----------------------------------------")
         print("Error: No joystick/gamepad detected!")
         print("Please connect a joystick and try again.")
+        print("----------------------------------------")
+        print("----------------------------------------")
         sys.exit(1)
 
     print(f"Detected {joystick_count} joystick(s):")

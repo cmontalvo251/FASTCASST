@@ -27,7 +27,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           pip install aider-chat
-          aider --model gemini \
+          aider --model gemini/gemini-2.5-flash \
                 --auto-commits \
                 --yes-always \
                 --message "Fix issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }}. Details: ${{ github.event.issue.body }}"

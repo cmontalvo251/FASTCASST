@@ -2,7 +2,11 @@
 The Facility for Aerospace Systems and Technology (FAST) has put together a Configurable Autopilot and Simulation Software Tool (CASST) to simulate and test autopilots for multiple aerospace vehicles.
 
 This software is an open-source configurable software in the loop simulation environment developed in C++ programming language codenamed FASTCASST (Facility for
-Aerospace Systems and Technology Configurable Autopilot and Simulation Software Tool). This simulation environment simulates a real-world environment and is designed to test flight control software of a vehicle before flight testing of physical hardware. The software is designed to be modular by allowing the user to build a portfolio containing the simulation input files, CAD, aerodynamics and control system of the vehicle which allows the software to work with a wide variety of vehicles including but not limited to: airplanes, multicopters, satellites and ground vehicles. FASTCASST currently runs in four modes: simulation only (SIMONLY) mode, software in the loop mode (SIL), hardware in the loop mode (HIL) and (AUTO) mode. The SIMONLY mode allows the vehicle to be mathematically simulated for a specified time with the results being displayed as plots at the end of the simulation, whereas the SIL mode simulates the vehicle in a virtual environment in realtime with flight control software running in both modes. The AUTO mode is intended to run on the Raspberry Pi with Navio Emlid HAT however future revisions will allow the user to run this on the Arduino platform. The HIL requires the software to be compiled on a desktop and hardwired to a microcontroller also running FASTCASST in HIL mode. In this mode the dynamics are simulated on the desktop machine and data is sent to the microcontroller via serial to run the control dynamics. Communication runs back and forth from both machines. The SIMONLY and SIL modes have been tested on a laptop running Ubuntu 20.04 using a quadcopter, airplane, portalcube, satellite, tank and x8 drone. AUTO mode has been tested on a tank, car, boat and an airplane. HIL is still a work in progress (WIP). Note there is also a Python version in the src folder called fast.py. You can run that simply by trying
+Aerospace Systems and Technology Configurable Autopilot and Simulation Software Tool). This simulation environment simulates a real-world environment and is designed to test flight control software of a vehicle before flight testing of physical hardware. The software is designed to be modular by allowing the user to build a portfolio containing the simulation input files, CAD, aerodynamics and control system of the vehicle which allows the software to work with a wide variety of vehicles including but not limited to: airplanes, multicopters, satellites and ground vehicles. FASTCASST currently runs in four modes: simulation only (SIMONLY) mode, software in the loop mode (SIL), hardware in the loop mode (HIL) and (AUTO) mode. The SIMONLY mode allows the vehicle to be mathematically simulated for a specified time with the results being displayed as plots at the end of the simulation, whereas the SIL mode simulates the vehicle in a virtual environment in realtime with flight control software running in both modes. The AUTO mode is intended to run on the Raspberry Pi with Navio Emlid HAT however future revisions will allow the user to run this on the Arduino platform. The HIL requires the software to be compiled on a desktop and hardwired to a microcontroller also running FASTCASST in HIL mode. In this mode the dynamics are simulated on the desktop machine and data is sent to the microcontroller via serial to run the control dynamics. Communication runs back and forth from both machines. The SIMONLY and SIL modes have been tested on a laptop running Ubuntu 20.04 using a quadcopter, airplane, portalcube, satellite, tank and x8 drone. AUTO mode has been tested on a tank, car, boat and an airplane. HIL is still a work in progress (WIP). 
+
+# Python Version
+
+Note there is also a Python version in the src folder called fast.py. You can run that simply by trying
 
 $ python3 fast.py ../data/
 
@@ -19,6 +23,8 @@ It should automatically run in SIL mode. If you don't have a module just run
 $ pip3 install <module name>
 
 Be sure to edit lines 14-16 to select the vehicle you want to use
+
+# C++ Version
 
 If you'd like to compile the C++ version here are the recommended steps:
 
@@ -68,21 +74,7 @@ $ ./plotdata.py 1
 
 which will invoke the python3 interpreter and clean, compile, run and plot the results
 
-## Input Controls & Joystick Calibration
-
-To set up your joystick/gamepad for realistic flight simulation control:
-
-1. Connect your joystick or gamepad.
-2. Install pygame dependencies:
-   ```
-   pip3 install pygame
-   ```
-3. Run the interactive joystick calibration script:
-   ```
-   python3 calibrate_joystick.py
-   ```
-4. Follow the on-screen instructions to map pitch, roll, yaw, and throttle axes.
-5. The calibration script generates `joystick_config.json` containing calibrated limits, axis assignments, and deadzone settings for your device.
+# Windows Users
 
 Notes for Windows Users (10/10/2023)
 The following 2 virtual environments do not work at the time of this writing
@@ -102,6 +94,8 @@ If you want to completely try linux or just switch completely try these options 
 5.) Dual Boot - Here you would partition your harddrive in half and install 2 operating systems on your machine
 
 6.) Switch to Linux completely - https://randomhacksdrc.blogspot.com/2014/10/thinking-of-making-switch-to-linux.html
+
+# References
 
 N.) For further reading on successes of this software please see the references below.
 

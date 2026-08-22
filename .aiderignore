@@ -1,2 +1,7 @@
 Archive/**
 libraries/GPS/GPS_VICON/**
+data/**
+logs/**
+objects/**
+supplemental_files/**
+SysML_Diagrams/**

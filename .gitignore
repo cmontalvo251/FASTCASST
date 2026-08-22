@@ -50,3 +50,4 @@ SysML_Diagrams/Archive
 *.exe
 *.out
 *.app
+.aider*

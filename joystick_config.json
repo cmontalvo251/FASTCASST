@@ -1,0 +1,30 @@
+{
+    "device_name": "Generic Flight Joystick / Gamepad",
+    "deadzone": 0.05,
+    "mapping": {
+        "pitch": {
+            "axis": 1,
+            "invert": true,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "roll": {
+            "axis": 0,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "yaw": {
+            "axis": 2,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "throttle": {
+            "axis": 3,
+            "invert": true,
+            "min": -1.0,
+            "max": 1.0
+        }
+    }
+}

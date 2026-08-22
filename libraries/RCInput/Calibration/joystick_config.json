@@ -25,6 +25,12 @@
             "invert": true,
             "min": -1.0,
             "max": 1.0
+        },
+        "autopilot_switch": {
+            "axis": 4,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
         }
     }
 }

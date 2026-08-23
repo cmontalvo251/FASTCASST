@@ -1,5 +1,6 @@
 #include "RCInput.h"
 
+
 //constructor class
 RCInput::RCInput() {
 }
@@ -33,6 +34,41 @@ void RCInput::initialize() {
     printf("Success!!!! \n");
     printf("Setting non-blocking mode \n");
     fcntl(joy_fd,F_SETFL,O_NONBLOCK);
+  }
+
+#define STRINGIFY_DETAIL(x) #x
+#define STRINGIFY(x) STRINGIFY_DETAIL(x)
+
+  std::string config_file;
+  #if defined(RX)
+  config_file = std::string(STRINGIFY(RX)) + "_config.json";
+  #endif
+
+  std::ifstream f(config_file);
+  if (f.is_open()) {
+    try {
+      json j = json::parse(f);
+      auto mapping = j["mapping"];
+
+      const char* controls[5] = {"throttle", "roll", "pitch", "yaw", "autopilot_switch"};
+      for (int i = 0; i < 5; i++) {
+        if (mapping.contains(controls[i])) {
+          auto ctrl = mapping[controls[i]];
+          if (ctrl.contains("axis")) {
+            axis_mappings[i].axis = ctrl["axis"].get<int>();
+            axis_mappings[i].invert = ctrl.value("invert", false);
+            axis_mappings[i].min = ctrl.value("min", -1.0);
+            axis_mappings[i].max = ctrl.value("max", 1.0);
+          }
+        }
+      }
+      has_json_config = true;
+      printf("Loaded JSON config from %s\n", config_file.c_str());
+    } catch (std::exception& e) {
+      printf("Error parsing %s: %s\n", config_file.c_str(), e.what());
+    }
+  } else {
+    printf("Could not open JSON config file: %s\n", config_file.c_str());
   }
   #endif
 
@@ -226,62 +262,27 @@ int RCInput::invert(int val) {
 }
 
 void RCInput::mapjoy2rx() {
-  //First we're just going to copy everything over to make sure everything copies over
+  //First we're just going to copy everything over to make sure everything copies over properly
   for (int i = 0;i<num_of_axis;i++) {
     rx_array[i] = joycomm[i];
   }
 
-  //The code below will then run depending on what controller you've selected in the makefile
-
-  //First extract the relavent commands from the receiver.
-  //double throttle = rx_arrays[0];
-  //double aileron = rx_arrays[1];
-  //double elevator = rx_arrays[2];
-  //double rudder = rx_arrays[3];
-  //double autopilot = rx_arrays[4];
-
-  #ifdef XBOX
-  //So the problem is that my Xbox controller is not mapped properly. Here
-  //is the mapping
-  //Using Microsoft X-Box 360 pad 
-  //Throttle = 1 (inv)
-  //Aileron =  3
-  //Elevator = 4
-  //Rudder = 0 
-  //Left Trigger = 2
-  //Right Trigger = 5
-  //UD Dpad = 7
-  //LR Dpad = 6
-  rx_array[0] = invert(joycomm[1]);
-  rx_array[1] = joycomm[3];
-  rx_array[2] = invert(joycomm[4]);
-  rx_array[3] = joycomm[0];
-  rx_array[4] = joycomm[2];
-  rx_array[5] = joycomm[5];
-  rx_array[6] = joycomm[7];
-  rx_array[7] = joycomm[6];
-  //printf("PRINTING::");
-  //printRCstate(0);
-  //printf("joycomm[4] = %d \n",joycomm[4]);
-  //printf("rx_array[2] = %d \n",rx_array[2]);
-  #endif
-
-  #ifdef RCTECH
-  //Using RCTECH Controller
-  //Throttle = 2 (inv)
-  //Rudder = 5
-  //Aileron =  0
-  //Elevator = 1
-  //arm switch = 3
-  //aux 0 = 4
-  rx_array[0] = invert(joycomm[2]);
-  rx_array[1] = joycomm[0];
-  rx_array[2] = joycomm[1];
-  rx_array[3] = joycomm[5];
-  rx_array[4] = joycomm[3];
-  rx_array[5] = joycomm[4];
-  //rx_array[6] = joycomm[6];
-  //rx_array[7] = joycomm[7];
+  //Then based on the specific joystick and json file we'll map the joycomm values to the rx_array
+  #ifdef JOYSTICK
+  if (has_json_config) {
+    // 0: throttle, 1: roll (aileron), 2: pitch (elevator), 3: yaw (rudder), 4: autopilot
+    for (int i = 0; i < 5; i++) {
+      int ax = axis_mappings[i].axis;
+      if (ax >= 0 && ax < num_of_axis) {
+        int val = joycomm[ax];
+        if (axis_mappings[i].invert) {
+          val = invert(val);
+        }
+        rx_array[i] = val;
+      }
+    }
+    return;
+  }
   #endif
 }
 

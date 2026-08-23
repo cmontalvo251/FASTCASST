@@ -19,6 +19,14 @@
 #endif
 #include <stdlib.h>
 
+#include <fstream>
+#include <string>
+
+#ifdef JOYSTICK
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+#endif
+
 //////////Here are the iterations
 
 ////SIMONLY - no rx at all

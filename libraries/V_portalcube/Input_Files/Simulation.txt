@@ -45,5 +45,10 @@
 1500.0  !Initial Condition of Actuator 2 (Aileron)
 1500.0  !Initial Condition of Actuator 3 (Elevator)
 1500.0  !Initial Condition of Actuator 4 (Rudder)
-
-##Everything related to the simulation including sensor errors
+1.0 	 !mass  //Point Mass
+1.0 	 !Ixx
+1.0 	 !Iyy
+1.0 	 !Izz
+0.000    !Ixy (kg-m^2)
+0.000    !Ixz (kg-m^2)
+0.000    !Iyz (kg-m^2)

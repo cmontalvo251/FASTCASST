@@ -41,5 +41,10 @@
 0.1	!Settling Time (sec) of 2 magT
 1500  	!Initial Condition of Actuator 1 magT
 1500  	!Initial Condition of Actuator 2 magT
-
-##Everything related to the simulation including sensor errors
+3.0	!Mass (kg)
+0.005 !Ixx (kg-m^2)
+0.011 !Iyy(kg-m^2)
+0.011 !Izz(kg-m^2)
+0.000    !Ixy (kg-m^2)
+0.000    !Ixz (kg-m^2)
+0.000    !Iyz (kg-m^2)

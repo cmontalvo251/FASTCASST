@@ -59,20 +59,8 @@ TIMER watch;
 hardware hw;
 
 //Controller is always running
-#ifdef car
-#include <car_controller.h>
-#elif airplane
-#include "airplane_controller.h"
-#elif quadcopter
-#include "quadcopter_controller.h"
-#elif hybrid
-#include "hybrid_controller.h"
-#elif x8
-#include "x8_controller.h"
-#elif cubesat
-#include "cubesat_controller.h"
-#else
-#include "controller.h" //This is here just to keep the compiler happy but will probably thow an error anyway
+#ifdef CONTROLLER_HEADER_FILE
+#include CONTROLLER_HEADER_FILE
 #endif
 controller control;
 

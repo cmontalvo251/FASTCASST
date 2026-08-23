@@ -22,24 +22,8 @@
 #endif
 #endif
 
-///Specific header files for the vehicle being simulated
-#ifdef airplane
-#include "airplane_forces.h"
-#endif
-#ifdef quadcopter
-#include "quadcopter_forces.h"
-#endif
-#ifdef hybrid
-#include "hybrid_forces.h"
-#endif
-#ifdef x8
-#include "x8_forces.h"
-#endif
-#ifdef cubesat
-#include "cubesat_forces.h"
-#endif
-#ifdef car
-#include "car_forces.h"
+#ifdef FORCES_HEADER_FILE
+#include FORCES_HEADER_FILE
 #endif
 
 ///Headers required to simulate the virtual environment

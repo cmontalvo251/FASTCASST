@@ -37,8 +37,8 @@ void RCInput::initialize() {
 
   std::string config_file;
   #if defined(JOYSTICK)
-  #ifdef RX_NAME
-  config_file = std::string(RX_NAME) + "_config.json";
+  #ifdef JSON_FILE_NAME
+  config_file = std::string(JSON_FILE_NAME);
   #else
   config_file = "JOYSTICK_config.json";
   #endif

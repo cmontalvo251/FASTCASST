@@ -4,6 +4,7 @@
 //This is another class that is craft dependent as as such
 //must adhere to specific standards
 
+#include <vector>
 #include <MATLAB/MATLAB.h>
 #include <Mathp/mathp.h>
 #include <RCIO/RCIO.h> //this is for STICK values
@@ -18,10 +19,10 @@ private:
   double throttle,aileron,elevator,rudder,autopilot,pitch_command,roll_command;
   double altitude_prev=-999,altitude_command,heading_command = 0;
   double velocity_command,velocityint = 0,headingint = 0;
-  int NUMWAYPOINTS = 4; 
+  int NUMWAYPOINTS = 0; 
   int WAYINDEX = 0;
-  double WAYPOINTS_X[4];
-  double WAYPOINTS_Y[4];
+  std::vector<double> WAYPOINTS_X;
+  std::vector<double> WAYPOINTS_Y;
   void InnerLoop(MATLAB);
   void VelocityLoop(MATLAB);
   void AltitudeLoop(MATLAB);

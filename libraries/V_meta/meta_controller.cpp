@@ -1,7 +1,4 @@
-//This is a portal cube template. You must adhere to these standards if you write your
-//own
-
-#include "controller.h"
+#include "meta_controller.h"
 
 controller::controller() {
 };
@@ -12,6 +9,18 @@ void controller::init(MATLAB in_configuration_matrix) {
   printf("Controller Received Configuration Matrix \n");
   //in_configuration_matrix.disp();
   CONTROLLER_FLAG = in_configuration_matrix.get(11,1);
+
+  if (in_configuration_matrix.length() >= 12) {
+    NUMWAYPOINTS = in_configuration_matrix.get(12,1);
+    WAYPOINTS_X.resize(NUMWAYPOINTS);
+    WAYPOINTS_Y.resize(NUMWAYPOINTS);
+    int idx = 13;
+    for (int i = 0; i < NUMWAYPOINTS; i++) {
+      WAYPOINTS_X[i] = in_configuration_matrix.get(idx++, 1);
+      WAYPOINTS_Y[i] = in_configuration_matrix.get(idx++, 1);
+    }
+  }
+
   printf("Controller Setup \n");
 }
 
@@ -77,18 +86,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   velocity_command = 20; //Hardcode to 20?
   altitude_command = 20; //Hardcode to 100?
   heading_command = -99;
-  
-  WAYPOINTS_X[0] = 500;
-  WAYPOINTS_Y[0] = 0;
-
-  WAYPOINTS_X[1] = 500;
-  WAYPOINTS_Y[1] = 500;
-
-  WAYPOINTS_X[2] = 0;
-  WAYPOINTS_Y[2] = 500;
-
-  WAYPOINTS_X[3] = 0;
-  WAYPOINTS_Y[3] = 0;
 
   switch (icontrol) {
     case 5:

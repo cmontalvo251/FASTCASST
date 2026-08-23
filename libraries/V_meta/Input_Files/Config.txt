@@ -9,18 +9,12 @@
 0        !IMUTYPE (0=MPU,1=LSM)
 0        !IMU Filter Constant //0 for no filtering and 1.0 for overfiltering
 5	 	 !Control System (-1=controlled by PIC,0=off all the time,>0=see controller.cpp)
-2.4728	 !Mass (kg)
-3.1915111322215 !Ixx(kg-m^2)
-0.2465236293423 !Iyy(kg-m^2)
-3.253531623316164 !Izz(kg-m^2)
-
-!Note that the IMU, PWM out and control loop run as fast as possible
-!in my opinion those are the most crucial items
-
-//ORIGINAL SINGLE AIRCRAFT MASS AND INERTIA
-1.2364	 !Mass (kg)
-0.23083252176875 !Ixx(kg-m^2)
-0.12326181467115 !Iyy(kg-m^2)
-0.261842767316082 !Izz(kg-m^2)
-
-
+4        !Number of Waypoints
+200.0    !Waypoint 1 X (m)
+0.0      !Waypoint 1 Y (m)
+200.0    !Waypoint 2 X (m)
+200.0    !Waypoint 2 Y (m)
+0.0      !Waypoint 3 X (m)
+200.0    !Waypoint 3 Y (m)
+0.0      !Waypoint 4 X (m)
+0.0      !Waypoint 4 Y (m)

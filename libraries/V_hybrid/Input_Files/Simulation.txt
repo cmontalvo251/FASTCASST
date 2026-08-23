@@ -53,5 +53,10 @@
 1500.0  !Initial Condition of Actuator 6 (Airplane Aileron)
 1500.0  !Initial Condition of Actuator 7 (Airplane Elevator)
 1500.0  !Initial Condition of Actuator 8 (Airplane Rudder)
-
-##Everything related to the simulation including sensor errors
+0.635 !mass  (kg)
+0.0146 !Ixx    (kg-m^2)
+0.0146 !Iyy    (kg-m^2)
+0.0285 !Izz     (kg-m^2)
+0.000    !Ixy (kg-m^2)
+0.000    !Ixz (kg-m^2)
+0.000    !Iyz (kg-m^2)

@@ -88,7 +88,10 @@ def main():
         print(f"Detected axis {detected_axis} for {control}.")
         config["mapping"][control]["axis"] = detected_axis
 
-    output_filename = "joystick_config.json"
+    config_name = input("Enter a name for this configuration (e.g. JOYSTICK): ").strip().upper()
+    if not config_name:
+        config_name = "JOYSTICK"
+    output_filename = f"{config_name}_config.json"
     with open(output_filename, "w") as f:
         json.dump(config, f, indent=4)
 

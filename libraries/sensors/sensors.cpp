@@ -77,8 +77,8 @@ void sensors::init(MATLAB in_configuration_matrix,MATLAB in_simulation_matrix) {
   //Initialize GPS
   satellites.init();
   //If the length of in_configuration_matrix is greater than 18 then we have GPS origin override values
-  if (in_configuration_matrix.length() > 18) {
-    satellites.setOriginOverride(in_configuration_matrix.get(19,1),in_configuration_matrix.get(20,1));
+  if (in_simulation_matrix.length() > 54) {
+    satellites.setOriginOverride(in_simulation_matrix.get(55,1),in_simulation_matrix.get(56,1));
   }
 
   //Initialize Barometer

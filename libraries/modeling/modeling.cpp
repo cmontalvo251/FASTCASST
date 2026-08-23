@@ -122,25 +122,24 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //PAUSE();
 
   //Get Mass and Inertia parameters
-  mass = in_configuration_matrix.get(12,1);
+  int mass_idx = 39 + 2 * NUMACTUATORS + 1;
+  mass = in_simulation_matrix.get(mass_idx, 1);
   I.zeros(3,3,"Inertia");
-  double Ixx = in_configuration_matrix.get(13,1);
-  double Iyy = in_configuration_matrix.get(14,1);
-  double Izz = in_configuration_matrix.get(15,1);
+  double Ixx = in_simulation_matrix.get(mass_idx + 1, 1);
+  double Iyy = in_simulation_matrix.get(mass_idx + 2, 1);
+  double Izz = in_simulation_matrix.get(mass_idx + 3, 1);
   I.set(1,1,Ixx);
   I.set(2,2,Iyy);
   I.set(3,3,Izz);
-  if (in_configuration_matrix.length() > 15) {
-    double Ixy = in_configuration_matrix.get(16,1);
-    double Ixz = in_configuration_matrix.get(17,1);
-    double Iyz = in_configuration_matrix.get(18,1);
-    I.set(1,2,Ixy);
-    I.set(2,1,Ixy);
-    I.set(1,3,Ixz);
-    I.set(3,1,Ixz);
-    I.set(2,3,Iyz);
-    I.set(3,2,Iyz);
-  }
+  double Ixy = in_simulation_matrix.get(mass_idx + 4, 1);
+  double Ixz = in_simulation_matrix.get(mass_idx + 5, 1);
+  double Iyz = in_simulation_matrix.get(mass_idx + 6, 1);
+  I.set(1,2,Ixy);
+  I.set(2,1,Ixy);
+  I.set(1,3,Ixz);
+  I.set(3,1,Ixz);
+  I.set(2,3,Iyz);
+  I.set(3,2,Iyz);
   //I.disp();
   //PAUSE();
   Iinv.zeros(3,3,"Inverse Inertia");
@@ -163,9 +162,9 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //Initialize X and Y Origin of GPS
   //origin set in the header file
   //And then set GPS coordinates
-  if (in_configuration_matrix.length() > 18) {
-    X_origin = in_configuration_matrix.get(19,1);
-    Y_origin = in_configuration_matrix.get(20,1);
+  if (in_simulation_matrix.length() > 54) {
+    X_origin = in_simulation_matrix.get(55,1);
+    Y_origin = in_simulation_matrix.get(56,1);
   }
   //in_configuration_matrix.disp();
   //printf("GPS Origin = %lf %lf \n",X_origin,Y_origin);
@@ -239,6 +238,7 @@ void modeling::SetGPS() {
   XYZ[1] = Y;
   XYZ[2] = Z;
   //printf("MODEL ORIGIN = %lf %lf \n",X_origin,Y_origin);
+  //PAUSE();
   #if defined (satellite) || (cubesat)
   ConvertXYZ2LLHSPHERICAL(XYZ,LLH);
   #else

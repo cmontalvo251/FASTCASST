@@ -144,6 +144,7 @@ void GPS::setOriginOverride(double latitude,double longitude) {
   printstdout("\n");
   setOrigin(X_origin_OVERRIDE,Y_origin_OVERRIDE);
   GPSORIGINSET = 1;
+  //PAUSE();
 }
 
 void GPS::reset() {
@@ -220,6 +221,9 @@ void GPS::ConvertGPS2XY()  {
     LLH[0] = latitude;
     LLH[1] = longitude;
     LLH[2] = altitude;
+    //printf("GPS LLH = %lf %lf %lf \n",latitude,longitude,altitude);
+    //printf("GPS Origin = %lf %lf \n",X_origin,Y_origin);
+    //PAUSE();
     //These functions are in mathp.cpp
     #if defined (satellite) || (cubesat) 
     ConvertLLH2XYZSPHERICAL(XYZ,LLH);

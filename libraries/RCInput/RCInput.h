@@ -22,10 +22,8 @@
 #include <fstream>
 #include <string>
 
-#ifdef JOYSTICK
-#include <nlohmann/json.hpp>
-using json = nlohmann::json;
-#endif
+#define STRINGIFY_DETAIL(x) #x
+#define STRINGIFY(x) STRINGIFY_DETAIL(x)
 
 //////////Here are the iterations
 
@@ -52,6 +50,11 @@ using json = nlohmann::json;
 #endif //KEYBOARD
 #endif //SIL DESKTOP
 #endif //ARDUINO
+
+#ifdef JOYSTICK
+#include <nlohmann/json.hpp> //sudo apt install nlohmann-json3-dev
+using json = nlohmann::json;
+#endif
 
 #ifdef RECEIVER
 //Using a receiver on the Raspberry Pi
@@ -112,6 +115,13 @@ public:
   double keyboard[8]; //do max 8 just in case
   #ifdef JOYSTICK
   struct js_event js;
+  struct ControlMap {
+    int axis = -1;
+    bool invert = false;
+    double min = -1.0;
+    double max = 1.0;
+  };
+  ControlMap axis_mappings[5]; // 0: throttle, 1: roll, 2: pitch, 3: yaw, 4: autopilot_switch
   #endif
 private:
   int open_axis(int ch);
@@ -126,6 +136,7 @@ private:
   static void ch5Handler();
   static void pwmHandler(int chann, int pin);
   static int getRXvalue(int chann);
+  bool has_json_config = false;
 };
 
 #endif

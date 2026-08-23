@@ -56,16 +56,16 @@ def main():
         "device_name": js.get_name(),
         "deadzone": 0.05,
         "mapping": {
-            "pitch": {"axis": 1, "invert": True, "min": -1.0, "max": 1.0},
-            "roll": {"axis": 0, "invert": False, "min": -1.0, "max": 1.0},
-            "yaw": {"axis": 2, "invert": False, "min": -1.0, "max": 1.0},
             "throttle": {"axis": 3, "invert": True, "min": -1.0, "max": 1.0},
+            "roll": {"axis": 0, "invert": False, "min": -1.0, "max": 1.0},
+            "pitch": {"axis": 1, "invert": True, "min": -1.0, "max": 1.0},
+            "yaw": {"axis": 2, "invert": False, "min": -1.0, "max": 1.0},
             "autopilot_switch": {"axis": 4, "invert": False, "min": -1.0, "max": 1.0}
         }
     }
 
     # Calibration step
-    controls = ["roll", "pitch", "yaw", "throttle", "autopilot_switch"]
+    controls = ["throttle", "roll", "pitch", "yaw", "autopilot_switch"]
     for control in controls:
         print(f"--- Calibrating {control.upper()} ---")
         input(f"Move the {control} stick to its center/neutral position and press ENTER...")

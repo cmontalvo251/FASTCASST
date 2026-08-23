@@ -1,6 +1,5 @@
 #include "RCInput.h"
 
-
 //constructor class
 RCInput::RCInput() {
 }
@@ -36,15 +35,32 @@ void RCInput::initialize() {
     fcntl(joy_fd,F_SETFL,O_NONBLOCK);
   }
 
-#define STRINGIFY_DETAIL(x) #x
-#define STRINGIFY(x) STRINGIFY_DETAIL(x)
-
   std::string config_file;
-  #if defined(RX)
-  config_file = std::string(STRINGIFY(RX)) + "_config.json";
+  #if defined(JOYSTICK)
+  #ifdef RX_NAME
+  config_file = std::string(RX_NAME) + "_config.json";
+  #else
+  config_file = "JOYSTICK_config.json";
+  #endif
+  printf("Using RX config file: %s\n", config_file.c_str());
   #endif
 
   std::ifstream f(config_file);
+  if (!f.is_open()) {
+    printf("Could not open JSON config file: %s\n", config_file.c_str());
+    printf("Trying to open from Calibration/ directory...\n");
+    f.open("Calibration/" + config_file);
+  }
+  if (!f.is_open()) {
+    printf("Could not open JSON config file: %s\n", config_file.c_str());
+    printf("Trying to open from RCInput/Calibration/ directory...\n");
+    f.open("RCInput/Calibration/" + config_file);
+  }
+  if (!f.is_open()) {
+    printf("Could not open JSON config file: %s\n", config_file.c_str());
+    printf("Trying to open from libraries/RCInput/Calibration/ directory...\n");
+    f.open("libraries/RCInput/Calibration/" + config_file);
+  }
   if (f.is_open()) {
     try {
       json j = json::parse(f);
@@ -69,6 +85,7 @@ void RCInput::initialize() {
     }
   } else {
     printf("Could not open JSON config file: %s\n", config_file.c_str());
+    exit(1);
   }
   #endif
 

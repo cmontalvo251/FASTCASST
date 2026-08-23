@@ -13,7 +13,7 @@ WIRINGPI=
 ###COMPILER AND OTHER FLAGS
 CC=g++
 COMPILE=-c -w -std=c++11 -Wno-psabi
-FLAGS=-DDEBUG
+FLAGS=-DDEBUG -DRX_NAME=\"$(RX)\"
 LIB=-L/usr/local/lib -L./
 #FAST is using boost for threading #sudo apt-get install libboost-all-dev
 THREAD=-lpthread -lboost_system -lboost_thread -lboost_date_time 

@@ -162,9 +162,9 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //Initialize X and Y Origin of GPS
   //origin set in the header file
   //And then set GPS coordinates
-  if (in_simulation_matrix.length() > 54) {
-    X_origin = in_simulation_matrix.get(55,1);
-    Y_origin = in_simulation_matrix.get(56,1);
+  if (in_simulation_matrix.length() > 39 + 2*NUMACTUATORS + 7) { //Check to see if the origin is set in the simulation matrix
+    X_origin = in_simulation_matrix.get(39 + 2*NUMACTUATORS + 8,1);
+    Y_origin = in_simulation_matrix.get(39 + 2*NUMACTUATORS + 9,1);
   }
   //in_configuration_matrix.disp();
   //printf("GPS Origin = %lf %lf \n",X_origin,Y_origin);

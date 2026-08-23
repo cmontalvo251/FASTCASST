@@ -498,17 +498,21 @@ void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
   //env.FGRAVI.disp();
   FTOTALB.plus_eq(FGNDB);
   //FTOTALB.disp();
-  //Only add external forces if FGNDB.norm is zero
-  //WAIT WHY IS THIS HERE?????
-  #if defined car || tank
-  //Ok need to add these in no matter what if car and tank around
-  FTOTALB.plus_eq(extforces.FB);
-  //printf("Adding External Forces \n");
-  #else
-  if (FGNDB.norm() == 0) {
+
+  //Weird things happen when the vehicle is on the ground.
+  //For anything that's supposed to be in the air we only add in the external forces and moments 
+  //when the ground forces are zero. This is to avoid the vehicle from flying off the ground when it shouldn't be.
+  //For a car, tank or boat the external forces and moments are always added in because they are supposed to be on the ground.
+  //In this case we have a forces_flag to help with this
+  if (FORCES_FLAG == 2) {
+    //This is a ground vehicle
     FTOTALB.plus_eq(extforces.FB);
+  } else {
+    //This is an air vehicle so only add in the external forces and moments if the ground forces are zero
+    if (FGNDB.norm() == 0) {
+      FTOTALB.plus_eq(extforces.FB);
+    }
   }
-  #endif
   //extforces.FB.disp();
   //FGNDB.disp();
   //FTOTALB.disp();  
@@ -531,13 +535,20 @@ void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
   //Moments vector
   MTOTALB.mult_eq(0);
   MTOTALB.overwrite(MGNDB);
-  #if defined car || tank
-  MTOTALB.plus_eq(extforces.MB);
-  #else
-  if (FGNDB.norm() == 0) {
+  //Weird things happen when the vehicle is on the ground.
+  //For anything that's supposed to be in the air we only add in the external forces and moments 
+  //when the ground forces are zero. This is to avoid the vehicle from flying off the ground when it shouldn't be.
+  //For a car, tank or boat the external forces and moments are always added in because they are supposed to be on the ground.
+  //In this case we have a forces_flag to help with this
+  if (FORCES_FLAG == 2) {
+    //This is a ground vehicle
     MTOTALB.plus_eq(extforces.MB);
+  } else {
+    //This is an air vehicle so only add in the external forces and moments if the ground forces are zero
+    if (FGNDB.norm() == 0) {
+      MTOTALB.plus_eq(extforces.MB);
+    }
   }
-  #endif
   //MTOTALB.disp();
   //pqr.disp();
   //PAUSE();

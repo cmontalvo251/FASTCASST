@@ -181,9 +181,11 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   }
 
   //I then need to populate the pwm_array with the control signals as quickly as possible
+  //control_matrix.disp();
   for (int i = 0;i<rc.out.NUMSIGNALS;i++) {
     rc.out.pwm_array[i] = int(control_matrix.get(i+1,1));
   }
+  //rc.out.print();
   //And then send the pwm_array to the servos and ESCs as quickly as possible
   //The write function has a built in saturation block no need to worry there
   //Right now we have to shut this off when using the satellite because
@@ -199,6 +201,7 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
   rc.out.saturation_block();
   #endif
   //printf("ELEVATOR ARRAY = %d \n",rc.out.pwm_array[2]);
+  //rc.out.print();
 
   //Check to see if it's time to log
   if (currentTime >= nextLOGtime) {

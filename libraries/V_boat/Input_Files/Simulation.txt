@@ -39,8 +39,8 @@
 2	!Number of Actuators to Simulate (Must be the same as control signals)
 0.1	!Settling Time (sec) of first actuator
 0.1	!Settling Time (sec) of 2 actuator
-1500.0  !Initial Condition of Actuator 1 (Motor)
-1500.0  !Initial Condition of Actuator 2 (Steering)
+1500.0  !Initial Condition of Actuator 1 (Motor 1)
+1500.0  !Initial Condition of Actuator 2 (Motor 2)
 4.66     !mass  //Actual Mass of vehicle (kg)
 0.056    !Ixx //(kg-m^2)
 0.035    !Iyy //(kg-m^2)

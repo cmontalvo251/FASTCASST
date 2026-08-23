@@ -281,9 +281,14 @@ void loop() {
     #endif
 
     ///////////MODELING LOOP/////////////////
+    //control.control_matrix.disp();
+    //hw.rc.out.print();
     #ifdef MODELING
     model.loop(watch.currentTime,hw.rc.in.rx_array,control.control_matrix);
     #endif
+    //control.control_matrix.disp();
+    //hw.rc.out.print();
+    
     /////////////////////////////////////////
 
     //PRINT TO STDOUT

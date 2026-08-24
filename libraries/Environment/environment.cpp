@@ -19,6 +19,86 @@
 environment::environment() {
 }
 
+void environment::init(MATLAB in_simulation_matrix) {
+  FGRAVI.zeros(3,1,"FORCE OF GRAVITY INERTIAL");
+  FGNDI.zeros(3,1,"Ground Forces Inertial Frame");
+  MGNDI.zeros(3,1,"Ground Moments Inertial Frame");
+  BVECINE.zeros(3,1,"Inertial Frame Vectors of Magnetic Field");
+  BVECSPH.zeros(3,1,"Speherical Frame Vectors of Magnetic Field");
+  BVECB_Tesla.zeros(3,1,"Environment Magnetic Field Body Frame (Tesla)");
+  AEROVECINE.zeros(3,1,"Inertial Frame Vectors of Wind");
+  AERODRYDENB.zeros(3,1,"Body Frame Vectors of Dryden Gust");
+  AEROVECB.zeros(3,1,"Body Frame Vectors of Wind");
+  AEROMOMENTB.zeros(3,1,"Body Frame Moments of Wind");
+
+  //Initialize the Dryden Turbulence Model
+  dryden.init(DrydenParams(), in_simulation_matrix.get(2,1), 42); // Default parameters, dt=0.01, seed=42
+
+  //Magnet and Gravity Model Stuff
+  Gravity_Flag = in_simulation_matrix.get(17,1);
+  Magnetic_Flag = in_simulation_matrix.get(18,1);
+  time_magnet_next = in_simulation_matrix.get(19,1);
+  time_wrf_next = in_simulation_matrix.get(19,1);
+  time_magnet = 0;
+  time_wrf = 0;
+  julian_today = in_simulation_matrix.get(20,1);
+  double julian_2000 = 2451545;
+  if (julian_today < 2451545) {
+    //Must be a year
+    yr = julian_today;
+    julian_today = julian_2000 + (yr-2000)*365.25;
+  } else {
+    //Otherwise compute year based off julian day
+    yr = int((julian_today - julian_2000)/365.25) + 2000;
+  }
+  printf("Julian Day = %lf \n",julian_today);
+  printf("Year = %lf \n",yr);
+
+  //Get Distances from Sun to Earth
+  rSun2Earth2000.zeros(3,1,"XYZ of Earth from Sun on Jan 1,2000");
+  rSun2EarthToday.zeros(3,1,"XYZ of Earth from Sun Today");
+  
+  //Compute the location of the earth on Jan 1 2000 using the Julian Day of that time
+  EarthEphemeris(rSun2Earth2000,julian_2000);
+  //rSun2Earth2000.disp();
+  //Now compute the location of Earth on the Julian Day supplied
+  EarthEphemeris(rSun2EarthToday,julian_today);
+  //rSun2EarthToday.disp();
+  
+  //Now compute the location of the Earth today relative to the Earth on Jan 1st, 2000
+  rEarth20002EarthToday.zeros(3,1,"XYZ of Earth Today from Earth 1/1/2000");
+  rEarth20002EarthToday.minus(rSun2EarthToday,rSun2Earth2000);
+  //rEarth20002EarthToday.disp();
+  rSun2Sat.zeros(3,1,"Sun 2 Satellite");
+  gSun.zeros(3,1,"Sun Gravity Acceleration");
+
+  //#ifdef USEHILPATH
+  sprintf(COEFFFILENAME,"%s","libraries/GeographicLib/EGM_EMM");
+  //#else
+  //sprintf(COEFFFILENAME,"%s","modeling/GeographicLib/EGM_EMM");
+  //#endif
+
+  if (Gravity_Flag == 1) {
+    #ifdef __linux__
+    egm2008 = new GravityModel("egm2008",COEFFFILENAME); 
+    #else
+    egm2008 = new GravityModel("egm2008"); //Initializing gravity model
+    #endif
+    printf("Gravity Model Imported \n");
+  }
+  if (Magnetic_Flag == 1) {
+    #ifdef __linux__
+    emm2015 = new MagneticModel("emm2015",COEFFFILENAME); //Initializing magnetic model
+    printf("Magnetic Model Imported Using %s \n",COEFFFILENAME);
+    #else
+    emm2015 = new MagneticModel("emm2015",COEFFFILENAME); 
+    printf("Magnetic Model Imported Using %s \n",COEFFFILENAME);
+    #endif
+  }
+  sph_coord.zeros(3,1,"Spherical Coordinate (Phi and Theta)");
+  printf("Gravity and Magnet Models Imported but you might need to double check the .emm and .egm file \n");
+}
+
 void environment::setMass(double m) {
   //printf("m = %lf \n",m);
   mass = m;
@@ -148,82 +228,7 @@ void environment::groundcontactmodel(MATLAB State,MATLAB k) {
   //FGNDI.disp();
 }
 
-void environment::init(MATLAB in_simulation_matrix) {
-  FGRAVI.zeros(3,1,"FORCE OF GRAVITY INERTIAL");
-  FGNDI.zeros(3,1,"Ground Forces Inertial Frame");
-  MGNDI.zeros(3,1,"Ground Moments Inertial Frame");
-  BVECINE.zeros(3,1,"Inertial Frame Vectors of Magnetic Field");
-  BVECSPH.zeros(3,1,"Speherical Frame Vectors of Magnetic Field");
-  BVECB_Tesla.zeros(3,1,"Environment Magnetic Field Body Frame (Tesla)");
-  AEROVECINE.zeros(3,1,"Inertial Frame Vectors of Wind");
-  AEROVECB.zeros(3,1,"Body Frame Vectors of Wind");
-
-  //Magnet and Gravity Model Stuff
-  Gravity_Flag = in_simulation_matrix.get(17,1);
-  Magnetic_Flag = in_simulation_matrix.get(18,1);
-  time_magnet_next = in_simulation_matrix.get(19,1);
-  time_wrf_next = in_simulation_matrix.get(19,1);
-  time_magnet = 0;
-  time_wrf = 0;
-  julian_today = in_simulation_matrix.get(20,1);
-  double julian_2000 = 2451545;
-  if (julian_today < 2451545) {
-    //Must be a year
-    yr = julian_today;
-    julian_today = julian_2000 + (yr-2000)*365.25;
-  } else {
-    //Otherwise compute year based off julian day
-    yr = int((julian_today - julian_2000)/365.25) + 2000;
-  }
-  printf("Julian Day = %lf \n",julian_today);
-  printf("Year = %lf \n",yr);
-
-  //Get Distances from Sun to Earth
-  rSun2Earth2000.zeros(3,1,"XYZ of Earth from Sun on Jan 1,2000");
-  rSun2EarthToday.zeros(3,1,"XYZ of Earth from Sun Today");
-  
-  //Compute the location of the earth on Jan 1 2000 using the Julian Day of that time
-  EarthEphemeris(rSun2Earth2000,julian_2000);
-  //rSun2Earth2000.disp();
-  //Now compute the location of Earth on the Julian Day supplied
-  EarthEphemeris(rSun2EarthToday,julian_today);
-  //rSun2EarthToday.disp();
-  
-  //Now compute the location of the Earth today relative to the Earth on Jan 1st, 2000
-  rEarth20002EarthToday.zeros(3,1,"XYZ of Earth Today from Earth 1/1/2000");
-  rEarth20002EarthToday.minus(rSun2EarthToday,rSun2Earth2000);
-  //rEarth20002EarthToday.disp();
-  rSun2Sat.zeros(3,1,"Sun 2 Satellite");
-  gSun.zeros(3,1,"Sun Gravity Acceleration");
-
-  //#ifdef USEHILPATH
-  sprintf(COEFFFILENAME,"%s","libraries/GeographicLib/EGM_EMM");
-  //#else
-  //sprintf(COEFFFILENAME,"%s","modeling/GeographicLib/EGM_EMM");
-  //#endif
-
-  if (Gravity_Flag == 1) {
-    #ifdef __linux__
-    egm2008 = new GravityModel("egm2008",COEFFFILENAME); 
-    #else
-    egm2008 = new GravityModel("egm2008"); //Initializing gravity model
-    #endif
-    printf("Gravity Model Imported \n");
-  }
-  if (Magnetic_Flag == 1) {
-    #ifdef __linux__
-    emm2015 = new MagneticModel("emm2015",COEFFFILENAME); //Initializing magnetic model
-    printf("Magnetic Model Imported Using %s \n",COEFFFILENAME);
-    #else
-    emm2015 = new MagneticModel("emm2015",COEFFFILENAME); 
-    printf("Magnetic Model Imported Using %s \n",COEFFFILENAME);
-    #endif
-  }
-  sph_coord.zeros(3,1,"Spherical Coordinate (Phi and Theta)");
-  printf("Gravity and Magnet Models Imported but you might need to double check the .emm and .egm file \n");
-}
-
-void environment::getCurrentWindVectorINE(double simtime,MATLAB State) {
+void environment::getCurrentWindVectorINE(double simtime,MATLAB State,int FORCES_FLAG) {
   //Extrat state vector
   double x = State.get(1, 1);
   double y = State.get(2, 1);
@@ -250,6 +255,18 @@ void environment::getCurrentWindVectorINE(double simtime,MATLAB State) {
   //Populate into the MATLAB vector
   for (int i = 0;i<3;i++) {
     AEROVECINE.set(i+1,1,wind[i]);
+  }
+
+  if (FORCES_FLAG == 4) {
+    DrydenOutput out = dryden.update();
+    AERODRYDENB.set(1,1,out.u);
+    AERODRYDENB.set(2,1,out.v);
+    AERODRYDENB.set(3,1,out.w);
+    AEROMOMENTB.set(1,1,out.p);
+    AEROMOMENTB.set(2,1,out.q);
+    AEROMOMENTB.set(3,1,out.r);
+  } else {
+    AEROMOMENTB.mult_eq(0);
   }
 }
 

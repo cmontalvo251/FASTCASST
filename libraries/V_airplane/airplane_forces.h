@@ -63,8 +63,9 @@ class forces {
  private:
   //You can put any private functions or vars in here that you like but it 
   //must adhere to the standards below
-  Aero_Pack aeropack;
  public:
+  Aero_Pack aeropack;
+  double length = aeropack.bws; //This is the wingspan of the aircraft. It is used in the Dryden model
   //These are 3x1 MATLAB vectors that must be in units of Newtons
   //and in the body frame
   MATLAB FB,MB; 

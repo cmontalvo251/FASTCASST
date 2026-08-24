@@ -472,13 +472,23 @@ void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
   env.BVECB_Tesla.overwrite(BVECB_Tesla);
 
   //If the forces flag is on we call get WRF Model
-  if (FORCES_FLAG == 3) {
-    env.getCurrentWindVectorINE(currentTime,integrator.StateDel);
+  if (FORCES_FLAG >= 3) {
+    if (FORCES_FLAG == 4) {
+      //Send the wing span and velocity to the Dryden model
+      env.dryden.setWingSpan(extforces.length);
+      env.dryden.setVelocity(integrator.StateDel.get(8,1));
+    }
+    env.getCurrentWindVectorINE(currentTime,integrator.StateDel,FORCES_FLAG);
     //Rotate inertial vector to body frame
     ine2bod321.rotateInertial2Body(env.AEROVECB,env.AEROVECINE);
     //printf("Running WRF Model \n");
+    //Then add in DRYDEN Gusts
+    //env.AEROVECB.disp();
+    //env.AERODRYDENB.disp();
+    env.AEROVECB.plus_eq(env.AERODRYDENB);
   } else {
     env.AEROVECB.mult_eq(0);
+    env.AEROMOMENTB.mult_eq(0);
   }
 
   //env.AEROVECB.disp();

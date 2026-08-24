@@ -6,6 +6,7 @@
 #include <Mathp/mathp.h>
 #include <Timer/timer.h>
 #include <wrf/wrf.h>
+#include <Dryden/Dryden.h>
 
 //The GeographicLib library can be downloaded from the internet by following the README.md locating at the ~/ of this folder
 //However for the convenience of the linux user the libraries have been placed in the source folder here so ther
@@ -47,8 +48,10 @@ class environment {
  public:
    MATLAB FGRAVI,FGNDI,MGNDI;
    MATLAB BVECINE,BVECSPH,BVECB_Tesla;
-   MATLAB AEROVECINE,AEROVECB;
-   void getCurrentWindVectorINE(double simtime,MATLAB State);
+   MATLAB AEROVECINE,AEROVECB,AEROMOMENTB,AERODRYDENB;
+   DrydenTurbulence dryden;
+   void getCurrentWindVectorINE(double simtime,MATLAB State,int FORCES_FLAG);
+   void getDrydenTurbulence(double simtime,MATLAB State);
    void init(MATLAB);
    void gravitymodel(MATLAB State);
    void groundcontactmodel(MATLAB,MATLAB);
@@ -59,6 +62,5 @@ class environment {
    void EarthEphemeris(MATLAB,double);
    environment(); //constructor   
 };
-
 
 #endif

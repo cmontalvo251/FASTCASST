@@ -26,6 +26,7 @@ class forces {
   void compute_thrust_and_torque(MATLAB pwm_out);
   int NUMMOTORS = 8;
  public:
+  double length = 1; //This is the length of the x8. It is used in the Dryden model
   //These are 3x1 MATLAB vectors that must be in units of Newtons
   //and in the body frame
   MATLAB FB,MB; 

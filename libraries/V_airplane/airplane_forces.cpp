@@ -37,6 +37,9 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   u += env.AEROVECB.get(1,1);
   v += env.AEROVECB.get(2,1);
   w += env.AEROVECB.get(3,1);
+  p += env.AEROMOMENTB.get(1,1);
+  q += env.AEROMOMENTB.get(2,1);
+  r += env.AEROMOMENTB.get(3,1);
 
   //Total Velocity
   double vinf=sqrt(u*u+v*v+w*w); //#Stream line velocity: Total velocity

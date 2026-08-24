@@ -21,6 +21,7 @@ class forces {
   //You can put any private functions or vars in here that you like but it 
   //must adhere to the standards below
  public:
+  double length = 1; //This is the length of the portalcube. It is used in the Dryden model
   //These are 3x1 MATLAB vectors that must be in units of Newtons
   //and in the body frame
   MATLAB FB,MB;

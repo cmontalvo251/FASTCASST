@@ -25,6 +25,7 @@ class forces {
   MATLAB pqr_PWM;
   double dOmega_max = 10,dPWM = (STICK_MAX-STICK_MIN),IpwmC = (dOmega_max/dPWM);
  public:
+  double length = 1; //This is the length of the cubesat. It is used in the Dryden model
   //These are 3x1 MATLAB vectors that must be in units of Newtons
   //and in the body frame
   MATLAB FB,MB;

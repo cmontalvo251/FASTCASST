@@ -36,6 +36,7 @@ class forces {
   MATLAB thrust_motors,torque_motors;
   void compute_thrust_and_torque(MATLAB pwm_out);
  public:
+  double length = 1; //This is the length of the hybrid. It is used in the Dryden model
   //These are 3x1 MATLAB vectors that must be in units of Newtons
   //and in the body frame
   MATLAB FB,MB; 

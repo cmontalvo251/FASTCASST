@@ -167,7 +167,7 @@ class WINDOW():
 		self.ax13.legend()
 		self.ax13.set_ylabel('Altitude (m)')
 		self.ax13.grid()
-		self.ax13.set_ylim([-10,100])
+		self.ax13.set_ylim([-10,500])
 		#GRID 2,1 - Roll, Pitch, Yaw
 		self.ax21.text(0,0.9,'Roll (deg) = '+str(self.roll))
 		self.ax21.text(0,0.45,'Pitch (deg) = '+str(self.pitch))

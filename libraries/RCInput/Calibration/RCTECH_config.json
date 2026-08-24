@@ -16,7 +16,7 @@
         },
         "pitch": {
             "axis": 1,
-            "invert": true,
+            "invert": false,
             "min": -1.0,
             "max": 1.0
         },

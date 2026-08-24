@@ -26,7 +26,7 @@
 
 //In order to get this to work on linux you need to run sudo apt-get install libboost-all-dev
 //You need boost to run opengl because opengl must run in a separate loop from the main integration loop
-#include <boost/thread.hpp> 
+#include <boost/thread.hpp> //sudo apt-get install libboost-all-dev
 using namespace boost;
 #define NUMCONTROLS 4
 

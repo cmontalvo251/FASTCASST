@@ -63,7 +63,7 @@ ENVSOURCES=$(wildcard libraries/Environment/*.cpp)
 GEOSOURCES=$(wildcard libraries/GeographicLib/*.cpp)
 RK4SOURCES=$(wildcard libraries/RK4/*.cpp)
 ROTSOURCES=$(wildcard libraries/Rotation/*.cpp)
-MODELINGSOURCES=$(ENVSOURCES) $(GEOSOURCES) $(RK4SOURCES) $(ROTSOURCES) libraries/modeling/modeling.cpp
+MODELINGSOURCES=$(ENVSOURCES) $(GEOSOURCES) $(RK4SOURCES) $(ROTSOURCES) libraries/wrf/wrf.cpp libraries/modeling/modeling.cpp
 MODELINGOBJECTS=$(MODELINGSOURCES:.cpp=.o)
 
 ###MODEL

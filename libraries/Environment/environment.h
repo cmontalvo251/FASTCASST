@@ -5,6 +5,7 @@
 #include <Rotation/Rotation3.h>
 #include <Mathp/mathp.h>
 #include <Timer/timer.h>
+#include <wrf/wrf.h>
 
 //The GeographicLib library can be downloaded from the internet by following the README.md locating at the ~/ of this folder
 //However for the convenience of the linux user the libraries have been placed in the source folder here so ther
@@ -29,11 +30,13 @@ class environment {
   MATLAB sph_coord;
   MATLAB SOLAR_DIRECTION;
   Rotation3 sph2ine32;
+  WRF wrf;
   int Gravity_Flag = 0,Magnetic_Flag=0;
   double yr = 2000,mo=1,day=1;
   int SOLARWINDMODEL;
   int REFERENCEFRAME = 0;
   double time_magnet = 0,time_magnet_next;
+  double time_wrf = 0, time_wrf_next;
   MATLAB rSun2Earth2000,rSun2EarthToday,rEarth20002EarthToday,rSun2Sat,gSun;
   double julian_today=2451545;
   double X_SOLAR_MAX,X_SOLAR_MIN,Y_SOLAR_MIN,Y_SOLAR_MAX,GRIDX,GRIDY;
@@ -44,6 +47,8 @@ class environment {
  public:
    MATLAB FGRAVI,FGNDI,MGNDI;
    MATLAB BVECINE,BVECSPH,BVECB_Tesla;
+   MATLAB AEROVECINE,AEROVECB;
+   void getCurrentWindVectorINE(double simtime,MATLAB State);
    void init(MATLAB);
    void gravitymodel(MATLAB State);
    void groundcontactmodel(MATLAB,MATLAB);

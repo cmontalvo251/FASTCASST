@@ -471,6 +471,18 @@ void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
   //Send to environment model
   env.BVECB_Tesla.overwrite(BVECB_Tesla);
 
+  //If the forces flag is on we call get WRF Model
+  if (FORCES_FLAG == 3) {
+    env.getCurrentWindVectorINE(currentTime,integrator.StateDel);
+    //Rotate inertial vector to body frame
+    ine2bod321.rotateInertial2Body(env.AEROVECB,env.AEROVECINE);
+    //printf("Running WRF Model \n");
+  } else {
+    env.AEROVECB.mult_eq(0);
+  }
+
+  //env.AEROVECB.disp();
+
   //External Forces Model
   //Send the external forces model the actuator_state instead of the ctlcomms
   if (FORCES_FLAG) {

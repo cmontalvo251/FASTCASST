@@ -155,12 +155,16 @@ void environment::init(MATLAB in_simulation_matrix) {
   BVECINE.zeros(3,1,"Inertial Frame Vectors of Magnetic Field");
   BVECSPH.zeros(3,1,"Speherical Frame Vectors of Magnetic Field");
   BVECB_Tesla.zeros(3,1,"Environment Magnetic Field Body Frame (Tesla)");
+  AEROVECINE.zeros(3,1,"Inertial Frame Vectors of Wind");
+  AEROVECB.zeros(3,1,"Body Frame Vectors of Wind");
 
   //Magnet and Gravity Model Stuff
   Gravity_Flag = in_simulation_matrix.get(17,1);
   Magnetic_Flag = in_simulation_matrix.get(18,1);
   time_magnet_next = in_simulation_matrix.get(19,1);
+  time_wrf_next = in_simulation_matrix.get(19,1);
   time_magnet = 0;
+  time_wrf = 0;
   julian_today = in_simulation_matrix.get(20,1);
   double julian_2000 = 2451545;
   if (julian_today < 2451545) {
@@ -217,6 +221,36 @@ void environment::init(MATLAB in_simulation_matrix) {
   }
   sph_coord.zeros(3,1,"Spherical Coordinate (Phi and Theta)");
   printf("Gravity and Magnet Models Imported but you might need to double check the .emm and .egm file \n");
+}
+
+void environment::getCurrentWindVectorINE(double simtime,MATLAB State) {
+  //Extrat state vector
+  double x = State.get(1, 1);
+  double y = State.get(2, 1);
+  double z = State.get(3, 1);
+  //Get wind vector
+  double wind[3];
+  wind[0] = 0;wind[1] = 0;wind[2] = 0;
+  
+  //This routine will only update the magnetic field once
+  if (time_wrf_next == -99 && AEROVECINE.get(1,1) != 0) { 
+    time_wrf = simtime + 1e10;
+  }
+
+  //If it's time to update the wind field go ahead and
+  //increment the timer and then proceed
+  if (simtime >= time_wrf)  {
+    time_wrf += time_wrf_next;
+  } else {
+    //otherwise return prematurely
+    return;
+  }
+  wrf.getWRF(wind,x,y,z,simtime);
+  //printf("Wind = %lf %lf %lf \n",wind[0],wind[1],wind[2]);
+  //Populate into the MATLAB vector
+  for (int i = 0;i<3;i++) {
+    AEROVECINE.set(i+1,1,wind[i]);
+  }
 }
 
 void environment::getCurrentMagnetic(double simtime,MATLAB State) {

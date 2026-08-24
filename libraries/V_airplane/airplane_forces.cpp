@@ -33,6 +33,11 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   double r = state.get(13,1);
   //state.disp();
 
+  //We need to add (if we want) the wind vector to the velocity vector.
+  u += env.AEROVECB.get(1,1);
+  v += env.AEROVECB.get(2,1);
+  w += env.AEROVECB.get(3,1);
+
   //Total Velocity
   double vinf=sqrt(u*u+v*v+w*w); //#Stream line velocity: Total velocity
   

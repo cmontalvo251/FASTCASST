@@ -10,11 +10,11 @@
 0        !IMU Filter Constant //0 for no filtering and 1.0 for overfiltering
 5 	     !Control System (<0 is autopilot controlled by PIC, >0 always on,0=manual,1=inner,2=velocity,3=altitude,4=heading,5=waypoint)
 4        !Number of Waypoints
-200.0    !Waypoint 1 X (m)
+500.0    !Waypoint 1 X (m)
 0.0      !Waypoint 1 Y (m)
-200.0    !Waypoint 2 X (m)
-200.0    !Waypoint 2 Y (m)
+500.0    !Waypoint 2 X (m)
+500.0    !Waypoint 2 Y (m)
 0.0      !Waypoint 3 X (m)
-200.0    !Waypoint 3 Y (m)
+500.0    !Waypoint 3 Y (m)
 0.0      !Waypoint 4 X (m)
 0.0      !Waypoint 4 Y (m)

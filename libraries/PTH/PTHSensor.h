@@ -3,6 +3,8 @@
 
 class PTHSensor {
  public:
+  virtual ~PTHSensor() {}
+
   ///Virtual Functions
   virtual bool initialize() = 0;
   virtual bool update(double) = 0;

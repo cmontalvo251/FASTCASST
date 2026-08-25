@@ -75,8 +75,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class MS5611 : public PTHSensor {
  public:
   //Functions required for PTHSensor.h  
-  bool initialize();
-  bool update(double);
+  virtual bool initialize() override;
+  virtual bool update(double) override;
 
   ///Function specific to MS5611
   void first_run();

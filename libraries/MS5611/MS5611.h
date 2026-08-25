@@ -95,6 +95,7 @@ class MS5611 : public PTHSensor {
   void calculatePressureAndTemperature();
   float getTemperature();
   float getPressure();
+  float getAltitude();
   
  private:
   #ifdef ARDUINO
@@ -108,6 +109,7 @@ class MS5611 : public PTHSensor {
   int PHASE=0;
   float TEMP; // Calculated temperature
   float PRES; // Calculated pressure
+  float ALT=0;  // Calculated altitude
   float HUM=0; //This sensor doesn't have humidity
 };
 

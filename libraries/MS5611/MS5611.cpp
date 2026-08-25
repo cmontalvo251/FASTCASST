@@ -172,6 +172,7 @@ void MS5611::calculatePressureAndTemperature() {
     // Final calculations
     PRES = ((D1 * SENS) / pow(2, 21) - OFF) / pow(2, 15) / 100;
     TEMP = TEMP / 100;
+    ALT = 44330.0f * (1.0f - pow(PRES / 1013.25f, 0.19029495f));
 }
 
 bool MS5611::update(double currentTime) {
@@ -196,6 +197,7 @@ bool MS5611::update(double currentTime) {
       calculatePressureAndTemperature();
       _temperature = getTemperature();
       _pressure = getPressure();
+      _altitude = getAltitude();
       updatetime = currentTime;
       PHASE = 0;
       return 1;
@@ -231,4 +233,11 @@ float MS5611::getTemperature() {
  */
 float MS5611::getPressure() {
 	return PRES;
+}
+
+/** Get calculated altitude value
+ @return Altitude in meters
+ */
+float MS5611::getAltitude() {
+	return ALT;
 }

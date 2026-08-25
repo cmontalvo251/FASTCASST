@@ -11,12 +11,14 @@ class PTHSensor {
   double read_temperature() {return _temperature;};
   double read_pressure() {return _pressure;};
   double read_humidity() {return _humidity;};
+  double read_altitude() {return _altitude;};
 
  protected:
   //Protected variables
   double _pressure=1013.25;
   double _temperature=25;
   double _humidity=0.0;
+  double _altitude=0.0;
 };
 
 #endif

@@ -1,4 +1,5 @@
 .vscode/
+*.zip
 *.eps
 sixdof.py
 *.odt

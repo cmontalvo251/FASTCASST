@@ -15,6 +15,13 @@
 //Satellite class rather than these massive global variables. We can let it slide
 //for now since it works but just a thought.
 
+//Right now the hard-coded folder for the EMM/EGM models are in libraries/GeographicLib/EGM_EMM
+//These are large files and thus not include in the repository by default
+//I (Dr. Carlos Montalvo currently employed at USA) have used my Google Drive account to upload
+//these large files. The link is currently here - https://drive.google.com/drive/folders/1XP9b3Q0F7RMHJKHABI7B17MrL5j_V-h0?usp=sharing
+//It is 2026 and I hope that link will never break but if I ever retire or my account gets deleted I guess I'll hopefully 
+//try and move these files somewhere else so you can use them
+
 //constructor
 environment::environment() {
 }
@@ -77,6 +84,17 @@ void environment::init(MATLAB in_simulation_matrix) {
   //#else
   //sprintf(COEFFFILENAME,"%s","modeling/GeographicLib/EGM_EMM");
   //#endif
+
+  //Code here to make sure COEFFFILENAME exists and is accessible
+  FILE *file = fopen(COEFFFILENAME, "r");
+  if (file) {
+      fclose(file);
+  } else {
+      printf("Error: Could not access %s \n", COEFFFILENAME);
+      printf("As of August 2026 these files are accessible on Google Drive\n");
+      printf("%s \n", "https://drive.google.com/drive/folders/1XP9b3Q0F7RMHJKHABI7B17MrL5j_V-h0?usp=sharing");
+      exit(1);
+  }
 
   if (Gravity_Flag == 1) {
     #ifdef __linux__

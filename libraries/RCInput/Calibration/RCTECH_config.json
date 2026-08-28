@@ -1,0 +1,36 @@
+{
+    "device_name": "WAILLY PPM",
+    "deadzone": 0.05,
+    "mapping": {
+        "throttle": {
+            "axis": 2,
+            "invert": true,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "roll": {
+            "axis": 0,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "pitch": {
+            "axis": 1,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "yaw": {
+            "axis": 5,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "autopilot_switch": {
+            "axis": 3,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
+        }
+    }
+}

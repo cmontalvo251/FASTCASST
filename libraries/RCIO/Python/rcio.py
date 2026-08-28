@@ -10,7 +10,9 @@ class RCIO():
         self.rcout = []
         self.NUMPWM = NUMPWM
         for i in range(0,NUMPWM):
+            print('Setting up Pin = ',i)
             self.rcout.append(PWM(i))
+            print('Pin ',i,' appended')
             self.rcout[i].initialize()
             self.rcout[i].set_period(50)
             self.rcout[i].enable()
@@ -49,29 +51,29 @@ class PWM():
         if self.is_enabled:
             self.set_period(1)
             self.disable()
-        with open(self.SYSFS_PWM_UNEXPORT_PATH, "a") as pwm_unexport:
+        with open(self.SYSFS_PWM_UNEXPORT_PATH, "w") as pwm_unexport:
             pwm_unexport.write(str(self.channel))
 
     def initialize(self):
         if self.SIL:
             print('Emulating PWM signal. Initializing pin.....',self.channel)
         else:
+            print('Initializing pin.....',self.channel)
             if not os.path.exists(self.SYSFS_PWM_PATH_BASE):
                 print("Looking for rcio_pwm module in PATH = ",self.SYSFS_PWM_PATH_BASE,"....couldn't find it")
                 raise OSError("rcio_pwm module wasn't loaded")
             if not os.path.exists(self.channel_path):
-                with open(self.SYSFS_PWM_EXPORT_PATH, "a") as pwm_export:
+                with open(self.SYSFS_PWM_EXPORT_PATH, "w") as pwm_export:
                     pwm_export.write(str(self.channel))
-            print('Initializing pin.....',self.channel)
         self.is_initialized = True
 
     def enable(self):
         if self.SIL:
             print('Emulating PWM signal. Enabling pin.....',self.channel)
         else:
+            print('Enabling pin.....',self.channel)
             with open(self.channel_path + "enable", "w") as pwm_enable:
                 pwm_enable.write("1")
-            print('Enabling pin.....',self.channel)
         self.is_enabled = True
 
     def disable(self):
@@ -87,9 +89,9 @@ class PWM():
         if self.SIL:
             print('Emulating PWM signal. Setting frequency for pin....',freq,self.channel)
         else:
+            print('Setting frequency for pin....',freq,self.channel)
             with open(self.channel_path + "period",  "w") as pwm_period:
                 pwm_period.write(str(period_ns))
-            print('Setting frequency for pin....',freq,self.channel)
 
     def set_duty_cycle(self, period):
         if not self.is_initialized:

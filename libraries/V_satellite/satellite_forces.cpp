@@ -18,7 +18,7 @@ forces::forces() {
   MMTVEC.zeros(3,1,"Magnetometer Momemt");
 }
 
-void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out,environment env) {
+void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out,const environment& env) {
   //The only thing this function needs to do is populate FB and MB. 
   //You can do whatever you want in here but you must create those two vectors.
   FB.mult_eq(0); //Zero these out just to make sure something is in here

@@ -53,42 +53,47 @@ namespace GeographicLib {
     , _norm(SphericalHarmonic::SCHMIDT)
     , _earth(earth)
   {
-    #ifdef DEBUG_MODE
     cout << "Name = " << name << endl;
     cout << "Path = " << path << endl;
-    #endif
-    if (_dir.empty())
+    if (_dir.empty()) {
       _dir = DefaultMagneticPath();
+    }
     ReadMetadata(_name);
     _G.resize(_Nmodels + 1 + _Nconstants);
     _H.resize(_Nmodels + 1 + _Nconstants);
     {
       string coeff = _filename + ".cof";
+      //printf("Reading coefficients from %s \n",coeff.c_str());
       ifstream coeffstr(coeff.c_str(), ios::binary);
-      if (!coeffstr.good())
+      if (!coeffstr.good()) {
         throw GeographicErr("Error opening " + coeff);
+      }
       char id[idlength_ + 1];
       coeffstr.read(id, idlength_);
-      if (!coeffstr.good())
+      if (!coeffstr.good()) {
         throw GeographicErr("No header in " + coeff);
+      }
       id[idlength_] = '\0';
-      if (_id != string(id))
+      if (_id != string(id)) {
         throw GeographicErr("ID mismatch: " + _id + " vs " + id);
+      }
+      //printf("Magnetic model %s importing with %d models and %d constants\n",_name.c_str(), _Nmodels, _Nconstants);
       for (int i = 0; i < _Nmodels + 1 + _Nconstants; ++i) {
         int N, M;
         SphericalEngine::coeff::readcoeffs(coeffstr, N, M, _G[i], _H[i]);
-	//printf("%d N = \n",N);
-	//printf("%d M = \n",M);
-	//printf("%lf _G[i] = \n",_G[i]);
-	//printf("%lf _H[i] = \n",_H[i]);
-        if (!(M < 0 || _G[i][0] == 0))
+        //printf("Return?\n");
+        //printf("i = %d, N = %d, M = %d, _G[i] = %lf, _H[i] = %lf\n", i, N, M, _G[i], _H[i]);
+        //printf("Coeff read....\n");
+        if (!(M < 0 || (_G[i].empty() || _G[i][0] == 0))) {
           throw GeographicErr("A degree 0 term is not permitted");
+        }
         _harm.push_back(SphericalHarmonic(_G[i], _H[i], N, N, M, _a, _norm));
       }
       int pos = int(coeffstr.tellg());
       coeffstr.seekg(0, ios::end);
-      if (pos != coeffstr.tellg())
+      if (pos != coeffstr.tellg()) {
         throw GeographicErr("Extra data in " + coeff);
+      }
     }
   }
 

@@ -97,6 +97,7 @@ void environment::init(MATLAB in_simulation_matrix) {
   }
 
   if (Gravity_Flag == 1) {
+    printf("Setting up Gravity Model...\n");
     #ifdef __linux__
     egm2008 = new GravityModel("egm2008",COEFFFILENAME); 
     #else
@@ -105,13 +106,14 @@ void environment::init(MATLAB in_simulation_matrix) {
     printf("Gravity Model Imported \n");
   }
   if (Magnetic_Flag == 1) {
+    printf("Setting up Magnetic Model...\n");
     #ifdef __linux__
     emm2015 = new MagneticModel("emm2015",COEFFFILENAME); //Initializing magnetic model
-    printf("Magnetic Model Imported Using %s \n",COEFFFILENAME);
     #else
     emm2015 = new MagneticModel("emm2015",COEFFFILENAME); 
-    printf("Magnetic Model Imported Using %s \n",COEFFFILENAME);
     #endif
+    printf("Magnetic Model Imported Using %s \n",COEFFFILENAME);
+
   }
   sph_coord.zeros(3,1,"Spherical Coordinate (Phi and Theta)");
   printf("Gravity and Magnet Models Imported but you might need to double check the .emm and .egm file \n");

@@ -381,16 +381,30 @@ namespace GeographicLib {
                                           std::vector<real>& C,
                                           std::vector<real>& S) {
     int nm[2];
+    //printf("Reading coeffs\n");
     Utility::readarray<int, int, false>(stream, nm, 2);
+    //printf("Read array\n");
     N = nm[0]; M = nm[1];
     if (!(N >= M && M >= -1 && N * M >= 0))
       // The last condition is that M = -1 implies N = -1 and vice versa.
       throw GeographicErr("Bad degree and order " +
                           Utility::str(N) + " " + Utility::str(M));
-    C.resize(SphericalEngine::coeff::Csize(N, M));
+    int csize = SphericalEngine::coeff::Csize(N, M);
+    //printf("Resizing C with %d elements\n", csize);
+    //printf("C current size = %zu\n", C.size());
+    if (csize < 0)
+      throw GeographicErr("Invalid vector size calculation: " + Utility::str(csize));
+    C.resize(csize);
+    //printf("Reading C (size = %zu)\n", C.size());
     Utility::readarray<double, real, false>(stream, C);
-    S.resize(SphericalEngine::coeff::Ssize(N, M));
+    int ssize = SphericalEngine::coeff::Ssize(N, M);
+    //printf("Resizing S with %d elements\n", ssize);
+    if (ssize < 0)
+      throw GeographicErr("Invalid S vector size calculation: " + Utility::str(ssize));
+    S.resize(ssize);
+    //printf("Reading S (size = %zu)\n", S.size());
     Utility::readarray<double, real, false>(stream, S);
+    //printf("S has been read\n");
     return;
   }
 

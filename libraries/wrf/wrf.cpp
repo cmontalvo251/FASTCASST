@@ -23,7 +23,7 @@ WRF::WRF()
 
   pathlength = strlen(PATH);  
   char* ParametersFile = "Parameters.txt";
-  char* inParameters = (char*)malloc(pathlength+strlen(ParametersFile));
+  char* inParameters = (char*)malloc(pathlength+strlen(ParametersFile)+1); //Adding 1 for the null terminator
   strcpy(inParameters,PATH);
   strcat(inParameters,ParametersFile);
   infile = fopen(inParameters,"r");
@@ -40,7 +40,7 @@ WRF::WRF()
   fclose(infile);
   
   char* ZcoordFile = "Zcoord.txt";
-  char* inZcoord = (char*)malloc(pathlength+strlen(ZcoordFile));
+  char* inZcoord = (char*)malloc(pathlength+strlen(ZcoordFile)+1); //Adding 1 for the null terminator
   strcpy(inZcoord,PATH);
   strcat(inZcoord,ZcoordFile);
   infile = fopen(inZcoord,"r");
@@ -57,7 +57,7 @@ WRF::WRF()
   fclose(infile);
   
   char* TimesFile = "SampleTimes.txt";
-  char* inTimes = (char*)malloc(pathlength+strlen(TimesFile));
+  char* inTimes = (char*)malloc(pathlength+strlen(TimesFile)+1); //Adding 1 for the null terminator
   strcpy(inTimes,PATH);
   strcat(inTimes,TimesFile);
   infile = fopen(inTimes,"r");
@@ -74,7 +74,7 @@ WRF::WRF()
   fclose(infile);
 
   char* HeightFile = "THeight.txt";
-  char* inHeight = (char*)malloc(pathlength+strlen(HeightFile));
+  char* inHeight = (char*)malloc(pathlength+strlen(HeightFile)+1); //Adding 1 for the null terminator
   strcpy(inHeight,PATH);
   strcat(inHeight,HeightFile);
   infile = fopen(inHeight,"r");

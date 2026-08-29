@@ -152,6 +152,12 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
 
   //Initialize the external force model
   FORCES_FLAG = in_simulation_matrix.get(16,1);
+
+  if (FORCES_FLAG == 4) {
+    //Send the wing span and velocity to the Dryden model
+    env.dryden.setWingSpan(extforces.length);
+    env.dryden.setVelocity(integrator.StateDel.get(8,1));
+  }
   
   //integration_matrix.disp();
   //PAUSE();
@@ -473,11 +479,6 @@ void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
 
   //If the forces flag is on we call get WRF Model
   if (FORCES_FLAG >= 3) {
-    if (FORCES_FLAG == 4) {
-      //Send the wing span and velocity to the Dryden model
-      env.dryden.setWingSpan(extforces.length);
-      env.dryden.setVelocity(integrator.StateDel.get(8,1));
-    }
     env.getCurrentWindVectorINE(currentTime,integrator.StateDel,FORCES_FLAG);
     //Rotate inertial vector to body frame
     ine2bod321.rotateInertial2Body(env.AEROVECB,env.AEROVECINE);

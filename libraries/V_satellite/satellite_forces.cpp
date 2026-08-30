@@ -30,15 +30,20 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   MMTVEC.mult_eq(0);
   //MMTVEC.overwrite(actuators);
   //MMTVEC.overwrite(pwm_out);
-  for (int i = 0;i<NUMTORQUERS;i++){
+  for (int i = 0;i<3;i++){ //Maximum of 3 magnetorquers. If you have less than 3 then the rest are zero
     //printf("%d ",pwm_array[i]);
     //MMTVEC.set(i+1,1,pwm_array[i]);
-    MMTVEC.set(i+1,1,pwm_out.get(i+1,1));
+    if (i < NUMTORQUERS) { //NUMTORQUERS is set in params.h
+      //Subtract the offset here and convert to current. 
+      //This is a simple model and not quite right but it works for now
+      double pwm = pwm_out.get(i+1,1);
+      double pwm_offset = pwm-STICK_MID;
+      double current = IpwmC*pwm_offset;
+      MMTVEC.set(i+1,1,current);
+    } else {
+      MMTVEC.set(i+1,1,0);
+    }
   }
-  //Substract the offset
-  MMTVEC.minus_eq(STICK_MID);
-  //Convert to Current (not quite working)
-  MMTVEC.mult_eq(IpwmC);
   //Saturation on current
   double sum = MMTVEC.abssum();
   if (sum > MAXCURRENT) {

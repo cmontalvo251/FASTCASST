@@ -7,7 +7,7 @@ controller::controller() {
 };
 
 void controller::init(MATLAB in_configuration_matrix) {
-  control_matrix.zeros(NUMSIGNALS,1,"Control Signals"); //The standards must be TAERA1A2A3A4
+  control_matrix.zeros(NUMSIGNALS,1,"Control Signals"); //NUMSIGNALS SET AS NUMTORQUERS IN PARAMS.H
   set_defaults();
   printf("Controller Received Configuration Matrix \n");
   //in_configuration_matrix.disp();
@@ -89,7 +89,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     desired_moments.mult_eq(1.0/(NUMTURNS*AREA));
     desired_moments.plus_eq(STICK_MID);
     //send to ctlcomms (but might not be 3 actuators)
-    for (int i = 0;i<NUMSIGNALS;i++) {
+    for (int i = 0;i<NUMSIGNALS;i++) { //NUMSIGNALS is set in params.h
       control_matrix.set(i+1,1,desired_moments.get(i+1,1));
     }
   } 

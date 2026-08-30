@@ -572,6 +572,7 @@ void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
       MTOTALB.plus_eq(extforces.MB);
     }
   }
+  //extforces.MB.disp();
   //MTOTALB.disp();
   //pqr.disp();
   //PAUSE();

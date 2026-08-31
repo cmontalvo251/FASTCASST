@@ -237,19 +237,41 @@ void GPS::ConvertGPS2XY()  {
   }
 }
 
+// Converts (lat, lon) degrees to a 3D unit vector on a sphere
+Vector3D GPS::LatLonToUnitVector(double lat_deg, double lon_deg) {
+    double lat_rad = lat_deg * DEG2RAD;
+    double lon_rad = lon_deg * DEG2RAD;
+
+    return {
+        std::cos(lat_rad) * std::cos(lon_rad),
+        std::cos(lat_rad) * std::sin(lon_rad),
+        std::sin(lat_rad)
+    };
+}
+
 void GPS::compute_heading_velocity(double current_time) {
   //#Get delta lat and delta lon
   double dt = abs(current_time - prev_time);
   if (latitude_prev != -99) {
-    double dlat = latitude - latitude_prev;
-    double dlon = longitude - longitude_prev;
+    double thetaE = (90.0 - latitude)*DEG2RAD;
+    double psiE = longitude*PI/180.0;
+    double thetaE_prev = (90.0 - latitude_prev)*DEG2RAD;
+    double psiE_prev = longitude_prev*PI/180.0;
+    ///CONVERT LAT LON TO METERS
+    double X,Y;
+    X = sin(thetaE)*cos(psiE);
+    Y = sin(thetaE)*sin(psiE);
+    double X_prev,Y_prev;
+    X_prev = sin(thetaE_prev)*cos(psiE_prev);
+    Y_prev = sin(thetaE_prev)*sin(psiE_prev);
+
     //Compute Heading
     if (headingFLAG == 0) {
-      heading = atan2(dlon,dlat)*180.0/M_PI;
+      heading = atan2(Y-Y_prev,X-X_prev)*RAD2DEG;
       headingFLAG = 1;
     } else {
       //Compute heading with filtering to smooth it out.
-      heading = atan2(dlon,dlat)*180.0/M_PI*(1-headingFilterConstant) + heading*(headingFilterConstant);
+      heading = atan2(Y-Y_prev,X-X_prev)*RAD2DEG*(1-headingFilterConstant) + heading*(headingFilterConstant);
     }
     if (heading < 0) {
       heading += 360;
@@ -259,11 +281,22 @@ void GPS::compute_heading_velocity(double current_time) {
     }
     //Compute Speed — guard against dt==0 to prevent NaN (fix for issue #59)
     if (dt > 0) {
+      Vector3D p1 = LatLonToUnitVector(latitude_prev, longitude_prev);
+      Vector3D p2 = LatLonToUnitVector(latitude, longitude);
+      // Dot product: p1 . p2 = cos(theta)
+      double dot = p1.x * p2.x + p1.y * p2.y + p1.z * p2.z;
+      // Clamp dot product to [-1.0, 1.0] to prevent floating-point precision errors in acos
+      dot = CONSTRAIN(dot, -1.0, 1.0);
+      // Arc distance on unit sphere in radians
+      double angular_distance = std::acos(dot);
+      // Physical distance over the Earth's surface
+      double distance_meters = REARTH * angular_distance;
+      //speed = distance_meters / dt;
       if (speedFLAG == 0) {
         speedFLAG = 1;
-        speed = sqrt((dlat*111000)*(dlat*111000) + (dlon*111000*cos(latitude*M_PI/180))*(dlon*111000*cos(latitude*M_PI/180)))/dt;
+        speed = distance_meters/dt;
       } else {
-        speed = sqrt((dlat*111000)*(dlat*111000) + (dlon*111000*cos(latitude*M_PI/180))*(dlon*111000*cos(latitude*M_PI/180)))/dt*(1-headingFilterConstant) + speed*(headingFilterConstant);
+        speed = (distance_meters/dt)*(1-headingFilterConstant) + speed*(headingFilterConstant);
       }
     }
     //Get Vx and Vy

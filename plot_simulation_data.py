@@ -48,6 +48,7 @@ if counter == 1:
 if counter == 2:
     print('2 = compile,run and plot')
     counter+=1
+    os.system('rm simonly.exe') #This makes sure we don't run if there's a compilation error
     os.system('make simonly MODEL="'+MODEL+'"')
 if counter == 3:
     counter+=1

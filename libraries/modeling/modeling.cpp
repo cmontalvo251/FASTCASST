@@ -258,7 +258,13 @@ void modeling::SetGPS() {
   model_matrix.set(18,1,longitude);
   model_matrix.set(19,1,altitude);
   //Compute GPS heading
-  double heading = atan2(Y-yprev,X-xprev)*180.0/PI;
+  double heading = atan2(Y-yprev,X-xprev)*RAD2DEG;
+  if (heading < 0) {
+    heading += 360;
+  }
+  if (heading > 360) {
+    heading -= 360;
+  }
   model_matrix.set(20,1,heading);
   //printf("Model Matrix Heading = %lf \n",heading);
   //Reset Old Coordinates

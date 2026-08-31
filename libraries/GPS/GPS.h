@@ -15,9 +15,15 @@
 #include "Datalogger.h"
 #endif
 #include <math.h>
+#include <cmath>
+#include <algorithm>
 
 #define GPSPERIOD 0.5
 #define NGPS 25
+
+struct Vector3D {
+    double x, y, z;
+};
 
 class GPS {
  private:
@@ -72,6 +78,7 @@ class GPS {
   void compute_heading_velocity(double);
   void computeCOG(double);
   void ConvertGPS2XY();
+  Vector3D LatLonToUnitVector(double lat_deg, double lon_deg);
   //void ConvertXYZ2LLH(); -- This has been moved to mathp.h as a helper function
   void setXYZ(double,double,double);
   void setOrigin(double,double);

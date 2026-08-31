@@ -12,6 +12,9 @@ try:
     #import sixdof as dof
 except:
     print('You need pdf and sixdof from Python.git This is on my Github just git clone that repo and put pdf.py and sixdof.py in this root or add to pythonpath')
+    print('Add something similar to:')
+    print('export PYTHONPATH=$PYTHONPATH:$HOME/Git_Repos/Python/sixdof_archive/:$HOME/Git_Repos/Python/pdf/')
+    print('to your .bashrc and then run source ~/.bashrc')
     sys.exit()
 
 ##TRUNCATION START AND END TIME (Set to negative to turn off)

@@ -158,7 +158,14 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
   //printf("%lf \n",X);
   //PAUSE();
   //Grab Zpressure before Z is polluted
-  double Zpressure = Z;
+  //If the norm of the position is > REARTH we need to send the norm instead of the z-coordinate
+  double pos_norm = sqrt(X*X + Y*Y + Z*Z);
+  double Zpressure;
+  if (pos_norm > REARTH) {
+    Zpressure = -(pos_norm-REARTH); //Since z is down
+  } else {
+    Zpressure = Z;
+  }
 
   //The pollution of XYZ is inside this routine
   sendXYZ2GPS(currentTime,X,Y,Z);
@@ -220,6 +227,7 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
   if (IERROR) {
     Zpressure += pollute(bias_pressure_val,noise_pressure);
   }
+  //printdouble(Zpressure,"Zpressure");
   atm.SendZ(Zpressure);
 
   //Still need all the other sensor states but not right now

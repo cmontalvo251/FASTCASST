@@ -76,7 +76,9 @@ void PTH::poll(double currentTime) {
   #else
   //This below runs on desktop
   //Using fictitious pressure and temperature
+  //printdouble(Z,"Z in PTH.cpp");
   pressure = ConvertZ2Pressure(Z); //This function is in mathp btw.
+  //printdouble(pressure,"Pressure in PTH.cpp");
   if (CALIBRATE_FLAG == 1) {
     pressure0 = ConvertZ2Pressure(0)/0.01; //get sea-level pressure 
     CALIBRATE_FLAG = 0;

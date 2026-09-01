@@ -12,6 +12,7 @@ void ClearHome() {
 //altitude = (1.0-pow((pressure_pascals/101325.0),1.0/5.25588))/(2.2557*pow(10,-5.0))
 ///////////////////////////////////////
 
+//Note that this function only works up to 44,332 m. Above that and the pressure is basically zero and uninvertible
 double ConvertPressure2Z(double pressure,double pressure0) {
   double pascals = pressure/0.01;
   double altitude = (1.0-pow((pascals/pressure0),1.0/5.25588))/(2.2557*pow(10,-5.0));
@@ -26,7 +27,13 @@ double ConvertZ2Pressure(double Z) {
   //printf("Z = %lf \n",Z);
   double altitude = -Z;
   //printf("Altitude = %lf \n",altitude);
-  double pascals = 101325.0*pow((1.0-2.25577*pow(10,(-5.0))*altitude),5.25588);
+  double inner = 1.0 - 2.25577e-5 * altitude;
+  // Prevent negative base in std::pow to avoid NaN / domain errors
+  //This is really just for satellite sims
+  if (inner <= 0.0) {
+    return 0.0;
+  }
+  double pascals = 101325.0 * pow(inner, 5.25588);
   //printf("Pascals = %lf \n",pascals);
   double pressure = pascals*0.01;
   return pressure;

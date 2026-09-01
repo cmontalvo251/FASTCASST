@@ -312,11 +312,21 @@ void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix) {
   //Convert XYZ to latitude longitude altitude and put into model_matrix.
   SetGPS();
 
-  //Set pressure
-  double pressure = ConvertZ2Pressure(model_matrix.get(3,1));
+  //Set pressure (but check for satellite/cubesat)
+  double X = model_matrix.get(1,1);
+  double Y = model_matrix.get(2,1);
+  double Z = model_matrix.get(3,1);  
+  double norm = sqrt(X*X + Y*Y + Z*Z);
+  double Zpressure;
+  if (norm > REARTH) {
+    Zpressure = -(norm-REARTH); //Since z is down
+  } else {
+    Zpressure = Z;
+  }
+  double pressure = ConvertZ2Pressure(Zpressure);
   model_matrix.set(28,1,pressure);
   //Just set pressure altitude to the actual Z coordinate
-  model_matrix.set(29,1,-model_matrix.get(3,1)); 
+  model_matrix.set(29,1,-Zpressure); 
 
   //Log data if needed
   if (currentTime >= nextLOGtime) {

@@ -28,7 +28,7 @@ def printCodes():
     print('2 = compile, run and plot')
     print('3 = run and plot')
     print('4 = just plot')
-    print('MODEL is either "car","cubesat","airplane" or "x8"')
+    print('MODEL is either "car","satellite","boat","meta","quad","airplane" or "x8"')
     sys.exit()
 if len(sys.argv) == 1:
     print('No input arguments given.')
@@ -146,8 +146,8 @@ plti.get_xaxis().get_major_formatter().set_useOffset(False)
 plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 
-###JUST FOR CUBESAT PLOT MOMENTS AND PQR
-if MODEL == 'cubesat':
+###JUST FOR satellite PLOT MOMENTS AND PQR
+if MODEL == 'satellite':
     fig = plt.figure()
     plti = fig.add_subplot(1,1,1)
     plti.plot(model_time[istart_model:iend_sense],model_data[istart_model:iend_model,10],label='P')

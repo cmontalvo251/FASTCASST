@@ -21,6 +21,7 @@ void controller::init(MATLAB in_configuration_matrix) {
 void controller::set_defaults() {
   control_matrix.set(1,1,STICK_MID);
   control_matrix.set(2,1,STICK_MID);
+  control_matrix.set(3,1,STICK_MID);
 }
 
 void controller::print() {
@@ -74,13 +75,19 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //printf("RUNNING DETUMBLING \n");
     //Extract PQR in (deg/s)
     //sense_matrix.disp();
-    pqr.vecset(1,3,sense_matrix,11);
+    pqr.vecset(1,3,sense_matrix,10);
     //pqr.disp();
     //Convert to (rad/s)
     pqr.mult_eq(PI/180.0);
+    if (pqr.norm() < 0.01) {
+      //Defaults already set so just return
+      //pqr.disp();
+      //printdouble(pqr.norm(),"PQR Norm = ");
+      return;
+    }
     //pqr.disp();
     //Extract Magnetomter Readings
-    mxyz.vecset(1,3,sense_matrix,14);
+    mxyz.vecset(1,3,sense_matrix,13);
     //mxyz.disp();
     //mu_ideal = k*(omega cross B)
     desired_moments.cross(pqr,mxyz);

@@ -151,6 +151,8 @@ void sensors::sendXYZ2GPS(double currentTime,double X,double Y,double Z) {
 }
 
 void sensors::send(double currentTime,MATLAB model_matrix) {
+
+  //model_matrix.disp();
   //X,Y,Z
   double X = model_matrix.get(1,1);
   double Y = model_matrix.get(2,1);
@@ -219,9 +221,14 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
     gz += pollute(bias_gyro_matrix.get(3,1),noise_gyro);
     //printf("GXYZ After = %lf %lf %lf \n",gx,gy,gz);
   }
-  orientation.gx = gx;
-  orientation.gy = gy;
-  orientation.gz = gz;
+  orientation.gx = gx*RAD2DEG; //Convert to degrees
+  orientation.gy = gy*RAD2DEG;
+  orientation.gz = gz*RAD2DEG;
+  //printf("GXYZ = %lf %lf %lf \n",orientation.gx,orientation.gy,orientation.gz);
+
+  orientation.mx = model_matrix.get(14,1);
+  orientation.my = model_matrix.get(15,1);
+  orientation.mz = model_matrix.get(16,1);
 
   //Pass Z coordinate to barotemp
   if (IERROR) {
@@ -348,6 +355,8 @@ void sensors::populate(double currentTime,double elapsedTime) {
   sense_matrix.set(9,1,satellites.vertical_speed);
 
   //PQR
+  //printf("GXYZ = %lf %lf %lf \n",orientation.gx,orientation.gy,orientation.gz);
+  //printf("PQR = %lf %lf %lf \n",orientation.roll_rate,orientation.pitch_rate,orientation.yaw_rate);
   sense_matrix.set(10,1,orientation.roll_rate);
   sense_matrix.set(11,1,orientation.pitch_rate);
   sense_matrix.set(12,1,orientation.yaw_rate);
@@ -356,6 +365,7 @@ void sensors::populate(double currentTime,double elapsedTime) {
   sense_matrix.set(13,1,orientation.mx);
   sense_matrix.set(14,1,orientation.my);
   sense_matrix.set(15,1,orientation.mz);
+  //printf("MXYZ = %lf %lf %lf \n",orientation.mx,orientation.my,orientation.mz);
   //sense_matrix.set(15,1,Heading_Mag);
 
   //GPS

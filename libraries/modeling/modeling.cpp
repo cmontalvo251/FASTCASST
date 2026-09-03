@@ -54,7 +54,8 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
 
   //Get log rate
   LOGRATE = in_configuration_matrix.get(2,1);
-  //Set names of headers
+  //Set names of headers for the output matrix.
+  //Note that this is not the same as the model_matrix which uses quaternions
   headernames = (char**)malloc((NUMVARS-1)*sizeof(char*)); //-1 because of quaternions
   headernames[0] = "X(m)"; /// set(1,1);
   headernames[1] = "Y(m)";
@@ -311,6 +312,10 @@ void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix) {
 
   //Convert XYZ to latitude longitude altitude and put into model_matrix.
   SetGPS();
+
+  //Send magnetometer readings to the model matrix
+  //BVECB_Tesla.disp();
+  model_matrix.vecset(14,16,BVECB_Tesla,1);
 
   //Set pressure (but check for satellite/cubesat)
   double X = model_matrix.get(1,1);

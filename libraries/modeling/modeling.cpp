@@ -66,9 +66,9 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[6] = "U(m/s)";
   headernames[7] = "V(m/s)";
   headernames[8] = "W(m/s)";
-  headernames[9] = "P(rad/s)";
-  headernames[10] = "Q(rad/s)";
-  headernames[11] = "R(rad/s)";
+  headernames[9] = "P(deg/s)";
+  headernames[10] = "Q(deg/s)";
+  headernames[11] = "R(deg/s)";
   headernames[12] = "Mx(Gauss)";
   headernames[13] = "My(Gauss)";
   headernames[14] = "Mz(Gauss)";
@@ -349,6 +349,11 @@ void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix) {
     //output_matrix.vecset(4,6,ptp,1);
     //Then the rest of the matrix
     output_matrix.vecset(7,NUMVARS-1,model_matrix,8);
+    //Oh perfect I made a separate output matrix that has ptp in degrees so I can do the same
+    //to get pqr in degrees/sec for the output matrix
+    output_matrix.set(10,1,model_matrix.get(11,1)*RAD2DEG);
+    output_matrix.set(11,1,model_matrix.get(12,1)*RAD2DEG);
+    output_matrix.set(12,1,model_matrix.get(13,1)*RAD2DEG);
     //Copy Yaw Angle to IMU row
     output_matrix.set(20,1,ptp.get(3,1)*180/PI);
     //model_matrix.disp();

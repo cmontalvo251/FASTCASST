@@ -210,7 +210,16 @@ void hardware::loop(double currentTime,double elapsedTime,MATLAB control_matrix)
     logger.printvar(currentTime);
     logger.writecomma(); 
     //All sense states
+    //Since Model_Matrix PQR is in rad/s and sense_matrix is in deg/s we need to convert to radians/sec
+    //But I don't want to overload the hardware routine so let's convert the model_matrix instead
+    //sense.sense_matrix.set(10,1,sense.sense_matrix.get(10,1)*DEG2RAD);
+    //sense.sense_matrix.set(11,1,sense.sense_matrix.get(11,1)*DEG2RAD);
+    //sense.sense_matrix.set(12,1,sense.sense_matrix.get(12,1)*DEG2RAD);
     logger.print(sense.sense_matrix);
+    //But then I don't want to screw everything up so let's convert it back to deg/s
+    //sense.sense_matrix.set(10,1,sense.sense_matrix.get(10,1)*RAD2DEG);
+    //sense.sense_matrix.set(11,1,sense.sense_matrix.get(11,1)*RAD2DEG);
+    //sense.sense_matrix.set(12,1,sense.sense_matrix.get(12,1)*RAD2DEG);
     logger.writecomma();
     //RC Channels
     logger.printarray(rc.in.rx_array,5);

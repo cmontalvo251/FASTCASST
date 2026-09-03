@@ -156,7 +156,7 @@ if MODEL == 'satellite':
     plti.grid()
     plti.legend()
     plti.set_xlabel('Time (sec)')
-    plti.set_ylabel('Angular Velocity (rad/s)')
+    plti.set_ylabel('Angular Velocity (deg/s)')
     pp.savefig()
 
     STICK_MAX = 2016.

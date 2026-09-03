@@ -77,7 +77,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //sense_matrix.disp();
     pqr.vecset(1,3,sense_matrix,10);
     //pqr.disp();
-    //Convert to (rad/s)
+    //Convert to (rad/s) 
     pqr.mult_eq(PI/180.0);
     if (pqr.norm() < 0.01) {
       //Defaults already set so just return

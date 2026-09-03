@@ -297,12 +297,12 @@ void loop() {
       //Time
       printf("T,dt %lf %lf ",watch.currentTime,watch.elapsedTime);
       //First 5 RX signals
-      printf("RX ");
-      hw.rc.in.printRCstate(-6);
+      //printf("RX ");
+      //hw.rc.in.printRCstate(-6);
       //Roll Pitch Yaw
       printf("RPY %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
       //PQR
-      //printf(" %lf %lf %lf ",hw.sense.orientation.roll_rate,hw.sense.orientation.pitch_rate,hw.sense.orientation.yaw_rate);
+      printf("PQR %lf %lf %lf ",hw.sense.orientation.roll_rate,hw.sense.orientation.pitch_rate,hw.sense.orientation.yaw_rate);
       //PWM Array
       printf("PWM ");
       hw.rc.out.print();

@@ -57,6 +57,8 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   //Once you have the magnetic moment and magnetic field you can compute the total
   //torque placed on the satellite
   MB.cross(MMTVEC, env.BVECB_Tesla);
+
+  //Then we need to add in the torque from reaction wheels
 }
 
 

@@ -7,7 +7,7 @@ controller::controller() {
 };
 
 void controller::init(MATLAB in_configuration_matrix) {
-  control_matrix.zeros(NUMSIGNALS,1,"Control Signals"); //NUMSIGNALS SET AS NUMTORQUERS IN PARAMS.H
+  control_matrix.zeros(NUMSIGNALS,1,"Control Signals"); //NUMSIGNALS SET AS NUMTORQUERS+NUMRWS IN PARAMS.H and SATELLITE_CONTROLLER.H
   set_defaults();
   printf("Controller Received Configuration Matrix \n");
   //in_configuration_matrix.disp();
@@ -19,9 +19,14 @@ void controller::init(MATLAB in_configuration_matrix) {
 }
 
 void controller::set_defaults() {
+  //First 3 here are magTs
   control_matrix.set(1,1,STICK_MID);
   control_matrix.set(2,1,STICK_MID);
   control_matrix.set(3,1,STICK_MID);
+  //The next ones are reaction wheel speeds
+  control_matrix.set(4,1,STICK_MID);
+  control_matrix.set(5,1,STICK_MID);
+  control_matrix.set(6,1,STICK_MID);
 }
 
 void controller::print() {
@@ -79,10 +84,13 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     //pqr.disp();
     //Convert to (rad/s) 
     pqr.mult_eq(PI/180.0);
-    if (pqr.norm() < 0.01) {
-      //Defaults already set so just return
+    if (pqr.norm() < 0.1) { //0.1 rad per second is around 5.7 deg/s
+      //Defaults already set for magTs so just leave those blank
       //pqr.disp();
       //printdouble(pqr.norm(),"PQR Norm = ");
+      //Here we turn on reaction wheels to spin up to a speed that will allow us to detumble
+      //For now we'll set them to zero until we're sure everything is working
+      printf("RUNNING REACTION WHEEL SPINUP \n");
       return;
     }
     //pqr.disp();
@@ -96,7 +104,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     desired_moments.mult_eq(1.0/(NUMTURNS*AREA));
     desired_moments.plus_eq(STICK_MID);
     //send to ctlcomms (but might not be 3 actuators)
-    for (int i = 0;i<NUMSIGNALS;i++) { //NUMSIGNALS is set in params.h
+    for (int i = 0;i<NUMTORQUERS;i++) { //NUMSIGNALS is set in params.h
       control_matrix.set(i+1,1,desired_moments.get(i+1,1));
     }
   } 

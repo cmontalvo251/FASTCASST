@@ -15,7 +15,7 @@ private:
   int CONTROLLER_FLAG = -99;
   void set_defaults();
 public:
-  int NUMSIGNALS=NUMTORQUERS; //Number set in params.h
+  int NUMSIGNALS=NUMTORQUERS+NUMRWS; //Number set in params.h
   MATLAB control_matrix; //This is a vector of TAERA1A2 in PWM signals
   void loop(double currentTime,int rx_array[],MATLAB sense_matrix);
   void init(MATLAB in_configuration_matrix);

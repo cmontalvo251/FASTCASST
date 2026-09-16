@@ -74,6 +74,7 @@ class modeling {
   //boost::thread render;
  public:
   double keyboardVars[4];
+  void printextra();
   //Matrices
   MATLAB model_matrix,integration_matrix,model_sense_matrix;
   //Status

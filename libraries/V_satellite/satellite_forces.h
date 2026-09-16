@@ -24,8 +24,11 @@ class forces {
   //must adhere to the standards below
   MATLAB MMTVEC;
   double dOmega_max = 10,dPWM = (STICK_MAX-STICK_MIN),IpwmC = (dOmega_max/dPWM);
+  double prev_time=0,Irw,MAXACCEL;
  public:
-  double length = 1; //This is the length of the satellite. It is used in the Dryden model
+  MATLAB omega_RWS;
+  double MAXOMEGA;
+  double length = 1; //This is the length of the satellite. It is used in the Dryden model which obviously isn't called in space but it's just here not to break anything
   //These are 3x1 MATLAB vectors that must be in units of Newtons
   //and in the body frame
   MATLAB FB,MB;

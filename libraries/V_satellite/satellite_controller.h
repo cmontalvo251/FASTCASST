@@ -13,6 +13,7 @@ private:
   MATLAB pqr,mxyz,desired_moments;
   double elapsedTime = 0,lastTime=0; //These are used to keep track of time elapsed.
   int CONTROLLER_FLAG = -99;
+  double Irw;
   void set_defaults();
 public:
   int NUMSIGNALS=NUMTORQUERS+NUMRWS; //Number set in params.h

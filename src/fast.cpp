@@ -319,6 +319,9 @@ void loop() {
       }
   }
   printf("Main Loop End \n");
+  #ifdef satellite
+  model.printextra();
+  #endif
 }
 
 int system_check() {

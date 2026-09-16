@@ -236,6 +236,17 @@ void renderloop(char* root_folder_name,int argc,char** argv) {
 }
 #endif
 
+void modeling::printextra() {
+  #ifdef satellite
+  printf("Reaction Wheels Angular Velocity State (rad/s) = ");
+  for (int i = 1;i<=3;i++) {
+    printf("%lf ",extforces.omega_RWS.get(i,1));
+  }
+  printf("\n");
+  printf("Maximum Angular Velocity (rad/s) = %lf \n",extforces.MAXOMEGA);
+  #endif
+}
+
 void modeling::SetGPS() {
   X = model_matrix.get(1,1);
   Y = model_matrix.get(2,1);

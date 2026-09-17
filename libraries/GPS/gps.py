@@ -107,7 +107,7 @@ class GPS():
         
     def update(self):
         #time.sleep(0.1)
-        print('GPS MODE = ',self.MODE)
+        #print('GPS MODE = ',self.MODE)
         if self.MODE == 'AUTO':
             msg = self.ubl.receive_message()
             if msg is None:

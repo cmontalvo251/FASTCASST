@@ -19,6 +19,7 @@ NUMOUTPUTS = 22  #Number of data outputs (22 for car, 23 for boat, 24 for airpla
 NUMPWM = 2 #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
 VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
 MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
+TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
 ################################################
 
 ##Import basic utilities
@@ -100,7 +101,10 @@ while (True):
 
     #Get Time
     LastTime = RunTime
-    RunTime = time.time() - StartTime
+    if MODE == 'SIMONLY':
+        RunTime = LastTime + model.timestep
+    else:
+        RunTime = time.time() - StartTime
     elapsedTime = RunTime - LastTime
     
     #Read in receiver commands
@@ -143,7 +147,7 @@ while (True):
     print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.ALT:.3f}",gps_llh.altitude)
 
     ##Send Telemetry
-    if (RunTime - telemetryTime) > 1.0:
+    if (RunTime - telemetryTime) > TELEMETRYTIME and MODE != 'SIMONLY':
         telemetryTime = RunTime	
         print('Sending telemtry packet...',RunTime)
         ser.fast_packet[0] = RunTime #//1 - Time

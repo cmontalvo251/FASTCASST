@@ -6,12 +6,11 @@ import datetime
 class Datalogger():
 	def __init__(self,NUMOUTPUTS):
 		self.number = 0
-		self.SIL = util.isSIL()
 		print('Input arguments = ',sys.argv)
 		if len(sys.argv) > 1:
 			print('Using Directory = ',sys.argv[1])
 		else:
-		    sys.exit('No input argument given for datalogging directory')
+			sys.exit('No input argument given for datalogging directory')
 		self.setfilename(sys.argv[1])
 		self.open()
 		#create an array for data
@@ -42,7 +41,7 @@ class Datalogger():
 		print("Attempting to open" + self.filename);
 		self.outfile = open(self.filename,"w");
 		if not self.outfile:
-	 		print("File not opened properly = " + self.filename);
+			print("File not opened properly = " + self.filename);
 		else:
 			print("File " + self.filename + " opened successfully")
 
@@ -64,9 +63,9 @@ class Datalogger():
 
 	#Close function
 	def close(self):
-  		print("Closing File");
-  		try:
-  			self.outfile.close()
-	  		print("File closed");
-	  	except AttributeError:
+		print("Closing File");
+		try:
+			self.outfile.close()
+			print("File closed");
+		except AttributeError:
 	  		print('You have no file to close')

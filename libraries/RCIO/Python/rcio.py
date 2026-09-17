@@ -5,13 +5,13 @@ class RCIO():
     SERVO_MIN = 0.995 #ms
     SERVO_MID = 1.504 #ms
     SERVO_MAX = 2.010 #ms
-    def __init__(self,NUMPWM):
-        self.rcin = RCInput(self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX)
+    def __init__(self,NUMPWM,mode):
+        self.rcin = RCInput(mode,self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX)
         self.rcout = []
         self.NUMPWM = NUMPWM
         for i in range(0,NUMPWM):
             print('Setting up Pin = ',i)
-            self.rcout.append(PWM(i))
+            self.rcout.append(PWM(mode,i))
             print('Pin ',i,' appended')
             self.rcout[i].initialize()
             self.rcout[i].set_period(50)
@@ -33,12 +33,12 @@ class PWM():
     SYSFS_PWM_EXPORT_PATH = "/sys/class/pwm/pwmchip0/export"
     SYSFS_PWM_UNEXPORT_PATH = "/sys/class/pwm/pwmchip0/unexport"
 
-    def __init__(self, channel):
+    def __init__(self,mode,channel):
         self.channel = channel
         self.channel_path = self.SYSFS_PWM_PATH_BASE + "pwm{}/".format(self.channel)
         self.is_initialized = False
         self.is_enabled = False
-        self.SIL = util.isSIL()
+        self.MODE = mode
 
     def __enter__(self):
         self.initialize()
@@ -55,7 +55,8 @@ class PWM():
             pwm_unexport.write(str(self.channel))
 
     def initialize(self):
-        if self.SIL:
+        #These will work in HIL mode and AUTO
+        if self.MODE != 'AUTO' and self.MODE != 'HIL':
             print('Emulating PWM signal. Initializing pin.....',self.channel)
         else:
             print('Initializing pin.....',self.channel)
@@ -68,7 +69,7 @@ class PWM():
         self.is_initialized = True
 
     def enable(self):
-        if self.SIL:
+        if self.MODE != 'AUTO' and self.MODE !=' HIL':
             print('Emulating PWM signal. Enabling pin.....',self.channel)
         else:
             print('Enabling pin.....',self.channel)
@@ -86,7 +87,7 @@ class PWM():
             raise RuntimeError("PWM not initialized. Call initialize first")
 
         period_ns = int(1e9/freq)
-        if self.SIL:
+        if self.MODE != 'AUTO' and self.MODE != 'HIL':
             print('Emulating PWM signal. Setting frequency for pin....',freq,self.channel)
         else:
             print('Setting frequency for pin....',freq,self.channel)
@@ -96,7 +97,7 @@ class PWM():
     def set_duty_cycle(self, period):
         if not self.is_initialized:
             raise RuntimeError("PWM not initialized. Call initialize first")
-        if not self.SIL:
+        if self.MODE == 'AUTO' or self.MODE == 'HIL':
             period_ns = int(period*1e6)
             with open(self.channel_path + "duty_cycle", "w") as pwm_duty:
                 pwm_duty.write(str(period_ns))
@@ -111,21 +112,21 @@ class RCInput():
     #that channel 5 is arming and channel 6 is autopilot mode
     #the first 4 channels are then the standard TAER
 
-    def __init__(self,SERVO_MIN,SERVO_MID,SERVO_MAX,num_channels=6):
+    def __init__(self,mode,SERVO_MIN,SERVO_MID,SERVO_MAX,num_channels=6):
         print('Initializing RCInput....')
         self.SERVO_MID = SERVO_MID
         self.SERVO_MAX = SERVO_MAX
         self.SERVO_MIN = SERVO_MIN
         self.num_channels = num_channels
         self.rcsignals = [0]*num_channels
-        self.SIL = util.isSIL()
+        self.MODE = mode
         self.ARMED = False #set armed to false
         self.color = 'Red' #for the LED
         for i in range(0, self.num_channels):
             try:
-                if self.SIL:
+                if self.MODE != 'AUTO' and self.MODE != 'HIL':
                     f = i
-                    print('Running in SIL mode....emulating RCinput = ',i)
+                    print('RCInput Running in emulation mode = ',i)
                 else:
                     f = open("/sys/kernel/rcio/rcin/ch%d" % i, "r")
                     print('Opening RCinput channel = ',i)
@@ -175,7 +176,7 @@ class RCInput():
         return (signal/1000.0 - self.SERVO_MID)/((self.SERVO_MAX-self.SERVO_MIN)/2)
     
     def read(self, ch):
-        if not self.SIL:
+        if self.MODE == 'AUTO' or self.MODE == 'HIL':
             value = self.channels[ch].read()
             position = self.channels[ch].seek(0, 0)
             return value[:-1]

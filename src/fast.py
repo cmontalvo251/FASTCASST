@@ -15,14 +15,22 @@
 ################################################
 
 #####################PARAMETERS#################
-NUMOUTPUTS = 21  #Number of data outputs (20 for car, 21 for boat, 22 for airplane)
-NUMPWM = 3 #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
-VEHICLE = 'boat'  #Options are 'car', 'boat', or 'airplane'
+NUMOUTPUTS = 22  #Number of data outputs (22 for car, 23 for boat, 24 for airplane)
+NUMPWM = 2 #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
+VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
+MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 ################################################
 
 ##Import basic utilities
 import numpy as np
+import time
 import sys
+
+##Import modeling if MODE == SIMONLY
+if MODE == 'SIMONLY':
+    sys.path.append('../libraries/modeling')
+    import modeling
+    model = modeling.MODEL()
 
 ##Import the vehicle controller based on your selection
 sys.path.append('../libraries/V_'+VEHICLE)
@@ -37,35 +45,35 @@ util.check_apm()
 #Setup GPS
 sys.path.append('../libraries/GPS')
 import gps
-gps_llh = gps.GPS()
+gps_llh = gps.GPS(mode=MODE)
 
 #Setup IMU
 sys.path.append('../libraries/MPU9250')
 import mpu9250
-imu = mpu9250.MPU9250()
+imu = mpu9250.MPU9250(mode=MODE)
 
 #Setup datalogger
 sys.path.append('../libraries/Datalogger')
 import datalogger
-NUMOUTPUTS+=2 #Add 2 outputs for gps heading and compass
 logger = datalogger.Datalogger(NUMOUTPUTS)
 
 #Setup LED
 sys.path.append('../libraries/LED')
 import leds
-led = leds.Led()
+led = leds.Led(mode=MODE)
 
 #Setup RCIO (receiver signals and output pwmsignals)
 sys.path.append('../libraries/RCIO/Python')
 import rcio
-rc = rcio.RCIO(NUMPWM)
+rc = rcio.RCIO(NUMPWM,MODE)
 
 #Setup the Barometer
 sys.path.append('../libraries/MS5611/')
 import ms5611
-baro = ms5611.MS5611()
-#Calibrate the barometer
-baro.calibrate() #if you don't calibrate sea level defaults to 1013.25
+baro = ms5611.MS5611(mode=MODE)
+#Calibrate the barometer but only if you're not in SIMONLY mode
+if MODE != 'SIMONLY':
+    baro.calibrate() #if you don't calibrate sea level defaults to 1013.25
 
 ##Setup Telemetry
 sys.path.append('../libraries/')
@@ -74,9 +82,9 @@ ser = U(13) #otherwise this defaults to 12
 ser.SerialInit(57600,"/dev/ttyAMA0",period=1.0)
 
 #Short break to build suspense
-print('Sleep for 1 second.....')
-import time
-time.sleep(1)
+if MODE != 'SIMONLY':
+    print('Sleep for 1 second.....')
+    time.sleep(1)
 
 #Create a time for elapsed time
 print('Setting up Time')

@@ -237,7 +237,7 @@ class MPU9250:
 
     __Magnetometer_Sensitivity_Scale_Factor = (0.15)
 
-    def __init__(self, spi_bus_number = 0, spi_dev_number = 1):
+    def __init__(self, mode,spi_bus_number = 0, spi_dev_number = 1):
         self.bus = spidev.SpiDev()
         self.spi_bus_number = spi_bus_number
         self.spi_dev_number = spi_dev_number
@@ -251,6 +251,7 @@ class MPU9250:
         self.magnetometer_data = [0.0, 0.0, 0.0]
         self.rpy = np.zeros(3)
         self.compass = -999 #Default compass value is -999 until we get a reading from the magnetometer and gps
+        self.MODE = mode
         self.initialize()
 
     def bus_open(self):
@@ -353,9 +354,8 @@ class MPU9250:
         #Initialize AHRS filter
         self.ahrs = AHRS.AHRS()
 
-        self.SIL = util.isSIL()
-        if self.SIL:
-            print('Running in SIL mode....emulating IMU')
+        if self.MODE != 'AUTO':
+            print('IMU running in emulation mode')
         else:
             for i in range(0, MPU_InitRegNum):
                 self.WriteReg(MPU_Init_Data[i][1], MPU_Init_Data[i][0])
@@ -577,7 +577,8 @@ class MPU9250:
 # -----------------------------------------------------------------------------------------------
 
     def getALL(self,dt,gps_heading = -999): #gps heading defaults to -999 if not available
-        if self.SIL:
+        if self.MODE != 'AUTO':
+            ##Will need to update this using modeling as well
             a = [0,0,9.81]
             g = [0,0,0]
             m = [150,0,0]

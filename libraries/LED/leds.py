@@ -3,18 +3,18 @@ OFF = 1
 import util
 
 class Pin():
-    def __init__(self, folder_name,color):
+    def __init__(self,mode,folder_name,color):
         self.pin = folder_name
         self.color = color
-        self.SIL = util.isSIL()
+        self.MODE=mode
     
     def write(self, value):
-        if self.SIL:
+        if self.MODE != 'AUTO':
             if value == 1:
-                mode = 'OFF'
+                status = 'OFF'
             else:
-                mode = 'ON'
-            #print('Running in SIL mode so printing color and mode....',self.color,mode)
+                status = 'ON'
+            #print('Running in emulation mode so printing color and mode....',self.color,status)
         else:
             with open("/sys/class/leds/%s/brightness" % self.pin, "w") as value_file:
                 value_file.write(str(value))
@@ -22,11 +22,11 @@ class Pin():
 
 class Led():
 
-    def __init__(self):
+    def __init__(self,mode):
         print('Initializing LEDs....')
-        self.ledR = Pin("rgb_led0","red")
-        self.ledB = Pin("rgb_led1","blue")
-        self.ledG = Pin("rgb_led2","green")
+        self.ledR = Pin(mode,"rgb_led0","red")
+        self.ledB = Pin(mode,"rgb_led1","blue")
+        self.ledG = Pin(mode,"rgb_led2","green")
 
         self.ledR.write(OFF) 
         self.ledG.write(OFF) 

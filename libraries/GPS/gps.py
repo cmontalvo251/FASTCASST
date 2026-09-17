@@ -16,7 +16,7 @@ except ImportError:
     print('WARNING: ublox library not found.')
 
 class GPS():
-    def __init__(self, port='spi:0.0', baud=5000000):
+    def __init__(self,mode,port='spi:0.0', baud=5000000):
         ##Set defaults
         self.latitude       = -99
         self.prev_latitude = -99
@@ -47,12 +47,12 @@ class GPS():
         self.GPSTime = -self.GPSNEXT
 
         self.ubl = None
-        self.SIL  = util.isSIL()
+        self.MODE = mode
         self.initialize(port, baud)
 
     def initialize(self, port='spi:0.0', baud=5000000):
-        if self.SIL:
-            print('Running in SIL mode — emulating GPS')
+        if self.MODE != 'AUTO':
+            print('GPS Running in emulation mode')
             return
 
         if not UBLOX_AVAILABLE:
@@ -107,7 +107,8 @@ class GPS():
         
     def update(self):
         #time.sleep(0.1)
-        if not self.SIL:
+        print('GPS MODE = ',self.MODE)
+        if self.MODE == 'AUTO':
             msg = self.ubl.receive_message()
             if msg is None:
                 if opts.reopen:
@@ -142,6 +143,7 @@ class GPS():
     #            outstr = "".join(outstr)
     #            print(outstr)
         else:
+            ##Will need to update this with modeling values eventually
             self.latitude = 30.69
             self.longitude = -88.10
             self.altitude = 0.0

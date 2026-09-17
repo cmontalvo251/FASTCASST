@@ -103,10 +103,10 @@ class MS5611:
 	__MS5611_RA_D2_OSR_2048	  = 0x56
 	__MS5611_RA_D2_OSR_4096	  = 0x58
 
-	def __init__(self, I2C_bus_number = 1, address = 0x77, SPI_bus_number = 0, SPI_dev_number = 0, bus = "I2C"):
-		self.SIL = util.isSIL()
-		if self.SIL:
-			print('Running in SIL mode......Emulating Barometer')
+	def __init__(self,mode,I2C_bus_number = 1, address = 0x77, SPI_bus_number = 0, SPI_dev_number = 0, bus = "I2C"):
+		self.MODE = mode
+		if self.MODE != 'AUTO':
+			print('Barometer running in emulation mode')
 		else:
 			self.bus = self.I2CBus(I2C_bus_number, address) if bus == "I2C" else  \
 				 self.SPIBus(SPI_bus_number, SPI_dev_number)
@@ -124,8 +124,8 @@ class MS5611:
 		self.BARONEXT = 1.0
 		self.BAROWAIT = 0.01
 		self.BAROMODE = 0
-		self.pressure_sea_level = 1013.25
-		if not self.SIL:
+		self.pressure_sea_level = 1013.25 #DEFAULT
+		if self.MODE == 'AUTO':
 			self.initialize()
 			self.update()
 		print('Barometer initialized')
@@ -253,8 +253,8 @@ class MS5611:
 	#3 mode succession. Still, now that this 2 mode version works it would be interesting
 	#to try and get the 3 mode version to work if you need those precious BAROWAIT seconds
 	def poll(self,RunTime):
-		if self.SIL:
-			self.defaults()
+		if self.MODE != 'AUTO':
+			self.defaults() #Will need to update this for modeling eventually
 			self.convertPressure2Altitude()
 			return
 		if self.BAROMODE == 1:

@@ -20,6 +20,10 @@ NUMPWM = 2 #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
 VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
 MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
+TIMESTEP = 0.1 #Timestep of modeling if SIMONLY selected
+TFINAL = 10.0 #final time of simulation if SIMONLY selected
+#Initial Conditions for SIMONLY
+ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x,y,z,phi,theta,psi,u,v,w,p,q,r
 ################################################
 
 ##Import basic utilities
@@ -31,7 +35,7 @@ import sys
 if MODE == 'SIMONLY':
     sys.path.append('../libraries/modeling')
     import modeling
-    model = modeling.MODEL()
+    model = modeling.MODEL(TIMESTEP,ICs,VEHICLE)
 
 ##Import the vehicle controller based on your selection
 sys.path.append('../libraries/V_'+VEHICLE)
@@ -86,6 +90,7 @@ ser.SerialInit(57600,"/dev/ttyAMA0",period=1.0)
 if MODE != 'SIMONLY':
     print('Sleep for 1 second.....')
     time.sleep(1)
+    TFINAL = 1e20 #Make the end time absurdly long that we would never hit in our lifetime
 
 #Create a time for elapsed time
 print('Setting up Time')
@@ -97,7 +102,7 @@ telemetryTime = RunTime
 #This runs on repeat until code is killed
 print('Running main loop....')
 
-while (True):
+while (RunTime < TFINAL):
 
     #Get Time
     LastTime = RunTime

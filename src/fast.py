@@ -23,7 +23,7 @@ TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
 TIMESTEP = 0.1 #Timestep of modeling if SIMONLY selected
 TFINAL = 10.0 #final time of simulation if SIMONLY selected
 #Initial Conditions for SIMONLY
-ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x,y,z,phi,theta,psi,u,v,w,p,q,r
+ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
 ################################################
 
 ##Import basic utilities
@@ -108,6 +108,7 @@ while (RunTime < TFINAL):
     LastTime = RunTime
     if MODE == 'SIMONLY':
         RunTime = LastTime + model.timestep
+        model.loop(RunTime)
     else:
         RunTime = time.time() - StartTime
     elapsedTime = RunTime - LastTime

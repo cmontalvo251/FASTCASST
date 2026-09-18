@@ -10,7 +10,7 @@ class MODEL():
         self.state[0] = ICs[0] #x (m)
         self.state[1] = ICs[1] #y (m)
         self.state[2] = ICs[2] #z (m)
-        ptp = np.asarray([ICs[3],ICs[4],ICs[5]])
+        ptp = np.asarray([ICs[3],ICs[4],ICs[5]])*np.pi/180.0 #convert to radians
         quat = self.euler2quat(ptp)
         self.state[3] = quat[0]
         self.state[4] = quat[1]
@@ -19,13 +19,16 @@ class MODEL():
         self.state[7] = ICs[6] #u (m/s)
         self.state[8] = ICs[7] #v (m/s)
         self.state[9] = ICs[8] #w (m/s)
-        self.state[10] = ICs[9] #p (rad/s)
-        self.state[11] = ICs[10] #q (rad/s)
-        self.state[12] = ICs[11] #r (rad/s)
+        self.state[10] = ICs[9]*np.pi/180.0 #p (rad/s)
+        self.state[11] = ICs[10]*np.pi/180.0 #q (rad/s)
+        self.state[12] = ICs[11]*np.pi/180.0 #r (rad/s)
 
         #Get mass and inertia props
-        self.mass = 1.0
-        self.I = np.eye(3)
+        sys.path.append('../libraries/V_'+VEHICLE)
+        import forces
+        self.vehicle = forces.FORCES()
+        self.mass = self.vehicle.mass
+        self.I = self.vehicle.I
         self.Iinv = np.linalg.inv(self.I)
 
     def Derivatives(self,t,dstate):
@@ -75,7 +78,7 @@ class MODEL():
         k1 = self.Derivatives(t,self.state)
         k2 = self.Derivatives(t+self.timestep/2.0,self.state+k1*self.timestep/2.0)
         k3 = self.Derivatives(t+self.timestep/2.0,self.state+k2*self.timestep/2.0)
-        k4 = self.Derivatives(t+self.timestep,state+k3*self.timestep)
+        k4 = self.Derivatives(t+self.timestep,self.state+k3*self.timestep)
         phi = (1.0/6.0)*(k1 + 2*k2 + 2*k3 + k4)
         #Step State
         self.state += phi*self.timestep

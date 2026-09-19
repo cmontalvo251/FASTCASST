@@ -1,35 +1,31 @@
 import sys
-import util
+import Util.util
 import numpy as np
 import datetime
 
 class Datalogger():
-	def __init__(self,NUMOUTPUTS):
-		self.number = 0
-		print('Input arguments = ',sys.argv)
-		if len(sys.argv) > 1:
-			print('Using Directory = ',sys.argv[1])
-		else:
-			sys.exit('No input argument given for datalogging directory')
-		self.setfilename(sys.argv[1])
+	def __init__(self,directory,NUMOUTPUTS):
+		self.number = 0		
+		self.directory = directory
+		self.setfilename()
 		self.open()
 		#create an array for data
 		self.outdata = np.zeros(NUMOUTPUTS)
 		self._write_count = 0
 
-	def setfilename(self,directory,extension='.txt'):
+	def setfilename(self,extension='.txt'):
 		##Use datetime name only if the system clock looks valid (year >= 2024).
 		##Without NTP or an RTC the Pi boots to a wrong date, so fall back to
 		##incremental numbering (0.txt, 1.txt, …) instead.
 		if datetime.datetime.now().year >= 2024:
 			timestamp = datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
-			self.filename = directory + timestamp + extension
+			self.filename = self.directory + timestamp + extension
 			print("Log file = " + self.filename)
 		else:
 			print("System clock not synced — using incremental filename.")
 			number = 0
 			while True:
-				self.filename = directory + str(number) + extension
+				self.filename = self.directory + str(number) + extension
 				try:
 					open(self.filename, 'r').close()
 					number += 1

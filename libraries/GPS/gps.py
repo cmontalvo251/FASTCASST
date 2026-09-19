@@ -2,14 +2,14 @@ import sys
 import time
 import numpy as np
 
-sys.path.append('../Util')
-sys.path.append('../libraries/Util')
-sys.path.append('../Ublox')
-sys.path.append('../libraries/Ublox')
-import util
+#sys.path.append('../Util')
+#sys.path.append('../libraries/Util')
+#sys.path.append('../Ublox')
+#sys.path.append('../libraries/Ublox')
+import Util.util
 
 try:
-    import ublox
+    import Ublox.ublox
     UBLOX_AVAILABLE = True
 except ImportError:
     UBLOX_AVAILABLE = False
@@ -223,7 +223,7 @@ class GPS():
         lon_rad = np.arctan2(y, x)
         lat = np.degrees(lat_rad)
         lon = np.degrees(lon_rad)
-        alt = rho - REARTH
+        alt = rho - self.REARTH
         return lat, lon, alt
 
     def convertLATLONVEC2XY(self, *argv):

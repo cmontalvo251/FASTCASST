@@ -1,9 +1,11 @@
 import sys
 import time
 import numpy as np
+import Datalogger.datalogger as D
+import GPS.gps as G
 
 class MODEL():
-    def __init__(self,TIMESTEP,ICs,VEHICLE):
+    def __init__(self,TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,LATITUDE_ORIGIN,LONGITUDE_ORIGIN):
         self.timestep = TIMESTEP
         print('Running SIMONLY mode')
         self.state = np.zeros(13) #13 states
@@ -24,12 +26,85 @@ class MODEL():
         self.state[12] = ICs[11]*np.pi/180.0 #r (rad/s)
 
         #Get mass and inertia props
-        sys.path.append('../libraries/V_'+VEHICLE)
+        self.VEHICLE = VEHICLE
+        sys.path.append('../libraries/V_'+self.VEHICLE)
+        sys.path.append('libraries/V_'+self.VEHICLE)
         import forces
         self.vehicle = forces.FORCES()
         self.mass = self.vehicle.mass
         self.I = self.vehicle.I
         self.Iinv = np.linalg.inv(self.I)
+
+        ##Setup logging
+        self.logger = D.Datalogger('logs/',NUMOUTPUTS)
+
+        #Setup GPS for lat/lon conversions
+        self.gps = G.GPS(mode='SIMONLY')
+        self.gps.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
+
+        #Setup Barometer for pressure to altitude conversions
+        import MS5611.ms5611 as MS
+        self.baro = MS.MS5611(mode='SIMONLY')
+
+    def log(self,RunTime):
+        self.logger.outdata[0] = np.round(RunTime,5)
+        self.logger.outdata[1] = self.rcsignals[0]
+        self.logger.outdata[2] = self.rcsignals[1]
+        self.logger.outdata[3] = self.rcsignals[2]
+        self.logger.outdata[4] = self.rcsignals[3]
+        self.logger.outdata[5] = self.rcsignals[4]
+        self.logger.outdata[6] = self.rcsignals[5]
+        #Convert x,y,z
+        if self.VEHICLE == 'satellite':
+            #Convert to lat/lon/alt using polar coordinates
+            self.latitude,self.longitude,self.altitude = self.gps.convertXY2LATLONSPHERICAL(self.state[0],self.state[1],self.state[2])
+        else:
+            #convert to lat/lon/alt using flat earth approx
+            self.latitude,self.longitude,self.altitude = self.gps.convertXYZ2LATLON(self.state[0],self.state[1],self.state[2])
+        self.logger.outdata[7] = self.latitude
+        self.logger.outdata[8] = self.longitude
+        self.logger.outdata[9] = self.altitude
+        #Barometer
+        z = self.state[2]
+        if self.VEHICLE == 'satellite':
+            x = self.state[0]
+            y = self.state[1]
+            rho = np.sqrt(x**2 + y**2 + z**2)
+            REARTH = 6371000.0
+  			#This is a satellite
+            self.baro.ALT = rho - REARTH
+        else:
+            self.baro.ALT = -z
+        self.baro.convertAltitude2Pressure()
+        self.logger.outdata[10] = self.baro.PRES
+
+        ##Roll,Pitch, Yaw from quat 2 euler
+        rpy = self.quat2euler(self.quat)
+        self.logger.outdata[11] = rpy[0]*180/np.pi
+        self.logger.outdata[12] = rpy[1]*180/np.pi
+        self.logger.outdata[13] = rpy[2]*180/np.pi
+
+        ##Speed just norm of velocity
+        speed = np.sqrt(self.u**2 + self.v**2 + self.w**2)
+        self.logger.outdata[14] = speed
+
+        ##PQR
+        self.logger.outdata[15] = self.p*180/np.pi
+        self.logger.outdata[16] = self.q*180/np.pi
+        self.logger.outdata[17] = self.r*180/np.pi
+        self.logger.outdata[18] = self.pwm_commands[0]
+        self.logger.outdata[19] = self.pwm_commands[1]
+        l = 19
+        if len(self.pwm_commands) > 2:
+            self.logger.outdata[20] = self.pwm_commands[2]
+        if len(self.pwm_commands) > 3:
+            self.logger.outdata[21] = self.pwm_commands[3]
+            l = 21
+
+        ###For GPS Heading and compass we'll just use the yaw angle
+        self.logger.outdata[l+1] = rpy[2]*180/np.pi
+        self.logger.outdata[l+2] = rpy[2]*180/np.pi
+        self.logger.println()
 
     def Derivatives(self,t,dstate):
         #Need to compute statedot
@@ -43,27 +118,28 @@ class MODEL():
         q1 = dstate[4]
         q2 = dstate[5]
         q3 = dstate[6]
-        quat = np.asarray([q0,q1,q2,q3])
-        u = dstate[7]
-        v = dstate[8]
-        w = dstate[9]
-        p = dstate[10]
-        q = dstate[11]
-        r = dstate[12]
+        self.quat = np.asarray([q0,q1,q2,q3])
+        self.u = dstate[7]
+        self.v = dstate[8]
+        self.w = dstate[9]
+        self.p = dstate[10]
+        self.q = dstate[11]
+        self.r = dstate[12]
 
         #Set up vectors
-        uvw = np.asarray([u,v,w])
-        pqr = np.asarray([p,q,r])
+        uvw = np.asarray([self.u,self.v,self.w])
+        pqr = np.asarray([self.p,self.q,self.r])
         
         #Kinematics
-        TIB = self.RQUAT(quat)
+        TIB = self.RQUAT(self.quat)
         xyzdot = np.matmul(TIB,uvw)
-        PQRMAT = np.asarray([[0,-p,-q,-r],[p,0,r,-q],[q,-r,0,p],[r,q,-p,0]])
-        quatdot = 0.5*np.matmul(PQRMAT,quat)
+        PQRMAT = np.asarray([[0,-self.p,-self.q,-self.r],[self.p,0,self.r,-self.q],[self.q,-self.r,0,self.p],[self.r,self.q,-self.p,0]])
+        quatdot = 0.5*np.matmul(PQRMAT,self.quat)
         
         #Force and Moment Model 
         F = np.asarray([0,0,0])
         M = np.asarray([0,0,0])
+        F,M = self.vehicle.ForceMoment(t,dstate,self.pwm_commands)
         
         #Dynamics
         uvwdot = F/self.mass - np.cross(pqr,uvw)
@@ -73,7 +149,9 @@ class MODEL():
 
         return dxdt
 
-    def loop(self,t):
+    def loop(self,t,rcsignals,pwm_commands):
+        self.pwm_commands = pwm_commands
+        self.rcsignals = rcsignals
         #RK4 Call
         k1 = self.Derivatives(t,self.state)
         k2 = self.Derivatives(t+self.timestep/2.0,self.state+k1*self.timestep/2.0)

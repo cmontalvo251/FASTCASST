@@ -1,6 +1,6 @@
 ON = 0
 OFF = 1
-import util
+import Util.util
 
 class Pin():
     def __init__(self,mode,folder_name,color):

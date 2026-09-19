@@ -32,9 +32,7 @@ from smbus import SMBus
 import spidev
 import numpy as np
 import sys
-sys.path.append('../libraries/Util')
-sys.path.append('../Util')
-import util
+import Util.util
 
 class MS5611:
 
@@ -215,7 +213,7 @@ class MS5611:
 		return
 
 	def update(self):
-		if self.SIL:
+		if self.MODE != 'AUTO':
 			self.defaults()
 		else:
 			self.refreshPressure()

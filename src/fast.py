@@ -32,62 +32,63 @@ LONGITUDE_ORIGIN = -88.16 #set origin for SIMONLY / SIL / HIL
 import numpy as np
 import time
 import sys
+import os
+sys.path.append('../libraries/')
+sys.path.append('libraries/')
 
 ##Import modeling if MODE == SIMONLY
 if MODE == 'SIMONLY':
-    sys.path.append('../libraries/modeling')
-    import modeling
-    model = modeling.MODEL(TIMESTEP,ICs,VEHICLE)
+    import modeling.modeling as M
+    model = M.MODEL(TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
 
 ##Import the vehicle controller based on your selection
 sys.path.append('../libraries/V_'+VEHICLE)
 import controller
 vehicle = controller.CONTROLLER()
+#Initialize pwm_commands
+pwm_commands = vehicle.defaults
 
 #Make sure Ardupilot is off
-sys.path.append('../libraries/Util')
-import util
-util.check_apm()
+import Util.util as U
+U.check_apm()
 
 #Setup GPS
-sys.path.append('../libraries/GPS')
-import gps
-gps_llh = gps.GPS(mode=MODE)
+import GPS.gps as G
+gps_llh = G.GPS(mode=MODE)
 if MODE != 'AUTO':
     gps_llh.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
 
 #Setup IMU
-sys.path.append('../libraries/MPU9250')
-import mpu9250
-imu = mpu9250.MPU9250(mode=MODE)
+import MPU9250.mpu9250 as MPU
+imu = MPU.MPU9250(mode=MODE)
 
 #Setup datalogger
-sys.path.append('../libraries/Datalogger')
-import datalogger
-logger = datalogger.Datalogger(NUMOUTPUTS)
+import Datalogger.datalogger as D
+print('Input arguments = ',sys.argv)
+if len(sys.argv) > 1:
+    print('Using Directory = ',sys.argv[1])
+else:
+	sys.exit('No input argument given for datalogging directory')
+logger = D.Datalogger(sys.argv[1],NUMOUTPUTS)
 
 #Setup LED
-sys.path.append('../libraries/LED')
-import leds
-led = leds.Led(mode=MODE)
+import LED.leds as L
+led = L.Led(mode=MODE)
 
 #Setup RCIO (receiver signals and output pwmsignals)
-sys.path.append('../libraries/RCIO/Python')
-import rcio
-rc = rcio.RCIO(NUMPWM,MODE)
+import RCIO.Python.rcio as R
+rc = R.RCIO(NUMPWM,MODE)
 
 #Setup the Barometer
-sys.path.append('../libraries/MS5611/')
-import ms5611
-baro = ms5611.MS5611(mode=MODE)
+import MS5611.ms5611 as MS
+baro = MS.MS5611(mode=MODE)
 #Calibrate the barometer but only if you're not in SIMONLY mode
 if MODE != 'SIMONLY':
     baro.calibrate() #if you don't calibrate sea level defaults to 1013.25
 
 ##Setup Telemetry
-sys.path.append('../libraries/')
-from Comms.Comms import Comms as U
-ser = U(13) #otherwise this defaults to 12
+from Comms.Comms import Comms as S
+ser = S(13) #otherwise this defaults to 12
 ser.SerialInit(57600,"/dev/ttyAMA0",period=1.0)
 
 #Short break to build suspense
@@ -112,7 +113,7 @@ while (RunTime < TFINAL):
     LastTime = RunTime
     if MODE == 'SIMONLY':
         RunTime = LastTime + model.timestep
-        model.loop(RunTime)
+        model.loop(RunTime,rc.rcin.rcsignals,pwm_commands)
         #Send model states to sensors
         gps_llh.send(model.state,VEHICLE)
         imu.send(model.state) #Just send the entire state vector and statedot
@@ -210,8 +211,17 @@ while (RunTime < TFINAL):
         logger.outdata[l+2] = compass
         logger.println()
         logTime = RunTime
+        if MODE == 'SIMONLY':
+            model.log(RunTime)
 
     #sleep so we don't spontaneously explode
     #time.sleep(0.01) Since there are sleeps in the barometer you don't need this anymore.
     #Also all the different sensor updates and calculations take so much time that the system won't spontaneously
     #explode. However, if you start debugging and turning things off it easily could....
+
+#If the program ends it means we're running in modeling mode
+#we need to copy a file
+command = 'cp ' + str(logger.filename) + ' ' + str(logger.directory) + '0.csv'
+os.system(command)
+command = 'cp ' + str(model.logger.filename) + ' ' + str(model.logger.directory) + '0.csv'
+os.system(command)

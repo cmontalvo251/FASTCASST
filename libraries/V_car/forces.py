@@ -13,7 +13,7 @@ class FORCES():
         Iyz = 0.0
         self.I = np.asarray([[Ixx,Ixy,Ixz],[Ixy,Iyy,Iyz],[Ixz,Iyz,Izz]])
 
-    def ForceMoment(self,t,state):
+    def ForceMoment(self,t,state,pwm_commands):
         Force = np.asarray([0,0,0])
         Moment = np.asarray([0,0,0])
         return Force,Moment

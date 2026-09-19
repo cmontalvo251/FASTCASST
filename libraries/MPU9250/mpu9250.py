@@ -31,10 +31,9 @@ import time
 import struct
 import array
 import numpy as np
-import util
+import Util.util
 import sys
-sys.path.append('../libraries/AHRS')
-import AHRS
+import AHRS.AHRS as A
 
 class MPU9250:
 
@@ -352,7 +351,7 @@ class MPU9250:
         ]
 
         #Initialize AHRS filter
-        self.ahrs = AHRS.AHRS()
+        self.ahrs = A.AHRS()
 
         if self.MODE != 'AUTO':
             print('IMU running in emulation mode')

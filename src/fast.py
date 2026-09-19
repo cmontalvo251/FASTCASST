@@ -18,12 +18,14 @@
 NUMOUTPUTS = 22  #Number of data outputs (22 for car, 23 for boat, 24 for airplane)
 NUMPWM = 2 #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
 VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
-MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
+MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 TIMESTEP = 0.1 #Timestep of modeling if SIMONLY selected
 TFINAL = 10.0 #final time of simulation if SIMONLY selected
 #Initial Conditions for SIMONLY
 ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
+LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL
+LONGITUDE_ORIGIN = -88.16 #set origin for SIMONLY / SIL / HIL
 ################################################
 
 ##Import basic utilities
@@ -51,6 +53,8 @@ util.check_apm()
 sys.path.append('../libraries/GPS')
 import gps
 gps_llh = gps.GPS(mode=MODE)
+if MODE != 'AUTO':
+    gps_llh.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
 
 #Setup IMU
 sys.path.append('../libraries/MPU9250')
@@ -109,6 +113,10 @@ while (RunTime < TFINAL):
     if MODE == 'SIMONLY':
         RunTime = LastTime + model.timestep
         model.loop(RunTime)
+        #Send model states to sensors
+        gps_llh.send(model.state,VEHICLE)
+        #imu.send(model.state,model.statedot) #Just send the entire state vector and statedot
+        #baro.send(model.state) #need to send x,y,z to get pressure since this may be a satellite
     else:
         RunTime = time.time() - StartTime
     elapsedTime = RunTime - LastTime

@@ -79,9 +79,9 @@ class MODEL():
         k2 = self.Derivatives(t+self.timestep/2.0,self.state+k1*self.timestep/2.0)
         k3 = self.Derivatives(t+self.timestep/2.0,self.state+k2*self.timestep/2.0)
         k4 = self.Derivatives(t+self.timestep,self.state+k3*self.timestep)
-        phi = (1.0/6.0)*(k1 + 2*k2 + 2*k3 + k4)
+        self.statedot = (1.0/6.0)*(k1 + 2*k2 + 2*k3 + k4)
         #Step State
-        self.state += phi*self.timestep
+        self.state += self.statedot*self.timestep
 
     def euler2quat(self,ptp):
         #%%%Input is a 3x1 vector and output is a 4x1 vector

@@ -39,6 +39,7 @@ class GPS():
         self.NM2FT  = 6076.115485560000
         self.FT2M   = 0.3048
         self.GPSVAL = 60.0 * self.NM2FT * self.FT2M
+        self.REARTH = 6371000.0
         self.latO   = 33.16
         self.lonO   = -88.1
 
@@ -144,16 +145,31 @@ class GPS():
     #            print(outstr)
         else:
             ##Will need to update this with modeling values eventually
-            self.latitude = 30.69
-            self.longitude = -88.10
-            self.altitude = 0.0
-            self.speed = 0.0
+            #self.latitude = 30.69 #These are now set in the send() routine
+            #self.longitude = -88.10 
+            #self.altitude = 0.0 
+            #self.speed = 0.0
             self.has_fix        = True
             self.fix_quality    = 1
             self.num_satellites = 6
 
         #Then we compute speed and heading here
         self.compute_heading_velocity()
+        return
+
+    def send(self,state,VEHICLE):
+        #This routine takes the state vector from the model and turns it into GPS coordinates
+        #First let's check and see if this is a satellite.....
+        if VEHICLE == 'satellite':
+            #Convert to lat/lon/alt using polar coordinates
+            self.latitude,self.longitude,self.altitude = self.convertXY2LATLONSPHERICAL(state[0],state[1],state[2])
+        else:
+            #convert to lat/lon/alt using flat earth approx
+            self.latitude,self.longitude,self.altitude = self.convertXYZ2LATLON(state[0],state[1],state[2])
+        u = state[7]
+        v = state[8]
+        w = state[9]
+        self.speed = np.sqrt(u**2 + v**2 + w**2)
         return
     
     def compute_heading_velocity(self):
@@ -194,10 +210,21 @@ class GPS():
         self.lonO = lonO
 
     def convertXYZ2LATLON(self, x, y, z):
-        self.lat = x / self.GPSVAL + self.latO
-        self.lon = y / (self.GPSVAL * np.cos(self.latO * np.pi / 180)) + self.lonO
-        self.alt = -z
-        return self.lat, self.lon, self.alt
+        lat = x / self.GPSVAL + self.latO
+        lon = y / (self.GPSVAL * np.cos(self.latO * np.pi / 180)) + self.lonO
+        alt = -z
+        return lat, lon, alt
+
+    def convertXY2LATLONSPHERICAL(self,x,y,z):
+        rho = np.sqrt(x**2 + y**2 + z**2)
+        if (rho < self.REARTH): 
+            rho = self.REARTH
+        lat_rad = np.arcsin(z / rho)
+        lon_rad = np.arctan2(y, x)
+        lat = np.degrees(lat_rad)
+        lon = np.degrees(lon_rad)
+        alt = rho - REARTH
+        return lat, lon, alt
 
     def convertLATLONVEC2XY(self, *argv):
         if len(argv) == 2:

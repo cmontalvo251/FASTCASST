@@ -115,8 +115,8 @@ while (RunTime < TFINAL):
         model.loop(RunTime)
         #Send model states to sensors
         gps_llh.send(model.state,VEHICLE)
-        #imu.send(model.state,model.statedot) #Just send the entire state vector and statedot
-        #baro.send(model.state) #need to send x,y,z to get pressure since this may be a satellite
+        imu.send(model.state) #Just send the entire state vector and statedot
+        baro.send(model.state) #need to send x,y,z to get pressure since this may be a satellite
     else:
         RunTime = time.time() - StartTime
     elapsedTime = RunTime - LastTime

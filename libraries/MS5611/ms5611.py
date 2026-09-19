@@ -30,6 +30,7 @@ import time
 
 from smbus import SMBus
 import spidev
+import numpy as np
 import sys
 sys.path.append('../libraries/Util')
 sys.path.append('../Util')
@@ -234,6 +235,15 @@ class MS5611:
 		self.ALT = (1.0-(self.PRES/self.pressure_sea_level)**(1.0/5.25588))/(2.2557*10**-5.0)
 		return
 
+	def convertAltitude2Pressure(self):
+		inner = 1.0-2.25577e-5*self.ALT;
+  		#// Prevent negative base in std::pow to avoid NaN / domain errors
+  		#//This is really just for satellite sims
+		if (inner <= 0.0):
+			return 0.0
+		pascals = 101325.0 * inner**5.25588
+		self.PRES = pascals*0.01
+
 	def test(self):
 		self.initialize()
 		self.update()
@@ -244,6 +254,18 @@ class MS5611:
 	def defaults(self):
 		self.PRES = self.pressure_sea_level
 		return
+
+	def send(self,state):
+		x = state[0]
+		y = state[1]
+		z = state[2]
+		rho = np.sqrt(x**2 + y**2 + z**2)
+		REARTH = 6371000.0
+		if (rho > REARTH):
+			#This is a satellite
+			self.ALT = rho - REARTH
+		else:
+			self.ALT = -z
 
 	#This poll function currently uses 2 modes and everytime it is called in MODE 1,
 	#it will add BAROWAIT seconds to your loop timer

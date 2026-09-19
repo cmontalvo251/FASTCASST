@@ -576,13 +576,27 @@ class MPU9250:
 # returns accel, gyro and mag values
 # -----------------------------------------------------------------------------------------------
 
+    def send(self,state):
+        #Need to generate a,g,m and temp
+        #Acceleration needs to come from quaternion vector
+        q0123 = np.asarray([state[3],state[4],state[5],state[6]])
+        TIB = self.RQUAT(q0123)
+        self.accel = np.matmul(np.transpose(TIB),np.asarray([0,0,9.81]))
+        #Gyro comes straight from pqr but there's a rotation
+        p = state[10]
+        q = state[11]
+        r = state[12]
+        self.gyro = np.asarray([q,p,-r])
+        #Magnetometer comes from assuming magnetic field is [300,0,0]
+        self.mag = np.matmul(np.transpose(TIB),np.asarray([300,0,0]))
+
     def getALL(self,dt,gps_heading = -999): #gps heading defaults to -999 if not available
         if self.MODE != 'AUTO':
             ##Will need to update this using modeling as well
-            a = [0,0,9.81]
-            g = [0,0,0]
-            m = [150,0,0]
-            temp = 25.
+            a = self.accel #This comes from self.send()
+            g = self.gyro
+            m = self.mag
+            temp = 25. #Just leave at 25.0
         else:
             a,g,m = self.getMotion9()
             temp = self.temperature
@@ -607,6 +621,7 @@ class MPU9250:
         ##Before returning g (angular velocity we need to fix the axis system and conver to deg/s
         gdegs = np.array([g[1],g[0],-g[2]])*180.0/np.pi
         return a,gdegs,m,rpy,rpy_ahrs,temp,self.compass
+    
     def trigonometry(self,a,g,m):
         ay = a[0]
         ax = a[1]
@@ -635,6 +650,19 @@ class MPU9250:
         cpsi = np.cos(psi);
         #%Kinematics
         R = np.array([[ctheta*cpsi,sphi*stheta*cpsi-cphi*spsi,cphi*stheta*cpsi+sphi*spsi],[ctheta*spsi,sphi*stheta*spsi+cphi*cpsi,cphi*stheta*spsi-sphi*cpsi],[-stheta,sphi*ctheta,cphi*ctheta]]);
+        return R
+
+    def RQUAT(self,q0123):
+        #%compute R such that v(inertial) = R v(body)
+        #%Using Mark Costello's notation this would be TIB
+
+        q0 = q0123[0]
+        q1 = q0123[1]
+        q2 = q0123[2]
+        q3 = q0123[3]
+
+        R = np.asarray([[q0**2+q1**2-q2**2-q3**2,2*(q1*q2-q0*q3),2*(q0*q2+q1*q3)],[2*(q1*q2+q0*q3),(q0**2-q1**2+q2**2-q3**2),2*(q2*q3-q0*q1)],[2*(q1*q3-q0*q2),2*(q0*q1+q2*q3),q0**2-q1**2-q2**2+q3**2]])
+
         return R
 
     def convertRPY2RAW(self,r,p,y):

@@ -37,6 +37,8 @@ class MODEL():
 
         ##Setup logging
         self.logger = D.Datalogger('logs/',NUMOUTPUTS)
+        headers = 'Time (sec) ,Model X(m) ,Model Y(m) ,Model Z(m) ,Model Roll (deg) ,Model Pitch (deg) ,Model Compass (deg) ,Model U(m/s) ,Model V(m/s) ,Model W(m/s) ,Model P(rad/s) ,Model Q(rad/s) ,Model R(rad/s) ,Model Mx(Gauss) ,Model My(Gauss) ,Model Mz(Gauss) ,Model GPS Latitude (deg) ,Model GPS Longitude (deg) ,Model GPS Altitude (m) ,Model GPS Heading (deg) ,Model IMU Heading (deg) ,Model Analog 1 (V) ,Model Analog 2 (V) ,Model Analog 3 (V) ,Model Analog 4 (V) ,Model Analog 5 (V) ,Model Analog 6 (V) ,Model Pressure (Pa) ,Model Pressure Altitude (m) ,Model Temperature (C) ,RC Channel #1 ,RC Channel #2 ,RC Channel #3 ,RC Channel #4 ,RC Channel #5'
+        self.logger.writeheader(headers,'Model')
 
         #Setup GPS for lat/lon conversions
         self.gps = G.GPS(mode='SIMONLY')
@@ -47,13 +49,32 @@ class MODEL():
         self.baro = MS.MS5611(mode='SIMONLY')
 
     def log(self,RunTime):
+        #Time (sec)
         self.logger.outdata[0] = np.round(RunTime,5)
-        self.logger.outdata[1] = self.rcsignals[0]
-        self.logger.outdata[2] = self.rcsignals[1]
-        self.logger.outdata[3] = self.rcsignals[2]
-        self.logger.outdata[4] = self.rcsignals[3]
-        self.logger.outdata[5] = self.rcsignals[4]
-        self.logger.outdata[6] = self.rcsignals[5]
+        #X(m) Y(m) Z(m)
+        self.logger.outdata[1] = self.state[0]
+        self.logger.outdata[2] = self.state[1]
+        self.logger.outdata[3] = self.state[2]
+        #Roll (deg) ,Pitch (deg) , Compass (deg)
+        ##Roll,Pitch, Yaw from quat 2 euler
+        rpy = self.quat2euler(self.quat)
+        self.logger.outdata[4] = rpy[0]*180/np.pi
+        self.logger.outdata[5] = rpy[1]*180/np.pi
+        self.logger.outdata[6] = rpy[2]*180/np.pi
+        #U(m/s) ,V(m/s) ,W(m/s)
+        self.logger.outdata[7] = self.state[7]
+        self.logger.outdata[8] = self.state[8]
+        self.logger.outdata[9] = self.state[9]
+        #P(deg/s) ,Q(deg/s) ,R(deg/s)
+        self.logger.outdata[11] = self.p*180/np.pi
+        self.logger.outdata[12] = self.q*180/np.pi
+        self.logger.outdata[13] = self.r*180/np.pi
+        #Mx(Gauss) ,My(Gauss) ,Mz(Gauss) _ The model currently has no magnetometer measurements
+        #we'll need to add it once we add the IGRF model for satellites
+        self.logger.outdata[13] = 0.0
+        self.logger.outdata[14] = 0.0
+        self.logger.outdata[15] = 0.0
+        #GPS Latitude (deg) ,GPS Longitude (deg) ,GPS Altitude (m)
         #Convert x,y,z
         if self.VEHICLE == 'satellite':
             #Convert to lat/lon/alt using polar coordinates
@@ -61,9 +82,20 @@ class MODEL():
         else:
             #convert to lat/lon/alt using flat earth approx
             self.latitude,self.longitude,self.altitude = self.gps.convertXYZ2LATLON(self.state[0],self.state[1],self.state[2])
-        self.logger.outdata[7] = self.latitude
-        self.logger.outdata[8] = self.longitude
-        self.logger.outdata[9] = self.altitude
+        self.logger.outdata[16] = self.latitude
+        self.logger.outdata[17] = self.longitude
+        self.logger.outdata[18] = self.altitude
+        #GPS Heading (deg) ,IMU Heading (deg)
+        self.logger.outdata[19] = rpy[2]
+        self.logger.outdata[20] = rpy[2]
+        #Analog 1-6 (V)
+        self.logger.outdata[21] = 0
+        self.logger.outdata[22] = 0
+        self.logger.outdata[23] = 0
+        self.logger.outdata[24] = 0
+        self.logger.outdata[25] = 0
+        self.logger.outdata[26] = 0
+        #Pressure (Pa) #Pressure Altitude (m) #Temperature (C)
         #Barometer
         z = self.state[2]
         if self.VEHICLE == 'satellite':
@@ -71,39 +103,24 @@ class MODEL():
             y = self.state[1]
             rho = np.sqrt(x**2 + y**2 + z**2)
             REARTH = 6371000.0
-  			#This is a satellite
+  	    #This is a satellite
             self.baro.ALT = rho - REARTH
         else:
             self.baro.ALT = -z
         self.baro.convertAltitude2Pressure()
-        self.logger.outdata[10] = self.baro.PRES
-
-        ##Roll,Pitch, Yaw from quat 2 euler
-        rpy = self.quat2euler(self.quat)
-        self.logger.outdata[11] = rpy[0]*180/np.pi
-        self.logger.outdata[12] = rpy[1]*180/np.pi
-        self.logger.outdata[13] = rpy[2]*180/np.pi
-
-        ##Speed just norm of velocity
-        speed = np.sqrt(self.u**2 + self.v**2 + self.w**2)
-        self.logger.outdata[14] = speed
-
-        ##PQR
-        self.logger.outdata[15] = self.p*180/np.pi
-        self.logger.outdata[16] = self.q*180/np.pi
-        self.logger.outdata[17] = self.r*180/np.pi
-        self.logger.outdata[18] = self.pwm_commands[0]
-        self.logger.outdata[19] = self.pwm_commands[1]
-        l = 19
-        if len(self.pwm_commands) > 2:
-            self.logger.outdata[20] = self.pwm_commands[2]
-        if len(self.pwm_commands) > 3:
-            self.logger.outdata[21] = self.pwm_commands[3]
-            l = 21
-
-        ###For GPS Heading and compass we'll just use the yaw angle
-        self.logger.outdata[l+1] = rpy[2]*180/np.pi
-        self.logger.outdata[l+2] = rpy[2]*180/np.pi
+        self.logger.outdata[27] = self.baro.PRES
+        self.logger.outdata[28] = self.baro.ALT
+        self.logger.outdata[29] = self.baro.TEMP
+        #RC Channel #1-5
+        self.logger.outdata[30] = self.rcsignals[0]
+        self.logger.outdata[31] = self.rcsignals[1]
+        self.logger.outdata[32] = self.rcsignals[2]
+        self.logger.outdata[33] = self.rcsignals[3]
+        self.logger.outdata[34] = self.rcsignals[4]
+        self.logger.outdata[35] = self.rcsignals[5]
+        #PWM Hardware Out 1-len(pwm_commands)
+        for i in range(0,len(self.pwm_commands)):
+            self.logger.outdata[36+i] = self.pwm_commands[i]
         self.logger.println()
 
     def Derivatives(self,t,dstate):

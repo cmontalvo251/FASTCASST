@@ -155,6 +155,8 @@ class GPS():
 
         #Then we compute speed and heading here
         self.compute_heading_velocity()
+        #And convert LAT/LON/ALT to XYZ
+        self.convertLATLON2XY()
         return
 
     def send(self,state,VEHICLE):
@@ -225,6 +227,11 @@ class GPS():
         lon = np.degrees(lon_rad)
         alt = rho - self.REARTH
         return lat, lon, alt
+
+    def convertLATLON2XY(self):
+        self.X = (self.latitude  - self.latO) * 60 * self.NM2FT * self.FT2M
+        self.Y = (self.longitude - self.lonO) * 60 * self.NM2FT * self.FT2M * np.cos(self.latO * np.pi / 180)
+        self.Z = -self.altitude
 
     def convertLATLONVEC2XY(self, *argv):
         if len(argv) == 2:

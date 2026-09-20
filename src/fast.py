@@ -15,8 +15,6 @@
 ################################################
 
 #####################PARAMETERS#################
-NUMOUTPUTS = 22  #Number of data outputs (22 for car, 23 for boat, 24 for airplane)
-NUMPWM = 2 #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
 VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
 TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
 MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
@@ -36,27 +34,28 @@ import os
 sys.path.append('../libraries/')
 sys.path.append('libraries/')
 
+#Make sure Ardupilot is off
+import Util.util as U
+U.check_apm()
+
+##Import the vehicle controller based on your selection
+sys.path.append('../libraries/V_'+VEHICLE)
+sys.path.append('libraries/V_'+VEHICLE)
+import controller
+vehicle = controller.CONTROLLER()
+#Initialize pwm_commands
+pwm_commands = vehicle.defaults
+NUMOUTPUTS = 36+vehicle.NUMCONTROLS
+
 ##Import modeling if MODE == SIMONLY
 if MODE == 'SIMONLY':
     import modeling.modeling as M
     model = M.MODEL(TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
 
-##Import the vehicle controller based on your selection
-sys.path.append('../libraries/V_'+VEHICLE)
-import controller
-vehicle = controller.CONTROLLER()
-#Initialize pwm_commands
-pwm_commands = vehicle.defaults
-
-#Make sure Ardupilot is off
-import Util.util as U
-U.check_apm()
-
 #Setup GPS
 import GPS.gps as G
 gps_llh = G.GPS(mode=MODE)
-if MODE != 'AUTO':
-    gps_llh.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
+gps_llh.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
 
 #Setup IMU
 import MPU9250.mpu9250 as MPU
@@ -70,6 +69,8 @@ if len(sys.argv) > 1:
 else:
 	sys.exit('No input argument given for datalogging directory')
 logger = D.Datalogger(sys.argv[1],NUMOUTPUTS)
+headers = 'Time (sec) ,Sense X(m) ,Sense Y(m) ,Sense Z(m) ,Sense Roll (deg) ,Sense Pitch (deg) ,Sense Compass (deg) ,Sense U(m/s) ,Sense V(m/s) ,Sense W(m/s) ,Sense P(rad/s) ,Sense Q(rad/s) ,Sense R(rad/s) ,Sense Mx(Gauss) ,Sense My(Gauss) ,Sense Mz(Gauss) ,Sense GPS Latitude (deg) ,Sense GPS Longitude (deg) ,Sense GPS Altitude (m) ,Sense GPS Heading (deg) ,Sense IMU Heading (deg) ,Sense Analog 1 (V) ,Sense Analog 2 (V) ,Sense Analog 3 (V) ,Sense Analog 4 (V) ,Sense Analog 5 (V) ,Sense Analog 6 (V) ,Sense Pressure (Pa) ,Sense Pressure Altitude (m) ,Sense Temperature (C) ,RC Channel #1 ,RC Channel #2 ,RC Channel #3 ,RC Channel #4 ,RC Channel #5'
+logger.writeheader(headers,'Hardware')
 
 #Setup LED
 import LED.leds as L
@@ -77,7 +78,7 @@ led = L.Led(mode=MODE)
 
 #Setup RCIO (receiver signals and output pwmsignals)
 import RCIO.Python.rcio as R
-rc = R.RCIO(NUMPWM,MODE)
+rc = R.RCIO(vehicle.NUMCONTROLS,MODE)
 
 #Setup the Barometer
 import MS5611.ms5611 as MS
@@ -181,34 +182,56 @@ while (RunTime < TFINAL):
         ser.SerialSend(0)
     #Log data
     if (RunTime - logTime) > 0.1:
+        #Time (sec)
         logger.outdata[0] = np.round(RunTime,5)
-        logger.outdata[1] = rc.rcin.rcsignals[0]
-        logger.outdata[2] = rc.rcin.rcsignals[1]
-        logger.outdata[3] = rc.rcin.rcsignals[2]
-        logger.outdata[4] = rc.rcin.rcsignals[3]
-        logger.outdata[5] = rc.rcin.rcsignals[4]
-        logger.outdata[6] = rc.rcin.rcsignals[5]
-        logger.outdata[7] = gps_llh.latitude
-        logger.outdata[8] = gps_llh.longitude
-        logger.outdata[9] = gps_llh.altitude
-        logger.outdata[10] = baro.PRES
-        logger.outdata[11] = rpy_ahrs[0]
-        logger.outdata[12] = rpy_ahrs[1]
-        logger.outdata[13] = rpy_ahrs[2]
-        logger.outdata[14] = gps_llh.speed 
-        logger.outdata[15] = gdegs[0]
-        logger.outdata[16] = gdegs[1]
-        logger.outdata[17] = gdegs[2]
-        logger.outdata[18] = pwm_commands[0]
-        logger.outdata[19] = pwm_commands[1]
-        l = 19
-        if len(pwm_commands) > 2:
-            logger.outdata[20] = pwm_commands[2]
-        if len(pwm_commands) > 3:
-            logger.outdata[21] = pwm_commands[3]
-            l = 21
-        logger.outdata[l+1] = gps_llh.heading
-        logger.outdata[l+2] = compass
+        #X(m) Y(m) Z(m)
+        logger.outdata[1] = gps_llh.X
+        logger.outdata[2] = gps_llh.Y
+        logger.outdata[3] = gps_llh.Z
+        #Roll (deg) ,Pitch (deg) , Compass (deg)
+        logger.outdata[4] = rpy_ahrs[0]
+        logger.outdata[5] = rpy_ahrs[1]
+        logger.outdata[6] = compass        
+        #U(m/s) ,V(m/s) ,W(m/s)
+        logger.outdata[7] = gps_llh.speed 
+        logger.outdata[8] = 0
+        logger.outdata[9] = 0
+        #P(deg/s) ,Q(deg/s) ,R(deg/s)
+        logger.outdata[10] = gdegs[0]
+        logger.outdata[11] = gdegs[1]
+        logger.outdata[12] = gdegs[2]
+        #Mx(Gauss) ,My(Gauss) ,Mz(Gauss)
+        logger.outdata[13] = m[0]
+        logger.outdata[14] = m[1]
+        logger.outdata[15] = m[2]
+        #GPS Latitude (deg) ,GPS Longitude (deg) ,GPS Altitude (m)
+        logger.outdata[16] = gps_llh.latitude
+        logger.outdata[17] = gps_llh.longitude
+        logger.outdata[18] = gps_llh.altitude
+        #GPS Heading (deg) ,IMU Heading (deg)
+        logger.outdata[19] = gps_llh.heading
+        logger.outdata[20] = rpy_ahrs[2]
+        #Analog 1-6 (V)
+        logger.outdata[21] = 0
+        logger.outdata[22] = 0
+        logger.outdata[23] = 0
+        logger.outdata[24] = 0
+        logger.outdata[25] = 0
+        logger.outdata[26] = 0
+        #Pressure (Pa) #Pressure Altitude (m) #Temperature (C)
+        logger.outdata[27] = baro.PRES
+        logger.outdata[28] = baro.ALT
+        logger.outdata[29] = temp
+        #RC Channel #1-5
+        logger.outdata[30] = rc.rcin.rcsignals[0]
+        logger.outdata[31] = rc.rcin.rcsignals[1]
+        logger.outdata[32] = rc.rcin.rcsignals[2]
+        logger.outdata[33] = rc.rcin.rcsignals[3]
+        logger.outdata[34] = rc.rcin.rcsignals[4]
+        logger.outdata[35] = rc.rcin.rcsignals[5]
+        #PWM Hardware Out 1-len(pwm_commands)
+        for i in range(0,len(pwm_commands)):
+            logger.outdata[36+i] = pwm_commands[i]
         logger.println()
         logTime = RunTime
         if MODE == 'SIMONLY':

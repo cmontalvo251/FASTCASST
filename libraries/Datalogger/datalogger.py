@@ -10,7 +10,8 @@ class Datalogger():
 		self.setfilename()
 		self.open()
 		#create an array for data
-		self.outdata = np.zeros(NUMOUTPUTS)
+		self.NUMOUTPUTS = NUMOUTPUTS
+		self.outdata = np.zeros(self.NUMOUTPUTS)
 		self._write_count = 0
 
 	def setfilename(self,extension='.txt'):
@@ -32,6 +33,14 @@ class Datalogger():
 				except FileNotFoundError:
 					break
 			print("Log file = " + self.filename)
+
+	def writeheader(self,headers,TYPE):		
+		self.outfile.write(headers)
+		NUMCONTROLS = self.NUMOUTPUTS - 36
+		for i in range(0,NUMCONTROLS):
+			s = ',PWM ' + TYPE + ' Out ' + str(i+1)
+			self.outfile.write(s)
+		self.outfile.write('\n')
 
 	def open(self):
 		print("Attempting to open" + self.filename);

@@ -251,6 +251,7 @@ class MS5611:
 	
 	def defaults(self):
 		self.PRES = self.pressure_sea_level
+		self.TEMP = 25.0
 		return
 
 	def send(self,state):

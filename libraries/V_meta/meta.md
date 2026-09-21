@@ -9,3 +9,5 @@
 * [ ] Meta flying waypoints to compare efficiency
 
 * [ ] Disconnecting and reconnecting
+
+* [ ] Endurance and Range Testing of a Wingtip Connected Meta Aircraft Test Platform (PAPER)

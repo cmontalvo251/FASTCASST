@@ -9,7 +9,7 @@
 #  Secondary Author: Maxwell Cobar Spring 2023
 #  Tertiary Authors: Aramis Hoffmann (car.py)
 #  Kate Doiron (plane.py) Spring 2025
-#  Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026
+#  Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026/Fall 2026
 #  Quinary Author: Vinicius da Luz (mostly an undisclosed AI tool) Summer 2026 (car waypoint navigation)
 #
 ################################################
@@ -18,7 +18,7 @@
 VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
 TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
 MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
-TIMESTEP = 0.1 #Timestep of modeling if SIMONLY selected
+TIMESTEP = 0.01 #Timestep of modeling if SIMONLY selected
 TFINAL = 10.0 #final time of simulation if SIMONLY selected
 #Initial Conditions for SIMONLY
 ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
@@ -43,8 +43,8 @@ sys.path.append('../libraries/V_'+VEHICLE)
 sys.path.append('libraries/V_'+VEHICLE)
 import controller
 vehicle = controller.CONTROLLER()
-#Initialize pwm_commands
-pwm_commands = vehicle.defaults
+#Initialize commands
+commands = vehicle.defaults
 NUMOUTPUTS = 36+vehicle.NUMCONTROLS
 
 ##Import modeling if MODE == SIMONLY
@@ -79,6 +79,8 @@ led = L.Led(mode=MODE)
 #Setup RCIO (receiver signals and output pwmsignals)
 import RCIO.Python.rcio as R
 rc = R.RCIO(vehicle.NUMCONTROLS,MODE)
+#This creates the pwm_commands vector and sends default values to the pwm channels
+rc.set_commands(commands)
 
 #Setup the Barometer
 import MS5611.ms5611 as MS
@@ -114,7 +116,7 @@ while (RunTime < TFINAL):
     LastTime = RunTime
     if MODE == 'SIMONLY':
         RunTime = LastTime + model.timestep
-        model.loop(RunTime,rc.rcin.rcsignals,pwm_commands)
+        model.loop(RunTime,rc.rcin.rcsignals,commands)
         #Send model states to sensors
         gps_llh.send(model.state,VEHICLE)
         imu.send(model.state) #Just send the entire state vector and statedot
@@ -147,16 +149,16 @@ while (RunTime < TFINAL):
     #Check if we are armed or not
     if ARMED:
         led.setColor(control_color)
-        pwm_commands = controls
+        commands = controls
     else:
         led.setColor(safety_color)
-        pwm_commands = defaults
+        commands = defaults
 
     ##Send PWM signals to rcio
-    rc.set_commands(pwm_commands)
+    rc.set_commands(commands)
 
     #Print to Home
-    str_pwm = [f"{pwm:1.3f}" for pwm in pwm_commands] #convert pwm commands to 3 sig figs
+    str_pwm = [f"{pwm:1.3f}" for pwm in commands] #convert pwm commands to 3 sig figs
     str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
     str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
     #print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",gps_llh.latitude,gps_llh.longitude,gps_llh.altitude)
@@ -230,8 +232,8 @@ while (RunTime < TFINAL):
         logger.outdata[34] = rc.rcin.rcsignals[4]
         logger.outdata[35] = rc.rcin.rcsignals[5]
         #PWM Hardware Out 1-len(pwm_commands)
-        for i in range(0,len(pwm_commands)):
-            logger.outdata[36+i] = pwm_commands[i]
+        for i in range(0,len(commands)):
+            logger.outdata[36+i] = commands[i]
         logger.println()
         logTime = RunTime
         if MODE == 'SIMONLY':

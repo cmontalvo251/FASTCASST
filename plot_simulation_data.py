@@ -85,7 +85,7 @@ for line in datafile:
     #print('line = ',line)
     row = line.split(',')
     #print('row = ',row)
-    if len(row) > 1:
+    if len(row) == numVars+1:
         #print('len(row) = ',len(row))
         numarray = [float(x) for x in row]
         sense_data.append(numarray)
@@ -94,7 +94,8 @@ sense_data = np.array(sense_data)
 ####MODEL DATA IN LOGS FOLDER
 for line in logfile:
     row = line.split(',')
-    if len(row) > 1:
+    #print(len(row))
+    if len(row) == numVars+1:
         numarray = [float(x) for x in row]
         model_data.append(numarray)
 

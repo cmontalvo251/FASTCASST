@@ -17,9 +17,10 @@
 #####################PARAMETERS#################
 VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
 TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
+LOGTIME = 0.1 #time between logging time in seconds
 MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 TIMESTEP = 0.01 #Timestep of modeling if SIMONLY selected
-TFINAL = 10.0 #final time of simulation if SIMONLY selected
+TFINAL = 5.0 #final time of simulation if SIMONLY selected
 #Initial Conditions for SIMONLY
 ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
 LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL
@@ -104,13 +105,13 @@ if MODE != 'SIMONLY':
 print('Setting up Time')
 StartTime = time.time()
 RunTime = 0.0
-logTime = RunTime
-telemetryTime = RunTime
+logTime = -LOGTIME
+telemetryTime = 0.0
 
 #This runs on repeat until code is killed
 print('Running main loop....')
 
-while (RunTime < TFINAL):
+while (RunTime <= TFINAL):
 
     #Get Time
     LastTime = RunTime
@@ -183,7 +184,7 @@ while (RunTime < TFINAL):
         ser.fast_packet[12] = rc.rcin.yaw #//13 - rudder
         ser.SerialSend(0)
     #Log data
-    if (RunTime - logTime) > 0.1:
+    if (RunTime - logTime) >= LOGTIME:
         #Time (sec)
         logger.outdata[0] = np.round(RunTime,5)
         #X(m) Y(m) Z(m)
@@ -235,7 +236,7 @@ while (RunTime < TFINAL):
         for i in range(0,len(commands)):
             logger.outdata[36+i] = commands[i]
         logger.println()
-        logTime = RunTime
+        logTime += LOGTIME
         if MODE == 'SIMONLY':
             model.log(RunTime)
 
@@ -246,6 +247,8 @@ while (RunTime < TFINAL):
 
 #If the program ends it means we're running in modeling mode
 #we need to copy a file
+logger.close()
+model.logger.close()
 command = 'cp ' + str(logger.filename) + ' ' + str(logger.directory) + '0.csv'
 os.system(command)
 command = 'cp ' + str(model.logger.filename) + ' ' + str(model.logger.directory) + '0.csv'

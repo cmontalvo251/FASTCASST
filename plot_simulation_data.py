@@ -115,6 +115,7 @@ if tend > 0:
 else:
     iend_sense = -1
     iend_model = -1
+
 for x in range(1,numVars):
     fig = plt.figure()
     plti = fig.add_subplot(1,1,1)
@@ -129,7 +130,6 @@ for x in range(1,numVars):
     plti.get_xaxis().get_major_formatter().set_useOffset(False)
     plt.gcf().subplots_adjust(left=0.18)
     pp.savefig()
-
 
 ###PLOT A X,Y GRAPH
 fig = plt.figure()    

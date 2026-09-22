@@ -185,7 +185,7 @@ class RCInput():
             return value[:-1]
         else:
             if ch == 0:
-                return self.SERVO_MIN
+                return self.SERVO_MIN*1000
             else:
-                return self.SERVO_MID
+                return self.SERVO_MID*1000
             

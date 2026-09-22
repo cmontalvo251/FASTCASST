@@ -70,7 +70,7 @@ if len(sys.argv) > 1:
 else:
 	sys.exit('No input argument given for datalogging directory')
 logger = D.Datalogger(sys.argv[1],NUMOUTPUTS)
-headers = 'Time (sec) ,Sense X(m) ,Sense Y(m) ,Sense Z(m) ,Sense Roll (deg) ,Sense Pitch (deg) ,Sense Compass (deg) ,Sense U(m/s) ,Sense V(m/s) ,Sense W(m/s) ,Sense P(rad/s) ,Sense Q(rad/s) ,Sense R(rad/s) ,Sense Mx(Gauss) ,Sense My(Gauss) ,Sense Mz(Gauss) ,Sense GPS Latitude (deg) ,Sense GPS Longitude (deg) ,Sense GPS Altitude (m) ,Sense GPS Heading (deg) ,Sense IMU Heading (deg) ,Sense Analog 1 (V) ,Sense Analog 2 (V) ,Sense Analog 3 (V) ,Sense Analog 4 (V) ,Sense Analog 5 (V) ,Sense Analog 6 (V) ,Sense Pressure (Pa) ,Sense Pressure Altitude (m) ,Sense Temperature (C) ,RC Channel #1 ,RC Channel #2 ,RC Channel #3 ,RC Channel #4 ,RC Channel #5'
+headers = 'Time (sec) ,Sense X(m) ,Sense Y(m) ,Sense Z(m) ,Sense Roll (deg) ,Sense Pitch (deg) ,Sense Compass (deg) ,Sense U(m/s) ,Sense V(m/s) ,Sense W(m/s) ,Sense P(rad/s) ,Sense Q(rad/s) ,Sense R(rad/s) ,Sense Mx(Gauss) ,Sense My(Gauss) ,Sense Mz(Gauss) ,Sense GPS Latitude (deg) ,Sense GPS Longitude (deg) ,Sense GPS Altitude (m) ,Sense GPS Heading (deg) ,Sense IMU Heading (deg) ,Sense Analog 1 (V) ,Sense Analog 2 (V) ,Sense Analog 3 (V) ,Sense Analog 4 (V) ,Sense Analog 5 (V) ,Sense Analog 6 (V) ,Sense Pressure (Pa) ,Sense Pressure Altitude (m) ,Sense Temperature (C) ,RC Channel #1 (ms) ,RC Channel #2 (ms) ,RC Channel #3 (ms) ,RC Channel #4 (ms),RC Channel #5 (ms), RC Channel #6 (ms)'
 logger.writeheader(headers,'Hardware')
 
 #Setup LED
@@ -116,12 +116,13 @@ while (RunTime <= TFINAL):
     #Get Time
     LastTime = RunTime
     if MODE == 'SIMONLY':
+        #Send model states to sensors
+        gps_llh.send(model.state,model.statedot,VEHICLE)
+        imu.send(model.state) #Just send the entire state vector
+        baro.send(model.state) #again send the entire state vector
+        #Integrate one timestep
         RunTime = LastTime + model.timestep
         model.loop(RunTime,rc.rcin.rcsignals,commands)
-        #Send model states to sensors
-        gps_llh.send(model.state,VEHICLE)
-        imu.send(model.state) #Just send the entire state vector and statedot
-        baro.send(model.state) #need to send x,y,z to get pressure since this may be a satellite
     else:
         RunTime = time.time() - StartTime
     elapsedTime = RunTime - LastTime
@@ -159,20 +160,20 @@ while (RunTime <= TFINAL):
     rc.set_commands(commands)
 
     #Print to Home
-    str_pwm = [f"{pwm:1.3f}" for pwm in commands] #convert pwm commands to 3 sig figs
+    str_pwm = [f"{pwm:1.3f}" for pwm in rc.pwm_commands] #convert pwm commands to 3 sig figs
     str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
     str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
     #print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",gps_llh.latitude,gps_llh.longitude,gps_llh.altitude)
     print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.ALT:.3f}",gps_llh.altitude)
 
     ##Send Telemetry
-    if (RunTime - telemetryTime) > TELEMETRYTIME and MODE != 'SIMONLY':
-        telemetryTime = RunTime	
+    if (RunTime - telemetryTime) >= TELEMETRYTIME and MODE != 'SIMONLY':
+        telemetryTime += TELEMETRYTIME	
         print('Sending telemtry packet...',RunTime)
         ser.fast_packet[0] = RunTime #//1 - Time
         ser.fast_packet[1] = rpy_ahrs[0] #//2 - roll
         ser.fast_packet[2] = rpy_ahrs[1] #//3 - pitch
-        ser.fast_packet[3] = rpy_ahrs[2] #//4 - yaw (compass)
+        ser.fast_packet[3] = rpy_ahrs[2] #//4 - yaw 
         ser.fast_packet[4] = gps_llh.latitude #//5 - latitude
         ser.fast_packet[5] = gps_llh.longitude #//6 - longitude
         ser.fast_packet[6] = baro.ALT #//7 - altitude (barometer)
@@ -190,13 +191,25 @@ while (RunTime <= TFINAL):
         #X(m) Y(m) Z(m)
         logger.outdata[1] = gps_llh.X
         logger.outdata[2] = gps_llh.Y
-        logger.outdata[3] = gps_llh.Z
+        if VEHICLE == 'satellite':
+            Z = gps_llh.Z
+        else:
+            Z = -baro.ALT
+        logger.outdata[3] = Z
         #Roll (deg) ,Pitch (deg) , Compass (deg)
         logger.outdata[4] = rpy_ahrs[0]
         logger.outdata[5] = rpy_ahrs[1]
-        logger.outdata[6] = compass        
+        if compass == -999:
+            yaw = rpy_ahrs[2]
+        else:
+            yaw = compass
+        logger.outdata[6] = yaw
         #U(m/s) ,V(m/s) ,W(m/s)
-        logger.outdata[7] = gps_llh.speed 
+        if gps_llh.speed == -99:
+            speed = 0.0
+        else:
+            speed = gps_llh.speed
+        logger.outdata[7] = speed 
         logger.outdata[8] = 0
         logger.outdata[9] = 0
         #P(deg/s) ,Q(deg/s) ,R(deg/s)
@@ -212,7 +225,11 @@ while (RunTime <= TFINAL):
         logger.outdata[17] = gps_llh.longitude
         logger.outdata[18] = gps_llh.altitude
         #GPS Heading (deg) ,IMU Heading (deg)
-        logger.outdata[19] = gps_llh.heading
+        if gps_llh.heading == -999:
+            heading = 0.0
+        else:
+            heading = gps_llh.heading
+        logger.outdata[19] = heading
         logger.outdata[20] = rpy_ahrs[2]
         #Analog 1-6 (V)
         logger.outdata[21] = 0
@@ -224,7 +241,7 @@ while (RunTime <= TFINAL):
         #Pressure (Pa) #Pressure Altitude (m) #Temperature (C)
         logger.outdata[27] = baro.PRES
         logger.outdata[28] = baro.ALT
-        logger.outdata[29] = temp
+        logger.outdata[29] = baro.TEMP
         #RC Channel #1-5
         logger.outdata[30] = rc.rcin.rcsignals[0]
         logger.outdata[31] = rc.rcin.rcsignals[1]

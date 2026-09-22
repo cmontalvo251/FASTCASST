@@ -9,6 +9,7 @@ class MODEL():
         self.timestep = TIMESTEP
         print('Running SIMONLY mode')
         self.state = np.zeros(13) #13 states
+        self.statedot = np.zeros(13)
         self.state[0] = ICs[0] #x (m)
         self.state[1] = ICs[1] #y (m)
         self.state[2] = ICs[2] #z (m)
@@ -37,7 +38,7 @@ class MODEL():
 
         ##Setup logging
         self.logger = D.Datalogger('logs/',NUMOUTPUTS)
-        headers = 'Time (sec) ,Model X(m) ,Model Y(m) ,Model Z(m) ,Model Roll (deg) ,Model Pitch (deg) ,Model Compass (deg) ,Model U(m/s) ,Model V(m/s) ,Model W(m/s) ,Model P(rad/s) ,Model Q(rad/s) ,Model R(rad/s) ,Model Mx(Gauss) ,Model My(Gauss) ,Model Mz(Gauss) ,Model GPS Latitude (deg) ,Model GPS Longitude (deg) ,Model GPS Altitude (m) ,Model GPS Heading (deg) ,Model IMU Heading (deg) ,Model Analog 1 (V) ,Model Analog 2 (V) ,Model Analog 3 (V) ,Model Analog 4 (V) ,Model Analog 5 (V) ,Model Analog 6 (V) ,Model Pressure (Pa) ,Model Pressure Altitude (m) ,Model Temperature (C) ,RC Channel #1 ,RC Channel #2 ,RC Channel #3 ,RC Channel #4 ,RC Channel #5'
+        headers = 'Time (sec) ,Model X(m) ,Model Y(m) ,Model Z(m) ,Model Roll (deg) ,Model Pitch (deg) ,Model Compass (deg) ,Model U(m/s) ,Model V(m/s) ,Model W(m/s) ,Model P(rad/s) ,Model Q(rad/s) ,Model R(rad/s) ,Model Mx(Gauss) ,Model My(Gauss) ,Model Mz(Gauss) ,Model GPS Latitude (deg) ,Model GPS Longitude (deg) ,Model GPS Altitude (m) ,Model GPS Heading (deg) ,Model IMU Heading (deg) ,Model Analog 1 (V) ,Model Analog 2 (V) ,Model Analog 3 (V) ,Model Analog 4 (V) ,Model Analog 5 (V) ,Model Analog 6 (V) ,Model Pressure (Pa) ,Model Pressure Altitude (m) ,Model Temperature (C) ,RC Channel #1 (ms),RC Channel #2 (ms),RC Channel #3 (ms),RC Channel #4 (ms),RC Channel #5 (ms), RC CHannel #6 (ms)'
         self.logger.writeheader(headers,'Model')
 
         #Setup GPS for lat/lon conversions
@@ -47,7 +48,11 @@ class MODEL():
         #Setup Barometer for pressure to altitude conversions
         import MS5611.ms5611 as MS
         self.baro = MS.MS5611(mode='SIMONLY')
+        self.baro.defaults()
         self.REARTH = 6371000.0
+
+        #Magnetometer
+        self.mag = np.asarray([300.0,0,0])
 
     def log(self,RunTime):
         #Time (sec)
@@ -72,9 +77,9 @@ class MODEL():
         self.logger.outdata[13] = self.r*180/np.pi
         #Mx(Gauss) ,My(Gauss) ,Mz(Gauss) _ The model currently has no magnetometer measurements
         #we'll need to add it once we add the IGRF model for satellites
-        self.logger.outdata[13] = 0.0
-        self.logger.outdata[14] = 0.0
-        self.logger.outdata[15] = 0.0
+        self.logger.outdata[13] = self.mag[0]
+        self.logger.outdata[14] = self.mag[1]
+        self.logger.outdata[15] = self.mag[2]
         #GPS Latitude (deg) ,GPS Longitude (deg) ,GPS Altitude (m)
         #Convert x,y,z
         if self.VEHICLE == 'satellite':
@@ -156,6 +161,9 @@ class MODEL():
         zdot = xyzdot[2]
         PQRMAT = np.asarray([[0,-self.p,-self.q,-self.r],[self.p,0,self.r,-self.q],[self.q,-self.r,0,self.p],[self.r,self.q,-self.p,0]])
         quatdot = 0.5*np.matmul(PQRMAT,self.quat)
+
+        ##Magnetic Field Model
+        self.mag = np.matmul(TBI,np.asarray([300,0,0]))
         
         #Force and Moment Model 
         Fbody,Mbody = self.vehicle.ForceMoment(t,dstate,self.commands)

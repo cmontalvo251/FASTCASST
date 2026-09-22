@@ -23,7 +23,7 @@ class GPS():
         self.longitude      = -99
         self.prev_longitude = -99
         self.altitude       = -99
-        self.heading = -999
+        self.heading        = -999
         self.speed          = -99
         self.fix_quality    = 0
         self.num_satellites = 0
@@ -103,7 +103,7 @@ class GPS():
         #print('Polling GPS....',RunTime,self.GPSTime,self.GPSNEXT)
         if (RunTime - self.GPSTime) > self.GPSNEXT:
             self.elapsedTime = RunTime - self.GPSTime
-            self.GPSTime = RunTime
+            self.GPSTime += self.GPSNEXT
             self.update()
         
     def update(self):
@@ -144,7 +144,7 @@ class GPS():
     #            outstr = "".join(outstr)
     #            print(outstr)
         else:
-            ##Will need to update this with modeling values eventually
+            ##Everything below is set by the self.send routine
             #self.latitude = 30.69 #These are now set in the send() routine
             #self.longitude = -88.10 
             #self.altitude = 0.0 
@@ -159,19 +159,20 @@ class GPS():
         self.convertLATLON2XY()
         return
 
-    def send(self,state,VEHICLE):
+    def send(self,state,statedot,VEHICLE):
         #This routine takes the state vector from the model and turns it into GPS coordinates
         #First let's check and see if this is a satellite.....
+        xdot = statedot[7]
+        ydot = statedot[8]
+        zdot = statedot[9]
         if VEHICLE == 'satellite':
             #Convert to lat/lon/alt using polar coordinates
             self.latitude,self.longitude,self.altitude = self.convertXY2LATLONSPHERICAL(state[0],state[1],state[2])
+            self.speed = np.sqrt(xdot**2 + ydot**2 + zdot**2)
         else:
             #convert to lat/lon/alt using flat earth approx
             self.latitude,self.longitude,self.altitude = self.convertXYZ2LATLON(state[0],state[1],state[2])
-        u = state[7]
-        v = state[8]
-        w = state[9]
-        self.speed = np.sqrt(u**2 + v**2 + w**2)
+            self.speed = np.sqrt(xdot**2 + ydot**2)
         return
     
     def compute_heading_velocity(self):
@@ -179,7 +180,7 @@ class GPS():
             #Get delta lat and delta lon
             dlat = self.latitude - self.prev_latitude
             dlon = self.longitude - self.prev_longitude
-            if self.heading == -99:
+            if self.heading == -999:
                 self.heading = np.arctan2(dlon,dlat)*180/np.pi
             else:
                 #Compute heading with filtering to smooth it out.

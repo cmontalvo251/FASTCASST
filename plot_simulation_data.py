@@ -85,7 +85,7 @@ for line in datafile:
     #print('line = ',line)
     row = line.split(',')
     #print('row = ',row)
-    if len(row) == numVars+1:
+    if len(row) == numVars:
         #print('len(row) = ',len(row))
         numarray = [float(x) for x in row]
         sense_data.append(numarray)
@@ -95,11 +95,11 @@ sense_data = np.array(sense_data)
 for line in logfile:
     row = line.split(',')
     #print(len(row))
-    if len(row) == numVars+1:
+    if len(row) == numVars:
         numarray = [float(x) for x in row]
         model_data.append(numarray)
-
 model_data = np.array(model_data)
+
 #Plot everything
 sense_time = sense_data[:,0]
 model_time = model_data[:,0]

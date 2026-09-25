@@ -76,12 +76,12 @@ imu = MPU.MPU9250(mode=MODE)
 
 #Setup datalogger
 import Datalogger.datalogger as D
-print('Input arguments = ',sys.argv)
-if len(sys.argv) > 1:
-    print('Using Directory = ',sys.argv[1])
-else:
-	sys.exit('No input argument given for datalogging directory')
-logger = D.Datalogger(sys.argv[1],NUMOUTPUTS)
+#print('Input arguments = ',sys.argv)
+#if len(sys.argv) > 1:
+#    print('Using Directory = ',sys.argv[1])
+#else:
+#	sys.exit('No input argument given for datalogging directory')
+logger = D.Datalogger('data/',NUMOUTPUTS)
 headers = 'Time (sec) ,Sense X(m) ,Sense Y(m) ,Sense Z(m) ,Sense Roll (deg) ,Sense Pitch (deg) ,Sense Compass (deg) ,Sense U(m/s) ,Sense V(m/s) ,Sense W(m/s) ,Sense P(rad/s) ,Sense Q(rad/s) ,Sense R(rad/s) ,Sense Mx(Gauss) ,Sense My(Gauss) ,Sense Mz(Gauss) ,Sense GPS Latitude (deg) ,Sense GPS Longitude (deg) ,Sense GPS Altitude (m) ,Sense GPS Heading (deg) ,Sense IMU Heading (deg) ,Sense Analog 1 (V) ,Sense Analog 2 (V) ,Sense Analog 3 (V) ,Sense Analog 4 (V) ,Sense Analog 5 (V) ,Sense Analog 6 (V) ,Sense Pressure (Pa) ,Sense Pressure Altitude (m) ,Sense Temperature (C) ,RC Channel #1 (ms) ,RC Channel #2 (ms) ,RC Channel #3 (ms) ,RC Channel #4 (ms),RC Channel #5 (ms), RC Channel #6 (ms)'
 logger.writeheader(headers,'Hardware')
 

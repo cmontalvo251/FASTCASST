@@ -43,7 +43,7 @@ class Datalogger():
 		self.outfile.write('\n')
 
 	def open(self):
-		print("Attempting to open" + self.filename);
+		print("Attempting to open " + self.filename);
 		self.outfile = open(self.filename,"w");
 		if not self.outfile:
 			print("File not opened properly = " + self.filename);

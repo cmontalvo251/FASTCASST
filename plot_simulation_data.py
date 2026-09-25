@@ -85,7 +85,7 @@ for line in datafile:
     #print('line = ',line)
     row = line.split(',')
     #print('row = ',row)
-    if len(row) > 1:
+    if len(row) == numVars:
         #print('len(row) = ',len(row))
         numarray = [float(x) for x in row]
         sense_data.append(numarray)
@@ -94,11 +94,12 @@ sense_data = np.array(sense_data)
 ####MODEL DATA IN LOGS FOLDER
 for line in logfile:
     row = line.split(',')
-    if len(row) > 1:
+    #print(len(row))
+    if len(row) == numVars:
         numarray = [float(x) for x in row]
         model_data.append(numarray)
-
 model_data = np.array(model_data)
+
 #Plot everything
 sense_time = sense_data[:,0]
 model_time = model_data[:,0]
@@ -114,6 +115,7 @@ if tend > 0:
 else:
     iend_sense = -1
     iend_model = -1
+
 for x in range(1,numVars):
     fig = plt.figure()
     plti = fig.add_subplot(1,1,1)
@@ -128,7 +130,6 @@ for x in range(1,numVars):
     plti.get_xaxis().get_major_formatter().set_useOffset(False)
     plt.gcf().subplots_adjust(left=0.18)
     pp.savefig()
-
 
 ###PLOT A X,Y GRAPH
 fig = plt.figure()    

@@ -1,5 +1,6 @@
 import Util.util
 import os.path
+import numpy as np
 
 class RCIO():
     SERVO_MIN = 0.995 #ms
@@ -9,6 +10,7 @@ class RCIO():
         self.rcin = RCInput(mode,self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX)
         self.rcout = []
         self.NUMPWM = NUMPWM
+        self.pwm_commands = np.zeros(NUMPWM)
         for i in range(0,NUMPWM):
             print('Setting up Pin = ',i)
             self.rcout.append(PWM(mode,i))
@@ -26,6 +28,7 @@ class RCIO():
                 command = self.SERVO_MIN
             if(command > self.SERVO_MAX):
                 command = self.SERVO_MAX
+            self.pwm_commands[i] = command
             self.rcout[i].set_duty_cycle(command)
 
 class PWM():
@@ -182,7 +185,7 @@ class RCInput():
             return value[:-1]
         else:
             if ch == 0:
-                return self.SERVO_MIN
+                return self.SERVO_MIN*1000
             else:
-                return self.SERVO_MID
+                return self.SERVO_MID*1000
             

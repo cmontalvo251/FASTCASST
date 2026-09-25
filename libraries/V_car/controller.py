@@ -33,4 +33,5 @@ class CONTROLLER():
             if self.controls[i] > 1:
                 self.controls[i] = 1
 
+        #print(self.controls)
         return self.controls, self.defaults, self.color

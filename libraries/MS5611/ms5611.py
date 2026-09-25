@@ -265,6 +265,12 @@ class MS5611:
 			self.ALT = rho - REARTH
 		else:
 			self.ALT = -z
+		#Convert altitude to pressure
+		self.convertAltitude2Pressure()
+		#print(self.ALT,self.PRES)
+		#print(x,y,z,self.ALT)
+		#Need to just set nominal temp
+		self.TEMP = 25.0
 
 	#This poll function currently uses 2 modes and everytime it is called in MODE 1,
 	#it will add BAROWAIT seconds to your loop timer
@@ -275,8 +281,10 @@ class MS5611:
 	#to try and get the 3 mode version to work if you need those precious BAROWAIT seconds
 	def poll(self,RunTime):
 		if self.MODE != 'AUTO':
-			self.defaults() #Will need to update this for modeling eventually
-			self.convertPressure2Altitude()
+			#The altitude and pressure is already set in the send routine so no need to 
+			#set defaults or convert to altitude.
+			#self.defaults() #Will need to update this for modeling eventually
+			#self.convertPressure2Altitude()
 			return
 		if self.BAROMODE == 1:
 			#in here we want to make sure we wait 1 second before we set

@@ -9,6 +9,7 @@ class MODEL():
         self.timestep = TIMESTEP
         print('Running SIMONLY mode')
         self.state = np.zeros(13) #13 states
+        self.statedot = np.zeros(13)
         self.state[0] = ICs[0] #x (m)
         self.state[1] = ICs[1] #y (m)
         self.state[2] = ICs[2] #z (m)
@@ -37,7 +38,7 @@ class MODEL():
 
         ##Setup logging
         self.logger = D.Datalogger('logs/',NUMOUTPUTS)
-        headers = 'Time (sec) ,Model X(m) ,Model Y(m) ,Model Z(m) ,Model Roll (deg) ,Model Pitch (deg) ,Model Compass (deg) ,Model U(m/s) ,Model V(m/s) ,Model W(m/s) ,Model P(rad/s) ,Model Q(rad/s) ,Model R(rad/s) ,Model Mx(Gauss) ,Model My(Gauss) ,Model Mz(Gauss) ,Model GPS Latitude (deg) ,Model GPS Longitude (deg) ,Model GPS Altitude (m) ,Model GPS Heading (deg) ,Model IMU Heading (deg) ,Model Analog 1 (V) ,Model Analog 2 (V) ,Model Analog 3 (V) ,Model Analog 4 (V) ,Model Analog 5 (V) ,Model Analog 6 (V) ,Model Pressure (Pa) ,Model Pressure Altitude (m) ,Model Temperature (C) ,RC Channel #1 ,RC Channel #2 ,RC Channel #3 ,RC Channel #4 ,RC Channel #5'
+        headers = 'Time (sec) ,Model X(m) ,Model Y(m) ,Model Z(m) ,Model Roll (deg) ,Model Pitch (deg) ,Model Compass (deg) ,Model U(m/s) ,Model V(m/s) ,Model W(m/s) ,Model P(rad/s) ,Model Q(rad/s) ,Model R(rad/s) ,Model Mx(Gauss) ,Model My(Gauss) ,Model Mz(Gauss) ,Model GPS Latitude (deg) ,Model GPS Longitude (deg) ,Model GPS Altitude (m) ,Model GPS Heading (deg) ,Model IMU Heading (deg) ,Model Analog 1 (V) ,Model Analog 2 (V) ,Model Analog 3 (V) ,Model Analog 4 (V) ,Model Analog 5 (V) ,Model Analog 6 (V) ,Model Pressure (Pa) ,Model Pressure Altitude (m) ,Model Temperature (C) ,RC Channel #1 (ms),RC Channel #2 (ms),RC Channel #3 (ms),RC Channel #4 (ms),RC Channel #5 (ms), RC CHannel #6 (ms)'
         self.logger.writeheader(headers,'Model')
 
         #Setup GPS for lat/lon conversions
@@ -47,6 +48,11 @@ class MODEL():
         #Setup Barometer for pressure to altitude conversions
         import MS5611.ms5611 as MS
         self.baro = MS.MS5611(mode='SIMONLY')
+        self.baro.defaults()
+        self.REARTH = 6371000.0
+
+        #Magnetometer
+        self.mag = np.asarray([300.0,0,0])
 
     def log(self,RunTime):
         #Time (sec)
@@ -71,9 +77,9 @@ class MODEL():
         self.logger.outdata[13] = self.r*180/np.pi
         #Mx(Gauss) ,My(Gauss) ,Mz(Gauss) _ The model currently has no magnetometer measurements
         #we'll need to add it once we add the IGRF model for satellites
-        self.logger.outdata[13] = 0.0
-        self.logger.outdata[14] = 0.0
-        self.logger.outdata[15] = 0.0
+        self.logger.outdata[13] = self.mag[0]
+        self.logger.outdata[14] = self.mag[1]
+        self.logger.outdata[15] = self.mag[2]
         #GPS Latitude (deg) ,GPS Longitude (deg) ,GPS Altitude (m)
         #Convert x,y,z
         if self.VEHICLE == 'satellite':
@@ -102,9 +108,8 @@ class MODEL():
             x = self.state[0]
             y = self.state[1]
             rho = np.sqrt(x**2 + y**2 + z**2)
-            REARTH = 6371000.0
   	    #This is a satellite
-            self.baro.ALT = rho - REARTH
+            self.baro.ALT = rho - self.REARTH
         else:
             self.baro.ALT = -z
         self.baro.convertAltitude2Pressure()
@@ -118,16 +123,16 @@ class MODEL():
         self.logger.outdata[33] = self.rcsignals[3]
         self.logger.outdata[34] = self.rcsignals[4]
         self.logger.outdata[35] = self.rcsignals[5]
-        #PWM Hardware Out 1-len(pwm_commands)
-        for i in range(0,len(self.pwm_commands)):
-            self.logger.outdata[36+i] = self.pwm_commands[i]
+        #PWM Hardware Out 1-len(commands)
+        for i in range(0,len(self.commands)):
+            self.logger.outdata[36+i] = self.commands[i]
         self.logger.println()
 
     def Derivatives(self,t,dstate):
         #Need to compute statedot
-        #x = state[0]
-        #y = state[1]
-        #z = state[2]
+        x = dstate[0]
+        y = dstate[1]
+        z = dstate[2]
         #phi = state[3]
         #theta = state[4]
         #psi = state[5]
@@ -149,14 +154,44 @@ class MODEL():
         
         #Kinematics
         TIB = self.RQUAT(self.quat)
+        TBI = np.transpose(TIB)
         xyzdot = np.matmul(TIB,uvw)
+        xdot = xyzdot[0]
+        ydot = xyzdot[1]
+        zdot = xyzdot[2]
         PQRMAT = np.asarray([[0,-self.p,-self.q,-self.r],[self.p,0,self.r,-self.q],[self.q,-self.r,0,self.p],[self.r,self.q,-self.p,0]])
         quatdot = 0.5*np.matmul(PQRMAT,self.quat)
+
+        ##Magnetic Field Model
+        self.mag = np.matmul(TBI,np.asarray([300,0,0]))
         
         #Force and Moment Model 
-        F = np.asarray([0,0,0])
-        M = np.asarray([0,0,0])
-        F,M = self.vehicle.ForceMoment(t,dstate,self.pwm_commands)
+        Fbody,Mbody = self.vehicle.ForceMoment(t,dstate,self.commands)
+
+        #Gravity
+        Fgrav = np.matmul(TBI,np.asarray([0,0,9.81]))*self.mass
+
+        #Ground Contact Model
+        FgrndB = np.zeros(3)
+        rho = np.sqrt(x**2 + y**2 + z**2)
+        if self.VEHICLE == 'satellite':
+            inSideEarth = (rho < self.REARTH)
+        else:
+            inSideEarth = (z > 0)
+        if (inSideEarth):
+            FgrndI = np.zeros(3)
+            N = self.mass*9.81
+            GNDSTIFF = 112.0
+            GNDDAMP = 50.0
+            GNDCOEFF = 0.1
+            FgrndI[0] = -N*GNDCOEFF*self.sat(xdot,0.1,1.0)
+            FgrndI[1] = -N*GNDCOEFF*self.sat(ydot,0.1,1.0);
+            FgrndI[2] = -z*GNDSTIFF-zdot*GNDDAMP
+            FgrndB = np.matmul(TBI,FgrndI)
+
+        ##Add it all up
+        F = Fgrav + FgrndB + Fbody
+        M = Mbody
         
         #Dynamics
         uvwdot = F/self.mass - np.cross(pqr,uvw)
@@ -166,8 +201,19 @@ class MODEL():
 
         return dxdt
 
-    def loop(self,t,rcsignals,pwm_commands):
-        self.pwm_commands = pwm_commands
+    def sat(self,input,epsilon,scalefactor):
+        if (input > epsilon):
+            #//Right side of graph
+            return scalefactor
+        elif (input < -epsilon):
+            #//left side of graph
+            return -scalefactor;
+        else:
+            #//Inside the boundary so interpolate
+            return scalefactor*input/epsilon
+
+    def loop(self,t,rcsignals,commands):
+        self.commands = commands
         self.rcsignals = rcsignals
         #RK4 Call
         k1 = self.Derivatives(t,self.state)

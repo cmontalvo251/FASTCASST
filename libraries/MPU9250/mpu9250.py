@@ -591,7 +591,6 @@ class MPU9250:
 
     def getALL(self,dt,gps_heading = -999): #gps heading defaults to -999 if not available
         if self.MODE != 'AUTO':
-            ##Will need to update this using modeling as well
             a = self.accel #This comes from self.send()
             g = self.gyro
             m = self.mag

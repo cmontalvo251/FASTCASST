@@ -1,11 +1,12 @@
 import numpy as np
 
 class CONTROLLER():
-    def __init__(self):
+    def __init__(self,WAYPOINTS):
         self.Kp_steer = 0.008
         self.base_throttle = 0.4
         self.NUMCONTROLS = 2
         self.setdefaults()
+        self.WAYPOINTS = WAYPOINTS
         return
 
     def setdefaults(self):

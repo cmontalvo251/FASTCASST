@@ -24,6 +24,9 @@ TFINAL = 10.0 #final time of simulation if SIMONLY selected
 ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
 LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL
 LONGITUDE_ORIGIN = -88.16 #set origin for SIMONLY / SIL / HIL
+#You can give WAYPOINTS in X/Y coordinates or GPS coordinates
+WAYPOINTSX = [0,100,100,0]
+WAYPOINTSY = [0,0,100,100]
 ################################################
 
 ##Import basic utilities
@@ -38,11 +41,25 @@ sys.path.append('libraries/')
 import Util.util as U
 U.check_apm()
 
+#Setup GPS
+import GPS.gps as G
+gps_llh = G.GPS(mode=MODE)
+gps_llh.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
+WAYPOINTSLAT = []
+WAYPOINTSLON = []
+if "WAYPOINTS" not in locals():
+    #This means that WAYPOINTSXY has been set rather than WAYPOINTS in GPS coordinates
+    for i in range(0,len(WAYPOINTSX)):
+        lat,lon,alt = gps_llh.convertXYZ2LATLON(WAYPOINTSX[i],WAYPOINTSY[i],0)
+        WAYPOINTSLAT.append(lat)
+        WAYPOINTSLON.append(lon)
+    WAYPOINTS = [WAYPOINTSLAT,WAYPOINTSLON]
+
 ##Import the vehicle controller based on your selection
 sys.path.append('../libraries/V_'+VEHICLE)
 sys.path.append('libraries/V_'+VEHICLE)
 import controller
-vehicle = controller.CONTROLLER()
+vehicle = controller.CONTROLLER(WAYPOINTS)
 #Initialize pwm_commands
 pwm_commands = vehicle.defaults
 NUMOUTPUTS = 36+vehicle.NUMCONTROLS
@@ -51,11 +68,6 @@ NUMOUTPUTS = 36+vehicle.NUMCONTROLS
 if MODE == 'SIMONLY':
     import modeling.modeling as M
     model = M.MODEL(TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
-
-#Setup GPS
-import GPS.gps as G
-gps_llh = G.GPS(mode=MODE)
-gps_llh.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
 
 #Setup IMU
 import MPU9250.mpu9250 as MPU

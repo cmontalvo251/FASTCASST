@@ -36,6 +36,8 @@ class GPS():
         self.x_vec         = []
         self.y_vec         = []
         self.filterConstant = 0.2
+        #self.filterConstant = 1.0
+        #self.filterConstant = 0.9
         self.NM2FT  = 6076.115485560000
         self.FT2M   = 0.3048
         self.GPSVAL = 60.0 * self.NM2FT * self.FT2M
@@ -44,7 +46,7 @@ class GPS():
         self.lonO   = -88.1
 
         ##Polling timing
-        self.GPSNEXT = 0.1
+        self.GPSNEXT = 0.25
         self.GPSTime = -self.GPSNEXT
 
         self.ubl = None
@@ -162,17 +164,17 @@ class GPS():
     def send(self,state,statedot,VEHICLE):
         #This routine takes the state vector from the model and turns it into GPS coordinates
         #First let's check and see if this is a satellite.....
-        xdot = statedot[7]
-        ydot = statedot[8]
-        zdot = statedot[9]
+        u = state[7]
+        v = state[8]
+        w = state[9]
         if VEHICLE == 'satellite':
             #Convert to lat/lon/alt using polar coordinates
             self.latitude,self.longitude,self.altitude = self.convertXY2LATLONSPHERICAL(state[0],state[1],state[2])
-            self.speed = np.sqrt(xdot**2 + ydot**2 + zdot**2)
+            self.speed = np.sqrt(u**2 + v**2 + w**2)
         else:
             #convert to lat/lon/alt using flat earth approx
             self.latitude,self.longitude,self.altitude = self.convertXYZ2LATLON(state[0],state[1],state[2])
-            self.speed = np.sqrt(xdot**2 + ydot**2)
+            self.speed = np.sqrt(u**2 + v**2)
         return
     
     def compute_heading_velocity(self):
@@ -194,10 +196,12 @@ class GPS():
             #print('prev lat:',self.prev_latitude,'prev lon:',self.prev_longitude)
             #print('lat:',self.latitude,'lon:',self.longitude)
             #print('delta lat (m):',dlat*111000,'delta lon (m):',dlon*111000*np.cos(self.latitude*np.pi/180))
+            new_speed = np.sqrt((dlat*111000.)**2 + (dlon*111000.*np.cos(self.latitude*np.pi/180))**2)/self.elapsedTime
+            #print('Time = ',self.GPSTime,'dLAT = ',dlat,'NSpeed = ',new_speed,'dT = ',self.elapsedTime,'dlon = ',dlon)
             if self.speed == -99:
-                self.speed = np.sqrt((dlat*111000)**2 + (dlon*111000*np.cos(self.latitude*np.pi/180))**2)/self.elapsedTime
+                self.speed = new_speed
             else:
-                self.speed = np.sqrt((dlat*111000)**2 + (dlon*111000*np.cos(self.latitude*np.pi/180))**2)/self.elapsedTime*self.filterConstant + self.speed*(1-self.filterConstant)
+                self.speed = new_speed*self.filterConstant + self.speed*(1-self.filterConstant)
         else:
             self.heading = -999
             self.speed = -99

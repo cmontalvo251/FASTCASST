@@ -16,13 +16,16 @@
 
 #####################PARAMETERS#################
 VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
+CONTROLMODE = 1 #This is dictated by your controller.py script and is vehicle dependent
+#CAR MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
 TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
+PRINTTIME = 1.0 #time between stdout prints
 LOGTIME = 0.1 #time between logging time in seconds
 MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 TIMESTEP = 0.01 #Timestep of modeling if SIMONLY selected
-TFINAL = 5.0 #final time of simulation if SIMONLY selected
+TFINAL = 50.0 #final time of simulation if SIMONLY selected
 #Initial Conditions for SIMONLY
-ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
+ICs = [0,0,0,0,0,45,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
 LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL
 LONGITUDE_ORIGIN = -88.16 #set origin for SIMONLY / SIL / HIL
 #You can give WAYPOINTS in X/Y coordinates or GPS coordinates
@@ -60,7 +63,7 @@ if "WAYPOINTS" not in locals():
 sys.path.append('../libraries/V_'+VEHICLE)
 sys.path.append('libraries/V_'+VEHICLE)
 import controller
-vehicle = controller.CONTROLLER(WAYPOINTS)
+vehicle = controller.CONTROLLER(WAYPOINTS,CONTROLMODE)
 #Initialize commands
 commands = vehicle.defaults
 NUMOUTPUTS = 36+vehicle.NUMCONTROLS
@@ -118,6 +121,7 @@ print('Setting up Time')
 StartTime = time.time()
 RunTime = 0.0
 logTime = -LOGTIME
+printTime = -PRINTTIME
 telemetryTime = 0.0
 
 #This runs on repeat until code is killed
@@ -172,11 +176,13 @@ while (RunTime <= TFINAL):
     rc.set_commands(commands)
 
     #Print to Home
-    str_pwm = [f"{pwm:1.3f}" for pwm in rc.pwm_commands] #convert pwm commands to 3 sig figs
-    str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
-    str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
-    #print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",gps_llh.latitude,gps_llh.longitude,gps_llh.altitude)
-    print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.ALT:.3f}",gps_llh.altitude)
+    if (RunTime - printTime) > PRINTTIME:
+        str_pwm = [f"{pwm:1.3f}" for pwm in rc.pwm_commands] #convert pwm commands to 3 sig figs
+        str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
+        str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
+        #print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",gps_llh.latitude,gps_llh.longitude,gps_llh.altitude)
+        print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.ALT:.3f}",gps_llh.altitude)
+        printTime+=PRINTTIME
 
     ##Send Telemetry
     if (RunTime - telemetryTime) >= TELEMETRYTIME and MODE != 'SIMONLY':

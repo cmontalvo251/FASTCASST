@@ -122,7 +122,7 @@ for x in range(1,numVars):
     plti.plot(sense_time[istart_sense:iend_sense],sense_data[istart_sense:iend_sense,x],'b',label=dataheaders[x])
     plti.plot(model_time[istart_model:iend_model],model_data[istart_model:iend_model,x],'y',label=logheaders[x])
     plti.set_xlabel('Time (sec)')
-    plti.set_ylabel(dataheaders[x])
+    plti.set_ylabel(dataheaders[x][5:]) 
     print(dataheaders[x].replace('\n',''),x)
     plti.grid()
     plti.legend()

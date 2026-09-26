@@ -38,7 +38,7 @@ class Datalogger():
 		self.outfile.write(headers)
 		NUMCONTROLS = self.NUMOUTPUTS - 36
 		for i in range(0,NUMCONTROLS):
-			s = ',PWM ' + TYPE + ' Out ' + str(i+1) + ' (-1/1)'
+			s = ',     PWM ' + TYPE + ' Out ' + str(i+1) + ' (-1/1)'
 			self.outfile.write(s)
 		self.outfile.write('\n')
 

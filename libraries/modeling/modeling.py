@@ -92,8 +92,12 @@ class MODEL():
         self.logger.outdata[17] = self.longitude
         self.logger.outdata[18] = self.altitude
         #GPS Heading (deg) ,IMU Heading (deg)
-        self.logger.outdata[19] = rpy[2]
-        self.logger.outdata[20] = rpy[2]
+        if self.gps.heading == -999:
+            heading = 0
+        else:
+            heading = self.gps.heading
+        self.logger.outdata[19] = heading
+        self.logger.outdata[20] = rpy[2]*180/np.pi 
         #Analog 1-6 (V)
         self.logger.outdata[21] = 0
         self.logger.outdata[22] = 0
@@ -213,6 +217,10 @@ class MODEL():
             return scalefactor*input/epsilon
 
     def loop(self,t,rcsignals,commands):
+        #Update GPS
+        self.gps.send(self.state,self.statedot,self.VEHICLE)
+        self.gps.poll(t)
+        #Copy Commands and RCsignals
         self.commands = commands
         self.rcsignals = rcsignals
         #RK4 Call

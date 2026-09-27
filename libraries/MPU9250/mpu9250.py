@@ -604,6 +604,7 @@ class MPU9250:
         #But also use the AHRS filter
         self.ahrs.update(a[0], a[1], a[2], g[0], g[1], g[2], m[0], m[1], m[2], dt)
         roll,pitch,yaw = self.ahrs.getEuler()
+        yaw*=-1 #May have to fix this later but in SIMONLY the yaw is backwards
         rpy_ahrs = [roll,pitch,yaw]
         #Compass value is the yaw from the AHRS filter, but if GPS heading is available we will use it instead
         #But let's filter everything 

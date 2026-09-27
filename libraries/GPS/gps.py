@@ -1,6 +1,7 @@
 import sys
 import time
 import numpy as np
+import math
 
 #sys.path.append('../Util')
 #sys.path.append('../libraries/Util')
@@ -182,11 +183,24 @@ class GPS():
             #Get delta lat and delta lon
             dlat = self.latitude - self.prev_latitude
             dlon = self.longitude - self.prev_longitude
+
+            #HEADING ANGLE COMPUTATION FROM GEMINI
+            phi2 = math.radians(self.latitude)
+            phi1 = math.radians(self.prev_latitude)
+            delta_lambda = math.radians(self.longitude - self.prev_longitude)
+
+            # Formula components
+            y = math.sin(delta_lambda) * math.cos(phi2)
+            x = math.cos(phi1) * math.sin(phi2) - math.sin(phi1) * math.cos(phi2) * math.cos(delta_lambda)
+
+            # Calculate initial bearing in radians and convert to degrees
+            new_heading = math.atan2(y, x)*180/np.pi
+            self.filterConstant = 1.0
             if self.heading == -999:
-                self.heading = np.arctan2(dlon,dlat)*180/np.pi
+                self.heading = new_heading
             else:
                 #Compute heading with filtering to smooth it out.
-                self.heading = np.arctan2(dlon,dlat)*180/np.pi*self.filterConstant + self.heading*(1-self.filterConstant)
+                self.heading = new_heading*self.filterConstant + self.heading*(1-self.filterConstant)
             if self.heading < 0:
                 self.heading += 360
             if self.heading > 360:

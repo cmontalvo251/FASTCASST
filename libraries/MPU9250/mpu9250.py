@@ -251,6 +251,7 @@ class MPU9250:
         self.rpy = np.zeros(3)
         self.compass = -999 #Default compass value is -999 until we get a reading from the magnetometer and gps
         self.MODE = mode
+        self.rpy_ahrs = np.asarray([0,0,0])
         self.initialize()
 
     def bus_open(self):
@@ -580,14 +581,16 @@ class MPU9250:
         #Acceleration needs to come from quaternion vector
         q0123 = np.asarray([state[3],state[4],state[5],state[6]])
         TIB = self.RQUAT(q0123)
-        self.accel = np.matmul(np.transpose(TIB),np.asarray([0,0,9.81]))
+        TBI = np.transpose(TIB)
+        self.accel = np.matmul(TBI,np.asarray([0,0,9.81]))
         #Gyro comes straight from pqr but there's a rotation
         p = state[10]
         q = state[11]
         r = state[12]
-        self.gyro = np.asarray([q,p,-r])
+        self.gyro = np.asarray([p,q,r])
         #Magnetometer comes from assuming magnetic field is [300,0,0]
-        self.mag = np.matmul(np.transpose(TIB),np.asarray([300,0,0]))
+        self.mag = np.matmul(TBI,np.asarray([300,0,0]))
+        #self.mag = np.matmul(TIB,np.asarray([300,0,0]))
 
     def getALL(self,dt,gps_heading = -999): #gps heading defaults to -999 if not available
         if self.MODE != 'AUTO':
@@ -598,14 +601,25 @@ class MPU9250:
         else:
             a,g,m = self.getMotion9()
             temp = self.temperature
+            #I will need to fix axes of rotation later by testing a,g and m independently. This will take a while
+            #in real life
         #Convert a,g,m to rpy using trigonometry
         roll,pitch,yaw = self.trigonometry(a,g,m)
         rpy = [roll,pitch,yaw]
         #But also use the AHRS filter
-        self.ahrs.update(a[0], a[1], a[2], g[0], g[1], g[2], m[0], m[1], m[2], dt)
-        roll,pitch,yaw = self.ahrs.getEuler()
-        yaw*=-1 #May have to fix this later but in SIMONLY the yaw is backwards
-        rpy_ahrs = [roll,pitch,yaw]
+        #But first, rotate the magnetometer to the inertial frame
+        #TIB = self.R123(self.rpy_ahrs[0],self.rpy_ahrs[1],self.rpy_ahrs[2])
+        #mI = np.matmul(np.transpose(TIB),m)
+        mI = m
+        self.ahrs.update(a[0], a[1], a[2], g[0], g[1], g[2], mI[0], mI[1], mI[2], dt)
+        rolli,pitchi,yawi = self.ahrs.getEuler()
+        #Fix the orientation
+        roll = pitchi
+        pitch = rolli
+        yaw = -yawi
+        self.rpy_ahrs = [roll,pitch,yaw]
+        #print('AHRS = ',self.rpy_ahrs)
+        #print('rpy = ',rpy)
         #Compass value is the yaw from the AHRS filter, but if GPS heading is available we will use it instead
         #But let's filter everything 
         #First let's assume the compass value updates from the AHRS filter
@@ -618,14 +632,16 @@ class MPU9250:
             #If we get a gps measurement we will trust it more than the AHRS filter, but we will still use the AHRS filter to smooth it out a bit
             self.compass = gps_heading*0.98 + self.compass*0.02 
         ##Before returning g (angular velocity we need to fix the axis system and conver to deg/s
-        gdegs = np.array([g[1],g[0],-g[2]])*180.0/np.pi
-        return a,gdegs,m,rpy,rpy_ahrs,temp,self.compass
+        gdegs = np.array([g[0],g[1],g[2]])*180.0/np.pi
+        return a,gdegs,m,rpy,self.rpy_ahrs,temp,self.compass
     
     def trigonometry(self,a,g,m):
-        ay = a[0]
-        ax = a[1]
+        ax = a[0]
+        ay = a[1]
         az = a[2]
-        phi = -np.arctan2(ay,az)
+        #print('a = ' ,a)
+        phi = np.arctan2(ay,az)
+        #print('phi = ',phi)
         theta = -np.arctan2(-ax, (ay*np.sin(phi)+az*np.cos(phi)))
         bx = m[0]
         by = m[1]

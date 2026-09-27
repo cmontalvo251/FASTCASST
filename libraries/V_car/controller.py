@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import time
 
 class CONTROLLER():
     def __init__(self,WAYPOINTS,CONTROLMODE):
@@ -68,7 +69,7 @@ class CONTROLLER():
 
         ##Overrrides
         #self.controls[0] = 1.0
-        #self.controls[1] = 0.0
+        #self.controls[1] = 1.0 #Full right turn (1.0)
 
         #print(self.controls)
         return self.controls, self.defaults, self.color
@@ -82,13 +83,23 @@ class CONTROLLER():
         DLAT = self.WAYPOINTSLAT[self.WAYINDEX] - LAT
         DLON = self.WAYPOINTSLON[self.WAYINDEX] - LON
 
-        self.heading_command = math.atan2(DLON, DLAT) * 180.0 / math.pi
+        #HEADING ANGLE COMPUTATION FROM GEMINI
+        phi2 = math.radians(self.WAYPOINTSLAT[self.WAYINDEX])
+        phi1 = math.radians(LAT)
+        delta_lambda = math.radians(DLON)
+        # Formula components
+        y = math.sin(delta_lambda) * math.cos(phi2)
+        x = math.cos(phi1) * math.sin(phi2) - math.sin(phi1) * math.cos(phi2) * math.cos(delta_lambda)
+        # Calculate initial bearing in radians and convert to degrees
+        self.heading_command = math.atan2(y, x)*180/np.pi
+        #self.heading_command = math.atan2(DLON, DLAT) * 180.0 / math.pi
+
         NM2FT  = 6076.115485560000
         FT2M   = 0.3048
         GPSVAL = 60.0 * NM2FT * FT2M
-        distance = math.sqrt(DLAT * DLON + DLAT * DLON)*GPSVAL
+        distance = math.sqrt(DLAT**2 + DLON**2)*GPSVAL
 
-        if distance < 50:
+        if distance < 5:
             print(f"WAY (LAT,LON) = ({self.WAYPOINTSLAT[self.WAYINDEX]},{self.WAYPOINTSLON[self.WAYINDEX]}) " f"GPS (LAT,LON) = {LAT} {LON} HCOMM = {self.heading_command} DIST = {distance}")
             self.WAYINDEX += 1
             if self.WAYINDEX > self.NUMWAYPOINTS - 1:
@@ -96,10 +107,11 @@ class CONTROLLER():
 
     def heading_loop(self,rpy,g):
         """Heading control proportional feedback loop."""
-        kp = 2.5
-        # MATLAB 1-based (6,1) -> 0-based [5,0]
-        heading = rpy[2]
-        dheading = -self.delpsi(heading * math.pi / 180.0, self.heading_command * math.pi / 180.0)*180.0/math.pi
+        kp = 2.5*np.pi/180.0
+        heading = rpy[2] #In degrees
+        dheading = self.delpsi(heading * math.pi / 180.0, self.heading_command * math.pi / 180.0)*180.0/math.pi
+        #print(heading,self.heading_command,dheading)
+        #time.sleep(1.0)
         if dheading > 180:
             dheading -= 180
             dheading *= -1

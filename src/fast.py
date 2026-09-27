@@ -16,7 +16,7 @@
 
 #####################PARAMETERS#################
 VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
-CONTROLMODE = 1 #This is dictated by your controller.py script and is vehicle dependent
+CONTROLMODE = 2 #This is dictated by your controller.py script and is vehicle dependent
 #CAR MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
 TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
 PRINTTIME = 1.0 #time between stdout prints
@@ -25,12 +25,12 @@ MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 TIMESTEP = 0.01 #Timestep of modeling if SIMONLY selected
 TFINAL = 50.0 #final time of simulation if SIMONLY selected
 #Initial Conditions for SIMONLY
-ICs = [0,0,0,0,0,45,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
+ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
 LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL
 LONGITUDE_ORIGIN = -88.16 #set origin for SIMONLY / SIL / HIL
 #You can give WAYPOINTS in X/Y coordinates or GPS coordinates
-WAYPOINTSX = [0,100,100,0]
-WAYPOINTSY = [0,0,100,100]
+WAYPOINTSX = [100,100,0,0]
+WAYPOINTSY = [0,100,100,0]
 ################################################
 
 ##Import basic utilities
@@ -85,7 +85,7 @@ import Datalogger.datalogger as D
 #else:
 #	sys.exit('No input argument given for datalogging directory')
 logger = D.Datalogger('data/',NUMOUTPUTS)
-headers = 'Time (sec) ,Sense X(m) ,Sense Y(m) ,Sense Z(m) ,Sense Roll (deg) ,Sense Pitch (deg) ,Sense Compass (deg) ,Sense U(m/s) ,Sense V(m/s) ,Sense W(m/s) ,Sense P(rad/s) ,Sense Q(rad/s) ,Sense R(rad/s) ,Sense Mx(Gauss) ,Sense My(Gauss) ,Sense Mz(Gauss) ,Sense GPS Latitude (deg) ,Sense GPS Longitude (deg) ,Sense GPS Altitude (m) ,Sense GPS Heading (deg) ,Sense IMU Heading (deg) ,Sense Analog 1 (V) ,Sense Analog 2 (V) ,Sense Analog 3 (V) ,Sense Analog 4 (V) ,Sense Analog 5 (V) ,Sense Analog 6 (V) ,Sense Pressure (Pa) ,Sense Pressure Altitude (m) ,Sense Temperature (C) ,Sense RC Channel #1 (ms) ,Sense RC Channel #2 (ms) ,Sense RC Channel #3 (ms) ,Sense RC Channel #4 (ms) ,Sense RC Channel #5 (ms) ,Sense RC Channel #6 (ms)'
+headers = 'Time (sec) ,Sense X(m) ,Sense Y(m) ,Sense Z(m) ,Sense Roll (deg) ,Sense Pitch (deg) ,Sense Compass (deg) ,Sense U(m/s) ,Sense V(m/s) ,Sense W(m/s) ,Sense P(deg/s) ,Sense Q(deg/s) ,Sense R(deg/s) ,Sense Mx(Gauss) ,Sense My(Gauss) ,Sense Mz(Gauss) ,Sense GPS Latitude (deg) ,Sense GPS Longitude (deg) ,Sense GPS Altitude (m) ,Sense GPS Heading (deg) ,Sense IMU Heading (deg) ,Sense Analog 1 (V) ,Sense Analog 2 (V) ,Sense Analog 3 (V) ,Sense Analog 4 (V) ,Sense Analog 5 (V) ,Sense Analog 6 (V) ,Sense Pressure (Pa) ,Sense Pressure Altitude (m) ,Sense Temperature (C) ,Sense RC Channel #1 (ms) ,Sense RC Channel #2 (ms) ,Sense RC Channel #3 (ms) ,Sense RC Channel #4 (ms) ,Sense RC Channel #5 (ms) ,Sense RC Channel #6 (ms)'
 logger.writeheader(headers,'Hardware')
 
 #Setup LED
@@ -153,6 +153,9 @@ while (RunTime <= TFINAL):
     #Note I do not recommend using rpy since that is solely using trigonometry
     #in addition the yaw angle does not work at all
     #rpy_ahrs works really well for obtaining the yaw angle
+    #It's possible though that the trigonometry routine for yaw angle doesn't work
+    #because it assumes the magnetic field is bhat = [1,0,0] and thus you need to calibrate said sensor
+    #during boot up. Might be a good thing to test once you start hardware testing.
     #compass is the ahrs magnetometer heading + the gps heading
     a,gdegs,m,rpy,rpy_ahrs,temp,compass = imu.getALL(elapsedTime,gps_llh.heading) 
 

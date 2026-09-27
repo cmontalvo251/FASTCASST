@@ -38,7 +38,7 @@ class MODEL():
 
         ##Setup logging
         self.logger = D.Datalogger('logs/',NUMOUTPUTS)
-        headers = 'Time (sec) ,Model X(m) ,Model Y(m) ,Model Z(m) ,Model Roll (deg) ,Model Pitch (deg) ,Model Compass (deg) ,Model U(m/s) ,Model V(m/s) ,Model W(m/s) ,Model P(rad/s) ,Model Q(rad/s) ,Model R(rad/s) ,Model Mx(Gauss) ,Model My(Gauss) ,Model Mz(Gauss) ,Model GPS Latitude (deg) ,Model GPS Longitude (deg) ,Model GPS Altitude (m) ,Model GPS Heading (deg) ,Model IMU Heading (deg) ,Model Analog 1 (V) ,Model Analog 2 (V) ,Model Analog 3 (V) ,Model Analog 4 (V) ,Model Analog 5 (V) ,Model Analog 6 (V) ,Model Pressure (Pa) ,Model Pressure Altitude (m) ,Model Temperature (C) ,RC Channel #1 (ms),RC Channel #2 (ms),RC Channel #3 (ms),RC Channel #4 (ms),RC Channel #5 (ms), RC CHannel #6 (ms)'
+        headers = 'Time (sec) ,Model X(m) ,Model Y(m) ,Model Z(m) ,Model Roll (deg) ,Model Pitch (deg) ,Model Compass (deg) ,Model U(m/s) ,Model V(m/s) ,Model W(m/s) ,Model P(deg/s) ,Model Q(deg/s) ,Model R(deg/s) ,Model Mx(Gauss) ,Model My(Gauss) ,Model Mz(Gauss) ,Model GPS Latitude (deg) ,Model GPS Longitude (deg) ,Model GPS Altitude (m) ,Model GPS Heading (deg) ,Model IMU Heading (deg) ,Model Analog 1 (V) ,Model Analog 2 (V) ,Model Analog 3 (V) ,Model Analog 4 (V) ,Model Analog 5 (V) ,Model Analog 6 (V) ,Model Pressure (Pa) ,Model Pressure Altitude (m) ,Model Temperature (C) ,RC Channel #1 (ms),RC Channel #2 (ms),RC Channel #3 (ms),RC Channel #4 (ms),RC Channel #5 (ms), RC CHannel #6 (ms)'
         self.logger.writeheader(headers,'Model')
 
         #Setup GPS for lat/lon conversions
@@ -52,7 +52,7 @@ class MODEL():
         self.REARTH = 6371000.0
 
         #Magnetometer
-        self.mag = np.asarray([300.0,0,0])
+        self.magI = np.asarray([300,0,0])
 
     def log(self,RunTime):
         #Time (sec)
@@ -66,15 +66,20 @@ class MODEL():
         rpy = self.quat2euler(self.quat)
         self.logger.outdata[4] = rpy[0]*180/np.pi
         self.logger.outdata[5] = rpy[1]*180/np.pi
-        self.logger.outdata[6] = rpy[2]*180/np.pi
+        compass = rpy[2]*180/np.pi
+        if (compass < 0):
+            compass += 360
+        elif (compass > 360):
+            compass -= 360
+        self.logger.outdata[6] = compass
         #U(m/s) ,V(m/s) ,W(m/s)
         self.logger.outdata[7] = self.state[7]
         self.logger.outdata[8] = self.state[8]
         self.logger.outdata[9] = self.state[9]
         #P(deg/s) ,Q(deg/s) ,R(deg/s)
-        self.logger.outdata[11] = self.p*180/np.pi
-        self.logger.outdata[12] = self.q*180/np.pi
-        self.logger.outdata[13] = self.r*180/np.pi
+        self.logger.outdata[10] = self.p*180/np.pi
+        self.logger.outdata[11] = self.q*180/np.pi
+        self.logger.outdata[12] = self.r*180/np.pi
         #Mx(Gauss) ,My(Gauss) ,Mz(Gauss) _ The model currently has no magnetometer measurements
         #we'll need to add it once we add the IGRF model for satellites
         self.logger.outdata[13] = self.mag[0]
@@ -167,7 +172,7 @@ class MODEL():
         quatdot = 0.5*np.matmul(PQRMAT,self.quat)
 
         ##Magnetic Field Model
-        self.mag = np.matmul(TBI,np.asarray([300,0,0]))
+        self.mag = np.matmul(TBI,self.magI)
         
         #Force and Moment Model 
         Fbody,Mbody = self.vehicle.ForceMoment(t,dstate,self.commands)

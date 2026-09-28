@@ -12,7 +12,7 @@ class CONTROLLER():
         self.WAYPOINTSLAT = WAYPOINTS[0]
         self.WAYPOINTSLON = WAYPOINTS[1]
         self.NUMWAYPOINTS = len(self.WAYPOINTSLAT)
-        self.WAYINDEX = 1
+        self.WAYINDEX = 0
         self.lastTime = 0.0
         self.elapsedTime = 0.0
         self.velocity_command = -99.0
@@ -76,7 +76,6 @@ class CONTROLLER():
 
     def waypoint_loop(self,gps_llh):
         """Waypoint navigation calculations."""
-        # MATLAB 1-based (1,1) and (2,1) -> 0-based [0,0] and [1,0]
         LAT = gps_llh.latitude
         LON = gps_llh.longitude
 

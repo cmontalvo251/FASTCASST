@@ -16,14 +16,14 @@
 
 #####################PARAMETERS#################
 VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
-CONTROLMODE = 2 #This is dictated by your controller.py script and is vehicle dependent
+CONTROLMODE = 3 #This is dictated by your controller.py script and is vehicle dependent
 #CAR MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
 TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
 PRINTTIME = 1.0 #time between stdout prints
 LOGTIME = 0.1 #time between logging time in seconds
 MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 TIMESTEP = 0.01 #Timestep of modeling if SIMONLY selected
-TFINAL = 50.0 #final time of simulation if SIMONLY selected
+TFINAL = 100.0 #final time of simulation if SIMONLY selected
 #Initial Conditions for SIMONLY
 ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
 LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL

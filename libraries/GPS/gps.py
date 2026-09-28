@@ -1,29 +1,30 @@
 import sys
 import time
 import numpy as np
+import math
 
-sys.path.append('../Util')
-sys.path.append('../libraries/Util')
-sys.path.append('../Ublox')
-sys.path.append('../libraries/Ublox')
-import util
+#sys.path.append('../Util')
+#sys.path.append('../libraries/Util')
+#sys.path.append('../Ublox')
+#sys.path.append('../libraries/Ublox')
+import Util.util
 
 try:
-    import ublox
+    import Ublox.ublox
     UBLOX_AVAILABLE = True
 except ImportError:
     UBLOX_AVAILABLE = False
     print('WARNING: ublox library not found.')
 
 class GPS():
-    def __init__(self, port='spi:0.0', baud=5000000):
+    def __init__(self,mode,port='spi:0.0', baud=5000000):
         ##Set defaults
         self.latitude       = -99
         self.prev_latitude = -99
         self.longitude      = -99
         self.prev_longitude = -99
         self.altitude       = -99
-        self.heading = -999
+        self.heading        = -999
         self.speed          = -99
         self.fix_quality    = 0
         self.num_satellites = 0
@@ -36,23 +37,26 @@ class GPS():
         self.x_vec         = []
         self.y_vec         = []
         self.filterConstant = 0.2
+        #self.filterConstant = 1.0
+        #self.filterConstant = 0.9
         self.NM2FT  = 6076.115485560000
         self.FT2M   = 0.3048
         self.GPSVAL = 60.0 * self.NM2FT * self.FT2M
+        self.REARTH = 6371000.0
         self.latO   = 33.16
         self.lonO   = -88.1
 
         ##Polling timing
-        self.GPSNEXT = 0.1
+        self.GPSNEXT = 0.25
         self.GPSTime = -self.GPSNEXT
 
         self.ubl = None
-        self.SIL  = util.isSIL()
+        self.MODE = mode
         self.initialize(port, baud)
 
     def initialize(self, port='spi:0.0', baud=5000000):
-        if self.SIL:
-            print('Running in SIL mode — emulating GPS')
+        if self.MODE != 'AUTO':
+            print('GPS Running in emulation mode')
             return
 
         if not UBLOX_AVAILABLE:
@@ -102,12 +106,13 @@ class GPS():
         #print('Polling GPS....',RunTime,self.GPSTime,self.GPSNEXT)
         if (RunTime - self.GPSTime) > self.GPSNEXT:
             self.elapsedTime = RunTime - self.GPSTime
-            self.GPSTime = RunTime
+            self.GPSTime += self.GPSNEXT
             self.update()
         
     def update(self):
         #time.sleep(0.1)
-        if not self.SIL:
+        #print('GPS MODE = ',self.MODE)
+        if self.MODE == 'AUTO':
             msg = self.ubl.receive_message()
             if msg is None:
                 if opts.reopen:
@@ -142,16 +147,35 @@ class GPS():
     #            outstr = "".join(outstr)
     #            print(outstr)
         else:
-            self.latitude = 30.69
-            self.longitude = -88.10
-            self.altitude = 0.0
-            self.speed = 0.0
+            ##Everything below is set by the self.send routine
+            #self.latitude = 30.69 #These are now set in the send() routine
+            #self.longitude = -88.10 
+            #self.altitude = 0.0 
+            #self.speed = 0.0
             self.has_fix        = True
             self.fix_quality    = 1
             self.num_satellites = 6
 
         #Then we compute speed and heading here
         self.compute_heading_velocity()
+        #And convert LAT/LON/ALT to XYZ
+        self.convertLATLON2XY()
+        return
+
+    def send(self,state,statedot,VEHICLE):
+        #This routine takes the state vector from the model and turns it into GPS coordinates
+        #First let's check and see if this is a satellite.....
+        u = state[7]
+        v = state[8]
+        w = state[9]
+        if VEHICLE == 'satellite':
+            #Convert to lat/lon/alt using polar coordinates
+            self.latitude,self.longitude,self.altitude = self.convertXY2LATLONSPHERICAL(state[0],state[1],state[2])
+            self.speed = np.sqrt(u**2 + v**2 + w**2)
+        else:
+            #convert to lat/lon/alt using flat earth approx
+            self.latitude,self.longitude,self.altitude = self.convertXYZ2LATLON(state[0],state[1],state[2])
+            self.speed = np.sqrt(u**2 + v**2)
         return
     
     def compute_heading_velocity(self):
@@ -159,11 +183,24 @@ class GPS():
             #Get delta lat and delta lon
             dlat = self.latitude - self.prev_latitude
             dlon = self.longitude - self.prev_longitude
-            if self.heading == -99:
-                self.heading = np.arctan2(dlon,dlat)*180/np.pi
+
+            #HEADING ANGLE COMPUTATION FROM GEMINI
+            phi2 = math.radians(self.latitude)
+            phi1 = math.radians(self.prev_latitude)
+            delta_lambda = math.radians(self.longitude - self.prev_longitude)
+
+            # Formula components
+            y = math.sin(delta_lambda) * math.cos(phi2)
+            x = math.cos(phi1) * math.sin(phi2) - math.sin(phi1) * math.cos(phi2) * math.cos(delta_lambda)
+
+            # Calculate initial bearing in radians and convert to degrees
+            new_heading = math.atan2(y, x)*180/np.pi
+            self.filterConstant = 1.0
+            if self.heading == -999:
+                self.heading = new_heading
             else:
                 #Compute heading with filtering to smooth it out.
-                self.heading = np.arctan2(dlon,dlat)*180/np.pi*self.filterConstant + self.heading*(1-self.filterConstant)
+                self.heading = new_heading*self.filterConstant + self.heading*(1-self.filterConstant)
             if self.heading < 0:
                 self.heading += 360
             if self.heading > 360:
@@ -173,10 +210,12 @@ class GPS():
             #print('prev lat:',self.prev_latitude,'prev lon:',self.prev_longitude)
             #print('lat:',self.latitude,'lon:',self.longitude)
             #print('delta lat (m):',dlat*111000,'delta lon (m):',dlon*111000*np.cos(self.latitude*np.pi/180))
+            new_speed = np.sqrt((dlat*111000.)**2 + (dlon*111000.*np.cos(self.latitude*np.pi/180))**2)/self.elapsedTime
+            #print('Time = ',self.GPSTime,'dLAT = ',dlat,'NSpeed = ',new_speed,'dT = ',self.elapsedTime,'dlon = ',dlon)
             if self.speed == -99:
-                self.speed = np.sqrt((dlat*111000)**2 + (dlon*111000*np.cos(self.latitude*np.pi/180))**2)/self.elapsedTime
+                self.speed = new_speed
             else:
-                self.speed = np.sqrt((dlat*111000)**2 + (dlon*111000*np.cos(self.latitude*np.pi/180))**2)/self.elapsedTime*self.filterConstant + self.speed*(1-self.filterConstant)
+                self.speed = new_speed*self.filterConstant + self.speed*(1-self.filterConstant)
         else:
             self.heading = -999
             self.speed = -99
@@ -192,10 +231,26 @@ class GPS():
         self.lonO = lonO
 
     def convertXYZ2LATLON(self, x, y, z):
-        self.lat = x / self.GPSVAL + self.latO
-        self.lon = y / (self.GPSVAL * np.cos(self.latO * np.pi / 180)) + self.lonO
-        self.alt = -z
-        return self.lat, self.lon, self.alt
+        lat = x / self.GPSVAL + self.latO
+        lon = y / (self.GPSVAL * np.cos(self.latO * np.pi / 180)) + self.lonO
+        alt = -z
+        return lat, lon, alt
+
+    def convertXY2LATLONSPHERICAL(self,x,y,z):
+        rho = np.sqrt(x**2 + y**2 + z**2)
+        if (rho < self.REARTH): 
+            rho = self.REARTH
+        lat_rad = np.arcsin(z / rho)
+        lon_rad = np.arctan2(y, x)
+        lat = np.degrees(lat_rad)
+        lon = np.degrees(lon_rad)
+        alt = rho - self.REARTH
+        return lat, lon, alt
+
+    def convertLATLON2XY(self):
+        self.X = (self.latitude  - self.latO) * 60 * self.NM2FT * self.FT2M
+        self.Y = (self.longitude - self.lonO) * 60 * self.NM2FT * self.FT2M * np.cos(self.latO * np.pi / 180)
+        self.Z = -self.altitude
 
     def convertLATLONVEC2XY(self, *argv):
         if len(argv) == 2:

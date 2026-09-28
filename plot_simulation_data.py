@@ -10,7 +10,9 @@ import numpy as np
 try:
     from pdf import *
     #import sixdof as dof
-except:
+except Exception as me:
+    print('ERROR IN IMPORT PDF: ',me)
+    print('-----------------------------')
     print('You need pdf and sixdof from Python.git This is on my Github just git clone that repo and put pdf.py and sixdof.py in this root or add to pythonpath')
     print('Add something similar to:')
     print('export PYTHONPATH=$PYTHONPATH:$HOME/Git_Repos/Python/sixdof_archive/:$HOME/Git_Repos/Python/pdf/')
@@ -23,22 +25,27 @@ tend = -99
 
 def printCodes():
     print('Command is....')
-    print('./plot_simulation_data.py # MODEL')
+    print('./plot_simulation_data.py # MODEL(only for C++)')
+    print('MODEL is either "car","satellite","boat","meta","quad","airplane" or "x8"')
     print('1 = clean, compile, run and plot')
     print('2 = compile, run and plot')
     print('3 = run and plot')
     print('4 = just plot')
-    print('MODEL is either "car","satellite","boat","meta","quad","airplane" or "x8"')
+    print('5 = Run Fastpy (MODEL not needed)')
     sys.exit()
 if len(sys.argv) == 1:
     print('No input arguments given.')
     printCodes()
 try:
     counter = int(sys.argv[1])
-    MODEL = sys.argv[2]
 except:
     counter = 0
-if counter == 0 or counter > 4 or counter < 0:
+if counter !=5:
+    try:
+        MODEL = sys.argv[2]
+    except:
+        counter = 0
+if counter == 0 or counter > 5 or counter < 0:
     print('Invalid code and/or MODEL')
     printCodes()
 if counter == 1:
@@ -57,6 +64,9 @@ if counter == 3:
     os.system('./simonly.exe '+MODEL+'/')
 if counter == 4:
     print('4 = plotting')
+if counter == 5:
+    print('5 = running python simulation')
+    os.system('python3 src/fast.py data/')
 
 ##Create PDF Handle
 pp = PDF(0,plt)
@@ -71,21 +81,27 @@ print(logheaders)
 #Grab entire data file
 sense_data = []
 model_data = []
+
+###SENSOR DATA IN DATA FOLDER
 for line in datafile:
     #print('line = ',line)
     row = line.split(',')
     #print('row = ',row)
-    if len(row) > 1:
+    if len(row) == numVars:
         #print('len(row) = ',len(row))
         numarray = [float(x) for x in row]
         sense_data.append(numarray)
 sense_data = np.array(sense_data)
+
+####MODEL DATA IN LOGS FOLDER
 for line in logfile:
     row = line.split(',')
-    if len(row) > 1:
+    #print(len(row))
+    if len(row) == numVars:
         numarray = [float(x) for x in row]
         model_data.append(numarray)
 model_data = np.array(model_data)
+
 #Plot everything
 sense_time = sense_data[:,0]
 model_time = model_data[:,0]
@@ -101,13 +117,14 @@ if tend > 0:
 else:
     iend_sense = -1
     iend_model = -1
+
 for x in range(1,numVars):
     fig = plt.figure()
     plti = fig.add_subplot(1,1,1)
     plti.plot(sense_time[istart_sense:iend_sense],sense_data[istart_sense:iend_sense,x],'b',label=dataheaders[x])
     plti.plot(model_time[istart_model:iend_model],model_data[istart_model:iend_model,x],'y',label=logheaders[x])
     plti.set_xlabel('Time (sec)')
-    plti.set_ylabel(dataheaders[x])
+    plti.set_ylabel(dataheaders[x][5:]) 
     print(dataheaders[x].replace('\n',''),x)
     plti.grid()
     plti.legend()
@@ -115,7 +132,6 @@ for x in range(1,numVars):
     plti.get_xaxis().get_major_formatter().set_useOffset(False)
     plt.gcf().subplots_adjust(left=0.18)
     pp.savefig()
-
 
 ###PLOT A X,Y GRAPH
 fig = plt.figure()    
@@ -147,7 +163,12 @@ plt.gcf().subplots_adjust(left=0.18)
 pp.savefig()
 
 ###JUST FOR satellite PLOT MOMENTS AND PQR
-if MODEL == 'satellite':
+modelX = model_data[istart_model:iend_model,1]
+modelY = model_data[istart_model:iend_model,2]
+modelZ = model_data[istart_model:iend_model,3]
+REARTH = 6371000 #meters Earth
+norm = np.sqrt(modelX[0]**2 + modelY[0]**2 + modelZ[0]**2)
+if norm > REARTH:
     fig = plt.figure()
     plti = fig.add_subplot(1,1,1)
     plti.plot(model_time[istart_model:iend_sense],model_data[istart_model:iend_model,10],label='P')
@@ -186,13 +207,6 @@ if MODEL == 'satellite':
     plti.set_ylabel('Moments (N-m)')
     pp.savefig()
 
-##Plot a world
-modelX = model_data[istart_model:iend_model,1]
-modelY = model_data[istart_model:iend_model,2]
-modelZ = model_data[istart_model:iend_model,3]
-REARTH = 6371000 #meters Earth
-norm = np.sqrt(modelX[0]**2 + modelY[0]**2 + modelZ[0]**2)
-if norm > REARTH:
     senseX = sense_data[istart_sense:iend_sense,1]
     senseY = sense_data[istart_sense:iend_sense,2]
     senseZ = sense_data[istart_sense:iend_sense,3]

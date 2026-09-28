@@ -30,10 +30,9 @@ import time
 
 from smbus import SMBus
 import spidev
+import numpy as np
 import sys
-sys.path.append('../libraries/Util')
-sys.path.append('../Util')
-import util
+import Util.util
 
 class MS5611:
 
@@ -103,10 +102,10 @@ class MS5611:
 	__MS5611_RA_D2_OSR_2048	  = 0x56
 	__MS5611_RA_D2_OSR_4096	  = 0x58
 
-	def __init__(self, I2C_bus_number = 1, address = 0x77, SPI_bus_number = 0, SPI_dev_number = 0, bus = "I2C"):
-		self.SIL = util.isSIL()
-		if self.SIL:
-			print('Running in SIL mode......Emulating Barometer')
+	def __init__(self,mode,I2C_bus_number = 1, address = 0x77, SPI_bus_number = 0, SPI_dev_number = 0, bus = "I2C"):
+		self.MODE = mode
+		if self.MODE != 'AUTO':
+			print('Barometer running in emulation mode')
 		else:
 			self.bus = self.I2CBus(I2C_bus_number, address) if bus == "I2C" else  \
 				 self.SPIBus(SPI_bus_number, SPI_dev_number)
@@ -124,8 +123,8 @@ class MS5611:
 		self.BARONEXT = 1.0
 		self.BAROWAIT = 0.01
 		self.BAROMODE = 0
-		self.pressure_sea_level = 1013.25
-		if not self.SIL:
+		self.pressure_sea_level = 1013.25 #DEFAULT
+		if self.MODE == 'AUTO':
 			self.initialize()
 			self.update()
 		print('Barometer initialized')
@@ -214,7 +213,7 @@ class MS5611:
 		return
 
 	def update(self):
-		if self.SIL:
+		if self.MODE != 'AUTO':
 			self.defaults()
 		else:
 			self.refreshPressure()
@@ -234,6 +233,15 @@ class MS5611:
 		self.ALT = (1.0-(self.PRES/self.pressure_sea_level)**(1.0/5.25588))/(2.2557*10**-5.0)
 		return
 
+	def convertAltitude2Pressure(self):
+		inner = 1.0-2.25577e-5*self.ALT;
+  		#// Prevent negative base in std::pow to avoid NaN / domain errors
+  		#//This is really just for satellite sims
+		if (inner <= 0.0):
+			return 0.0
+		pascals = 101325.0 * inner**5.25588
+		self.PRES = pascals*0.01
+
 	def test(self):
 		self.initialize()
 		self.update()
@@ -243,7 +251,26 @@ class MS5611:
 	
 	def defaults(self):
 		self.PRES = self.pressure_sea_level
+		self.TEMP = 25.0
 		return
+
+	def send(self,state):
+		x = state[0]
+		y = state[1]
+		z = state[2]
+		rho = np.sqrt(x**2 + y**2 + z**2)
+		REARTH = 6371000.0
+		if (rho > REARTH):
+			#This is a satellite
+			self.ALT = rho - REARTH
+		else:
+			self.ALT = -z
+		#Convert altitude to pressure
+		self.convertAltitude2Pressure()
+		#print(self.ALT,self.PRES)
+		#print(x,y,z,self.ALT)
+		#Need to just set nominal temp
+		self.TEMP = 25.0
 
 	#This poll function currently uses 2 modes and everytime it is called in MODE 1,
 	#it will add BAROWAIT seconds to your loop timer
@@ -253,9 +280,11 @@ class MS5611:
 	#3 mode succession. Still, now that this 2 mode version works it would be interesting
 	#to try and get the 3 mode version to work if you need those precious BAROWAIT seconds
 	def poll(self,RunTime):
-		if self.SIL:
-			self.defaults()
-			self.convertPressure2Altitude()
+		if self.MODE != 'AUTO':
+			#The altitude and pressure is already set in the send routine so no need to 
+			#set defaults or convert to altitude.
+			#self.defaults() #Will need to update this for modeling eventually
+			#self.convertPressure2Altitude()
 			return
 		if self.BAROMODE == 1:
 			#in here we want to make sure we wait 1 second before we set

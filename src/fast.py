@@ -9,90 +9,138 @@
 #  Secondary Author: Maxwell Cobar Spring 2023
 #  Tertiary Authors: Aramis Hoffmann (car.py)
 #  Kate Doiron (plane.py) Spring 2025
-#  Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026
+#  Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026/Fall 2026
 #  Quinary Author: Vinicius da Luz (mostly an undisclosed AI tool) Summer 2026 (car waypoint navigation)
 #
 ################################################
 
 #####################PARAMETERS#################
-NUMOUTPUTS = 21  #Number of data outputs (20 for car, 21 for boat, 22 for airplane)
-NUMPWM = 3 #Number of PWM signals (2 for car, 3 for boat, 4 for airplane)
-VEHICLE = 'boat'  #Options are 'car', 'boat', or 'airplane'
+VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
+CONTROLMODE = 3 #This is dictated by your controller.py script and is vehicle dependent
+#CAR MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
+TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
+PRINTTIME = 1.0 #time between stdout prints
+LOGTIME = 0.1 #time between logging time in seconds
+MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
+TIMESTEP = 0.01 #Timestep of modeling if SIMONLY selected
+TFINAL = 100.0 #final time of simulation if SIMONLY selected
+#Initial Conditions for SIMONLY
+ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
+LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL
+LONGITUDE_ORIGIN = -88.16 #set origin for SIMONLY / SIL / HIL
+#You can give WAYPOINTS in X/Y coordinates or GPS coordinates
+WAYPOINTSX = [100,100,0,0]
+WAYPOINTSY = [0,100,100,0]
 ################################################
 
 ##Import basic utilities
 import numpy as np
+import time
 import sys
+import os
+sys.path.append('../libraries/')
+sys.path.append('libraries/')
+
+#Make sure Ardupilot is off
+import Util.util as U
+U.check_apm()
+
+#Setup GPS
+import GPS.gps as G
+gps_llh = G.GPS(mode=MODE)
+gps_llh.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
+WAYPOINTSLAT = []
+WAYPOINTSLON = []
+if "WAYPOINTS" not in locals():
+    #This means that WAYPOINTSXY has been set rather than WAYPOINTS in GPS coordinates
+    for i in range(0,len(WAYPOINTSX)):
+        lat,lon,alt = gps_llh.convertXYZ2LATLON(WAYPOINTSX[i],WAYPOINTSY[i],0)
+        WAYPOINTSLAT.append(lat)
+        WAYPOINTSLON.append(lon)
+    WAYPOINTS = [WAYPOINTSLAT,WAYPOINTSLON]
 
 ##Import the vehicle controller based on your selection
 sys.path.append('../libraries/V_'+VEHICLE)
+sys.path.append('libraries/V_'+VEHICLE)
 import controller
-vehicle = controller.CONTROLLER()
+vehicle = controller.CONTROLLER(WAYPOINTS,CONTROLMODE)
+#Initialize commands
+commands = vehicle.defaults
+NUMOUTPUTS = 36+vehicle.NUMCONTROLS
 
-#Make sure Ardupilot is off
-sys.path.append('../libraries/Util')
-import util
-util.check_apm()
-
-#Setup GPS
-sys.path.append('../libraries/GPS')
-import gps
-gps_llh = gps.GPS()
+##Import modeling if MODE == SIMONLY
+if MODE == 'SIMONLY':
+    import modeling.modeling as M
+    model = M.MODEL(TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
 
 #Setup IMU
-sys.path.append('../libraries/MPU9250')
-import mpu9250
-imu = mpu9250.MPU9250()
+import MPU9250.mpu9250 as MPU
+imu = MPU.MPU9250(mode=MODE)
 
 #Setup datalogger
-sys.path.append('../libraries/Datalogger')
-import datalogger
-NUMOUTPUTS+=2 #Add 2 outputs for gps heading and compass
-logger = datalogger.Datalogger(NUMOUTPUTS)
+import Datalogger.datalogger as D
+#print('Input arguments = ',sys.argv)
+#if len(sys.argv) > 1:
+#    print('Using Directory = ',sys.argv[1])
+#else:
+#	sys.exit('No input argument given for datalogging directory')
+logger = D.Datalogger('data/',NUMOUTPUTS)
+headers = 'Time (sec) ,Sense X(m) ,Sense Y(m) ,Sense Z(m) ,Sense Roll (deg) ,Sense Pitch (deg) ,Sense Compass (deg) ,Sense U(m/s) ,Sense V(m/s) ,Sense W(m/s) ,Sense P(deg/s) ,Sense Q(deg/s) ,Sense R(deg/s) ,Sense Mx(Gauss) ,Sense My(Gauss) ,Sense Mz(Gauss) ,Sense GPS Latitude (deg) ,Sense GPS Longitude (deg) ,Sense GPS Altitude (m) ,Sense GPS Heading (deg) ,Sense IMU Heading (deg) ,Sense Analog 1 (V) ,Sense Analog 2 (V) ,Sense Analog 3 (V) ,Sense Analog 4 (V) ,Sense Analog 5 (V) ,Sense Analog 6 (V) ,Sense Pressure (Pa) ,Sense Pressure Altitude (m) ,Sense Temperature (C) ,Sense RC Channel #1 (ms) ,Sense RC Channel #2 (ms) ,Sense RC Channel #3 (ms) ,Sense RC Channel #4 (ms) ,Sense RC Channel #5 (ms) ,Sense RC Channel #6 (ms)'
+logger.writeheader(headers,'Hardware')
 
 #Setup LED
-sys.path.append('../libraries/LED')
-import leds
-led = leds.Led()
+import LED.leds as L
+led = L.Led(mode=MODE)
 
 #Setup RCIO (receiver signals and output pwmsignals)
-sys.path.append('../libraries/RCIO/Python')
-import rcio
-rc = rcio.RCIO(NUMPWM)
+import RCIO.Python.rcio as R
+rc = R.RCIO(vehicle.NUMCONTROLS,MODE)
+#This creates the pwm_commands vector and sends default values to the pwm channels
+rc.set_commands(commands)
 
 #Setup the Barometer
-sys.path.append('../libraries/MS5611/')
-import ms5611
-baro = ms5611.MS5611()
-#Calibrate the barometer
-baro.calibrate() #if you don't calibrate sea level defaults to 1013.25
+import MS5611.ms5611 as MS
+baro = MS.MS5611(mode=MODE)
+#Calibrate the barometer but only if you're not in SIMONLY mode
+if MODE != 'SIMONLY':
+    baro.calibrate() #if you don't calibrate sea level defaults to 1013.25
 
 ##Setup Telemetry
-sys.path.append('../libraries/')
-from Comms.Comms import Comms as U
-ser = U(13) #otherwise this defaults to 12
+from Comms.Comms import Comms as S
+ser = S(13) #otherwise this defaults to 12
 ser.SerialInit(57600,"/dev/ttyAMA0",period=1.0)
 
 #Short break to build suspense
-print('Sleep for 1 second.....')
-import time
-time.sleep(1)
+if MODE != 'SIMONLY':
+    print('Sleep for 1 second.....')
+    time.sleep(1)
+    TFINAL = 1e20 #Make the end time absurdly long that we would never hit in our lifetime
 
 #Create a time for elapsed time
 print('Setting up Time')
 StartTime = time.time()
 RunTime = 0.0
-logTime = RunTime
-telemetryTime = RunTime
+logTime = -LOGTIME
+printTime = -PRINTTIME
+telemetryTime = 0.0
 
 #This runs on repeat until code is killed
 print('Running main loop....')
 
-while (True):
+while (RunTime <= TFINAL):
 
     #Get Time
     LastTime = RunTime
-    RunTime = time.time() - StartTime
+    if MODE == 'SIMONLY':
+        #Send model states to sensors
+        gps_llh.send(model.state,model.statedot,VEHICLE)
+        imu.send(model.state) #Just send the entire state vector
+        baro.send(model.state) #again send the entire state vector
+        #Integrate one timestep
+        RunTime = LastTime + model.timestep
+        model.loop(RunTime,rc.rcin.rcsignals,commands)
+    else:
+        RunTime = time.time() - StartTime
     elapsedTime = RunTime - LastTime
     
     #Read in receiver commands
@@ -105,6 +153,9 @@ while (True):
     #Note I do not recommend using rpy since that is solely using trigonometry
     #in addition the yaw angle does not work at all
     #rpy_ahrs works really well for obtaining the yaw angle
+    #It's possible though that the trigonometry routine for yaw angle doesn't work
+    #because it assumes the magnetic field is bhat = [1,0,0] and thus you need to calibrate said sensor
+    #during boot up. Might be a good thing to test once you start hardware testing.
     #compass is the ahrs magnetometer heading + the gps heading
     a,gdegs,m,rpy,rpy_ahrs,temp,compass = imu.getALL(elapsedTime,gps_llh.heading) 
 
@@ -119,29 +170,31 @@ while (True):
     #Check if we are armed or not
     if ARMED:
         led.setColor(control_color)
-        pwm_commands = controls
+        commands = controls
     else:
         led.setColor(safety_color)
-        pwm_commands = defaults
+        commands = defaults
 
     ##Send PWM signals to rcio
-    rc.set_commands(pwm_commands)
+    rc.set_commands(commands)
 
     #Print to Home
-    str_pwm = [f"{pwm:1.3f}" for pwm in pwm_commands] #convert pwm commands to 3 sig figs
-    str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
-    str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
-    #print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",gps_llh.latitude,gps_llh.longitude,gps_llh.altitude)
-    print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.ALT:.3f}",gps_llh.altitude)
+    if (RunTime - printTime) > PRINTTIME:
+        str_pwm = [f"{pwm:1.3f}" for pwm in rc.pwm_commands] #convert pwm commands to 3 sig figs
+        str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
+        str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
+        #print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",gps_llh.latitude,gps_llh.longitude,gps_llh.altitude)
+        print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.ALT:.3f}",gps_llh.altitude)
+        printTime+=PRINTTIME
 
     ##Send Telemetry
-    if (RunTime - telemetryTime) > 1.0:
-        telemetryTime = RunTime	
+    if (RunTime - telemetryTime) >= TELEMETRYTIME and MODE != 'SIMONLY':
+        telemetryTime += TELEMETRYTIME	
         print('Sending telemtry packet...',RunTime)
         ser.fast_packet[0] = RunTime #//1 - Time
         ser.fast_packet[1] = rpy_ahrs[0] #//2 - roll
         ser.fast_packet[2] = rpy_ahrs[1] #//3 - pitch
-        ser.fast_packet[3] = rpy_ahrs[2] #//4 - yaw (compass)
+        ser.fast_packet[3] = rpy_ahrs[2] #//4 - yaw 
         ser.fast_packet[4] = gps_llh.latitude #//5 - latitude
         ser.fast_packet[5] = gps_llh.longitude #//6 - longitude
         ser.fast_packet[6] = baro.ALT #//7 - altitude (barometer)
@@ -153,39 +206,88 @@ while (True):
         ser.fast_packet[12] = rc.rcin.yaw #//13 - rudder
         ser.SerialSend(0)
     #Log data
-    if (RunTime - logTime) > 0.1:
+    if (RunTime - logTime) >= LOGTIME:
+        #Time (sec)
         logger.outdata[0] = np.round(RunTime,5)
-        logger.outdata[1] = rc.rcin.rcsignals[0]
-        logger.outdata[2] = rc.rcin.rcsignals[1]
-        logger.outdata[3] = rc.rcin.rcsignals[2]
-        logger.outdata[4] = rc.rcin.rcsignals[3]
-        logger.outdata[5] = rc.rcin.rcsignals[4]
-        logger.outdata[6] = rc.rcin.rcsignals[5]
-        logger.outdata[7] = gps_llh.latitude
-        logger.outdata[8] = gps_llh.longitude
-        logger.outdata[9] = gps_llh.altitude
-        logger.outdata[10] = baro.PRES
-        logger.outdata[11] = rpy_ahrs[0]
-        logger.outdata[12] = rpy_ahrs[1]
-        logger.outdata[13] = rpy_ahrs[2]
-        logger.outdata[14] = gps_llh.speed 
-        logger.outdata[15] = gdegs[0]
-        logger.outdata[16] = gdegs[1]
-        logger.outdata[17] = gdegs[2]
-        logger.outdata[18] = pwm_commands[0]
-        logger.outdata[19] = pwm_commands[1]
-        l = 19
-        if len(pwm_commands) > 2:
-            logger.outdata[20] = pwm_commands[2]
-        if len(pwm_commands) > 3:
-            logger.outdata[21] = pwm_commands[3]
-            l = 21
-        logger.outdata[l+1] = gps_llh.heading
-        logger.outdata[l+2] = compass
+        #X(m) Y(m) Z(m)
+        logger.outdata[1] = gps_llh.X
+        logger.outdata[2] = gps_llh.Y
+        if VEHICLE == 'satellite':
+            Z = gps_llh.Z
+        else:
+            Z = -baro.ALT
+        logger.outdata[3] = Z
+        #Roll (deg) ,Pitch (deg) , Compass (deg)
+        logger.outdata[4] = rpy_ahrs[0]
+        logger.outdata[5] = rpy_ahrs[1]
+        if compass == -999:
+            yaw = rpy_ahrs[2]
+        else:
+            yaw = compass
+        logger.outdata[6] = yaw
+        #U(m/s) ,V(m/s) ,W(m/s)
+        if gps_llh.speed == -99:
+            speed = 0.0
+        else:
+            speed = gps_llh.speed
+        logger.outdata[7] = speed 
+        logger.outdata[8] = 0
+        logger.outdata[9] = 0
+        #P(deg/s) ,Q(deg/s) ,R(deg/s)
+        logger.outdata[10] = gdegs[0]
+        logger.outdata[11] = gdegs[1]
+        logger.outdata[12] = gdegs[2]
+        #Mx(Gauss) ,My(Gauss) ,Mz(Gauss)
+        logger.outdata[13] = m[0]
+        logger.outdata[14] = m[1]
+        logger.outdata[15] = m[2]
+        #GPS Latitude (deg) ,GPS Longitude (deg) ,GPS Altitude (m)
+        logger.outdata[16] = gps_llh.latitude
+        logger.outdata[17] = gps_llh.longitude
+        logger.outdata[18] = gps_llh.altitude
+        #GPS Heading (deg) ,IMU Heading (deg)
+        if gps_llh.heading == -999:
+            heading = 0.0
+        else:
+            heading = gps_llh.heading
+        logger.outdata[19] = heading
+        logger.outdata[20] = rpy_ahrs[2]
+        #Analog 1-6 (V)
+        logger.outdata[21] = 0
+        logger.outdata[22] = 0
+        logger.outdata[23] = 0
+        logger.outdata[24] = 0
+        logger.outdata[25] = 0
+        logger.outdata[26] = 0
+        #Pressure (Pa) #Pressure Altitude (m) #Temperature (C)
+        logger.outdata[27] = baro.PRES
+        logger.outdata[28] = baro.ALT
+        logger.outdata[29] = baro.TEMP
+        #RC Channel #1-5
+        logger.outdata[30] = rc.rcin.rcsignals[0]
+        logger.outdata[31] = rc.rcin.rcsignals[1]
+        logger.outdata[32] = rc.rcin.rcsignals[2]
+        logger.outdata[33] = rc.rcin.rcsignals[3]
+        logger.outdata[34] = rc.rcin.rcsignals[4]
+        logger.outdata[35] = rc.rcin.rcsignals[5]
+        #PWM Hardware Out 1-len(pwm_commands)
+        for i in range(0,len(commands)):
+            logger.outdata[36+i] = commands[i]
         logger.println()
-        logTime = RunTime
+        logTime += LOGTIME
+        if MODE == 'SIMONLY':
+            model.log(RunTime)
 
     #sleep so we don't spontaneously explode
     #time.sleep(0.01) Since there are sleeps in the barometer you don't need this anymore.
     #Also all the different sensor updates and calculations take so much time that the system won't spontaneously
     #explode. However, if you start debugging and turning things off it easily could....
+
+#If the program ends it means we're running in modeling mode
+#we need to copy a file
+logger.close()
+model.logger.close()
+command = 'cp ' + str(logger.filename) + ' ' + str(logger.directory) + '0.csv'
+os.system(command)
+command = 'cp ' + str(model.logger.filename) + ' ' + str(model.logger.directory) + '0.csv'
+os.system(command)

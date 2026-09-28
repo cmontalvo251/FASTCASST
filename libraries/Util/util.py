@@ -10,8 +10,11 @@ def check_apm():
 	else:
 		print('APM is not running....')
 
+"""
+#Deprecating this function in lieu of adding a MODE flag
 def isSIL():
 	if os.uname().nodename == 'navio':
 		return 0
 	else:
 		return 1
+"""

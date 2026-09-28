@@ -253,6 +253,8 @@ void GPS::compute_heading_velocity(double current_time) {
   //#Get delta lat and delta lon
   double dt = abs(current_time - prev_time);
   if (latitude_prev != -99) {
+
+    #if defined (cubesat) || (satellite)
     double thetaE = (90.0 - latitude)*DEG2RAD;
     double psiE = longitude*PI/180.0;
     double thetaE_prev = (90.0 - latitude_prev)*DEG2RAD;
@@ -264,14 +266,26 @@ void GPS::compute_heading_velocity(double current_time) {
     double X_prev,Y_prev;
     X_prev = sin(thetaE_prev)*cos(psiE_prev);
     Y_prev = sin(thetaE_prev)*sin(psiE_prev);
+    double new_heading = atan2(Y-Y_prev,X-X_prev)*RAD2DEG;
+    #else
+    //Flat Earth Model
+    //HEADING ANGLE COMPUTATION FROM GEMINI
+    double phi2 = latitude*PI/180.0;
+    double phi1 = latitude_prev*PI/180.0;
+    double delta_lambda = (longitude - longitude_prev)*PI/180;
+    double Y = sin(delta_lambda) * cos(phi2);
+    double X = cos(phi1) * sin(phi2) - sin(phi1) * cos(phi2) * cos(delta_lambda);
+    //Calculate initial bearing in radians and convert to degrees
+    double new_heading = atan2(Y,X)*180/PI;
+    #endif
 
     //Compute Heading
     if (headingFLAG == 0) {
-      heading = atan2(Y-Y_prev,X-X_prev)*RAD2DEG;
+      heading = new_heading;
       headingFLAG = 1;
     } else {
       //Compute heading with filtering to smooth it out.
-      heading = atan2(Y-Y_prev,X-X_prev)*RAD2DEG*(1-headingFilterConstant) + heading*(headingFilterConstant);
+      heading = new_heading*(1-headingFilterConstant) + heading*(headingFilterConstant);
     }
     if (heading < 0) {
       heading += 360;
@@ -279,6 +293,7 @@ void GPS::compute_heading_velocity(double current_time) {
     if (heading > 360) {
       heading -= 360;
     }
+    //printf("Heading = %lf \n",heading);
     //Compute Speed — guard against dt==0 to prevent NaN (fix for issue #59)
     if (dt > 0) {
       Vector3D p1 = LatLonToUnitVector(latitude_prev, longitude_prev);

@@ -24,7 +24,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   pwmnames = (char**)malloc((NUMACTUATORS)*sizeof(char*));
   for (int i = 1;i<=NUMACTUATORS;i++) {
     pwmnames[i-1] = (char*)malloc((11)*sizeof(char));
-    sprintf(pwmnames[i-1],"PWM Model %d",i);
+    sprintf(pwmnames[i-1],"Model PWM %d",i);
   }
 
   NUMINTEGRATIONSTATES=13+NUMACTUATORS; //Only integrating 13 states for a 6DOF system + actuators
@@ -98,8 +98,8 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //RC IN SIGNALS
   rcnames = (char**)malloc((5)*sizeof(char*));
   for (int i = 1;i<=5;i++) {
-    rcnames[i-1] = (char*)malloc((18)*sizeof(char));
-    sprintf(rcnames[i-1],"RC Channel #%d",i);
+    rcnames[i-1] = (char*)malloc((19)*sizeof(char));
+    sprintf(rcnames[i-1],"Model RC Channel #%d",i);
   }
   logger.appendheaders(rcnames,5);
   //RC OUT SIGNALS

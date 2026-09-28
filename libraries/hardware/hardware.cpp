@@ -49,8 +49,8 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //Extract Number of SIGNALS and set headers
   pwmnames = (char**)malloc((NUMSIGNALS)*sizeof(char*));
   for (int i = 1;i<=NUMSIGNALS;i++) {
-    pwmnames[i-1] = (char*)malloc((18)*sizeof(char));
-    sprintf(pwmnames[i-1],"PWM Hardware Out %d",i);
+    pwmnames[i-1] = (char*)malloc((15)*sizeof(char));
+    sprintf(pwmnames[i-1],"Sense PWM Out %d",i);
   }
 
   //Initialize Logger
@@ -63,8 +63,8 @@ void hardware::init(char root_folder_name[],int NUMSIGNALS) {
   //RC IN SIGNALS
   rcnames = (char**)malloc((5)*sizeof(char*));
   for (int i = 1;i<=5;i++) {
-    rcnames[i-1] = (char*)malloc((18)*sizeof(char));
-    sprintf(rcnames[i-1],"RC Channel #%d",i);
+    rcnames[i-1] = (char*)malloc((19)*sizeof(char));
+    sprintf(rcnames[i-1],"Sense RC Channel #%d",i);
   }
   logger.appendheaders(rcnames,5);
   //RC OUT SIGNALS

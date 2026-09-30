@@ -8,7 +8,7 @@ objects/tank.obj 	!First Object file - No spaces allowed!!
 objects/sky.obj 	!Second Object file - This is the skydome
 100.000000  	        !Scale Factor of Object
 1.000000  	        !Scale Factor of Position
-objects/ground.obj !Third Object File - This is the ground plane
+objects/ocean.obj !Third Object File - This is the ground plane
 2000.000000			!Scale factor of object
 1.000000			!Scale factor of position
 

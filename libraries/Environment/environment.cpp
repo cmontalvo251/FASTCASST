@@ -257,7 +257,7 @@ void environment::getCurrentWindVectorINE(double simtime,MATLAB State,int FORCES
   double wind[3];
   wind[0] = 0;wind[1] = 0;wind[2] = 0;
   
-  //This routine will only update the magnetic field once
+  //This routine will only update the dryden model field once
   if (time_wrf_next == -99 && AEROVECINE.get(1,1) != 0) { 
     time_wrf = simtime + 1e10;
   }
@@ -277,7 +277,7 @@ void environment::getCurrentWindVectorINE(double simtime,MATLAB State,int FORCES
     AEROVECINE.set(i+1,1,wind[i]);
   }
 
-  if (FORCES_FLAG == 4) {
+  if (FORCES_FLAG == 3) {
     DrydenOutput out = dryden.update();
     AERODRYDENB.set(1,1,out.u);
     AERODRYDENB.set(2,1,out.v);

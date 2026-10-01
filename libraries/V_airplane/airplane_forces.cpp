@@ -33,13 +33,16 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   double r = state.get(13,1);
   //state.disp();
 
+  // Cast const away from env to call non-const get() methods
+  environment& env_nonconst = const_cast<environment&>(env);
+
   //We need to add (if we want) the wind vector to the velocity vector.
-  u += env.AEROVECB.get(1,1);
-  v += env.AEROVECB.get(2,1);
-  w += env.AEROVECB.get(3,1);
-  p += env.AEROMOMENTB.get(1,1);
-  q += env.AEROMOMENTB.get(2,1);
-  r += env.AEROMOMENTB.get(3,1);
+  u += env_nonconst.AEROVECB.get(1,1);
+  v += env_nonconst.AEROVECB.get(2,1);
+  w += env_nonconst.AEROVECB.get(3,1);
+  p += env_nonconst.AEROMOMENTB.get(1,1);
+  q += env_nonconst.AEROMOMENTB.get(2,1);
+  r += env_nonconst.AEROMOMENTB.get(3,1);
 
   //Total Velocity
   double vinf=sqrt(u*u+v*v+w*w); //#Stream line velocity: Total velocity

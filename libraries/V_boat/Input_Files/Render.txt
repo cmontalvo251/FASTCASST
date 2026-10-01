@@ -2,7 +2,7 @@
 3  		     	!Number of objects in window 
 10				!Camera Offset Z axis
 3				!Default camera (see directions below)
-objects/tank.obj 	!First Object file - No spaces allowed!!
+objects/plane.obj 	!First Object file - No spaces allowed!!
 25.0000  	    !Scale Factor of Object
 8.000000		!Scale Factor of Position
 objects/sky.obj 	!Second Object file - This is the skydome

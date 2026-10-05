@@ -15,8 +15,21 @@ private:
 	double elapsedTime = 0, lastTime=0;
 	double mass, Ixx, Iyy, Izz, ct, cq, Rrotor, rx, ry, rz, nx, ny, nz;
 	int CONTROLLER_FLAG = -99;
-	double xprev = -999, xint = 0, yprev = -999, yint = 0, uprev = -999, uint = 0, vprev = -999, vint = 0, zprev = -999, zint = 0;
+	double xprev = -999, xint = 0, yprev = -999, yint = 0, uprev = -999, uint = 0, vprev = -999, vint = 0, altitude_prev = -999, zint = 0;
+	double roll_command = -99, pitch_command = -99, yaw_command = -99, velocity_command = 15, altitude_command = 50;
+	double throttle = OUTMIN, aileron = OUTMID, elevator = OUTMID, rudder = OUTMID, autopilot = OUTMIN;
 	void set_defaults();
+	void AttitudeLoop(MATLAB sense_matrix);
+	void AltitudeLoop(MATLAB sense_matrix);
+	//At a minimum you need to compute the 8 motor signals
+  	double motor_upper_left_top = OUTMIN;
+  	double motor_upper_right_top = OUTMIN;
+  	double motor_lower_left_top = OUTMIN;
+  	double motor_lower_right_top = OUTMIN;
+  	double motor_upper_left_bottom = OUTMIN;
+  	double motor_upper_right_bottom = OUTMIN;
+  	double motor_lower_left_bottom = OUTMIN;
+	double motor_lower_right_bottom = OUTMIN;
 public:
 	int NUMMOTORS = 0, MOTORSOFF = 0, NUMSIGNALS = 8;
 	int MOTORSRUNNING;

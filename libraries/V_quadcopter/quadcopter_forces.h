@@ -11,22 +11,11 @@ functions otherwise the software will completely break.
 
 */
 
-#ifdef ARDUINO
-#include "MATLAB.h"
-#include "mathp.h"
-#include "timer.h"
-#include "RCIO.h"
-class environment {
-private:
-public:
-};
-#else
 #include <Environment/environment.h>
 #include <MATLAB/MATLAB.h> //This is needed for variable length arrays as inputs
 #include <Mathp/mathp.h> //this is for density at sea-level
 #include <Timer/timer.h> //for pause function
 #include <RCIO/RCIO.h> //for stick min values
-#endif
 
 class forces {
  private:
@@ -35,8 +24,9 @@ class forces {
   double Rrotor,cq,ct,kt,rx,ry,rz,AREA,spin_slope;
   MATLAB thrust_motors,torque_motors;
   void compute_thrust_and_torque(MATLAB pwm_out);
+  int NUMMOTORS = 4;
  public:
-  double length = 1; //This is the length of the quadcopter. It is used in the Dryden model
+  double length = 1; //This is the length of the x8. It is used in the Dryden model
   //These are 3x1 MATLAB vectors that must be in units of Newtons
   //and in the body frame
   MATLAB FB,MB; 

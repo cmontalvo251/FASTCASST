@@ -15,6 +15,7 @@ void controller::init(MATLAB in_configuration_matrix) {
   printf("Controller Received Configuration Matrix \n");
   //in_configuration_matrix.disp();
   CONTROLLER_FLAG = in_configuration_matrix.get(11,1);
+  //printf("CONTROLLER FLAG = %d \n",CONTROLLER_FLAG);
   printf("Controller Setup \n");
 }
 
@@ -57,44 +58,41 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   elevator = rx_array[2];
   rudder = rx_array[3];
   autopilot = rx_array[4]; //Autopilot - OUTMIN = cutoff, OUTMID = ACRO, OUTMAX = AUTOPILOT
-  bool icontrol = 0;
+  int icontrol = 0;
 
   //Debug
   //printf("rx [5] [6] [7] [8] %lf %lf %lf %lf \n",rx_array[5], rx_array[6], rx_array[7], rx_array[8]);
 
-  switch (CONTROLLER_FLAG) {
-  case -1:
-    //User decides
-    if (autopilot > 1.2 * STICK_MID) {
-      icontrol = 1;
+ //Check for user controlled
+  if (CONTROLLER_FLAG < 0) {
+    if (autopilot > STICK_MID) {
+      icontrol = -CONTROLLER_FLAG;
+      //printf("ICONTROL = %d \n",icontrol);
     } else {
       icontrol = 0;
     }
-    break;
-  case 0:
-    //Always off
-    icontrol = 0;
-    break;
-  case 1:
-    //Always on
-    icontrol = 1;
-    break;
+  } else {
+    icontrol = CONTROLLER_FLAG;
   }
+
+  //printf("CONTROLLER FLAG = %d \n",CONTROLLER_FLAG);
+  //printf("ICONTROL = %d \n",icontrol);
 
   roll_command = -99;
   pitch_command = -99;
   yaw_command = -99;
   altitude_command = -99;
+  velocity_command = -99;
 
   //Then you can run any control loop you want.
-  switch (icontrol) {   
-    case 2:
-      //Run the altitude loop
-      if (altitude_command == -99) {
-        altitude_command = 50; //meters
+  switch (icontrol) { 
+    case 3:
+      //Run the velocity loop
+      if (velocity_command == -99) {
+        velocity_command = 15; //m/s
       }
-      AltitudeLoop(sense_matrix);
-    case 1:
+      VelocityLoop(sense_matrix);
+    case 2:
       //Run the Attitude Loop
       if (roll_command == -99) {
         roll_command = (aileron-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
@@ -106,38 +104,64 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
         yaw_command = (rudder-STICK_MID)*50.0/((STICK_MAX-STICK_MIN)/2.0);
       }
       AttitudeLoop(sense_matrix);
+    case 1:
+      //Run the altitude loop
+      if (altitude_command == -99) {
+        altitude_command = 200; //meters
+      }
+      //printf("Altitude Loop + \n");
+      AltitudeLoop(sense_matrix);
     case 0:
-    //ACRO MODE - Unstable, so replacing with old stabilize mode
-    motor_upper_left_bottom = throttle + (aileron-STICK_MID) - (elevator-STICK_MID) + (rudder-STICK_MID);
-    motor_upper_right_bottom = throttle - (aileron-STICK_MID) - (elevator-STICK_MID) - (rudder-STICK_MID);
-    motor_lower_right_bottom = throttle - (aileron-STICK_MID) + (elevator-STICK_MID) + (rudder-STICK_MID);
-    motor_lower_left_bottom = throttle + (aileron-STICK_MID) + (elevator-STICK_MID) - (rudder-STICK_MID);
-    motor_upper_left_top = throttle + (aileron-STICK_MID) - (elevator-STICK_MID) - (rudder-STICK_MID);
-    motor_upper_right_top = throttle - (aileron-STICK_MID) - (elevator-STICK_MID) + (rudder-STICK_MID);
-    motor_lower_right_top = throttle - (aileron-STICK_MID) + (elevator-STICK_MID) - (rudder-STICK_MID);
-    motor_lower_left_top = throttle + (aileron-STICK_MID) + (elevator-STICK_MID) + (rudder-STICK_MID);
+    motor_upper_left_bottom = throttle + (aileron-OUTMID) - (elevator-OUTMID) + (rudder-OUTMID);
+    motor_upper_right_bottom = throttle - (aileron-OUTMID) - (elevator-OUTMID) - (rudder-OUTMID);
+    motor_lower_right_bottom = throttle - (aileron-OUTMID) + (elevator-OUTMID) + (rudder-OUTMID);
+    motor_lower_left_bottom = throttle + (aileron-OUTMID) + (elevator-OUTMID) - (rudder-OUTMID);
+    motor_upper_left_top = throttle + (aileron-OUTMID) - (elevator-OUTMID) - (rudder-OUTMID);
+    motor_upper_right_top = throttle - (aileron-OUTMID) - (elevator-OUTMID) + (rudder-OUTMID);
+    motor_lower_right_top = throttle - (aileron-OUTMID) + (elevator-OUTMID) - (rudder-OUTMID);
+    motor_lower_left_top = throttle + (aileron-OUTMID) + (elevator-OUTMID) + (rudder-OUTMID);
     break;
   }
   
   //Send the motor commands to the control_matrix values
-  //control_matrix.mult_eq(0);
-  //control_matrix.plus_eq(STICK_MIN);
+  control_matrix.set(1, 1, motor_upper_left_bottom);   
+  control_matrix.set(2, 1, motor_upper_right_bottom);    
+  control_matrix.set(3, 1, motor_lower_right_bottom);    
+  control_matrix.set(4, 1, motor_lower_left_bottom);     
+  control_matrix.set(5, 1, motor_upper_left_top);  
+  control_matrix.set(6, 1, motor_upper_right_top); 
+  control_matrix.set(7, 1, motor_lower_right_top); 
+  control_matrix.set(8, 1, motor_lower_left_top);  
 
-  control_matrix.set(1, 1, motor_upper_left_top);     //OUTMIN); //motor_upper_left_top);
-  control_matrix.set(2, 1, motor_upper_right_top);    //OUTMIN); //motor_upper_right_top);
-  control_matrix.set(3, 1, motor_lower_right_top);    //OUTMIN); //motor_lower_right_top);
-  control_matrix.set(4, 1, motor_lower_left_top);     //OUTMIN); //motor_lower_left_top);
-  control_matrix.set(5, 1, motor_upper_left_bottom);  //OUTMIN); //motor_upper_left_bottom);
-  control_matrix.set(6, 1, motor_upper_right_bottom); //OUTMIN); //motor_upper_right_bottom);
-  control_matrix.set(7, 1, motor_lower_right_bottom); //OUTMIN); //motor_lower_right_bottom);
-  control_matrix.set(8, 1, motor_lower_left_bottom);  //OUTMIN); //motor_lower_left_bottom);
+  //Constrain the control matrix to be within the min and max values
+  for (int i = 1;i<=NUMSIGNALS;i++) {
+    double val = control_matrix.get(i,1);
+    val = CONSTRAIN(val,OUTMIN,OUTMAX);
+    control_matrix.set(i,1,val);
+  }
 
   //Debug
   /*  for (int i = 0;i<5;i++) {
     printf(" %d ",rx_array[i]);
   }
   printf("\n");*/
+  //printf("Throttle = %lf Ail = %lf Elev = %lf Rudd = %lf \n",throttle,aileron,elevator,rudder);
   //control_matrix.disp();
+  //PAUSE();
+}
+
+void controller::VelocityLoop(MATLAB sense_matrix) {
+  double u = sense_matrix.get(7,1);
+  double velocityerror = velocity_command - u;
+  double kp = 120.0; //120
+  double ki = 8.0; //8.0
+  pitch_command = kp*velocityerror + ki*velocity_int;
+  pitch_command = CONSTRAIN(pitch_command,-45,45);
+  //Integrate but prevent integral windup
+  if ((pitch_command > -45) && (pitch_command < 45)) {
+    velocity_int += elapsedTime*velocityerror;
+  }
+  //pitch_command *= PI/180;
 }
 
 void controller::AttitudeLoop(MATLAB sense_matrix) {
@@ -152,9 +176,10 @@ void controller::AttitudeLoop(MATLAB sense_matrix) {
   //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
   double kp = 10.0;
   double kd = 2.0;
-  double kyaw = 0.2;
+  double kyaw = 0.2*0;
   double droll = kp*(roll-roll_command) + kd*(roll_rate);
   droll = CONSTRAIN(droll,-500,500);
+  pitch_command = 20;
   double dpitch = kp*(pitch-pitch_command) + kd*(pitch_rate);
   dpitch = CONSTRAIN(dpitch,-500,500);
   double dyaw = kp*(yaw-yaw_command) + kyaw*(yaw_rate);
@@ -163,6 +188,8 @@ void controller::AttitudeLoop(MATLAB sense_matrix) {
   aileron = droll + OUTMID;
   elevator = dpitch + OUTMID;
   rudder = dyaw + OUTMID;
+  //printf("AIL, ELEV, RUDD = %lf %lf %lf \n",aileron,elevator,rudder);
+  //PAUSE();
 }
 
 void controller::AltitudeLoop(MATLAB sense_matrix) {
@@ -180,9 +207,19 @@ void controller::AltitudeLoop(MATLAB sense_matrix) {
   altitude_prev = altitude;
 
   //Compute Pitch Command in Degrees
-  double kp = 1.0;
-  double kd = 0.5;
-  double dup = kp*(altitude_command - altitude) + kd*(0-altitude_dot);
-  throttle = dup + OUTMIN;
+  double kp = -100.0;
+  double kd = -50.0;
+  double ki = -50.0;
+  //printf("Altitude Command = %lf Altitude = %lf Altitude Dot = %lf \n",altitude_command,altitude,altitude_dot);
+  //PAUSE();
+  double dup = kp*(altitude - altitude_command) + kd*(altitude_dot-0) + ki*altitude_int;  
+  dup = CONSTRAIN(dup,-(OUTMAX-OUTMIN),(OUTMAX-OUTMIN));
+  throttle = OUTMIN + dup;
+  //throttle = OUTMAX;
+
+  //Integral Windup
+  if ((throttle > OUTMIN) && (throttle < OUTMAX)) {
+    altitude_int += elapsedTime*(altitude-altitude_command);
+  }
   //printf("T, ALT, ALT DOT = %lf %lf %lf \n",lastTime,altitude,altitude_dot);  
 }

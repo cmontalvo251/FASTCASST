@@ -118,9 +118,24 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   //motor_upper_right_bottom = throttle + droll - dpitch - dyaw;
   //motor_lower_left_bottom = throttle - droll + dpitch - dyaw;
   //motor_lower_right_bottom = throttle + droll + dpitch + dyaw;
-  double yaw_torque_top = motor_upper_left_top - motor_upper_right_top - motor_lower_left_top + motor_lower_right_top;
-  double yaw_torque_bottom = -motor_upper_left_bottom + motor_upper_right_bottom + motor_lower_left_bottom - motor_lower_right_bottom;
-  //MB.set(3,1,yaw_torque_top+yaw_torque_bottom);
+
+  double torque_upper_left_bottom = torque_motors.get(1,1);
+  double torque_upper_right_bottom = torque_motors.get(2,1);
+  double torque_lower_right_bottom = torque_motors.get(3,1);
+  double torque_lower_left_bottom = torque_motors.get(4,1);
+  double torque_upper_left_top = torque_motors.get(5,1);
+  double torque_upper_right_top = torque_motors.get(6,1);
+  double torque_lower_right_top = torque_motors.get(7,1);
+  double torque_lower_left_top = torque_motors.get(8,1);
+
+  //pwm_out.disp();
+  //torque_motors.disp();
+  //thrust_motors.disp();
+  //PAUSE();
+
+  double yaw_torque_bottom = -torque_upper_left_bottom + torque_upper_right_bottom + torque_lower_left_bottom - torque_lower_right_bottom;
+  double yaw_torque_top = torque_upper_left_top - torque_upper_right_top - torque_lower_left_top + torque_lower_right_top;
+  MB.set(3,1,yaw_torque_top+yaw_torque_bottom);
 
   //Now we compute torque on roll and pitch
   double roll_torque_top = (motor_upper_left_top+motor_lower_left_top)*ry - (motor_upper_right_top+motor_lower_right_top)*ry;
@@ -130,7 +145,7 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   double roll_torque_bottom = (motor_upper_left_bottom+motor_lower_left_bottom)*ry - (motor_upper_right_bottom+motor_lower_right_bottom)*ry;
   double pitch_torque_bottom = (motor_upper_left_bottom+motor_upper_right_bottom)*rx - (motor_lower_right_bottom+motor_lower_left_bottom)*rx;
   
-  //MB.set(1,1,roll_torque_top+roll_torque_bottom);
+  MB.set(1,1,roll_torque_top+roll_torque_bottom);
   MB.set(2,1,pitch_torque_top+pitch_torque_bottom);
 
   //MB.disp();

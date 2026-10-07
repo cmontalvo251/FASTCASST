@@ -112,14 +112,14 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       //printf("Altitude Loop + \n");
       AltitudeLoop(sense_matrix);
     case 0:
-    motor_upper_left_bottom = throttle + (aileron-OUTMID) - (elevator-OUTMID) + (rudder-OUTMID);
-    motor_upper_right_bottom = throttle - (aileron-OUTMID) - (elevator-OUTMID) - (rudder-OUTMID);
-    motor_lower_right_bottom = throttle - (aileron-OUTMID) + (elevator-OUTMID) + (rudder-OUTMID);
-    motor_lower_left_bottom = throttle + (aileron-OUTMID) + (elevator-OUTMID) - (rudder-OUTMID);
-    motor_upper_left_top = throttle + (aileron-OUTMID) - (elevator-OUTMID) - (rudder-OUTMID);
-    motor_upper_right_top = throttle - (aileron-OUTMID) - (elevator-OUTMID) + (rudder-OUTMID);
-    motor_lower_right_top = throttle - (aileron-OUTMID) + (elevator-OUTMID) - (rudder-OUTMID);
-    motor_lower_left_top = throttle + (aileron-OUTMID) + (elevator-OUTMID) + (rudder-OUTMID);
+    motor_upper_left_bottom = throttle - (aileron-OUTMID) - (elevator-OUTMID) + (rudder-OUTMID);
+    motor_upper_right_bottom = throttle + (aileron-OUTMID) - (elevator-OUTMID) - (rudder-OUTMID);
+    motor_lower_right_bottom = throttle + (aileron-OUTMID) + (elevator-OUTMID) + (rudder-OUTMID);
+    motor_lower_left_bottom = throttle - (aileron-OUTMID) + (elevator-OUTMID) - (rudder-OUTMID);
+    motor_upper_left_top = throttle - (aileron-OUTMID) - (elevator-OUTMID) - (rudder-OUTMID);
+    motor_upper_right_top = throttle + (aileron-OUTMID) - (elevator-OUTMID) + (rudder-OUTMID);
+    motor_lower_right_top = throttle + (aileron-OUTMID) + (elevator-OUTMID) - (rudder-OUTMID);
+    motor_lower_left_top = throttle - (aileron-OUTMID) + (elevator-OUTMID) + (rudder-OUTMID);
     break;
   }
   
@@ -153,9 +153,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 void controller::VelocityLoop(MATLAB sense_matrix) {
   double u = sense_matrix.get(7,1);
   double velocityerror = velocity_command - u;
-  double kp = 120.0; //120
-  double ki = 8.0; //8.0
-  pitch_command = kp*velocityerror + ki*velocity_int;
+  double kp = 1.0; //120
+  double ki = 8.0*0; //8.0
+  pitch_command = -kp*velocityerror - ki*velocity_int;
   pitch_command = CONSTRAIN(pitch_command,-45,45);
   //Integrate but prevent integral windup
   if ((pitch_command > -45) && (pitch_command < 45)) {
@@ -168,7 +168,7 @@ void controller::AttitudeLoop(MATLAB sense_matrix) {
   //STABILIZE MODE
   double roll = sense_matrix.get(4,1);
   double pitch = sense_matrix.get(5,1);
-  double yaw = sense_matrix.get(6,1);
+  double yaw = sense_matrix.get(20,1); //6,1 is compass which is gps + imu, 20 is just imu yaw
   double roll_rate = sense_matrix.get(10,1); //For SIL/SIMONLY see Sensors.cpp
   double pitch_rate = sense_matrix.get(11,1); //These are already in deg/s
   double yaw_rate = sense_matrix.get(12,1); //Check IMU.cpp to see for HIL
@@ -176,13 +176,16 @@ void controller::AttitudeLoop(MATLAB sense_matrix) {
   //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
   double kp = 10.0;
   double kd = 2.0;
-  double kyaw = 0.2*0;
+  double kpyaw = 10.0;
+  double kdyaw = 5.0;
+  //roll_command = 20;
   double droll = kp*(roll-roll_command) + kd*(roll_rate);
   droll = CONSTRAIN(droll,-500,500);
-  pitch_command = 20;
+  //pitch_command = 20;
   double dpitch = kp*(pitch-pitch_command) + kd*(pitch_rate);
   dpitch = CONSTRAIN(dpitch,-500,500);
-  double dyaw = kp*(yaw-yaw_command) + kyaw*(yaw_rate);
+  //yaw_command = 45;
+  double dyaw = kpyaw*(yaw-yaw_command) + kdyaw*(yaw_rate);
   dyaw = CONSTRAIN(dyaw,-500,500);
   //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);
   aileron = droll + OUTMID;

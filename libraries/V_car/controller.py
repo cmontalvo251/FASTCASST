@@ -18,7 +18,7 @@ class CONTROLLER():
         self.velocity_command = -99.0
         self.heading_command = -99.0
         self.velocityint = 0.0
-        self.motor = 0
+        self.throttle = 0
         self.aileron = 0
         self.CONTROLMODE = CONTROLMODE
         return

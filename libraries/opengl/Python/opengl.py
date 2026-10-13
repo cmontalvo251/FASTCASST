@@ -27,7 +27,6 @@ control_mutex = threading.Lock()
 ok_mutex = threading.Lock()
 gl_mutex = threading.Lock()
 
-
 class MATLABMatrix:
     """Lightweight Python equivalent of the custom MATLAB C++ matrix wrapper."""
 
@@ -458,6 +457,8 @@ class RenderControl:
     def loop_init(self, fileroot=None,vehicleType='car',inFarplane=1000, inWidth=800, inHeight=600):
         if fileroot is not None:
             inputroot = fileroot + f"libraries/V_{vehicleType}/"
+        else:
+            inputroot = f"libraries/V_{vehicleType}/"
         print("Initializing RenderControl Rendering Environment")
         objectfile = (
             f"{inputroot}Input_Files/Render.txt"
@@ -676,6 +677,44 @@ class RenderControl:
             glRotatef(-ptp[1] * (180.0 / math.pi), 0, 1, 0)
             glRotatef(-ptp[2] * (180.0 / math.pi), 0, 0, 1)
             glTranslatef(-cg[0], -cg[1], -cg[2])
+
+        # --- DRAW TEXT IN SCREEN SPACE (UPPER LEFT) ---
+        glMatrixMode(GL_PROJECTION)
+        glPushMatrix()
+        glLoadIdentity()
+        # Set 2D orthographic projection matching window width and height (origin at bottom-left)
+        gluOrtho2D(0, self.Width, 0, self.Height)
+        
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()
+        glLoadIdentity()
+
+        # Disable depth testing and lighting so text renders clearly on top
+        glDisable(GL_DEPTH_TEST)
+        glDisable(GL_LIGHTING)
+
+        glColor3f(1.0, 1.0, 1.0)
+        
+        # Position near top-left corner (20 pixels from left, Height - 30 pixels from bottom)
+        glRasterPos2f(20.0, self.Height - 35.0)
+
+        with time_mutex:
+            time_str = f"Time: {self.state.T:6.4f}s"
+
+        for char in time_str:
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char))
+
+        # Restore lighting and depth test states
+        glEnable(GL_DEPTH_TEST)
+        if self.keyboard.lightflag == 1:
+            glEnable(GL_LIGHTING)
+
+        # Restore original matrices
+        glMatrixMode(GL_PROJECTION)
+        glPopMatrix()
+        glMatrixMode(GL_MODELVIEW)
+        glPopMatrix()
+        # --------------------------------------------- 
 
         glutSwapBuffers()
 

@@ -150,6 +150,7 @@ class MODEL():
         q2 = dstate[5]
         q3 = dstate[6]
         self.quat = np.asarray([q0,q1,q2,q3])
+        self.ptp = self.quat2euler(self.quat)
         self.u = dstate[7]
         self.v = dstate[8]
         self.w = dstate[9]

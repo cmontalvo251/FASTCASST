@@ -15,13 +15,13 @@
 ################################################
 
 #####################PARAMETERS#################
-VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
+VEHICLE = 'boat'  #Options are 'car', 'boat', or 'airplane'
 CONTROLMODE = 3 #This is dictated by your controller.py script and is vehicle dependent
 #CAR MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
 TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
 PRINTTIME = 1.0 #time between stdout prints
 LOGTIME = 0.1 #time between logging time in seconds
-MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
+MODE = 'SIL' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 TIMESTEP = 0.01 #Timestep of modeling if SIMONLY selected
 TFINAL = 100.0 #final time of simulation if SIMONLY selected
 #Initial Conditions for SIMONLY
@@ -70,7 +70,7 @@ commands = vehicle.defaults
 NUMOUTPUTS = 36+vehicle.NUMCONTROLS
 
 ##Import modeling if MODE == SIMONLY
-if MODE == 'SIMONLY':
+if MODE == 'SIMONLY' or MODE == 'SIL':
     import modeling.modeling as M
     model = M.MODEL(TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
 
@@ -80,11 +80,6 @@ imu = MPU.MPU9250(mode=MODE)
 
 #Setup datalogger
 import Datalogger.datalogger as D
-#print('Input arguments = ',sys.argv)
-#if len(sys.argv) > 1:
-#    print('Using Directory = ',sys.argv[1])
-#else:
-#	sys.exit('No input argument given for datalogging directory')
 logger = D.Datalogger('data/',NUMOUTPUTS)
 headers = 'Time (sec) ,Sense X(m) ,Sense Y(m) ,Sense Z(m) ,Sense Roll (deg) ,Sense Pitch (deg) ,Sense Compass (deg) ,Sense U(m/s) ,Sense V(m/s) ,Sense W(m/s) ,Sense P(deg/s) ,Sense Q(deg/s) ,Sense R(deg/s) ,Sense Mx(Gauss) ,Sense My(Gauss) ,Sense Mz(Gauss) ,Sense GPS Latitude (deg) ,Sense GPS Longitude (deg) ,Sense GPS Altitude (m) ,Sense GPS Heading (deg) ,Sense IMU Heading (deg) ,Sense Analog 1 (V) ,Sense Analog 2 (V) ,Sense Analog 3 (V) ,Sense Analog 4 (V) ,Sense Analog 5 (V) ,Sense Analog 6 (V) ,Sense Pressure (Pa) ,Sense Pressure Altitude (m) ,Sense Temperature (C) ,Sense RC Channel #1 (ms) ,Sense RC Channel #2 (ms) ,Sense RC Channel #3 (ms) ,Sense RC Channel #4 (ms) ,Sense RC Channel #5 (ms) ,Sense RC Channel #6 (ms)'
 logger.writeheader(headers,'Hardware')
@@ -103,7 +98,7 @@ rc.set_commands(commands)
 import MS5611.ms5611 as MS
 baro = MS.MS5611(mode=MODE)
 #Calibrate the barometer but only if you're not in SIMONLY mode
-if MODE != 'SIMONLY':
+if MODE != 'SIMONLY' and MODE != 'SIL':
     baro.calibrate() #if you don't calibrate sea level defaults to 1013.25
 
 ##Setup Telemetry
@@ -113,8 +108,6 @@ ser.SerialInit(57600,"/dev/ttyAMA0",period=1.0)
 
 #Short break to build suspense
 if MODE != 'SIMONLY':
-    print('Sleep for 1 second.....')
-    time.sleep(1)
     TFINAL = 1e20 #Make the end time absurdly long that we would never hit in our lifetime
 
 #Create a time for elapsed time
@@ -128,7 +121,7 @@ telemetryTime = 0.0
 ##Kick off all the PyOpenGL routines
 if MODE == 'SIL':
     import threading
-    from opengl.Python.opengl import glhandle_g, MATLABMatrix
+    from opengl.Python.opengl import glhandle_g, MATLABMatrix,NUMCONTROLS
     # Setup local matrices for pushing updates to the renderer
     cgin = MATLABMatrix(3,1)
     ptpin = MATLABMatrix(3,1)
@@ -138,11 +131,19 @@ def run_physics_simulation():
     global RunTime,commands,logTime,printTime,telemetryTime
     #This runs on repeat until code is killed
     print('Running main loop....')
+
+    ##If running in SIL mode we need to run in real time so we need a 
+    #real start time to compare to the simulation time
+    if MODE == 'SIL':
+        realStartTime = time.time()
+        print('Sleep for 1 second to wait for OpenGL initialization...')
+        time.sleep(1)
+
     while (RunTime <= TFINAL):
 
         #Get Time
         LastTime = RunTime
-        if MODE == 'SIMONLY':
+        if MODE == 'SIMONLY' or MODE == 'SIL':
             #Send model states to sensors
             gps_llh.send(model.state,model.statedot,VEHICLE)
             imu.send(model.state) #Just send the entire state vector
@@ -192,13 +193,13 @@ def run_physics_simulation():
         # IF running in SIL mode push states to the OpenGL shared state manager
         if MODE == 'SIL':
             # Extract position (X, Y, Z) and attitude (Roll, Pitch, Yaw) from your model/sensors
-            cgin.set(1, 1, model.state[0, 0])  # X position
-            cgin.set(2, 1, model.state[1, 0])  # Y position
-            cgin.set(3, 1, model.state[2, 0])  # Z position
+            cgin.set(1, 1, model.state[0])  # X position
+            cgin.set(2, 1, model.state[1])  # Y position
+            cgin.set(3, 1, model.state[2])  # Z position
 
-            ptpin.set(1, 1, rpy_ahrs[0] * (math.pi / 180.0))  # Roll to rad
-            ptpin.set(2, 1, rpy_ahrs[1] * (math.pi / 180.0))  # Pitch to rad
-            ptpin.set(3, 1, rpy_ahrs[2] * (math.pi / 180.0))  # Yaw to rad
+            ptpin.set(1, 1, model.ptp[0])  # Roll (rad)
+            ptpin.set(2, 1, model.ptp[1])  # Pitch (rad)
+            ptpin.set(3, 1, model.ptp[2])  # Yaw (rad)
 
             # Safely push updates to the renderer via thread-safe lock
             glhandle_g.state.UpdateRender(RunTime, cgin, ptpin, 1, keyboard_out)
@@ -307,6 +308,10 @@ def run_physics_simulation():
         #time.sleep(0.01) Since there are sleeps in the barometer you don't need this anymore.
         #Also all the different sensor updates and calculations take so much time that the system won't spontaneously
         #explode. However, if you start debugging and turning things off it easily could....
+        #Now, if we're running in SIL mode, we need a wait loop until our real time catches up to our simulation time
+        if MODE == 'SIL':
+            while (time.time() - realStartTime) < RunTime:
+                time.sleep(0.001) #sleep for 1 ms to not burn CPU cycles
 
 ##Now we actually start the main routine
 if MODE=='SIL':
@@ -317,7 +322,7 @@ if MODE=='SIL':
 
     # 2. Run the OpenGL GUI main loop on the primary main thread
     glhandle_g.loop_init(
-        fileroot="V_"+VEHICLE+"/", inFarplane=10000, inWidth=800, inHeight=600
+        fileroot=None,vehicleType=VEHICLE,inFarplane=10000, inWidth=800, inHeight=600
         )
 else:
     print("Launching in Headless / Non-GUI Mode...")

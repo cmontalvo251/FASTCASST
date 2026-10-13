@@ -16,6 +16,18 @@ void controller::init(MATLAB in_configuration_matrix) {
   //in_configuration_matrix.disp();
   CONTROLLER_FLAG = in_configuration_matrix.get(11,1);
   //printf("CONTROLLER FLAG = %d \n",CONTROLLER_FLAG);
+
+  if (in_configuration_matrix.length() >= 12) {
+    NUMWAYPOINTS = in_configuration_matrix.get(12,1);
+    WAYPOINTS_X.resize(NUMWAYPOINTS);
+    WAYPOINTS_Y.resize(NUMWAYPOINTS);
+    int idx = 13;
+    for (int i = 0; i < NUMWAYPOINTS; i++) {
+      WAYPOINTS_X[i] = in_configuration_matrix.get(idx++, 1);
+      WAYPOINTS_Y[i] = in_configuration_matrix.get(idx++, 1);
+    }
+  }
+
   printf("Controller Setup \n");
 }
 
@@ -86,6 +98,9 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 
   //Then you can run any control loop you want.
   switch (icontrol) { 
+    case 4:
+      //Run the Waypoint Loop
+      WaypointLoop(sense_matrix,currentTime);
     case 3:
       //Run the velocity loop
       if (velocity_command == -99) {
@@ -150,15 +165,55 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //PAUSE();
 }
 
+void controller::WaypointLoop(MATLAB sense_matrix,double currentTime) {
+  double X = sense_matrix.get(1,1);
+  double Y = sense_matrix.get(2,1);
+  double DY = WAYPOINTS_Y[WAYINDEX]-Y;
+  double DX = WAYPOINTS_X[WAYINDEX]-X;
+  double distance = sqrt(DY*DY + DX*DX);
+  if (distance_prev != distance) {
+    if (distance_prev != -999) {
+      distance_dot = (distance - distance_prev) / (currentTime - prevTime);
+    }
+    distance_prev = distance;
+    prevTime = currentTime;
+  }
+  double kp = 20/200.0;
+  double kd = 100/200.0;
+  //PAUSE();
+  velocity_command = kp*(distance) + kd*distance_dot;
+  double topSpeed = 10;
+  velocity_command = CONSTRAIN(velocity_command,0,topSpeed);
+  //printf("Distance, Distance Prev, Distance Dot, velocity_command = %lf %lf %lf %lf \n",distance,distance_prev,distance_dot,velocity_command);
+
+  //PAUSE();
+  //if (PRINTER == 4*100000) {
+  //  printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,yaw_command,distance);
+  //  PRINTER = 0;
+  //}
+  //PRINTER+=1;
+  if (distance < 10) {
+    velocity_command = 0;
+    //printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,yaw_command,distance);
+    WAYINDEX += 1;
+    if (WAYINDEX > NUMWAYPOINTS-1) {
+      WAYINDEX = 0;
+    }    
+  } else {
+    //Prevent drone from spinning in circles when it's very close to the waypoint by setting the yaw command to zero
+    yaw_command = atan2(DY,DX)*180.0/PI;  
+  }
+}
+
 void controller::VelocityLoop(MATLAB sense_matrix) {
   double u = sense_matrix.get(7,1);
   double velocityerror = velocity_command - u;
   double kp = 1.0; //120
   double ki = 8.0*0; //8.0
   pitch_command = -kp*velocityerror - ki*velocity_int;
-  pitch_command = CONSTRAIN(pitch_command,-45,45);
+  pitch_command = CONSTRAIN(pitch_command,-20,20);
   //Integrate but prevent integral windup
-  if ((pitch_command > -45) && (pitch_command < 45)) {
+  if ((pitch_command > -20) && (pitch_command < 20)) {
     velocity_int += elapsedTime*velocityerror;
   }
   //pitch_command *= PI/180;
@@ -185,7 +240,17 @@ void controller::AttitudeLoop(MATLAB sense_matrix) {
   double dpitch = kp*(pitch-pitch_command) + kd*(pitch_rate);
   dpitch = CONSTRAIN(dpitch,-500,500);
   //yaw_command = 45;
-  double dyaw = kpyaw*(yaw-yaw_command) + kdyaw*(yaw_rate);
+  //Fix the wrap issue here
+  double dheading = delpsi(yaw*PI/180.0,yaw_command*PI/180.0)*180.0/PI;
+  if (dheading > 180) {
+    dheading -= 180;
+    dheading *= -1;
+  }
+  if (dheading < -180) {
+    dheading += 180;
+    dheading *= -1;
+  }
+  double dyaw = kpyaw*dheading + kdyaw*(yaw_rate);
   dyaw = CONSTRAIN(dyaw,-500,500);
   //printf("d = %lf %lf %lf ",droll,dpitch,dyaw);
   aileron = droll + OUTMID;

@@ -1,12 +1,4 @@
-/* Forces Template 2021
-
-This forces file is a template for a fictitious portalcube
-with thrusters and a simple aero model. The Dynamics.cpp module
-will call a few candidate functions. If you make your own aero
-file with header and cpp file you must conform to the following
-functions otherwise the software will completely break.
-
-*/
+//This is for an x8 quad with 4 motors on top and 4 motors on bottom
 
 #include "quadcopter_forces.h"
 
@@ -15,11 +7,11 @@ forces::forces() {
   //The constructor must create these 3x1 vectors
   FB.zeros(3,1,"Force in Body Frame");
   MB.zeros(3,1,"Moment in Body Frame");
-  thrust_motors.zeros(4,1,"Force Motors");
-  torque_motors.zeros(4,1,"Torque Motors");
-  
+  thrust_motors.zeros(NUMMOTORS,1,"Force Motors");
+  torque_motors.zeros(NUMMOTORS,1,"Torque Motors");
+
   //Quadcopter Aerodynamic Parameters
-  double thrust_max = 0.7*GEARTH; //kilograms * gravity
+  double thrust_max = 0.4*GEARTH; //kilograms * gravity
   //Rotor Size
   Rrotor = (9.5/12.0)/(2*3.28); //9.5 inch props to meters
   //Area
@@ -39,7 +31,7 @@ forces::forces() {
   //double pwm_datapt = STICK_MID;
   //thrust is
   //double Tdatapt = 0.735*GEARTH/4.0; //Newtons to kg to lbf
-  
+  	
   //Compute Kt
   //double dpwm = pwm_datapt - STICK_MIN;
   //kt = Tdatapt/(dpwm*dpwm);
@@ -52,15 +44,15 @@ forces::forces() {
   cq = pow(ct,3.0/2.0)/sqrt(2.0); 
   //printf("CT/CQ = %lf/%lf \n",ct,cq);
   //PAUSE();
-  
-  //Distance from Cg to rotor
-  rx = (9.0/12.0)/3.28; //meters
-  ry = (9.0/12.0)/3.28; 
-  rz = 0.0;
+
+  //Distance from Cg to rotor - Changed to values from SUAM - 2/12/25 12:50pm
+  rx = 0.10115; //(9.0/12.0)/3.28; //meters
+  ry = 0.10115; //(9.0/12.0)/3.28; 
+  rz = 0.0508;  //0.0; 
 }
 
 void forces::compute_thrust_and_torque(MATLAB pwm_out) {
-  for (int i = 1;i<=4;i++) {
+  for (int i = 1;i<=NUMMOTORS;i++) {
     double omega = spin_slope*(pwm_out.get(i,1) - OUTMIN);
     double thrust = 0.5*RHOSLSI*AREA*pow(omega*Rrotor,2.0)*ct;
     double torque = 0.5*RHOSLSI*AREA*pow(omega*Rrotor,2.0)*Rrotor*cq;
@@ -72,14 +64,18 @@ void forces::compute_thrust_and_torque(MATLAB pwm_out) {
 }
 
 void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out,const environment& env) {
-  //The only thing this function needs to do is populate FB and MB. 
+  //The only thing this function needs to do is populate FAEROB and MAEROB. 
   //You can do whatever you want in here but you must create those two vectors.
   FB.mult_eq(0); //Zero these out just to make sure something is in here
   MB.mult_eq(0);
-
+  //return;
+  
   //ctlcomms.disp();
+  //PAUSE();
 
   //First we need to convert the microsecond pulse to Newtons
+  //pwm_out.disp();
+  //PAUSE();
   compute_thrust_and_torque(pwm_out);
 
   //Thrust on the body is simply the total thrust
@@ -88,28 +84,56 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   FB.set(3,1,-thrust);
 
   //Torque is a bit more complex
-  //First we add up all the torques in a specific way
-  double yaw_torque = torque_motors.get(1,1) - torque_motors.get(2,1) - torque_motors.get(3,1) + torque_motors.get(4,1);
-  MB.set(3,1,yaw_torque);
-
+  //First we need to make sure we understand the right order
   //Then we extract the four forces
   //From the controller - us signals
-  //ctlcomms.set(1,1,motor_lower_right);
+  //ctlcomms.set(1,1,motor_upper_left);
   //ctlcomms.set(2,1,motor_upper_right);
-  //ctlcomms.set(3,1,motor_lower_left);
-  //ctlcomms.set(4,1,motor_upper_left);
+  //ctlcomms.set(3,1,motor_lower_right);
+  //ctlcomms.set(4,1,motor_lower_left);
   //thrust_motors.disp();
-  double motor_lower_right = thrust_motors.get(1,1);
-  double motor_upper_right = thrust_motors.get(2,1);
-  double motor_lower_left = thrust_motors.get(3,1);
-  double motor_upper_left = thrust_motors.get(4,1);
   
+  //We then extract the motors
+  double motor_upper_left = thrust_motors.get(1,1);
+  double motor_upper_right = thrust_motors.get(2,1);
+  double motor_lower_right = thrust_motors.get(3,1);
+  double motor_lower_left = thrust_motors.get(4,1);
+
+  //then we add up all the torques in a specific way
+  //note the commands from the controller
+  //motor_upper_left_top = throttle - droll - dpitch - dyaw;
+  //motor_upper_right_top = throttle + droll - dpitch + dyaw;
+  //motor_lower_left_top = throttle - droll + dpitch + dyaw;
+  //motor_lower_right_top = throttle + droll + dpitch - dyaw;
+  
+  //motor_upper_left_bottom = throttle - droll - dpitch + dyaw;
+  //motor_upper_right_bottom = throttle + droll - dpitch - dyaw;
+  //motor_lower_left_bottom = throttle - droll + dpitch - dyaw;
+  //motor_lower_right_bottom = throttle + droll + dpitch + dyaw;
+
+  double torque_upper_left = torque_motors.get(1,1);
+  double torque_upper_right = torque_motors.get(2,1);
+  double torque_lower_right = torque_motors.get(3,1);
+  double torque_lower_left = torque_motors.get(4,1);
+
+  //pwm_out.disp();
+  //torque_motors.disp();
+  //thrust_motors.disp();
+  //PAUSE();
+
+  double yaw_torque = -torque_upper_left + torque_upper_right + torque_lower_left - torque_lower_right;
+  MB.set(3,1,yaw_torque);
+
   //Now we compute torque on roll and pitch
   double roll_torque = (motor_upper_left+motor_lower_left)*ry - (motor_upper_right+motor_lower_right)*ry;
   double pitch_torque = (motor_upper_left+motor_upper_right)*rx - (motor_lower_right+motor_lower_left)*rx;
+  
   MB.set(1,1,roll_torque);
-  MB.set(2,1,pitch_torque);	
-  //MAEROB.disp();
+  MB.set(2,1,pitch_torque);
+
+  //MB.disp();
+  //FB.disp();
+  //PAUSE();
 }
 
 

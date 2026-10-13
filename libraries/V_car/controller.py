@@ -1,6 +1,5 @@
 import numpy as np
 import math
-import time
 
 class CONTROLLER():
     def __init__(self,WAYPOINTS,CONTROLMODE):

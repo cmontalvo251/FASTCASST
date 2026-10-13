@@ -14,8 +14,8 @@ class FORCES():
         self.I = np.asarray([[Ixx,Ixy,Ixz],[Ixy,Iyy,Iyz],[Ixz,Iyz,Izz]])
 
     def ForceMoment(self,time,state,commands):
-        Force = np.asarray([0,0,0])
-        Moment = np.asarray([0,0,0])
+        Force = np.asarray([0.,0.,0.])
+        Moment = np.asarray([0.,0.,0.])
 
         # Friction Parameters
         d = 0.13335  # (m) - From wheel to center

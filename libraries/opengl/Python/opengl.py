@@ -702,7 +702,7 @@ class RenderControl:
             time_str = f"Time: {self.state.T:6.4f}s"
 
         for char in time_str:
-            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char))
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char)) # type: ignore
 
         # Restore lighting and depth test states
         glEnable(GL_DEPTH_TEST)

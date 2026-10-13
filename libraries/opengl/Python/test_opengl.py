@@ -1,8 +1,5 @@
-import os
-# Force PyOpenGL to use the X11 platform backend (fixes Linux/Wayland context errors)
-# Will need to change this if you are using a different platform (e.g., Windows or macOS)
-os.environ["PYOPENGL_PLATFORM"] = "x11"
 import threading
+import sys
 import time
 import math
 from opengl import glhandle_g, state_mutex, MATLABMatrix
@@ -39,5 +36,14 @@ if __name__ == "__main__":
     physics_thread = threading.Thread(target=physics_simulation_loop, daemon=True)
     physics_thread.start()
 
+    if len(sys.argv) > 1:
+        # If a command-line argument is provided, use it as the vehicle type
+        vehicle_type = sys.argv[1]
+        print('Using vehicle type from command line argument:', vehicle_type)
+    else:
+        # Default vehicle type if no argument is provided
+        vehicle_type = 'car'
+        print('No vehicle type provided. Using default:', vehicle_type)
+
     # 2. Start OpenGL main loop on the main thread
-    glhandle_g.loop_init(fileroot='../../V_car/', inFarplane=1000, inWidth=800, inHeight=600)
+    glhandle_g.loop_init(fileroot='../../../',vehicleType=vehicle_type,inFarplane=10000, inWidth=600, inHeight=600)

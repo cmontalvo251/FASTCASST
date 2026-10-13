@@ -723,7 +723,7 @@ void RenderControl::WindowInitialize(bool Full,int argc,char** argv)
     {
       sprintf(OS,getenv("OS"));
     }
-  sprintf(name,"Multi Object Visualizer with Interactive Environment (Running on %s)",OS);
+  sprintf(name,"Multi Object Visualizer with Interactive Environment (MOVIE) (Running on %s) with C++",OS);
   glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
   glutInitWindowSize(Width,Height);
   glutInitWindowPosition(100,100);

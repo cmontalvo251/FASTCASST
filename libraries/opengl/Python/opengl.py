@@ -1,9 +1,12 @@
 import math
+import os
 import threading
 import time
-import sys
-import os
 import numpy as np
+
+# Force PyOpenGL to use the X11 platform backend (fixes Linux/Wayland context errors)
+# Will need to change this if you are using a different platform (e.g., Windows or macOS)
+os.environ["PYOPENGL_PLATFORM"] = "x11"
 
 try:
     from OpenGL.GL import *
@@ -17,7 +20,7 @@ except ImportError:
 NUMCONTROLS = 4
 MAX_TEXTURE = 40
 
-# Global Mutexes (replacing boost::mutex)
+# Global Mutexes
 state_mutex = threading.Lock()
 time_mutex = threading.Lock()
 control_mutex = threading.Lock()
@@ -37,7 +40,6 @@ class MATLABMatrix:
         self.data = np.zeros((rows, cols))
 
     def set(self, r, c, val):
-        # Converting 1-based MATLAB indexing to 0-based Python indexing
         self.data[r - 1, c - 1] = val
 
     def get(self, r, c):
@@ -91,9 +93,7 @@ class StateHistory:
         with state_mutex:
             scale = self.positionscale.get(object_number, 1)
             for idx in range(1, 4):
-                self.cg.set(
-                    idx, object_number, scale * cgin.get(idx, 1)
-                )
+                self.cg.set(idx, object_number, scale * cgin.get(idx, 1))
                 self.ptp.set(idx, object_number, ptpin.get(idx, 1))
 
         with control_mutex:
@@ -259,6 +259,168 @@ class CameraControl:
             self.pos[2] -= self.camera_zoffset
 
 
+class OBJSETUP:
+
+    def __init__(self):
+        self.objects = 0
+        self.ok = 0
+        self.texture = []
+        self.gl_list = []
+
+    def Initialize(self, NumObjects):
+        print("Initializing OBJ Import")
+        self.texture = list(glGenTextures(MAX_TEXTURE))
+        self.gl_list = [glGenLists(1) for _ in range(MAX_TEXTURE)]
+        print("OBJ Import Initialized")
+        self.ok = 1
+
+    def Load(self, filename, number, scale_flag, amount):
+        self.ok = 1
+        print(f"Importing OBJ File: {filename}")
+
+        # Extract directory path relative to file location
+        directory = os.path.dirname(filename)
+        directory = (directory + "/") if directory else ""
+
+        try:
+            with open(filename, "r") as f:
+                content = f.read()
+        except FileNotFoundError:
+            print(f"File not found: {filename}")
+            self.ok = 0
+            return
+
+        vertices = []
+        normals = []
+        texcoords = []
+        triangles = []
+        material_file = None
+        texture_file = None
+
+        for line in content.splitlines():
+            parts = line.strip().split()
+            if not parts:
+                continue
+            if parts[0] == "v":
+                vertices.append([float(parts[1]), float(parts[2]), float(parts[3])])
+            elif parts[0] == "vn":
+                normals.append([float(parts[1]), float(parts[2]), float(parts[3])])
+            elif parts[0] == "vt":
+                texcoords.append([float(parts[1]), float(parts[2])])
+            elif parts[0] == "mtllib":
+                material_file = parts[1]
+            elif parts[0] == "f":
+                face_verts = []
+                for p in parts[1:4]:
+                    vals = p.split("/")
+                    v_idx = int(vals[0]) if vals[0] else 0
+                    vt_idx = int(vals[1]) if len(vals) > 1 and vals[1] else 0
+                    vn_idx = int(vals[2]) if len(vals) > 2 and vals[2] else 0
+                    face_verts.append((v_idx, vt_idx, vn_idx))
+                triangles.append(face_verts)
+
+        # Parse MTL file if declared
+        if material_file:
+            mtl_path = directory + material_file
+            try:
+                with open(mtl_path, "r") as mf:
+                    for mline in mf:
+                        mparts = mline.strip().split()
+                        if len(mparts) > 1 and mparts[0] == "map_Kd":
+                            texture_file = mparts[1]
+                            break
+            except FileNotFoundError:
+                print(f"Material file not found: {mtl_path}")
+
+        # Load BMP texture if referenced in MTL
+        if texture_file:
+            tex_path = directory + texture_file
+            self.LoadTexture(tex_path, self.texture[number - 1])
+
+        amount = amount if amount != 0 else 1.0
+
+        # Compile OpenGL Display List
+        glNewList(self.gl_list[number - 1], GL_COMPILE)
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D, self.texture[number - 1])
+        glFrontFace(GL_CCW)
+
+        glBegin(GL_TRIANGLES)
+        for tri in triangles:
+            for v_idx, vt_idx, vn_idx in tri:
+                if vn_idx > 0 and vn_idx <= len(normals):
+                    n = normals[vn_idx - 1]
+                    glNormal3f(n[0] * amount, n[1] * amount, n[2] * amount)
+                if vt_idx > 0 and vt_idx <= len(texcoords):
+                    t = texcoords[vt_idx - 1]
+                    glTexCoord2f(t[0], t[1])
+                if v_idx > 0 and v_idx <= len(vertices):
+                    v = vertices[v_idx - 1]
+                    glVertex3f(v[0] * amount, v[1] * amount, v[2] * amount)
+        glEnd()
+
+        glDisable(GL_TEXTURE_2D)
+        glEndList()
+        print(f"Successfully compiled object {number} ({filename})")
+
+    def LoadTexture(self, filename, tex_id):
+        try:
+            with open(filename, "rb") as f:
+                header = f.read(54)
+                if len(header) < 54 or header[:2] != b"BM":
+                    print(f"Not a valid BMP file: {filename}")
+                    return
+
+                width = int.from_bytes(header[18:22], byteorder="little")
+                height = int.from_bytes(header[22:26], byteorder="little")
+                bpp = int.from_bytes(header[28:30], byteorder="little")
+
+                if bpp != 24:
+                    print(f"BMP bpp is not 24 ({bpp}): {filename}")
+                    return
+
+                img_data = f.read()
+                img_array = bytearray(img_data)
+
+                # Swap BGR to RGB (matching C++ implementation)
+                for i in range(0, len(img_array), 3):
+                    temp = img_array[i]
+                    img_array[i] = img_array[i + 2]
+                    img_array[i + 2] = temp
+
+                glBindTexture(GL_TEXTURE_2D, tex_id)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+                glTexParameteri(
+                    GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST
+                )
+
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    GL_RGB,
+                    width,
+                    height,
+                    0,
+                    GL_RGB,
+                    GL_UNSIGNED_BYTE,
+                    bytes(img_array),
+                )
+                gluBuild2DMipmaps(
+                    GL_TEXTURE_2D,
+                    3,
+                    width,
+                    height,
+                    GL_RGB,
+                    GL_UNSIGNED_BYTE,
+                    bytes(img_array),
+                )
+                print(f"Loaded texture: {filename} ({width}x{height})")
+        except FileNotFoundError:
+            print(f"Texture file not found: {filename}")
+
+
 class MouseControl:
 
     def __init__(self):
@@ -290,13 +452,16 @@ class RenderControl:
         self.mouse = MouseControl()
         self.camera = CameraControl()
         self.state = StateHistory()
+        self.objs = OBJSETUP()
         self.keyboard = KeyboardControl()
 
-    def loop_init(self, fileroot=None, inFarplane=1000, inWidth=800, inHeight=600):
+    def loop_init(self, fileroot=None,vehicleType='car',inFarplane=1000, inWidth=800, inHeight=600):
+        if fileroot is not None:
+            inputroot = fileroot + f"libraries/V_{vehicleType}/"
         print("Initializing RenderControl Rendering Environment")
         objectfile = (
-            f"{fileroot}Input_Files/Render.txt"
-            if fileroot
+            f"{inputroot}Input_Files/Render.txt"
+            if inputroot
             else "Input_Files/Render.txt"
         )
 
@@ -304,7 +469,6 @@ class RenderControl:
             lines = []
             with open(objectfile, "r") as f:
                 for line in f:
-                    # Strip comments and whitespace after '!'
                     part = line.split("!")[0].strip()
                     if part:
                         lines.append(part)
@@ -331,25 +495,12 @@ class RenderControl:
         self.Width = inWidth
         self.Height = inHeight
 
-        # Parse object properties (each object entry uses 3 lines: file, scale, position scale)
-        idx = 4
-        for ii in range(num_objects):
-            obj_path = lines[idx]
-            scale_factor = float(lines[idx + 1])
-            pos_scale = float(lines[idx + 2])
-            print(
-                f"Loading Object {ii+1}: {obj_path} (Scale: {scale_factor}, Pos Scale: {pos_scale})"
-            )
-
-            self.state.positionscale.set(ii + 1, 1, pos_scale)
-            idx += 3
-
         # Window Initialization
         glutInit()
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH)
         glutInitWindowSize(self.Width, self.Height)
         glutInitWindowPosition(100, 100)
-        self.figure = glutCreateWindow(b"Multi Object Visualizer (Python)")
+        self.figure = glutCreateWindow(b"Multi Object Visualizer with Interactive Environment (MOVIE) (Running on " + os.name.encode() + b") with Python")
 
         glEnable(GL_TEXTURE_2D)
         glClearColor(0.0, 0.0, 0.0, 0.0)
@@ -363,6 +514,20 @@ class RenderControl:
             60.0, float(self.Width) / float(self.Height), 0.1, self.Farplane
         )
         glMatrixMode(GL_MODELVIEW)
+
+        # Setup and Load OBJs
+        self.objs.Initialize(num_objects)
+        if self.objs.ok:
+            idx = 4
+            for ii in range(num_objects):
+                obj_path = (
+                    f"{fileroot}{lines[idx]}" if fileroot else lines[idx]
+                )
+                scale_factor = float(lines[idx + 1])
+                pos_scale = float(lines[idx + 2])
+                self.objs.Load(obj_path, ii + 1, 1, scale_factor)
+                self.state.positionscale.set(ii + 1, 1, pos_scale)
+                idx += 3
 
         glutDisplayFunc(self.draw_gl_scene)
         glutIdleFunc(self.main_loop)
@@ -392,31 +557,34 @@ class RenderControl:
 
     def key_pressed(self, key, x, y):
         k = key.decode("utf-8") if isinstance(key, bytes) else key
-        control_keys = ['u', 'j', 'h', 'k', 't', 'g', 'm', 'n']
+        control_keys = ["u", "j", "h", "k", "t", "g", "m", "n"]
 
         if k in control_keys:
             with control_mutex:
-                if k == 'u':
+                if k == "u":
                     self.state.control[2] -= 0.1
-                elif k == 'j':
+                elif k == "j":
                     self.state.control[2] += 0.1
-                elif k == 'h':
+                elif k == "h":
                     self.state.control[1] -= 0.1
-                elif k == 'k':
+                elif k == "k":
                     self.state.control[1] += 0.1
-                elif k == 't':
+                elif k == "t":
                     self.state.control[0] += 0.1
-                elif k == 'g':
+                elif k == "g":
                     self.state.control[0] -= 0.1
-                elif k == 'm':
+                elif k == "m":
                     self.state.control[3] += 0.1
-                elif k == 'n':
+                elif k == "n":
                     self.state.control[3] -= 0.1
 
                 for i in range(NUMCONTROLS):
                     if abs(self.state.control[i]) > 1.0:
-                        self.state.control[i] = math.copysign(1.0, self.state.control[i])
-        if k == '\x1b' or k == 'q':
+                        self.state.control[i] = math.copysign(
+                            1.0, self.state.control[i]
+                        )
+
+        if k == "\x1b" or k == "q":
             print("Quitting RenderControl")
             self.ok = 0
             self.ready = 0
@@ -424,25 +592,25 @@ class RenderControl:
                 glutDestroyWindow(self.figure)
             except Exception:
                 pass
-            os._exit(0)  # Cleanly terminates process without CTypes exception traceback
-        elif k == 'c':
+            os._exit(0)
+        elif k == "c":
             self.camera.SwitchCamera()
-        elif k == 'o':
+        elif k == "o":
             self.camera.zoom(-1)
-        elif k == 'i':
+        elif k == "i":
             self.camera.zoom(1)
-        elif k == 'w':
+        elif k == "w":
             self.camera.pitch(1)
-        elif k == 's':
+        elif k == "s":
             self.camera.pitch(-1)
-        elif k == 'a':
+        elif k == "a":
             self.camera.yaw(-1)
-        elif k == 'd':
+        elif k == "d":
             self.camera.yaw(1)
-        elif k == ' ':
+        elif k == " ":
             print("Playing...")
             self.state.advance = 1
-        elif k == 'l':
+        elif k == "l":
             if self.keyboard.lightflag == 0:
                 glEnable(GL_LIGHTING)
                 self.keyboard.lightflag = 1
@@ -479,13 +647,20 @@ class RenderControl:
             self.camera.Update(self.state)
 
         gluLookAt(
-            self.camera.pos[0], self.camera.pos[1], self.camera.pos[2],
-            self.camera.target[0], self.camera.target[1], self.camera.target[2],
-            self.camera.up[0], self.camera.up[1], self.camera.up[2]
+            self.camera.pos[0],
+            self.camera.pos[1],
+            self.camera.pos[2],
+            self.camera.target[0],
+            self.camera.target[1],
+            self.camera.target[2],
+            self.camera.up[0],
+            self.camera.up[1],
+            self.camera.up[2],
         )
 
-        # Draw Objects
+        # Draw all objects using compiled display lists and textures
         for ii in range(1, self.state.objects + 1):
+            glBindTexture(GL_TEXTURE_2D, self.objs.texture[ii - 1])
             with state_mutex:
                 cg = [self.state.cg.get(j, ii) for j in range(1, 4)]
                 ptp = [self.state.ptp.get(j, ii) for j in range(1, 4)]
@@ -495,8 +670,7 @@ class RenderControl:
             glRotatef(ptp[1] * (180.0 / math.pi), 0, 1, 0)
             glRotatef(ptp[0] * (180.0 / math.pi), 1, 0, 0)
 
-            # Placeholder drawing for OBJ geometry (replace with your OBJ vertex list rendering)
-            glutWireCube(2.0)
+            glCallList(self.objs.gl_list[ii - 1])
 
             glRotatef(-ptp[0] * (180.0 / math.pi), 1, 0, 0)
             glRotatef(-ptp[1] * (180.0 / math.pi), 0, 1, 0)

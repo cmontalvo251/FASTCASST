@@ -1,7 +1,8 @@
 #!/bin/bash
 
-echo 'About to delete all text files in logs/ and data/'
+echo 'About to delete all text files in ./, logs/ and data/'
 rm *.csv
+rm *.txt
 rm data/*.txt
 rm data/*.csv
 rm logs/*.txt

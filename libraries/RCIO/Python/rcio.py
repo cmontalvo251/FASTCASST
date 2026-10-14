@@ -5,10 +5,10 @@ import struct
 import math
 
 class RCIO():
-    SERVO_MIN = 0.995 #ms
-    SERVO_MID = 1.504 #ms
-    SERVO_MAX = 2.010 #ms
     def __init__(self,NUMPWM,mode,json_file_name):
+        self.SERVO_MIN = 0.995 #ms
+        self.SERVO_MID = 1.504 #ms
+        self.SERVO_MAX = 2.010 #ms
         self.rcin = RCInput(mode,self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX,json_file_name)
         self.rcout = []
         self.NUMPWM = NUMPWM
@@ -108,7 +108,6 @@ class PWM():
                 pwm_duty.write(str(period_ns))
 
 class RCInput():
-    channels = []
     #Note for the FS-TH9X receiver you need to make sure you setup the channels
     #properly into the right order.  The order should be: TAER P1 3POS where
     #P1 is a potentiometer for arming because one of the switches broke
@@ -117,29 +116,84 @@ class RCInput():
     #that channel 5 is arming and channel 6 is autopilot mode
     #the first 4 channels are then the standard TAER
 
-    def __init__(self,mode,SERVO_MIN,SERVO_MID,SERVO_MAX,json_file_name,num_channels=6):
+    def __init__(self,mode,STICK_MIN,STICK_MID,STICK_MAX,json_file_name,num_channels=6):
         print('Initializing RCInput....')
-        self.SERVO_MID = SERVO_MID
-        self.SERVO_MAX = SERVO_MAX
-        self.SERVO_MIN = SERVO_MIN
+        self.channels = []
+        self.STICK_MID = STICK_MID
+        self.STICK_MAX = STICK_MAX
+        self.STICK_MIN = STICK_MIN
+        self.BIT_RANGE = 32768
         self.num_channels = num_channels
+        self.num_of_axis = num_channels
         self.rcsignals = [0]*num_channels
         self.MODE = mode
         self.ARMED = False #set armed to false
         self.color = 'Red' #for the LED
-        for i in range(0, self.num_channels):
-            if self.MODE == 'SIMONLY':
-                f = i
-                print('RCInput Running in emulation mode = ',i)
-            elif self.MODE == 'SIL':
-                #Create joystick object
-                self.has_json_config = False
-                self.axis_mappings = {}
-                for i in range(5):
-                    self.axis_mappings[i] = {"axis": -1,"invert": False,"min": -1.0,"max": 1.0}                  
-                self.config_file = json_file_name
-                f = i
-            elif self.MODE == 'AUTO' or self.MODE == 'HIL':
+
+        if self.MODE == 'SIL':
+            print("Setting up RCIO SIL System")
+            #Create joystick object
+            self.has_json_config = False
+            self.axis_mappings = {}
+            self.joy_fd = -1
+            for i in range(5):
+                self.axis_mappings[i] = {"axis": -1,"invert": False,"min": -1.0,"max": 1.0}                  
+            self.config_file = json_file_name
+            """Initializes joystick file descriptor and loads JSON configuration."""
+            # Open joystick device (Linux /dev/input/js0 or similar)
+            joystick_dev = os.environ.get("JOY_DEV", "/dev/input/js0")
+            try:
+                print("Initializing joystick")
+                self.joy_fd = os.open(joystick_dev, os.O_RDONLY | os.O_NONBLOCK)
+                print("Getting information from the joystick")
+                # Default values if ioctl is omitted; non-blocking file descriptor active
+                self.name_of_joystick = "USB Controller"
+                self.joycomm = [self.STICK_MID]*num_channels
+                self.num_of_buttons = 10
+                self.button = [0] * self.num_of_buttons
+                print(f"joy_fd = {self.joy_fd}")
+                print("Allocating Axes")
+                print(f"Number of Axes = {self.num_of_axis}")
+                print("Success!!!! Setting non-blocking mode")
+            except OSError:
+                print("Couldn't open joysticks")
+                print("Defaulting to Stick min")
+                print(f"joy_fd = {self.joy_fd}")
+            print(f"Using RX config file: {self.config_file}")
+            f_data = None
+            if self.config_file and os.path.exists(self.config_file):
+                try:
+                    with open(self.config_file, "r") as file_obj:
+                        f_data = json.load(file_obj)
+                except Exception as e:
+                    print(f"Error parsing {self.config_file}: {e}")
+            if f_data:
+                try:
+                    mapping = f_data.get("mapping", {})
+                    controls = ["throttle","roll","pitch","yaw","autopilot_switch",]
+                    for i, ctrl_name in enumerate(controls):
+                        if ctrl_name in mapping:
+                            ctrl = mapping[ctrl_name]
+                            if "axis" in ctrl:
+                                self.axis_mappings[i] = {
+                                    "axis": ctrl["axis"],
+                                    "invert": ctrl.get("invert", False),
+                                    "min": ctrl.get("min", -1.0),
+                                    "max": ctrl.get("max", 1.0),
+                                }
+                    self.has_json_config = True
+                    print(f"Loaded JSON config from {self.config_file}")
+                except Exception as e:
+                    print(f"Error parsing JSON content: {e}")
+                    exit(1)
+            else:
+                print(f"Could not open JSON config file: {self.config_file}")
+                exit(1)
+            print("Done")
+
+        if self.MODE == 'AUTO' or self.MODE == 'HIL':
+            print("Setting up RCIO AUTO or HIL System")
+            for i in range(self.num_channels):
                 #Read from PPM receiver
                 try:
                     f = open("/sys/kernel/rcio/rcin/ch%d" % i, "r")
@@ -149,12 +203,67 @@ class RCInput():
                     #Fall back on emulation mode
                     f = i
             self.channels.append(f)
-        print('RCInput initialized')
+            print('RCInput HW initialized')
+
+    def bit2PWM(self, val: int) -> int:
+        return int((self.STICK_MAX - self.STICK_MID) * val / self.BIT_RANGE + self.STICK_MID)
+
+    def invert(self, val: int) -> int:
+        if val != 0:
+            delta = val - self.STICK_MID
+            inverse = -delta
+            out = self.STICK_MID + inverse
+        else:
+            out = 0
+        return out
+
+    def mapjoy2rx(self):
+        for i in range(self.num_of_axis):
+            self.rcsignals[i] = self.joycomm[i]
+        if self.has_json_config:
+            for i in range(5):
+                ax = self.axis_mappings[i]["axis"]
+                if 0 <= ax < self.num_of_axis:
+                    val = self.joycomm[ax]
+                    if self.axis_mappings[i]["invert"]:
+                        val = self.invert(val)
+                    self.rcsignals[i] = val
+
+    def setStickNeutral(self):
+        for i in range(self.num_of_axis):
+            if i == 0:
+                self.rcsignals[i] = self.STICK_MIN
+            elif i == 3:
+                self.rcsignals[i] = self.STICK_MAX
+            else:
+                self.rcsignals[i] = self.STICK_MID
 
     def readALL(self):
-        for i in range(self.num_channels):
-            value = self.read(i)
-            self.rcsignals[i] = value
+        if self.MODE == 'SIL':
+            if self.joy_fd != -1:
+                try:
+                    event_data = os.read(self.joy_fd, 8)
+                    if len(event_data) == 8:
+                        time_val, value, ev_type, number = struct.unpack("Ihbb", event_data)
+                        actual_type = ev_type & ~0x80
+                        if actual_type == 1:
+                            self.joycomm[number] = self.bit2PWM(value)
+                        elif actual_type == 2:
+                            if number < len(self.button):
+                                self.button[number] = value
+                    self.mapjoy2rx()
+                except BlockingIOError:
+                    pass
+                except Exception:
+                    self.setStickNeutral()
+            else:
+                #print('Setting stick neutral because joy_fd = -1')
+                self.setStickNeutral()
+                #print('RCIO',self.rcsignals)
+        else:
+            for i in range(self.num_channels):
+                value = self.read(i)
+                self.rcsignals[i] = value
         ##Map rcsignals to TAER
         self.throttle = float(self.rcsignals[0])
         self.roll = float(self.rcsignals[1])
@@ -189,7 +298,7 @@ class RCInput():
         return self.ARMED,self.color
 
     def convert(self,signal):
-        return (signal/1000.0 - self.SERVO_MID)/((self.SERVO_MAX-self.SERVO_MIN)/2)
+        return (signal/1000.0 - self.STICK_MID)/((self.STICK_MAX-self.STICK_MIN)/2)
     
     def read(self, ch):
         if self.MODE == 'AUTO' or self.MODE == 'HIL':
@@ -198,7 +307,7 @@ class RCInput():
             return value[:-1]
         else:
             if ch == 0:
-                return self.SERVO_MIN*1000
+                return self.STICK_MIN*1000
             else:
-                return self.SERVO_MID*1000
+                return self.STICK_MID*1000
             

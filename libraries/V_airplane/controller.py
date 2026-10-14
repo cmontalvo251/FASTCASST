@@ -54,6 +54,8 @@ class CONTROLLER():
         self.altitude_command = -99.0
         self.heading_command = -99.0
 
+        print('CTL',rcin.rcsignals,rcin.throttlerc,rcin.rollrc,rcin.pitchrc,rcin.yawrc,rcin.autopilot)
+
         if rcin.autopilot < 1500:
             ##Manual control
             self.color = 'Green'

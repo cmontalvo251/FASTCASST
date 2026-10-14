@@ -23,6 +23,7 @@ TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
 PRINTTIME = 1.0 #time between stdout prints
 LOGTIME = 0.1 #time between logging time in seconds
 MODE = 'SIL' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
+JSON_FILE_NAME = 'libraries/RCInput/Calibration/XBOX_config.json'
 TIMESTEP = 0.01 #Timestep of modeling if SIMONLY selected
 TFINAL = 100.0 #final time of simulation if SIMONLY selected
 #Initial Conditions for SIMONLY
@@ -95,7 +96,7 @@ led = L.Led(mode=MODE)
 
 #Setup RCIO (receiver signals and output pwmsignals)
 import RCIO.Python.rcio as R
-rc = R.RCIO(vehicle.NUMCONTROLS,MODE)
+rc = R.RCIO(vehicle.NUMCONTROLS,MODE,JSON_FILE_NAME) #This is the number of PWM channels you want to output to
 #This creates the pwm_commands vector and sends default values to the pwm channels
 rc.set_commands(commands)
 

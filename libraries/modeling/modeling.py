@@ -7,7 +7,7 @@ import GPS.gps as G
 class MODEL():
     def __init__(self,TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,LATITUDE_ORIGIN,LONGITUDE_ORIGIN):
         self.timestep = TIMESTEP
-        print('Running SIMONLY mode')
+        print('Running Physics engine for SIMONLY or SIL mode')
         self.state = np.zeros(13) #13 states
         self.statedot = np.zeros(13)
         self.state[0] = ICs[0] #x (m)

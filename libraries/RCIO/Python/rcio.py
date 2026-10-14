@@ -1,13 +1,15 @@
-import Util.util
-import os.path
+import os
 import numpy as np
+import json
+import struct
+import math
 
 class RCIO():
     SERVO_MIN = 0.995 #ms
     SERVO_MID = 1.504 #ms
     SERVO_MAX = 2.010 #ms
-    def __init__(self,NUMPWM,mode):
-        self.rcin = RCInput(mode,self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX)
+    def __init__(self,NUMPWM,mode,json_file_name):
+        self.rcin = RCInput(mode,self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX,json_file_name)
         self.rcout = []
         self.NUMPWM = NUMPWM
         self.pwm_commands = np.zeros(NUMPWM)
@@ -115,7 +117,7 @@ class RCInput():
     #that channel 5 is arming and channel 6 is autopilot mode
     #the first 4 channels are then the standard TAER
 
-    def __init__(self,mode,SERVO_MIN,SERVO_MID,SERVO_MAX,num_channels=6):
+    def __init__(self,mode,SERVO_MIN,SERVO_MID,SERVO_MAX,json_file_name,num_channels=6):
         print('Initializing RCInput....')
         self.SERVO_MID = SERVO_MID
         self.SERVO_MAX = SERVO_MAX
@@ -126,16 +128,27 @@ class RCInput():
         self.ARMED = False #set armed to false
         self.color = 'Red' #for the LED
         for i in range(0, self.num_channels):
-            try:
-                if self.MODE != 'AUTO' and self.MODE != 'HIL':
-                    f = i
-                    print('RCInput Running in emulation mode = ',i)
-                else:
+            if self.MODE == 'SIMONLY':
+                f = i
+                print('RCInput Running in emulation mode = ',i)
+            elif self.MODE == 'SIL':
+                #Create joystick object
+                self.has_json_config = False
+                self.axis_mappings = {}
+                for i in range(5):
+                    self.axis_mappings[i] = {"axis": -1,"invert": False,"min": -1.0,"max": 1.0}                  
+                self.config_file = json_file_name
+                f = i
+            elif self.MODE == 'AUTO' or self.MODE == 'HIL':
+                #Read from PPM receiver
+                try:
                     f = open("/sys/kernel/rcio/rcin/ch%d" % i, "r")
                     print('Opening RCinput channel = ',i)
-                self.channels.append(f)
-            except: 
-                print ("Can't open file /sys/kernel/rcio/rcin/ch%d" % i)
+                except: 
+                    print ("Can't open file /sys/kernel/rcio/rcin/ch%d" % i)
+                    #Fall back on emulation mode
+                    f = i
+            self.channels.append(f)
         print('RCInput initialized')
 
     def readALL(self):

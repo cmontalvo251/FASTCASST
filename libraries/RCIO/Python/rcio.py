@@ -9,7 +9,7 @@ class RCIO():
         self.SERVO_MIN = 0.995 #ms
         self.SERVO_MID = 1.504 #ms
         self.SERVO_MAX = 2.010 #ms
-        self.rcin = RCInput(mode,self.SERVO_MIN,self.SERVO_MID,self.SERVO_MAX,json_file_name)
+        self.rcin = RCInput(mode,1000*self.SERVO_MIN,1000*self.SERVO_MAX,json_file_name)
         self.rcout = []
         self.NUMPWM = NUMPWM
         self.pwm_commands = np.zeros(NUMPWM)
@@ -116,12 +116,12 @@ class RCInput():
     #that channel 5 is arming and channel 6 is autopilot mode
     #the first 4 channels are then the standard TAER
 
-    def __init__(self,mode,STICK_MIN,STICK_MID,STICK_MAX,json_file_name,num_channels=6):
+    def __init__(self,mode,STICK_MIN,STICK_MAX,json_file_name,num_channels=6):
         print('Initializing RCInput....')
         self.channels = []
-        self.STICK_MID = STICK_MID
         self.STICK_MAX = STICK_MAX
         self.STICK_MIN = STICK_MIN
+        self.STICK_MID = (STICK_MAX + STICK_MIN)/2.0
         self.BIT_RANGE = 32768
         self.num_channels = num_channels
         self.num_of_axis = num_channels
@@ -298,7 +298,12 @@ class RCInput():
         return self.ARMED,self.color
 
     def convert(self,signal):
-        return (signal/1000.0 - self.STICK_MID)/((self.STICK_MAX-self.STICK_MIN)/2)
+        #y2 - y1 = m*(x2 - x1)
+        #y2 = m*(x2-x1) + y1
+        #rc = m*(signal - self.STICK_MIN) + -1
+        #m = (1 - -1) / (self.STICK_MAX - self.STICK_MIN)
+        return 2.0/(self.STICK_MAX-self.STICK_MIN) * (signal - self.STICK_MIN) - 1.0
+        #return (signal - self.STICK_MID)/((self.STICK_MAX-self.STICK_MIN)/2)
     
     def read(self, ch):
         if self.MODE == 'AUTO' or self.MODE == 'HIL':

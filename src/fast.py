@@ -327,9 +327,7 @@ if MODE=='SIL':
     physics_thread.start()
 
     # 2. Run the OpenGL GUI main loop on the primary main thread
-    glhandle_g.loop_init(
-        fileroot=None,vehicleType=VEHICLE,inFarplane=10000, inWidth=800, inHeight=600
-        )
+    glhandle_g.loop_init(fileroot=None,vehicleType=VEHICLE,inFarplane=10000, inWidth=800, inHeight=600)
 else:
     print("Launching in Headless / Non-GUI Mode...")
     # Run physics directly on the main thread (ideal for Raspberry Pi & server runs)

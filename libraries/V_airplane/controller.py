@@ -54,7 +54,8 @@ class CONTROLLER():
         self.altitude_command = -99.0
         self.heading_command = -99.0
 
-        print('CTL',rcin.rcsignals,rcin.throttlerc,rcin.rollrc,rcin.pitchrc,rcin.yawrc,rcin.autopilot)
+        #print('CTL',rcin.rcsignals,rcin.throttlerc,rcin.rollrc,rcin.pitchrc,rcin.yawrc,rcin.autopilot)
+        #rcin.autopilot = 0.0
 
         if rcin.autopilot < 1500:
             ##Manual control
@@ -64,6 +65,7 @@ class CONTROLLER():
             self.controls[2] = rcin.pitchrc
             self.controls[3] = rcin.yawrc
         elif rcin.autopilot > 1500:
+            #print('AUTO')
             #Autopilot mode
             self.color = 'Blue'
             self.heading_command = -99

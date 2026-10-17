@@ -16,10 +16,12 @@
 
 #####################PARAMETERS#################
 VEHICLE = 'airplane'  #Options are 'car', 'boat', or 'airplane'
-CONTROLMODE = 5 #This is dictated by your controller.py script and is vehicle dependent
+CONTROLMODE = -5 #This is dictated by your controller.py script and is vehicle dependent
+#If control mode is negative it means the user can turn autopilot on and off. Otherwise 
+#it's on all the time
 #CAR MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
 #AIRPLANE MODES 5 = WAYPOINT, 4 = HEADING, 3 = ALTITUDE, 2 = VELOCITY, 1 = INNER LOOP, 0 = THROTTLE
-TELEMETRYTIME = 1.0 #time between telemetry sends in seconds
+TELEMETRYTIME = 100.0 #time between telemetry sends in seconds
 PRINTTIME = 1.0 #time between stdout prints
 LOGTIME = 0.1 #time between logging time in seconds
 MODE = 'SIL' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
@@ -66,11 +68,17 @@ if "WAYPOINTS" not in locals():
         WAYPOINTSLON.append(lon)
     WAYPOINTS = [WAYPOINTSLAT,WAYPOINTSLON]
 
+##Check to see if system is always armed and user has no control
+if CONTROLMODE >= 0:
+    ALWAYSARMED = True
+else:
+    ALWAYSARMED = False
+
 ##Import the vehicle controller based on your selection
 sys.path.append('../libraries/V_'+VEHICLE)
 sys.path.append('libraries/V_'+VEHICLE)
 import controller
-vehicle = controller.CONTROLLER(WAYPOINTS,CONTROLMODE)
+vehicle = controller.CONTROLLER(WAYPOINTS,abs(CONTROLMODE))
 #Initialize commands
 commands = vehicle.defaults
 NUMOUTPUTS = 36+vehicle.NUMCONTROLS
@@ -145,6 +153,9 @@ def run_physics_simulation():
         print('Sleep for 1 second to wait for OpenGL initialization...')
         time.sleep(1)
 
+    prev_armed = None
+    prev_control_color = None
+
     while (RunTime <= TFINAL):
 
         #Get Time
@@ -163,6 +174,19 @@ def run_physics_simulation():
         
         #Read in receiver commands
         ARMED,safety_color = rc.rcin.readALL()
+
+        if ALWAYSARMED:
+            #System is always armed
+            ARMED = True
+            safety_color = 'Green'
+            rc.rcin.armswitch = rc.rcin.STICK_MAX
+            rc.rcin.autopilot = rc.rcin.STICK_MAX
+
+        #Announce arming state changes in stdout
+        if ARMED != prev_armed:
+            prev_armed = ARMED
+            status_text = "ARMED" if ARMED else f"DISARMED ({safety_color})"
+            print(f"\n{'='*40}\n>>> RC STATE: {status_text} <<<\n{'='*40}\n")
 
         #Get GPS update if it's ready
         gps_llh.poll(RunTime) 
@@ -184,6 +208,17 @@ def run_physics_simulation():
 
         #Run your control loop
         controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,gdegs,baro)
+
+        #Announce autopilot state changes in stdout
+        if ARMED:
+            if control_color != prev_control_color:
+                prev_control_color = control_color
+                if control_color == 'Blue':
+                    print(f"\n{'='*40}\n>>> AUTOPILOT ENGAGED <<<\n{'='*40}\n")
+                else:
+                    print(f"\n{'='*40}\n>>> MANUAL FLIGHT CONTROL <<<\n{'='*40}\n")
+        else:
+            prev_control_color = None
 
         #Check if we are armed or not
         if ARMED:
@@ -208,15 +243,19 @@ def run_physics_simulation():
             ptpin.set(3, 1, model.ptp[2])  # Yaw (rad)
 
             # Safely push updates to the renderer via thread-safe lock
-            glhandle_g.state.UpdateRender(RunTime, cgin, ptpin, 1, keyboard_out)
+            glhandle_g.state.UpdateRender(RunTime, cgin, ptpin, 1, keyboard_out, ARMED, safety_color, control_color)
 
         #Print to Home
         if (RunTime - printTime) > PRINTTIME:
             str_pwm = [f"{pwm:1.3f}" for pwm in rc.pwm_commands] #convert pwm commands to 3 sig figs
             str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
             str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
+            if ARMED:
+                arm_str = "AUTOPILOT" if control_color == 'Blue' else "ARMED"
+            else:
+                arm_str = f"DISARMED({safety_color})"
             #print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",gps_llh.latitude,gps_llh.longitude,gps_llh.altitude)
-            print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",rc.rcin.rcsignals,str_pwm,str_rpy,str_g,f"{baro.ALT:.3f}",gps_llh.altitude)
+            print(f"{RunTime:4.4f}", f"[{arm_str}]", f"{elapsedTime:1.4f}", rc.rcin.rcsignals, str_pwm, str_rpy, str_g, f"{baro.ALT:.3f}", gps_llh.altitude)
             printTime+=PRINTTIME
 
         ##Send Telemetry

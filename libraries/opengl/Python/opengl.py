@@ -60,6 +60,9 @@ class StateHistory:
         self.rowdx = 0
         self.ok = 0
         self.T = 0.0
+        self.armed = False
+        self.safety_color = "Red"
+        self.control_color = "Green"
         self.control = np.zeros(NUMCONTROLS)
         self.positionscale = MATLABMatrix()
         self.cg = MATLABMatrix()
@@ -69,6 +72,9 @@ class StateHistory:
     def Initialize(self, number_of_objects):
         self.ok = 0
         self.setTime(0.0)
+        self.armed = False
+        self.safety_color = "Red"
+        self.control_color = "Green"
         self._numobjects = number_of_objects
         self.objects = number_of_objects
 
@@ -86,10 +92,13 @@ class StateHistory:
         with time_mutex:
             self.T = simtime
 
-    def UpdateRender(self, simtime, cgin, ptpin, object_number, keyboard_out):
+    def UpdateRender(self, simtime, cgin, ptpin, object_number, keyboard_out, armed=False, safety_color="Red", control_color="Green"):
         self.setTime(simtime)
 
         with state_mutex:
+            self.armed = armed
+            self.safety_color = safety_color
+            self.control_color = control_color
             scale = self.positionscale.get(object_number, 1)
             for idx in range(1, 4):
                 self.cg.set(idx, object_number, scale * cgin.get(idx, 1))
@@ -695,13 +704,37 @@ class RenderControl:
 
         glColor3f(1.0, 1.0, 1.0)
         
-        # Position near top-left corner (20 pixels from left, Height - 30 pixels from bottom)
+        # Position near top-left corner (20 pixels from left, Height - 35 pixels from bottom)
         glRasterPos2f(20.0, self.Height - 35.0)
 
         with time_mutex:
             time_str = f"Time: {self.state.T:6.4f}s"
 
         for char in time_str:
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char)) # type: ignore
+
+        # Line 2: Arming Status (Blue / Green / Yellow / Red)
+        with state_mutex:
+            armed = self.state.armed
+            safety_color = self.state.safety_color
+            control_color = getattr(self.state, "control_color", "Green")
+
+        if armed:
+            if control_color == 'Blue':
+                glColor3f(0.2, 0.6, 1.0)  # Blue for Autopilot
+                status_str = "STATUS: ARMED - AUTOPILOT ON"
+            else:
+                glColor3f(0.0, 1.0, 0.0)  # Green for Manual
+                status_str = "STATUS: ARMED - MANUAL"
+        elif safety_color == 'Yellow':
+            glColor3f(1.0, 0.85, 0.0)  # Yellow
+            status_str = "STATUS: DISARMED (LOWER THROTTLE TO ARM)"
+        else:
+            glColor3f(1.0, 0.25, 0.25)  # Red
+            status_str = "STATUS: DISARMED"
+
+        glRasterPos2f(20.0, self.Height - 60.0)
+        for char in status_str:
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(char)) # type: ignore
 
         # Restore lighting and depth test states
@@ -715,6 +748,10 @@ class RenderControl:
         glMatrixMode(GL_MODELVIEW)
         glPopMatrix()
         # --------------------------------------------- 
+
+        # When armed (flying), reset color to white so the 3D world has no green hue
+        if armed:
+            glColor3f(1.0, 1.0, 1.0)
 
         glutSwapBuffers()
 

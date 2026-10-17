@@ -1,20 +1,9 @@
 import sys, time
+from rcio import RCInput
 
-import navio.rcinput
-import navio.util
-
-navio.util.check_apm()
-
-rcin = navio.rcinput.RCInput()
-i = 0
-num_channels = 9
+rcin = RCInput('SIL',992,2016,'../../RCInput/Calibration/XBOX_config.json',num_channels=6)
 
 while (True):
-    period = []
-    for i in range(num_channels):
-
-        value = rcin.read(i)
-        period.append(value)
-        
-    print period
-    #time.sleep(1)
+    rcin.readALL()
+    print(time.time(),rcin.rcsignals)
+    time.sleep(0.1)

@@ -148,8 +148,8 @@ class RCInput():
                 print("Getting information from the joystick")
                 # Default values if ioctl is omitted; non-blocking file descriptor active
                 self.name_of_joystick = "USB Controller"
-                self.joycomm = [self.STICK_MID]*num_channels
-                self.num_of_buttons = 10
+                self.joycomm = [self.STICK_MID]*max(num_channels, 16)
+                self.num_of_buttons = 32
                 self.button = [0] * self.num_of_buttons
                 print(f"joy_fd = {self.joy_fd}")
                 print("Allocating Axes")
@@ -223,7 +223,7 @@ class RCInput():
         if self.has_json_config:
             for i in range(5):
                 ax = self.axis_mappings[i]["axis"]
-                if 0 <= ax < self.num_of_axis:
+                if 0 <= ax < len(self.joycomm):
                     val = self.joycomm[ax]
                     if self.axis_mappings[i]["invert"]:
                         val = self.invert(val)
@@ -233,8 +233,8 @@ class RCInput():
         for i in range(self.num_of_axis):
             if i == 0:
                 self.rcsignals[i] = self.STICK_MIN
-            elif i == 3:
-                self.rcsignals[i] = self.STICK_MAX
+            #elif i == 3:
+            #    self.rcsignals[i] = self.STICK_MAX
             else:
                 self.rcsignals[i] = self.STICK_MID
 
@@ -242,19 +242,23 @@ class RCInput():
         if self.MODE == 'SIL':
             if self.joy_fd != -1:
                 try:
-                    event_data = os.read(self.joy_fd, 8)
-                    if len(event_data) == 8:
-                        time_val, value, ev_type, number = struct.unpack("Ihbb", event_data)
-                        actual_type = ev_type & ~0x80
-                        if actual_type == 1:
-                            self.joycomm[number] = self.bit2PWM(value)
-                        elif actual_type == 2:
-                            if number < len(self.button):
-                                self.button[number] = value
+                    while True:
+                        try:
+                            event_data = os.read(self.joy_fd, 8)
+                            if len(event_data) == 8:
+                                time_val, value, ev_type, number = struct.unpack("IhBB", event_data)
+                                actual_type = ev_type & ~0x80
+                                if actual_type == 2:  # JS_EVENT_AXIS
+                                    if number < len(self.joycomm):
+                                        self.joycomm[number] = self.bit2PWM(value)
+                                elif actual_type == 1:  # JS_EVENT_BUTTON
+                                    if number < len(self.button):
+                                        self.button[number] = value
+                        except BlockingIOError:
+                            break
                     self.mapjoy2rx()
-                except BlockingIOError:
-                    pass
-                except Exception:
+                except Exception as e:
+                    print(f'Exception in readALL: {e}')
                     self.setStickNeutral()
             else:
                 #print('Setting stick neutral because joy_fd = -1')

@@ -15,7 +15,7 @@
 ################################################
 
 #####################PARAMETERS#################
-VEHICLE = 'boat'  #Options are 'car', 'boat', or 'airplane'
+VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
 CONTROLMODE = 3 #This is dictated by your controller.py script and is vehicle dependent
 #If control mode is negative it means the user can turn autopilot on and off. Otherwise 
 #it's on all the time

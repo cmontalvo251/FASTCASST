@@ -111,7 +111,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       WaypointLoop(sense_matrix);
     case 4:
       if (heading_command == -99) {
-        heading_command = 0;
+        heading_command = 45;
         //if (currentTime > 0) {
         //  heading_command = -90; //degrees
         //}
@@ -189,7 +189,7 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
 void controller::HeadingLoop(MATLAB sense_matrix) {
   //Airplane AIRPLANE airplane
   double kp = 0.4;
-  double kd = 0.25;
+  double kd = 0.1;
   double ki = 0.001;
 
   //Apprentice APPRENTICE apprentice
@@ -212,7 +212,7 @@ void controller::HeadingLoop(MATLAB sense_matrix) {
     dheading += 180;
     dheading *= -1;
   }
-  roll_command = kp*dheading + kd*(0-yaw_rate) + ki*headingint;
+  roll_command = kp*dheading + kd*yaw_rate + ki*headingint;
   //Integrate but prevent integral windup
   if ((roll_command < 45) && (roll_command > -45)) {
     headingint += elapsedTime*dheading;

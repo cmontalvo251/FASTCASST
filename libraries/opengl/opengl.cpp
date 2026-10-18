@@ -1027,7 +1027,7 @@ ObjModel* OBJSETUP::ObjLoadModel(char* memory, size_t size,int number,char* dire
   	    ret->material.texexist = 1;
   	  }
 	  
-  	  while (*s++ != (char) 0x0A);
+  	  while (s < d && *s++ != (char) 0x0A);
   	}
   }
 

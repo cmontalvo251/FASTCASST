@@ -5,11 +5,16 @@ import struct
 import math
 
 class RCIO():
-    def __init__(self,NUMPWM,mode,json_file_name):
+    def __init__(self,NUMPWM,mode,json_file):
         self.SERVO_MIN = 0.995 #ms
         self.SERVO_MID = 1.504 #ms
         self.SERVO_MAX = 2.010 #ms
-        self.rcin = RCInput(mode,1000*self.SERVO_MIN,1000*self.SERVO_MAX,json_file_name)
+        if json_file == 'XBOX_config.json':
+            B = 32768
+        elif json_file == 'RCTECH_config.json':
+            B = 20000
+        json_file_name = 'libraries/RCInput/Calibration/' + json_file
+        self.rcin = RCInput(mode,1000*self.SERVO_MIN,1000*self.SERVO_MAX,json_file_name,num_channels=6,BIT_RANGE=B)
         self.rcout = []
         self.NUMPWM = NUMPWM
         self.pwm_commands = np.zeros(NUMPWM)
@@ -116,13 +121,13 @@ class RCInput():
     #that channel 5 is arming and channel 6 is autopilot mode
     #the first 4 channels are then the standard TAER
 
-    def __init__(self,mode,STICK_MIN,STICK_MAX,json_file_name,num_channels=6):
+    def __init__(self,mode,STICK_MIN,STICK_MAX,json_file_name,num_channels=6,BIT_RANGE=32768):
         print('Initializing RCInput....')
         self.channels = []
         self.STICK_MAX = STICK_MAX
         self.STICK_MIN = STICK_MIN
         self.STICK_MID = (STICK_MAX + STICK_MIN)/2.0
-        self.BIT_RANGE = 32768
+        self.BIT_RANGE = BIT_RANGE
         self.num_channels = num_channels
         self.num_of_axis = num_channels
         self.rcsignals = [0]*num_channels
@@ -148,7 +153,8 @@ class RCInput():
                 print("Getting information from the joystick")
                 # Default values if ioctl is omitted; non-blocking file descriptor active
                 self.name_of_joystick = "USB Controller"
-                self.joycomm = [self.STICK_MID]*max(num_channels, 16)
+                self.joycomm = [self.STICK_MID]*max(num_channels,16)
+                self.joyraw  = [self.STICK_MID]*max(num_channels,16)
                 self.num_of_buttons = 32
                 self.button = [0] * self.num_of_buttons
                 print(f"joy_fd = {self.joy_fd}")
@@ -170,7 +176,7 @@ class RCInput():
             if f_data:
                 try:
                     mapping = f_data.get("mapping", {})
-                    controls = ["throttle","roll","pitch","yaw","autopilot_switch",]
+                    controls = ["throttle","roll","pitch","yaw","arming_switch","autopilot_switch"]
                     for i, ctrl_name in enumerate(controls):
                         if ctrl_name in mapping:
                             ctrl = mapping[ctrl_name]
@@ -206,7 +212,12 @@ class RCInput():
             print('RCInput HW initialized')
 
     def bit2PWM(self, val: int) -> int:
-        return int((self.STICK_MAX - self.STICK_MID) * val / self.BIT_RANGE + self.STICK_MID)
+        outval = int((self.STICK_MAX - self.STICK_MID) * val / self.BIT_RANGE + self.STICK_MID)
+        if outval > self.STICK_MAX:
+            outval = self.STICK_MAX
+        elif outval < self.STICK_MIN:
+            outval = self.STICK_MIN
+        return outval
 
     def invert(self, val: int) -> int:
         if val != 0:
@@ -221,7 +232,7 @@ class RCInput():
         for i in range(self.num_of_axis):
             self.rcsignals[i] = self.joycomm[i]
         if self.has_json_config:
-            for i in range(5):
+            for i in range(6):
                 ax = self.axis_mappings[i]["axis"]
                 if 0 <= ax < len(self.joycomm):
                     val = self.joycomm[ax]
@@ -250,13 +261,17 @@ class RCInput():
                                 actual_type = ev_type & ~0x80
                                 if actual_type == 2:  # JS_EVENT_AXIS
                                     if number < len(self.joycomm):
+                                        #if number == 4:
+                                        #    print(value)
                                         self.joycomm[number] = self.bit2PWM(value)
+                                        self.joyraw[number] = value
                                 elif actual_type == 1:  # JS_EVENT_BUTTON
                                     if number < len(self.button):
                                         self.button[number] = value
                         except BlockingIOError:
                             break
                     self.mapjoy2rx()
+                    #print(self.joyraw)
                 except Exception as e:
                     print(f'Exception in readALL: {e}')
                     self.setStickNeutral()

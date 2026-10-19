@@ -26,8 +26,14 @@
             "min": -1.0,
             "max": 1.0
         },
-        "autopilot_switch": {
+        "arming_switch": {
             "axis": 2,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "autopilot_switch": {
+            "axis": 5,
             "invert": false,
             "min": -1.0,
             "max": 1.0

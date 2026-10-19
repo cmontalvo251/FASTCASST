@@ -60,12 +60,13 @@ def main():
             "roll": {"axis": 0, "invert": False, "min": -1.0, "max": 1.0},
             "pitch": {"axis": 1, "invert": True, "min": -1.0, "max": 1.0},
             "yaw": {"axis": 2, "invert": False, "min": -1.0, "max": 1.0},
+            "arming_switch" : {"axis": 5, "invert": False, "min":-1.0,"max":1.0},
             "autopilot_switch": {"axis": 4, "invert": False, "min": -1.0, "max": 1.0}
         }
     }
 
     # Calibration step
-    controls = ["throttle", "roll", "pitch", "yaw", "autopilot_switch"]
+    controls = ["throttle", "roll", "pitch", "yaw", "arming_switch","autopilot_switch"]
     for control in controls:
         print(f"--- Calibrating {control.upper()} ---")
         input(f"Move the {control} stick to its center/neutral position and press ENTER...")

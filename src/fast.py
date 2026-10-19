@@ -15,8 +15,8 @@
 ################################################
 
 #####################PARAMETERS#################
-VEHICLE = 'car'  #Options are 'car', 'boat', or 'airplane'
-CONTROLMODE = 3 #This is dictated by your controller.py script and is vehicle dependent
+VEHICLE = 'airplane'  #Options are 'car', 'boat', or 'airplane'
+CONTROLMODE = -5 #This is dictated by your controller.py script and is vehicle dependent
 #If control mode is negative it means the user can turn autopilot on and off. Otherwise it's on all the time
 #CAR MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
 #BOAT MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
@@ -25,7 +25,8 @@ TELEMETRYTIME = 100.0 #time between telemetry sends in seconds
 PRINTTIME = 1.0 #time between stdout prints
 LOGTIME = 0.1 #time between logging time in seconds
 MODE = 'SIL' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
-JSON_FILE_NAME = 'libraries/RCInput/Calibration/XBOX_config.json'
+#JSON_FILE_NAME = 'XBOX_config.json'
+JSON_FILE_NAME = 'RCTECH_config.json'
 TIMESTEP = 0.01 #Timestep of modeling if SIMONLY selected
 TFINAL = 100.0 #final time of simulation if SIMONLY selected
 #Initial Conditions for SIMONLY

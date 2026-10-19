@@ -19,7 +19,7 @@ class CONTROLLER():
         self.velocityint = 0.0
         self.throttle = 0
         self.aileron = 0
-        self.CONTROLMODE = CONTROLMODE
+        self.CONTROLMODE = abs(CONTROLMODE)
         return
 
     def delpsi(self,psi1: float, psi2: float) -> float:

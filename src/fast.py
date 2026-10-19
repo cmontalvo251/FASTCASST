@@ -15,12 +15,13 @@
 ################################################
 
 #####################PARAMETERS#################
-VEHICLE = 'airplane'  #Options are 'car', 'boat', or 'airplane'
+VEHICLE = 'x8'  #Options are 'car', 'boat', 'airplane', or 'x8' (an 8 rotor multicopter)
 CONTROLMODE = -5 #This is dictated by your controller.py script and is vehicle dependent
 #If control mode is negative it means the user can turn autopilot on and off. Otherwise it's on all the time
 #CAR MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
 #BOAT MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
 #AIRPLANE MODES 5 = WAYPOINT, 4 = HEADING, 3 = ALTITUDE, 2 = VELOCITY, 1 = INNER LOOP, 0 = THROTTLE
+#X8 MODES = 
 TELEMETRYTIME = 100.0 #time between telemetry sends in seconds
 PRINTTIME = 1.0 #time between stdout prints
 LOGTIME = 0.1 #time between logging time in seconds

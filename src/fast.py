@@ -25,7 +25,7 @@ CONTROLMODE = 4 #This is dictated by your controller.py script and is vehicle de
 TELEMETRYTIME = 100.0 #time between telemetry sends in seconds
 PRINTTIME = 1.0 #time between stdout prints
 LOGTIME = 0.1 #time between logging time in seconds
-MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
+MODE = 'SIL' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 #JSON_FILE_NAME = 'XBOX_config.json'
 JSON_FILE_NAME = 'RCTECH_config.json'
 TIMESTEP = 0.01 #Timestep of modeling if SIMONLY selected
@@ -156,9 +156,10 @@ def run_physics_simulation():
     ##If running in SIL mode we need to run in real time so we need a 
     #real start time to compare to the simulation time
     if MODE == 'SIL':
-        realStartTime = time.time()
-        print('Sleep for 1 second to wait for OpenGL initialization...')
-        time.sleep(1)
+        while not glhandle_g.ready:
+            realStartTime = time.time()
+            print('Sleep to wait for OpenGL initialization...')
+            time.sleep(1)
 
     prev_armed = None
     prev_control_color = None

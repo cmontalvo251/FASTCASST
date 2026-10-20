@@ -5,12 +5,30 @@
 objects/boat.obj 	!First Object file - No spaces allowed!!
 0.05000  	    !Scale Factor of Object
 5.000000		!Scale Factor of Position
+0               !X Offset (m)
+0               !Y offset (m)
+0               !Z offset (m)
+0               !Roll offset (deg)
+0               !Pitch offset (deg)
+0               !Yaw Offset (deg)
 objects/sky.obj 	!Second Object file - This is the skydome
 100.000000  	        !Scale Factor of Object
 1.000000  	        !Scale Factor of Position
+0               !X Offset (m)
+0               !Y offset (m)
+0               !Z offset (m)
+0               !Roll offset (deg)
+0               !Pitch offset (deg)
+0               !Yaw Offset (deg)
 objects/ocean.obj !Third Object File - This is the ground plane
 2000.000000			!Scale factor of object
 1.000000			!Scale factor of position
+0               !X Offset (m)
+0               !Y offset (m)
+0               !Z offset (m)
+0               !Roll offset (deg)
+0               !Pitch offset (deg)
+0               !Yaw Offset (deg)
 
 //default camera
 //This is where you set the default camera

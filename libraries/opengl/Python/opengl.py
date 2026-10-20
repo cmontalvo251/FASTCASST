@@ -66,7 +66,9 @@ class StateHistory:
         self.control = np.zeros(NUMCONTROLS)
         self.positionscale = MATLABMatrix()
         self.cg = MATLABMatrix()
+        self.cgoffset = MATLABMatrix()
         self.ptp = MATLABMatrix()
+        self.ptpoffset = MATLABMatrix()
         self._numobjects = 0
 
     def Initialize(self, number_of_objects):
@@ -80,6 +82,8 @@ class StateHistory:
 
         self.cg.zeros(3, self._numobjects, "state.cg")
         self.ptp.zeros(3, self._numobjects, "state.ptp")
+        self.cgoffset.zeros(3,self._numobjects,"state.cgoffset")
+        self.ptpoffset.zeros(3,self._numobjects,"state.ptpoffset")
 
         with control_mutex:
             self.control.fill(0.0)
@@ -101,8 +105,8 @@ class StateHistory:
             self.control_color = control_color
             scale = self.positionscale.get(object_number, 1)
             for idx in range(1, 4):
-                self.cg.set(idx, object_number, scale * cgin.get(idx, 1))
-                self.ptp.set(idx, object_number, ptpin.get(idx, 1))
+                self.cg.set(idx, object_number, scale * cgin.get(idx, 1) + self.cgoffset.get(idx,object_number))
+                self.ptp.set(idx, object_number, ptpin.get(idx, 1) + self.ptpoffset.get(idx,object_number))
 
         with control_mutex:
             for i in range(NUMCONTROLS):
@@ -537,7 +541,13 @@ class RenderControl:
                 pos_scale = float(lines[idx + 2])
                 self.objs.Load(obj_path, ii + 1, 1, scale_factor)
                 self.state.positionscale.set(ii + 1, 1, pos_scale)
-                idx += 3
+                for jdx in range(0,3):
+                    offset = float(lines[idx+3+jdx])
+                    self.state.cgoffset.set(jdx+1,ii+1,offset)
+                for jdx in range(0,3):
+                    offset = float(lines[idx+6+jdx])
+                    self.state.ptpoffset.set(jdx+1,ii+1,offset)
+                idx += 9
 
         glutDisplayFunc(self.draw_gl_scene)
         glutIdleFunc(self.main_loop)

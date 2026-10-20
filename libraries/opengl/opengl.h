@@ -114,6 +114,7 @@ public:
   int advance,objects,filesize,rowdx,ok;
   double freq,maxval,**data,T,scale,timestep,**finaldata;
   MATLAB positionscale;
+  MATLAB ptpoffset,cgoffset;
   MATLAB cg,ptp;
   double control[NUMCONTROLS]; //u,j h,k t,g and m,n
   void Initialize(int);

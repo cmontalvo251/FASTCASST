@@ -141,6 +141,21 @@ void RenderControl::loop(int argc,char** argv,char fileroot[],int inFarplane,int
               double scale = atof(input.c_str());
 		          state.positionscale.set(ii+1,1,scale);
 		          printf("Position Scale Factor = %lf \n",state.positionscale.get(ii+1,1));
+              printf("CG OFFSETS = ");
+              for (int ll = 0;ll<3;ll++) {
+                getline(file,input);
+                double offset = atof(input.c_str());
+                state.cgoffset.set(ii+1,ll+1,offset);
+                printf(" %lf ",state.cgoffset.get(ii+1,ll+1));
+              }
+              printf("\nPTP OFFSETS = ");
+              for (int ll = 0;ll<3;ll++) {
+                getline(file,input);
+                double offset = atof(input.c_str());
+                state.ptpoffset.set(ii+1,ll+1,offset);
+                printf(" %lf ",state.ptpoffset.get(ii+1,ll+1));
+              }
+              printf("\n");
             }
         } else {
           sprintf(err,"%s","OBJSETUP Error");
@@ -399,7 +414,10 @@ void StateHistory::Initialize(int NumberofObjects)
 
   //Initialize cg and ptp variables
   cg.zeros(3,numobjects_,"state.cg");
+  cgoffset.zeros(3,numobjects_,"state_cg_offset");
   ptp.zeros(3,numobjects_,"state.ptp");
+  ptpoffset.zeros(3,numobjects_,"state.ptp_offset");
+
 
   //Initialize Controls
   controlmutex.lock();
@@ -434,8 +452,8 @@ void StateHistory::UpdateRender(double time,MATLAB cgin,MATLAB ptpin,int objectn
   //Set Position of All Objects  
   statemutex.lock();
   for (int idx = 1;idx<=3;idx++) {
-    cg.set(idx,objectnumber,positionscale.get(objectnumber,1)*cgin.get(idx,1));
-    ptp.set(idx,objectnumber,ptpin.get(idx,1));
+    cg.set(idx,objectnumber,positionscale.get(objectnumber,1)*cgin.get(idx,1)+cgoffset.get(idx,objectnumber));
+    ptp.set(idx,objectnumber,ptpin.get(idx,1)+ptpoffset.get(idx,objectnumber));
   }
   //cg.disp();
   statemutex.unlock();

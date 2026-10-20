@@ -5,9 +5,21 @@
 objects/portalcube.obj 	!First Object file - No spaces allowed!!
 0.5000  	    !Scale Factor of Object
 0.000004		!Scale Factor of Position
+0               !X Offset (m)
+0               !Y offset (m)
+0               !Z offset (m)
+0               !Roll offset (deg)
+0               !Pitch offset (deg)
+0               !Yaw Offset (deg)
 objects/globe_fixed.obj 	!Second Object file - This is the globe
 20.000000  	        !Scale Factor of Object
 1.000000  	        !Scale Factor of Position
+0               !X Offset (m)
+0               !Y offset (m)
+0               !Z offset (m)
+0               !Roll offset (deg)
+0               !Pitch offset (deg)
+0               !Yaw Offset (deg)
 
 //default camera
 //This is where you set the default camera

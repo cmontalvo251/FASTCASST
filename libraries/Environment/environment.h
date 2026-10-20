@@ -50,6 +50,7 @@ class environment {
    MATLAB BVECINE,BVECSPH,BVECB_Tesla;
    MATLAB AEROVECINE,AEROVECB,AEROMOMENTB,AERODRYDENB;
    DrydenTurbulence dryden;
+   void print_EGM_error(char*);
    void getCurrentWindVectorINE(double simtime,MATLAB State,int FORCES_FLAG);
    void getDrydenTurbulence(double simtime,MATLAB State);
    void init(MATLAB);

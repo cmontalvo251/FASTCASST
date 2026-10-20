@@ -86,19 +86,20 @@ void environment::init(MATLAB in_simulation_matrix) {
   //#endif
 
   //Code here to make sure COEFFFILENAME exists and is accessible
+  bool throw_error = false;
   FILE *file = fopen(COEFFFILENAME, "r");
   if (file) {
       fclose(file);
   } else {
-      printf("Error: Could not access %s \n", COEFFFILENAME);
-      printf("As of August 2026 these files are accessible on Google Drive\n");
-      printf("%s \n", "https://drive.google.com/drive/folders/1XP9b3Q0F7RMHJKHABI7B17MrL5j_V-h0?usp=sharing");
-      exit(1);
+      throw_error = true;
   }
 
   if (Gravity_Flag == 1) {
     printf("Setting up Gravity Model...\n");
-    #ifdef __linux__
+    if (throw_error) {
+      print_EGM_error(COEFFFILENAME);
+    }
+    #ifdef __linux__   
     egm2008 = new GravityModel("egm2008",COEFFFILENAME); 
     #else
     egm2008 = new GravityModel("egm2008"); //Initializing gravity model
@@ -107,6 +108,9 @@ void environment::init(MATLAB in_simulation_matrix) {
   }
   if (Magnetic_Flag == 1) {
     printf("Setting up Magnetic Model...\n");
+    if (throw_error) {
+      print_EGM_error(COEFFFILENAME);
+    }
     #ifdef __linux__
     emm2015 = new MagneticModel("emm2015",COEFFFILENAME); //Initializing magnetic model
     #else
@@ -117,6 +121,13 @@ void environment::init(MATLAB in_simulation_matrix) {
   }
   sph_coord.zeros(3,1,"Spherical Coordinate (Phi and Theta)");
   printf("Gravity and Magnet Models Imported but you might need to double check the .emm and .egm file \n");
+}
+
+void environment::print_EGM_error(char COEFFFILENAME[]) {
+  printf("Error: Could not access %s \n", COEFFFILENAME);
+  printf("As of August 2026 these files are accessible on Google Drive\n");
+  printf("%s \n", "https://drive.google.com/drive/folders/1XP9b3Q0F7RMHJKHABI7B17MrL5j_V-h0?usp=sharing");
+  exit(1);
 }
 
 void environment::setMass(double m) {

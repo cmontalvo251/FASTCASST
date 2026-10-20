@@ -289,5 +289,5 @@ void controller::AltitudeLoop(MATLAB sense_matrix) {
   if ((throttle > OUTMIN) && (throttle < OUTMAX)) {
     altitude_int += elapsedTime*(altitude-altitude_command);
   }
-  //printf("T, ALT, ALT DOT = %lf %lf %lf \n",lastTime,altitude,altitude_dot);  
+  //printf("T, ALT, ALT DOT, ALT COMM, dup = %lf %lf %lf %lf %lf \n",lastTime,altitude,altitude_dot,altitude_command,dup);  
 }

@@ -290,6 +290,7 @@ class RCInput():
         self.yaw = float(self.rcsignals[3])
         self.armswitch = float(self.rcsignals[4])
         self.autopilot = float(self.rcsignals[5])
+        #print('RCIO',self.rcsignals)
         #Turn TAER commands to floats between -1 and 1
         self.throttlerc = self.convert(self.throttle)
         self.rollrc = self.convert(self.roll)
@@ -331,7 +332,7 @@ class RCInput():
             return value[:-1]
         else:
             if ch == 0:
-                return self.STICK_MIN*1000
+                return self.STICK_MIN
             else:
-                return self.STICK_MID*1000
+                return self.STICK_MID
             

@@ -16,26 +16,31 @@
 
 #####################PARAMETERS#################
 VEHICLE = 'x8'  #Options are 'car', 'boat', 'airplane', or 'x8' (an 8 rotor multicopter)
-CONTROLMODE = -5 #This is dictated by your controller.py script and is vehicle dependent
+CONTROLMODE = 4 #This is dictated by your controller.py script and is vehicle dependent
 #If control mode is negative it means the user can turn autopilot on and off. Otherwise it's on all the time
-#CAR MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
-#BOAT MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY
-#AIRPLANE MODES 5 = WAYPOINT, 4 = HEADING, 3 = ALTITUDE, 2 = VELOCITY, 1 = INNER LOOP, 0 = THROTTLE
-#X8 MODES = 
+#CAR MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY, 0 = MANUAL
+#BOAT MODES 3 = WAYPOINT, 2 = HEADING, 1 = VELOCITY, 0 = MANUAL
+#AIRPLANE MODES 5 = WAYPOINT, 4 = HEADING, 3 = ALTITUDE, 2 = VELOCITY, 1 = INNER LOOP, 0 = MANUAL
+#X8 MODES 4 = WAYPOINT, 3 = VELOCITY, 2 = ATTITUDE, 1 = ALTITUDE, 0 = ACRO 
 TELEMETRYTIME = 100.0 #time between telemetry sends in seconds
 PRINTTIME = 1.0 #time between stdout prints
 LOGTIME = 0.1 #time between logging time in seconds
-MODE = 'SIL' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
+MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 #JSON_FILE_NAME = 'XBOX_config.json'
 JSON_FILE_NAME = 'RCTECH_config.json'
 TIMESTEP = 0.01 #Timestep of modeling if SIMONLY selected
 TFINAL = 100.0 #final time of simulation if SIMONLY selected
 #Initial Conditions for SIMONLY
-ICs = [0,0,0,0,0,0,0,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
 SQUARE = 100.0
-if VEHICLE == 'airplane':
-    ICs = [0,0,-50,0,0,0,15,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
+if VEHICLE == 'x8':
+    ALT = 50
     SQUARE = 200.0
+    u = 0
+if VEHICLE == 'airplane':
+    ALT = 50
+    u = 15
+    SQUARE = 200.0
+ICs = [0,0,-ALT,0,0,0,u,0,0,0,0,0] #x (m),y (m),z (m),phi (deg),theta (deg),psi (deg),u (m/s),v (m/s),w (m/s),p (deg/s),q (deg/s), r (deg/s)
 LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL
 LONGITUDE_ORIGIN = -88.16 #set origin for SIMONLY / SIL / HIL
 #You can give WAYPOINTS in X/Y coordinates or GPS coordinates
@@ -337,6 +342,7 @@ def run_physics_simulation():
             logger.outdata[28] = baro.ALT
             logger.outdata[29] = baro.TEMP
             #RC Channel #1-5
+            #print(rc.rcin.rcsignals)
             logger.outdata[30] = rc.rcin.rcsignals[0]
             logger.outdata[31] = rc.rcin.rcsignals[1]
             logger.outdata[32] = rc.rcin.rcsignals[2]

@@ -2,13 +2,19 @@ import math
 import numpy as np
 
 
-class Forces:
-
+class FORCES():
     def __init__(self):
         self.NUMMOTORS = 8
         self.RHOSLSI = 1.225
         self.GEARTH = 9.81
         self.PI = math.pi
+
+        #Math and inertia
+        self.mass = 0.735 #!mass  (kg)
+        Ixx = 0.0146 #!Ixx    (kg-m^2)
+        Iyy = 0.0146 #!Iyy    (kg-m^2)
+        Izz = 0.0285 #!Izz     (kg-m^2)
+        self.I = np.asarray([[Ixx,0,0],[0,Iyy,0],[0,0,Izz]])
         
         # Motor arrays
         self.thrust_motors = np.zeros(self.NUMMOTORS)
@@ -38,12 +44,14 @@ class Forces:
         self.length = 1.0  # Used in Dryden model
 
     def compute_thrust_and_torque(self,commands):
+        #print(commands)
         for i in range(self.NUMMOTORS):
             omega = self.spin_slope * (commands[i] + 1)
             thrust = 0.5 * self.RHOSLSI * self.AREA * pow(omega * self.Rrotor, 2.0) * self.ct
             torque = 0.5 * self.RHOSLSI * self.AREA * pow(omega * self.Rrotor, 2.0) * self.Rrotor * self.cq
             self.thrust_motors[i] = thrust
             self.torque_motors[i] = torque
+        #print(self.thrust_motors)
 
     def ForceMoment(self,time,state,commands):
         """Calculates forces and moments for the X8 quadcopter in the body frame."""
@@ -52,6 +60,9 @@ class Forces:
 
         # Compute individual motor thrusts and torques
         self.compute_thrust_and_torque(commands)
+
+        #if time > 20:
+        #    print(time,commands,self.thrust_motors)
 
         # Thrust on the body is simply the total thrust (applied along the negative z-axis in body frame)
         thrust = np.sum(self.thrust_motors)
@@ -93,3 +104,5 @@ class Forces:
         # Set total roll and pitch moments
         Moment[0] = roll_torque_top + roll_torque_bottom
         Moment[1] = pitch_torque_top + pitch_torque_bottom
+
+        return Force,Moment

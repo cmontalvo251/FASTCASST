@@ -166,7 +166,8 @@ class CONTROLLER():
         # Calculate initial bearing in radians and convert to degrees
         headingToTarget = math.atan2(y, x)*180/np.pi
         #And delta to target
-        dheading = abs(self.delpsi(rpy[2] * self.PI / 180.0, headingToTarget * self.PI / 180.0) * 180.0 / self.PI)
+        yaw = rpy[2] * self.PI / 180.0
+        dheading = abs(self.delpsi(yaw, headingToTarget * self.PI / 180.0) * 180.0 / self.PI)
 
         ##COMPUTE DISTANCE TO TARGET
         NM2FT  = 6076.115485560000
@@ -174,9 +175,12 @@ class CONTROLLER():
         GPSVAL = 60.0 * NM2FT * FT2M
         distanceToTarget = math.sqrt(DLAT**2 + DLON**2)*GPSVAL
         #COMPUTE DISTANCE DOT
-        if self.distance_prev != distanceToTarget:
+        distanceX = DLAT*GPSVAL
+        distanceY = DLON*GPSVAL
+        distanceBodyX = distanceX*np.cos(yaw) + distanceY*np.sin(yaw)
+        if self.distance_prev != distanceBodyX:
             if self.distance_prev != -999.0:
-                self.distance_dot = (distanceToTarget - self.distance_prev) / (currentTime - self.prevTime)
+                self.distance_dot = (distanceBodyX - self.distance_prev) / (currentTime - self.prevTime)
             self.distance_prev = distanceToTarget
             self.prevTime = currentTime
 
@@ -197,7 +201,7 @@ class CONTROLLER():
             ##Velocity PID
             kp = 20.0 / 200.0
             kd = 100.0 / 200.0
-            self.velocity_command = kp * distanceToTarget + kd * self.distance_dot
+            self.velocity_command = kp * distanceBodyX + kd * self.distance_dot
             topSpeed = 10.0
             self.velocity_command = min(max(self.velocity_command, 0.0), topSpeed)
             self.yaw_command = headingToTarget #make sure we're still pointing at waypoint

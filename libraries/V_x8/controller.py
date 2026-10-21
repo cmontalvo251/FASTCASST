@@ -228,6 +228,7 @@ class CONTROLLER():
         vy = gps_llh.speed_y
         yaw = rpy[2]*np.pi/180.0
         u = np.cos(yaw)*vx + np.sin(yaw)*vy
+        v = -np.sin(yaw)*vx + np.cos(yaw)*vy
         #u = gps_llh.speed
         #print('CTL: ',u,vx)
         velocityerror = self.velocity_command - u
@@ -235,6 +236,8 @@ class CONTROLLER():
         ki = 0.0  # 8.0 * 0
         self.pitch_command = -kp * velocityerror - ki * self.velocity_int
         self.pitch_command = min(max(self.pitch_command, -20.0), 20.0)
+        self.roll_command = kp * (0 - v)
+        self.roll_command = min(max(self.pitch_command, -5.0), 5.0)
 
         if -20.0 < self.pitch_command < 20.0:
             self.velocity_int += self.elapsedTime * velocityerror

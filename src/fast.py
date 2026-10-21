@@ -268,15 +268,18 @@ def run_physics_simulation():
 
         #Print to Home
         if (RunTime - printTime) > PRINTTIME:
-            str_pwm = [f"{pwm:1.3f}" for pwm in rc.pwm_commands] #convert pwm commands to 3 sig figs
             str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
             str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
-            if ARMED:
-                arm_str = "AUTOPILOT" if control_color == 'Blue' else "ARMED"
+            if MODE == 'SIMONLY':
+                str_xyz = [f"{model.state[i]:1.3f}" for i in range(0,3)]
+                print(f"{RunTime:4.4f}", str_xyz, str_rpy,f"{gps_llh.speed:3.3f}")
             else:
-                arm_str = f"DISARMED({safety_color})"
-            #print(f"{RunTime:4.4f}",f"{elapsedTime:1.4f}",gps_llh.latitude,gps_llh.longitude,gps_llh.altitude)
-            print(f"{RunTime:4.4f}", f"[{arm_str}]", f"{elapsedTime:1.4f}", rc.rcin.rcsignals, str_pwm, str_rpy, str_g, f"{baro.ALT:.3f}", gps_llh.altitude)
+                if ARMED:
+                    arm_str = "AUTOPILOT" if control_color == 'Blue' else "ARMED"
+                else:
+                    arm_str = f"DISARMED({safety_color})"
+                str_pwm = [f"{pwm:1.3f}" for pwm in rc.pwm_commands] #convert pwm commands to 3 sig figs
+                print(f"{RunTime:4.4f}", f"[{arm_str}]", f"{elapsedTime:1.4f}", rc.rcin.rcsignals, str_pwm, str_rpy, str_g, f"{baro.ALT:.3f}", gps_llh.altitude)
             printTime+=PRINTTIME
 
         ##Send Telemetry

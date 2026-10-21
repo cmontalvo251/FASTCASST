@@ -1,4 +1,5 @@
 import math
+import time
 import numpy as np
 
 class CONTROLLER():
@@ -17,6 +18,7 @@ class CONTROLLER():
         self.WAYPOINTSLON = WAYPOINTS[1]
         self.NUMWAYPOINTS = len(self.WAYPOINTSLAT)
         self.WAYINDEX = 0
+        self.PHASE = 0
 
         self.elapsedTime = 0.0
         self.lastTime = 0.0
@@ -87,11 +89,11 @@ class CONTROLLER():
         elif rcin.autopilot > 1500:
             self.color = 'Blue'
             if self.CONTROLMODE >= 4:
-                self.waypoint_loop(gps_llh,currentTime)
+                self.waypoint_loop(rpy,gps_llh,currentTime)
             if self.CONTROLMODE >= 3:
                 if self.velocity_command == -99.0:
                     self.velocity_command = 10.0
-                self.velocity_loop(gps_llh)
+                self.velocity_loop(rpy,gps_llh)
             if self.CONTROLMODE >= 2:
                 ## INNER LOOP
                 if self.roll_command == -99.0:
@@ -102,7 +104,7 @@ class CONTROLLER():
                     self.yaw_command = rpy[2] + rcin.yawrc
                 #self.roll_command = 45
                 #self.pitch_command = 45.
-                self.yaw_command = 45.
+                #self.yaw_command = 45.
                 self.attitude_loop(rpy,g)
             if self.CONTROLMODE >= 1:
                 #ALTITUDE - Z COORD
@@ -142,51 +144,88 @@ class CONTROLLER():
         dpsi = psi2 - psi1
         return math.atan2(math.sin(dpsi), math.cos(dpsi))
 
-    def waypoint_loop(self,gps_llh,currentTime):
+    def waypoint_loop(self,rpy,gps_llh,currentTime):
         """Waypoint navigation calculations."""
+
+        ###EXTRACT RELEVANT PARAMETERS
         LAT = gps_llh.latitude
         LON = gps_llh.longitude
-        DLAT = self.WAYPOINTSLAT[self.WAYINDEX] - LAT
-        DLON = self.WAYPOINTSLON[self.WAYINDEX] - LON
+        LAT_COMMAND = self.WAYPOINTSLAT[self.WAYINDEX]
+        LON_COMMAND = self.WAYPOINTSLON[self.WAYINDEX]
+        DLAT = LAT_COMMAND - LAT
+        DLON = LON_COMMAND - LON
+
+        #COMPUTE HEADING TO TARGET
+        #HEADING ANGLE COMPUTATION FROM GEMINI
+        phi2 = math.radians(LAT_COMMAND)
+        phi1 = math.radians(LAT)
+        delta_lambda = math.radians(DLON)
+        # Formula components
+        y = math.sin(delta_lambda) * math.cos(phi2)
+        x = math.cos(phi1) * math.sin(phi2) - math.sin(phi1) * math.cos(phi2) * math.cos(delta_lambda)
+        # Calculate initial bearing in radians and convert to degrees
+        headingToTarget = math.atan2(y, x)*180/np.pi
+        #And delta to target
+        dheading = abs(self.delpsi(rpy[2] * self.PI / 180.0, headingToTarget * self.PI / 180.0) * 180.0 / self.PI)
+
+        ##COMPUTE DISTANCE TO TARGET
         NM2FT  = 6076.115485560000
         FT2M   = 0.3048
         GPSVAL = 60.0 * NM2FT * FT2M
-        distance = math.sqrt(DLAT**2 + DLON**2)*GPSVAL
-
-        #Compute Distance_Dot
-        if self.distance_prev != distance:
+        distanceToTarget = math.sqrt(DLAT**2 + DLON**2)*GPSVAL
+        #COMPUTE DISTANCE DOT
+        if self.distance_prev != distanceToTarget:
             if self.distance_prev != -999.0:
-                self.distance_dot = (distance - self.distance_prev) / (currentTime - self.prevTime)
-            self.distance_prev = distance
+                self.distance_dot = (distanceToTarget - self.distance_prev) / (currentTime - self.prevTime)
+            self.distance_prev = distanceToTarget
             self.prevTime = currentTime
 
-        #Compute 
-        kp = 20.0 / 200.0
-        kd = 100.0 / 200.0
-        self.velocity_command = kp * distance + kd * self.distance_dot
-        topSpeed = 10.0
-        self.velocity_command = min(max(self.velocity_command, 0.0), topSpeed)
+        #print(currentTime,self.PHASE,self.WAYINDEX,distanceToTarget,dheading)        
 
-        if distance < 10.0:
+        if self.PHASE == 0:
+            ##POINT TO TARGET!!!
+            self.yaw_command = headingToTarget
             self.velocity_command = 0.0
-            self.WAYINDEX += 1
-            if self.WAYINDEX > self.NUMWAYPOINTS - 1:
-                self.WAYINDEX = 0
-        else:
-            #HEADING ANGLE COMPUTATION FROM GEMINI
-            phi2 = math.radians(self.WAYPOINTSLAT[self.WAYINDEX])
-            phi1 = math.radians(LAT)
-            delta_lambda = math.radians(DLON)
-            # Formula components
-            y = math.sin(delta_lambda) * math.cos(phi2)
-            x = math.cos(phi1) * math.sin(phi2) - math.sin(phi1) * math.cos(phi2) * math.cos(delta_lambda)
-            # Calculate initial bearing in radians and convert to degrees
-            self.yaw_command = math.atan2(y, x)*180/np.pi
-            #self.yaw_command = math.atan2(DLON, DLAT) * 180.0 / self.PI
+            #If we're not moving and pointing towards target proceed to phase 1
+            if dheading < 0.1 and abs(gps_llh.speed) < 0.1:
+                self.PHASE = 1
+                #print('Moving to Phase 1')
+                #time.sleep(1.0)
+            return
+        if self.PHASE == 1:
+            ##INCREASE SPEED TOWARDS TARGET!!!
+            ##Velocity PID
+            kp = 20.0 / 200.0
+            kd = 100.0 / 200.0
+            self.velocity_command = kp * distanceToTarget + kd * self.distance_dot
+            topSpeed = 10.0
+            self.velocity_command = min(max(self.velocity_command, 0.0), topSpeed)
+            self.yaw_command = headingToTarget #make sure we're still pointing at waypoint
+            #if we've arrived at the target move to phase 2
+            if abs(distanceToTarget) < 20:
+                self.PHASE = 2
+            return
+        if self.PHASE == 2:
+            ###STOP AND REMAIN POINTED IN THE SAME DIRECTION
+            self.velocity_command = 0.0
+            #self.yaw_command remains unchanged from previous PHASE
+            #Once we have stopped moving we can proceed to the next waypoint
+            #and PHASE 0
+            if abs(gps_llh.speed) < 0.1:
+                self.WAYINDEX+=1
+                if self.WAYINDEX > self.NUMWAYPOINTS - 1:
+                    self.WAYINDEX = 0
+                self.PHASE = 0
+            return
 
-    def velocity_loop(self,gps_llh):
+    def velocity_loop(self,rpy,gps_llh):
         """Velocity PI control loop."""
-        u = gps_llh.speed
+        vx = gps_llh.speed_x
+        vy = gps_llh.speed_y
+        yaw = rpy[2]*np.pi/180.0
+        u = np.cos(yaw)*vx + np.sin(yaw)*vy
+        #u = gps_llh.speed
+        #print('CTL: ',u,vx)
         velocityerror = self.velocity_command - u
         kp = 1.0
         ki = 0.0  # 8.0 * 0

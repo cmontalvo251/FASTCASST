@@ -26,6 +26,8 @@ class GPS():
         self.altitude       = -99
         self.heading        = -999
         self.speed          = -99
+        self.speed_x        = -99
+        self.speed_y        = -99
         self.fix_quality    = 0
         self.num_satellites = 0
         self.has_fix        = False
@@ -171,11 +173,13 @@ class GPS():
         if VEHICLE == 'satellite':
             #Convert to lat/lon/alt using polar coordinates
             self.latitude,self.longitude,self.altitude = self.convertXY2LATLONSPHERICAL(state[0],state[1],state[2])
-            self.speed = np.sqrt(u**2 + v**2 + w**2)
+            #Speed is updated in the compute_heading_velocity routine
+            #self.speed = np.sqrt(u**2 + v**2 + w**2)
         else:
             #convert to lat/lon/alt using flat earth approx
             self.latitude,self.longitude,self.altitude = self.convertXYZ2LATLON(state[0],state[1],state[2])
-            self.speed = np.sqrt(u**2 + v**2)
+            #Speed is updated in the compute_heading_velocity routine
+            #self.speed = np.sqrt(u**2 + v**2)
         return
     
     def compute_heading_velocity(self):
@@ -211,14 +215,31 @@ class GPS():
             #print('lat:',self.latitude,'lon:',self.longitude)
             #print('delta lat (m):',dlat*111000,'delta lon (m):',dlon*111000*np.cos(self.latitude*np.pi/180))
             new_speed = np.sqrt((dlat*111000.)**2 + (dlon*111000.*np.cos(self.latitude*np.pi/180))**2)/self.elapsedTime
+            new_speed_x = (dlat*111000.)/self.elapsedTime
+            new_speed_y = (dlon*111000.*np.cos(self.latitude*np.pi/180))/self.elapsedTime
+            #print('GPS: ',new_speed,new_speed_x)
             #print('Time = ',self.GPSTime,'dLAT = ',dlat,'NSpeed = ',new_speed,'dT = ',self.elapsedTime,'dlon = ',dlon)
             if self.speed == -99:
                 self.speed = new_speed
             else:
                 self.speed = new_speed*self.filterConstant + self.speed*(1-self.filterConstant)
+
+            if self.speed_x == -99:
+                self.speed_x = new_speed_x
+            else:
+                self.speed_x = new_speed_x*self.filterConstant + self.speed_x*(1-self.filterConstant)
+
+            if self.speed_y == -99:
+                self.speed_y = new_speed_y
+            else:
+                self.speed_y = new_speed_y*self.filterConstant + self.speed_y*(1-self.filterConstant)
+
+            #print('GPS: ',self.speed,self.speed_x)
         else:
             self.heading = -999
             self.speed = -99
+            self.speed_x = -99
+            self.speed_y = -99
         self.prev_latitude = self.latitude
         self.prev_longitude = self.longitude
 

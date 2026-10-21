@@ -34,14 +34,18 @@ class CONTROLLER():
         self.pitch_command = -99.0
         self.yaw_command = -99.0
         self.altitude_command = -99.0
-        self.velocity_command = -99.0
+        self.velocity_command_X = -99.0
+        self.velocity_command_Y = -99.0
 
         # Integrators & Derivatives
         self.altitude_int = 0.0
-        self.velocity_int = 0.0
+        self.velocity_intX = 0.0
+        self.velocity_intY = 0.0
         self.altitude_prev = -999.0
-        self.distance_dot = 0.0
-        self.distance_prev = -999.0
+        self.distance_dot_X = 0.0
+        self.distance_dot_Y = 0.0
+        self.distance_prev_X = -999.0
+        self.distance_prev_Y = -999.0
         self.prevTime = 0.0
 
         # Motor Commands
@@ -72,7 +76,8 @@ class CONTROLLER():
         self.pitch_command = -99.0
         self.yaw_command = -99.0
         self.altitude_command = -99.0
-        self.velocity_command = -99.0
+        self.velocity_command_X = -99.0
+        self.velocity_command_Y = -99.0
 
         if rcin.autopilot < 1500:
             #Manual control
@@ -91,8 +96,9 @@ class CONTROLLER():
             if self.CONTROLMODE >= 4:
                 self.waypoint_loop(rpy,gps_llh,currentTime)
             if self.CONTROLMODE >= 3:
-                if self.velocity_command == -99.0:
-                    self.velocity_command = 10.0
+                if self.velocity_command_X == -99.0:
+                    self.velocity_command_X = 10.0
+                    self.velocity_command_Y = 0.0
                 self.velocity_loop(rpy,gps_llh)
             if self.CONTROLMODE >= 2:
                 ## INNER LOOP
@@ -178,10 +184,14 @@ class CONTROLLER():
         distanceX = DLAT*GPSVAL
         distanceY = DLON*GPSVAL
         distanceBodyX = distanceX*np.cos(yaw) + distanceY*np.sin(yaw)
-        if self.distance_prev != distanceBodyX:
-            if self.distance_prev != -999.0:
-                self.distance_dot = (distanceBodyX - self.distance_prev) / (currentTime - self.prevTime)
-            self.distance_prev = distanceToTarget
+        distanceBodyY = -distanceX*np.sin(yaw) + distanceY*np.cos(yaw)
+        if self.distance_prev_X != distanceBodyX:
+            if self.distance_prev_X != -999.0:
+                self.distance_dot_X = (distanceBodyX - self.distance_prev_X) / (currentTime - self.prevTime)
+            self.distance_prev_X = distanceBodyX
+            if self.distance_prev_Y != -999.0:
+                self.distance_dot_Y = (distanceBodyY - self.distance_prev_Y) / (currentTime - self.prevTime)
+            self.distance_prev_Y = distanceBodyY
             self.prevTime = currentTime
 
         #print(currentTime,self.PHASE,self.WAYINDEX,distanceToTarget,dheading)        
@@ -189,7 +199,8 @@ class CONTROLLER():
         if self.PHASE == 0:
             ##POINT TO TARGET!!!
             self.yaw_command = headingToTarget
-            self.velocity_command = 0.0
+            self.velocity_command_X = 0.0
+            self.velocity_command_Y = 0.0
             #If we're not moving and pointing towards target proceed to phase 1
             if dheading < 0.1 and abs(gps_llh.speed) < 0.1:
                 self.PHASE = 1
@@ -201,17 +212,22 @@ class CONTROLLER():
             ##Velocity PID
             kp = 20.0 / 200.0
             kd = 100.0 / 200.0
-            self.velocity_command = kp * distanceBodyX + kd * self.distance_dot
+            self.velocity_command_X = kp * distanceBodyX + kd * self.distance_dot_X
+            self.velocity_command_Y = kp * distanceBodyY + kd * self.distance_dot_Y
             topSpeed = 10.0
-            self.velocity_command = min(max(self.velocity_command, 0.0), topSpeed)
+            self.velocity_command_X = min(max(self.velocity_command_X, 0.0), topSpeed)
+            self.velocity_command_Y = min(max(self.velocity_command_Y, 0.0), topSpeed)
             self.yaw_command = headingToTarget #make sure we're still pointing at waypoint
             #if we've arrived at the target move to phase 2
+            #print(self.yaw_command,distanceBodyX,distanceBodyY,self.velocity_command_X,self.velocity_command_Y)
+            #time.sleep(1.0)
             if abs(distanceToTarget) < 20:
                 self.PHASE = 2
             return
         if self.PHASE == 2:
             ###STOP AND REMAIN POINTED IN THE SAME DIRECTION
-            self.velocity_command = 0.0
+            self.velocity_command_X = 0.0
+            self.velocity_command_Y = 0.0
             #self.yaw_command remains unchanged from previous PHASE
             #Once we have stopped moving we can proceed to the next waypoint
             #and PHASE 0
@@ -231,19 +247,26 @@ class CONTROLLER():
         v = -np.sin(yaw)*vx + np.cos(yaw)*vy
         #u = gps_llh.speed
         #print('CTL: ',u,vx)
-        velocityerror = self.velocity_command - u
+        velocityerrorX = self.velocity_command_X - u
+        velocityerrorY = self.velocity_command_Y - v
         kp = 1.0
         ki = 0.0  # 8.0 * 0
-        self.pitch_command = -kp * velocityerror - ki * self.velocity_int
+        self.pitch_command = -kp * velocityerrorX - ki * self.velocity_intX
         self.pitch_command = min(max(self.pitch_command, -20.0), 20.0)
-        self.roll_command = kp * (0 - v)
-        self.roll_command = min(max(self.pitch_command, -5.0), 5.0)
+        self.roll_command = kp * velocityerrorY + ki * self.velocity_intY
+        self.roll_command = min(max(self.roll_command, -20.0), 20.0)
 
         if -20.0 < self.pitch_command < 20.0:
-            self.velocity_int += self.elapsedTime * velocityerror
+            self.velocity_intX += self.elapsedTime * velocityerrorX
+        if -20.0 < self.roll_command < 20.0:
+            self.velocity_intY += self.elapsedTime * velocityerrorY
 
     def attitude_loop(self,rpy,g):
         """Inner attitude stabilization loop."""
+
+        #self.pitch_command = 10.0
+        #self.roll_command = 10.0
+
         roll = rpy[0]
         pitch = rpy[1]
         yaw = rpy[2]

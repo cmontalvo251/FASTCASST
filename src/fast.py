@@ -272,7 +272,8 @@ def run_physics_simulation():
             str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
             if MODE == 'SIMONLY':
                 str_xyz = [f"{model.state[i]:1.3f}" for i in range(0,3)]
-                print(f"{RunTime:4.4f}", str_xyz, str_rpy,f"{gps_llh.speed:3.3f}")
+                str_speed = [f"{gps_llh.speed:3.3f}",f"{gps_llh.speed_x:3.3f}",f"{gps_llh.speed_y:3.3f}"]
+                print(f"{RunTime:4.4f}", str_xyz, str_rpy,str_speed)
             else:
                 if ARMED:
                     arm_str = "AUTOPILOT" if control_color == 'Blue' else "ARMED"
@@ -321,12 +322,14 @@ def run_physics_simulation():
                 yaw = compass
             logger.outdata[6] = yaw
             #U(m/s) ,V(m/s) ,W(m/s)
-            if gps_llh.speed == -99:
-                speed = 0.0
+            if gps_llh.speed_x == -99:
+                speed_X = 0.0
+                speed_Y = 0.0
             else:
-                speed = gps_llh.speed
-            logger.outdata[7] = speed 
-            logger.outdata[8] = 0
+                speed_X = gps_llh.speed_x*np.cos(rpy_ahrs[2]) + gps_llh.speed_y*np.sin(rpy_ahrs[2])
+                speed_Y = -gps_llh.speed_x*np.sin(rpy_ahrs[2]) + gps_llh.speed_y*np.cos(rpy_ahrs[2])
+            logger.outdata[7] = speed_X
+            logger.outdata[8] = speed_Y
             logger.outdata[9] = 0
             #P(deg/s) ,Q(deg/s) ,R(deg/s)
             logger.outdata[10] = gdegs[0]

@@ -8,8 +8,10 @@ class MODEL():
     def __init__(self,TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,LATITUDE_ORIGIN,LONGITUDE_ORIGIN):
         self.timestep = TIMESTEP
         print('Running Physics engine for SIMONLY or SIL mode')
-        self.state = np.zeros(13) #13 states
         self.statedot = np.zeros(13)
+        self.state = ICs
+        """
+        self.state = np.zeros(13) #13 states
         self.state[0] = ICs[0] #x (m)
         self.state[1] = ICs[1] #y (m)
         self.state[2] = ICs[2] #z (m)
@@ -25,6 +27,7 @@ class MODEL():
         self.state[10] = ICs[9]*np.pi/180.0 #p (rad/s)
         self.state[11] = ICs[10]*np.pi/180.0 #q (rad/s)
         self.state[12] = ICs[11]*np.pi/180.0 #r (rad/s)
+        """
 
         #Get mass and inertia props
         self.VEHICLE = VEHICLE

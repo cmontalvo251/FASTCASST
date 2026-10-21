@@ -93,14 +93,19 @@ class CONTROLLER():
                     self.velocity_command = 10.0
                 self.velocity_loop(gps_llh)
             if self.CONTROLMODE >= 2:
+                ## INNER LOOP
                 if self.roll_command == -99.0:
                     self.roll_command = rcin.rollrc*50.0
                 if self.pitch_command == -99.0:
                     self.pitch_command = -rcin.pitchrc*50.0
                 if self.yaw_command == -99.0:
                     self.yaw_command = rpy[2] + rcin.yawrc
+                #self.roll_command = 45
+                #self.pitch_command = 45.
+                self.yaw_command = 45.
                 self.attitude_loop(rpy,g)
             if self.CONTROLMODE >= 1:
+                #ALTITUDE - Z COORD
                 if self.altitude_command == -99.0:
                     self.altitude_command = 200.0
                 self.altitude_loop(gps_llh,baro)
@@ -211,7 +216,7 @@ class CONTROLLER():
         dpitch = kp * (pitch - self.pitch_command) + kd * pitch_rate
         dpitch = min(max(dpitch, -0.5), 0.5)
 
-        dheading = self.delpsi(yaw * self.PI / 180.0, self.yaw_command * self.PI / 180.0) * 180.0 / self.PI
+        dheading = -self.delpsi(yaw * self.PI / 180.0, self.yaw_command * self.PI / 180.0) * 180.0 / self.PI
         if dheading > 180.0:
             dheading -= 180.0
             dheading *= -1.0

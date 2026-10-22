@@ -326,8 +326,9 @@ def run_physics_simulation():
                 speed_X = 0.0
                 speed_Y = 0.0
             else:
-                speed_X = gps_llh.speed_x*np.cos(rpy_ahrs[2]) + gps_llh.speed_y*np.sin(rpy_ahrs[2])
-                speed_Y = -gps_llh.speed_x*np.sin(rpy_ahrs[2]) + gps_llh.speed_y*np.cos(rpy_ahrs[2])
+                ang = rpy_ahrs[2]*np.pi/180.0
+                speed_X = gps_llh.speed_x*np.cos(ang) + gps_llh.speed_y*np.sin(ang)
+                speed_Y = -gps_llh.speed_x*np.sin(ang) + gps_llh.speed_y*np.cos(ang)
             logger.outdata[7] = speed_X
             logger.outdata[8] = speed_Y
             logger.outdata[9] = 0

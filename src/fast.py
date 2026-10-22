@@ -18,7 +18,7 @@
 VEHICLE = 'x8'  #Options are 'car', 'boat', 'airplane', or 'x8' (an 8 rotor multicopter)
 #JSON_FILE_NAME = 'XBOX_config.json'
 JSON_FILE_NAME = 'RCTECH_config.json'
-MODE = 'SIMONLY' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
+MODE = 'SIL' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
 LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL
 LONGITUDE_ORIGIN = -88.16 #set origin for SIMONLY / SIL / HIL
 ################################################

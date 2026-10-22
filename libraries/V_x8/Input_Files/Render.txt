@@ -4,10 +4,10 @@
 0				!Default camera (see directions below)
 objects/X8.obj 	!First Object file - No spaces allowed!!
 1.0000  	    !Scale Factor of Object
-1.000000		!Scale Factor of Position
+2.000000		!Scale Factor of Position
 0               !X Offset (m)
 0               !Y offset (m)
-0               !Z offset (m)
+-100               !Z offset (m)
 0               !Roll offset (deg)
 0               !Pitch offset (deg)
 0               !Yaw Offset (deg)

@@ -307,16 +307,24 @@ void GPS::compute_heading_velocity(double current_time) {
       // Physical distance over the Earth's surface
       double distance_meters = REARTH * angular_distance;
       //speed = distance_meters / dt;
+      double dlat = latitude - latitude_prev;
+      double dlon = longitude - longitude_prev;
+      double new_speed_x = (dlat*111000.)/dt;
+      double new_speed_y = (dlon*111000.*cos(latitude*PI/180.))/dt;
       if (speedFLAG == 0) {
         speedFLAG = 1;
         speed = distance_meters/dt;
+        speed_x = new_speed_x;
+        speed_y = new_speed_y;
       } else {
         speed = (distance_meters/dt)*(1-headingFilterConstant) + speed*(headingFilterConstant);
+        speed_x = new_speed_x*(1-headingFilterConstant) + speed_x*(headingFilterConstant);
+        speed_y = new_speed_y*(1-headingFilterConstant) + speed_y*(headingFilterConstant);
       }
     }
-    //Get Vx and Vy
-    vx = speed * cos(heading*M_PI/180.0);
-    vy = speed * sin(heading*M_PI/180.0);
+    //Get Vx and Vy - ARCHAIC CODE. CONSIDER REMOVING
+    //vx = speed * cos(heading*M_PI/180.0);
+    //vy = speed * sin(heading*M_PI/180.0);
   }
   //Reset the lat/lon values
   latitude_prev = latitude;
@@ -337,7 +345,11 @@ void GPS::compute_heading_velocity(double current_time) {
   prev_time = current_time;
 }
 
-void GPS::computeCOG(double current_time) {
+//////////////////////////////////////////////////////////////////
+////////////////////DO NOT USE THE FUNCTIONS BELOW////////////////
+//////////////////////////////////////////////////////////////////
+
+/*void GPS::computeCOG(double current_time) {
   //First convert the current measurement to XY
   ConvertGPS2XY(); //This has been moved to mathp.cpp
 
@@ -389,9 +401,6 @@ void GPS::computeCOG(double current_time) {
   zprev = Z;
   prev_time = current_time;
 }
-
-
-////////////////////DO NOT USE THIS FUNCTION BELOW
 
 void GPS::computeGroundTrack(double current_time) {
   //First convert the current measurement to XY
@@ -532,4 +541,4 @@ void GPS::computeSpeed(double current_time) {
   yprev = Y;
   zprev = Z;
 }
-
+*/

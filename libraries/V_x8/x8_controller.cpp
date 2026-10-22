@@ -313,13 +313,8 @@ void controller::WaypointLoop(MATLAB sense_matrix,double currentTime) {
 }
 
 void controller::VelocityLoop(MATLAB sense_matrix) {
-  double speed = sense_matrix.get(7,1);
-  double gps_heading = sense_matrix.get(19,1) * PI / 180.0;
-  double vx = speed * cos(gps_heading);
-  double vy = speed * sin(gps_heading);
-  double yaw = sense_matrix.get(20,1) * PI / 180.0;
-  double u = cos(yaw) * vx + sin(yaw) * vy;
-  double v = -sin(yaw) * vx + cos(yaw) * vy;
+  double u = sense_matrix.get(7,1);
+  double v = sense_matrix.get(8,1);
 
   double velocityerrorX = velocity_command_X - u;
   double velocityerrorY = velocity_command_Y - v;

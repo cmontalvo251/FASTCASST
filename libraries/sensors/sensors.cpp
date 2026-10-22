@@ -350,8 +350,12 @@ void sensors::populate(double currentTime,double elapsedTime) {
   sense_matrix.set(6,1,compass);
 
   //UVW
-  sense_matrix.set(7,1,satellites.speed);
-  sense_matrix.set(8,1,satellites.sideslip_speed); //Add sideslip
+  //Rotate inertial speeds to body frame
+  double yaw = orientation.yaw*PI/180.0;
+  double u = cos(yaw)*satellites.speed_x + sin(yaw)*satellites.speed_y;
+  double v = -sin(yaw)*satellites.speed_x + cos(yaw)*satellites.speed_y;
+  sense_matrix.set(7,1,u);
+  sense_matrix.set(8,1,v);
   sense_matrix.set(9,1,satellites.vertical_speed);
 
   //PQR

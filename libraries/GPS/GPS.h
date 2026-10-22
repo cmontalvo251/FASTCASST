@@ -64,8 +64,9 @@ class GPS {
   int start_pt = 1;
   MATLAB dist_vec;
   MATLAB time_vec;
-  double speed=0,sideslip_speed,vertical_speed,dist=0,speed_raw=0;
-  double vx = 0, vy = 0, vz = 0; //xyz dots
+  double speed=0,speed_x=0,speed_y=0,vertical_speed,dist=0,speed_raw=0;
+  //ARCHAIC VARIABLES CONSIDER DELETING
+  //double vx = 0, vy = 0, vz = 0; //xyz dots
   unsigned long lastTime = 0;
   GPS(); //constructor
   void poll(float);

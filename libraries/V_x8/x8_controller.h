@@ -18,9 +18,12 @@ private:
 	int CONTROLLER_FLAG = -99;
 	double xprev = -999, xint = 0, yprev = -999, yint = 0, uprev = -999, uint = 0, vprev = -999, vint = 0, altitude_prev = -999, zint = 0;
 	double roll_command = -99, pitch_command = -99, yaw_command = -99, velocity_command = -99, altitude_command = 99;
+	double velocity_command_X = -99, velocity_command_Y = -99;
 	double throttle = OUTMIN, aileron = OUTMID, elevator = OUTMID, rudder = OUTMID, autopilot = OUTMIN;
-	double altitude_int = 0,velocity_int=0;
+	double altitude_int = 0, velocity_int = 0, velocity_intX = 0, velocity_intY = 0;
 	double distance_dot = 0, distance_prev = -999, prevTime = 0;
+	double distance_dot_X = 0, distance_dot_Y = 0;
+	double distance_prev_X = -999, distance_prev_Y = -999;
 	void set_defaults();
 	void AttitudeLoop(MATLAB sense_matrix);
 	void AltitudeLoop(MATLAB sense_matrix);
@@ -28,6 +31,7 @@ private:
 	void WaypointLoop(MATLAB sense_matrix,double currentTime);
 	int NUMWAYPOINTS = 0; 
   	int WAYINDEX = 0;
+	int PHASE = 0;
 	int PRINTER = 0;
   	std::vector<double> WAYPOINTS_X;
   	std::vector<double> WAYPOINTS_Y;

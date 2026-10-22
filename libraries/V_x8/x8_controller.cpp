@@ -6,6 +6,20 @@
 /////////////////////////////////////////////////////////////Start Controller Class//////////////////////////////////////////////////////////////
 //controller class constructor - sets system parameters and sets up motors
 controller::controller() {
+  WAYINDEX = 0;
+  PHASE = 0;
+  elapsedTime = 0.0;
+  lastTime = 0.0;
+  altitude_int = 0.0;
+  velocity_int = 0.0;
+  velocity_intX = 0.0;
+  velocity_intY = 0.0;
+  altitude_prev = -999.0;
+  distance_dot_X = 0.0;
+  distance_dot_Y = 0.0;
+  distance_prev_X = -999.0;
+  distance_prev_Y = -999.0;
+  prevTime = 0.0;
 };
 
 //Function to initialize control matrix
@@ -27,6 +41,16 @@ void controller::init(MATLAB in_configuration_matrix) {
       WAYPOINTS_Y[i] = in_configuration_matrix.get(idx++, 1);
     }
   }
+
+  WAYINDEX = 0;
+  PHASE = 0;
+  velocity_intX = 0.0;
+  velocity_intY = 0.0;
+  distance_prev_X = -999.0;
+  distance_prev_Y = -999.0;
+  distance_dot_X = 0.0;
+  distance_dot_Y = 0.0;
+  prevTime = 0.0;
 
   printf("Controller Setup \n");
 }
@@ -95,6 +119,8 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   yaw_command = -99;
   altitude_command = -99;
   velocity_command = -99;
+  velocity_command_X = -99;
+  velocity_command_Y = -99;
 
   //Then you can run any control loop you want.
   switch (icontrol) { 
@@ -103,8 +129,13 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
       WaypointLoop(sense_matrix,currentTime);
     case 3:
       //Run the velocity loop
-      if (velocity_command == -99) {
-        velocity_command = 15; //m/s
+      if (velocity_command_X == -99) {
+        if (velocity_command != -99) {
+          velocity_command_X = velocity_command;
+        } else {
+          velocity_command_X = 10.0; //m/s
+        }
+        velocity_command_Y = 0.0;
       }
       VelocityLoop(sense_matrix);
     case 2:
@@ -166,57 +197,146 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
 }
 
 void controller::WaypointLoop(MATLAB sense_matrix,double currentTime) {
+  if (NUMWAYPOINTS == 0 || WAYPOINTS_X.empty() || WAYPOINTS_Y.empty()) {
+    return;
+  }
+
+  // Extract relevant parameters
+  double LAT = sense_matrix.get(16,1);
+  double LON = sense_matrix.get(17,1);
   double X = sense_matrix.get(1,1);
   double Y = sense_matrix.get(2,1);
-  double DY = WAYPOINTS_Y[WAYINDEX]-Y;
-  double DX = WAYPOINTS_X[WAYINDEX]-X;
-  double distance = sqrt(DY*DY + DX*DX);
-  if (distance_prev != distance) {
-    if (distance_prev != -999) {
-      distance_dot = (distance - distance_prev) / (currentTime - prevTime);
+  double speed = sense_matrix.get(7,1);
+  double yaw = sense_matrix.get(20,1) * PI / 180.0;
+
+  double LAT_COMMAND, LON_COMMAND, DLAT, DLON;
+
+  // Determine whether WAYPOINTS are in local Cartesian meters (X, Y) or GPS degrees (LAT, LON)
+  if (fabs(WAYPOINTS_X[WAYINDEX]) > 90.0 || (fabs(LAT) > 1.0 && fabs(WAYPOINTS_X[WAYINDEX] - LAT) > 5.0)) {
+    // Local meters (X, Y)
+    double distanceX_raw = WAYPOINTS_X[WAYINDEX] - X;
+    double distanceY_raw = WAYPOINTS_Y[WAYINDEX] - Y;
+    DLAT = distanceX_raw / GPSVAL;
+    DLON = distanceY_raw / GPSVAL;
+    LAT_COMMAND = LAT + DLAT;
+    LON_COMMAND = LON + DLON;
+  } else {
+    // GPS coordinates (LAT, LON)
+    LAT_COMMAND = WAYPOINTS_X[WAYINDEX];
+    LON_COMMAND = WAYPOINTS_Y[WAYINDEX];
+    DLAT = LAT_COMMAND - LAT;
+    DLON = LON_COMMAND - LON;
+  }
+
+  // COMPUTE HEADING TO TARGET
+  // HEADING ANGLE COMPUTATION FROM GEMINI
+  double phi2 = LAT_COMMAND * PI / 180.0;
+  double phi1 = LAT * PI / 180.0;
+  double delta_lambda = DLON * PI / 180.0;
+  // Formula components
+  double y = sin(delta_lambda) * cos(phi2);
+  double x = cos(phi1) * sin(phi2) - sin(phi1) * cos(phi2) * cos(delta_lambda);
+  // Calculate initial bearing in radians and convert to degrees
+  double headingToTarget = atan2(y, x) * 180.0 / PI;
+  // And delta to target
+  double dheading = fabs(delpsi(yaw, headingToTarget * PI / 180.0) * 180.0 / PI);
+
+  // COMPUTE DISTANCE TO TARGET
+  double distanceToTarget = sqrt(DLAT * DLAT + DLON * DLON) * GPSVAL;
+
+  // COMPUTE DISTANCE DOT
+  double distanceX = DLAT * GPSVAL;
+  double distanceY = DLON * GPSVAL;
+  double distanceBodyX = distanceX * cos(yaw) + distanceY * sin(yaw);
+  double distanceBodyY = -distanceX * sin(yaw) + distanceY * cos(yaw);
+
+  if (distance_prev_X != distanceBodyX) {
+    if (distance_prev_X != -999.0 && (currentTime - prevTime) > 0) {
+      distance_dot_X = (distanceBodyX - distance_prev_X) / (currentTime - prevTime);
     }
-    distance_prev = distance;
+    distance_prev_X = distanceBodyX;
+    if (distance_prev_Y != -999.0 && (currentTime - prevTime) > 0) {
+      distance_dot_Y = (distanceBodyY - distance_prev_Y) / (currentTime - prevTime);
+    }
+    distance_prev_Y = distanceBodyY;
     prevTime = currentTime;
   }
-  double kp = 20/200.0;
-  double kd = 100/200.0;
-  //PAUSE();
-  velocity_command = kp*(distance) + kd*distance_dot;
-  double topSpeed = 10;
-  velocity_command = CONSTRAIN(velocity_command,0,topSpeed);
-  //printf("Distance, Distance Prev, Distance Dot, velocity_command = %lf %lf %lf %lf \n",distance,distance_prev,distance_dot,velocity_command);
 
-  //PAUSE();
-  //if (PRINTER == 4*100000) {
-  //  printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,yaw_command,distance);
-  //  PRINTER = 0;
-  //}
-  //PRINTER+=1;
-  if (distance < 10) {
-    velocity_command = 0;
-    //printf("WAY (X,Y) = (%lf,%lf) GPS (X,Y) = %lf %lf HCOMM = %lf DIST = %lf \n",WAYPOINTS_X[WAYINDEX],WAYPOINTS_Y[WAYINDEX],X,Y,yaw_command,distance);
-    WAYINDEX += 1;
-    if (WAYINDEX > NUMWAYPOINTS-1) {
-      WAYINDEX = 0;
-    }    
-  } else {
-    //Prevent drone from spinning in circles when it's very close to the waypoint by setting the yaw command to zero
-    yaw_command = atan2(DY,DX)*180.0/PI;  
+  //printf("%lf %d %d %lf %lf\n", currentTime, PHASE, WAYINDEX, distanceToTarget, dheading);
+
+  if (PHASE == 0) {
+    // POINT TO TARGET!!!
+    yaw_command = headingToTarget;
+    velocity_command_X = 0.0;
+    velocity_command_Y = 0.0;
+    // If we're not moving and pointing towards target proceed to phase 1
+    if (dheading < 0.1 && fabs(speed) < 0.1) {
+      PHASE = 1;
+      //printf("Moving to Phase 1\n");
+    }
+    return;
+  }
+
+  if (PHASE == 1) {
+    // INCREASE SPEED TOWARDS TARGET!!!
+    // Velocity PID
+    double kp = 20.0 / 200.0;
+    double kd = 100.0 / 200.0;
+    velocity_command_X = kp * distanceBodyX + kd * distance_dot_X;
+    velocity_command_Y = kp * distanceBodyY + kd * distance_dot_Y;
+    double topSpeed = 10.0;
+    velocity_command_X = CONSTRAIN(velocity_command_X, 0.0, topSpeed);
+    velocity_command_Y = CONSTRAIN(velocity_command_Y, 0.0, topSpeed);
+    yaw_command = headingToTarget; // make sure we're still pointing at waypoint
+    // if we've arrived at the target move to phase 2
+    if (fabs(distanceToTarget) < 20.0) {
+      PHASE = 2;
+    }
+    return;
+  }
+
+  if (PHASE == 2) {
+    // STOP AND REMAIN POINTED IN THE SAME DIRECTION
+    velocity_command_X = 0.0;
+    velocity_command_Y = 0.0;
+    // yaw_command remains unchanged from previous PHASE
+    // Once we have stopped moving we can proceed to the next waypoint and PHASE 0
+    if (fabs(speed) < 0.1) {
+      WAYINDEX++;
+      if (WAYINDEX > NUMWAYPOINTS - 1) {
+        WAYINDEX = 0;
+      }
+      PHASE = 0;
+    }
+    return;
   }
 }
 
 void controller::VelocityLoop(MATLAB sense_matrix) {
-  double u = sense_matrix.get(7,1);
-  double velocityerror = velocity_command - u;
-  double kp = 1.0; //120
-  double ki = 8.0*0; //8.0
-  pitch_command = -kp*velocityerror - ki*velocity_int;
-  pitch_command = CONSTRAIN(pitch_command,-20,20);
-  //Integrate but prevent integral windup
-  if ((pitch_command > -20) && (pitch_command < 20)) {
-    velocity_int += elapsedTime*velocityerror;
+  double speed = sense_matrix.get(7,1);
+  double gps_heading = sense_matrix.get(19,1) * PI / 180.0;
+  double vx = speed * cos(gps_heading);
+  double vy = speed * sin(gps_heading);
+  double yaw = sense_matrix.get(20,1) * PI / 180.0;
+  double u = cos(yaw) * vx + sin(yaw) * vy;
+  double v = -sin(yaw) * vx + cos(yaw) * vy;
+
+  double velocityerrorX = velocity_command_X - u;
+  double velocityerrorY = velocity_command_Y - v;
+  double kp = 1.0;
+  double ki = 0.0; // 8.0 * 0
+  pitch_command = -kp * velocityerrorX - ki * velocity_intX;
+  pitch_command = CONSTRAIN(pitch_command, -20.0, 20.0);
+  roll_command = kp * velocityerrorY + ki * velocity_intY;
+  roll_command = CONSTRAIN(roll_command, -20.0, 20.0);
+
+  // Integrate but prevent integral windup
+  if ((pitch_command > -20.0) && (pitch_command < 20.0)) {
+    velocity_intX += elapsedTime * velocityerrorX;
   }
-  //pitch_command *= PI/180;
+  if ((roll_command > -20.0) && (roll_command < 20.0)) {
+    velocity_intY += elapsedTime * velocityerrorY;
+  }
 }
 
 void controller::AttitudeLoop(MATLAB sense_matrix) {

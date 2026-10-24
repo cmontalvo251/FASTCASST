@@ -13,13 +13,13 @@ Finally, the equations of motion in the libraries/modeling block as well as a lo
 
 # Contributing
 
-We're always looking for real people to contribute. If you're solely going to use AI though we don't want you. We've written this software almost entirely from scratch (~80%) and we like it that way. Yes we have VScode and Gemini and Antigravity but we also do a lot of things by hand to make sure the code runs the way we want. If you'd like to contribute 
-
-Create a Github account and create a pull request. This blog will help you on your journey to Github and pull requests. http://fastlabtutorials.blogspot.com/2015/07/github-basics.html
+We're always looking for real people to contribute. If you're solely going to use AI though we don't want you. We've written this software almost entirely from scratch (~80%) and we like it that way. Yes we have VScode and Gemini and Antigravity but we also do a lot of things by hand to make sure the code runs the way we want. If you'd like to contribute create a Github account and create a pull request. This blog will help you on your journey to Github and pull requests. http://fastlabtutorials.blogspot.com/2015/07/github-basics.html
 
 # Hardware Setup
 
-The sections that follow detail installation of the software on a Linux machine, either a Raspberry Pi or Laptop running Ubuntu. The AUTO mode currently is only supported on a Raspberry Pi with a Navio2 Emlid HAT or an Arduino UNO. There are plans to add the Blue Robotics Navigator to the list of compatible hardware but at the moment this is untested and unsupported. https://bluerobotics.com/store/comm-control-power/control/navigator/
+The sections that follow detail installation of the software on a Debian based Linux machine: either a Raspberry Pi or Laptop running Ubuntu. The AUTO mode currently is only supported on a Raspberry Pi with a Navio2 Emlid HAT or an Arduino MEGA. The Navio2 is complete with a GNSS (GPS), UART ports, MPU9250 (IMU1), LSM9DS1 (IMU2) and MS5611 (Barometer). There are plans to add the Blue Robotics Navigator to the list of compatible hardware but at the moment this is untested and unsupported. https://bluerobotics.com/store/comm-control-power/control/navigator/. When using the Arduino MEGA you must add a GPS, IMU, UART transmitter and Barometer to the Arduino or the software won't work. 
+
+The UART port is used for Serial communication to a ground station computer. The ground station receives data from your drone running FASTCASST and plots everything onto a nice GUI. Directions on the ground station are included below. 
 
 Version 10.0 does not currently have support for Windows. MinGW and Cygwin have been tested without success. 
 
@@ -27,13 +27,13 @@ Running Powershell as Administrator and running 'wsl --install' will install a U
 
 Another option is to install VirtualBox on your windows computer and then Install Ubuntu into your virtual machine. This is also untested but more than likely will work.
 
-Another option that would definitely work would be to simply dual boot your machine or just switch to Linux completely - https://randomhacksdrc.blogspot.com/2014/10/thinking-of-making-switch-to-linux.html
+Another option that would definitely work would be to simply dual boot your machine or just switch to Ubuntu Linux completely - https://randomhacksdrc.blogspot.com/2014/10/thinking-of-making-switch-to-linux.html
 
 For the Raspberry Pi it is recommended to get the headless Emlid Raspbian version: https://drive.google.com/file/d/1k8PEGZ0j2ep0suopJIldsSffiGqJmN30/view?usp=sharing
 
-Once your Raspberry Pi, laptop, virtual machine or linux machine is setup you may proceed with the installation below. 
+Once your Raspberry Pi, laptop, virtual machine or Ubuntu machine is setup you may proceed with the installation below. 
 
-Note, on the raspberry pi you may have ardupilot turned on by default. To turn it off type
+Note, on the Raspberry Pi you may have ardupilot turned on by default. To turn it off type
 
 $ sudo systemctl disable arducopter
 
@@ -41,23 +41,39 @@ Of course first check and see what is running by typing
 
 $ sudo emlidtool ardupilot
 
+# Downloading Software
+
+The software is a simple zip download from this repo or a git clone if you have git. On Ubuntu this involves two simple commands
+
+$ sudo apt install git
+$ git clone 'https://www.github.com/cmontalvo251/FASTCASST.git'
+
+Note on Ubuntu, it is always recommended to run an update in the event that your distribution has new software for C++ or Python
+
+$ sudo apt update
+$ sudo apt upgrade
+
 # Python Installation and Run
 
-Note there is also a Python version in the src folder called fast.py. You can run that simply by trying
+The Python version of FASTCASST called FASTPy is in the src folder called fast.py. You can run that simply by running.
 
-$ python3 fast.py ../data/
+$ python3 src/fast.py
 
-It should automatically run in SIL mode. If you don't have a module just run 
+Note that it is assumed that you already have Python3 installed on your computer but the first time invoking that command will undoubtedly result in numerous module errors. In order to install modules on Ubuntu you must have pip3. Install that first with the following command:
 
-$ pip3 install <module name>
+$ sudo apt install python3-pip
 
-Be sure to edit lines 14-16 to select the vehicle you want to use
+Then you can install the following modules
+
+$ pip3 install fdd
+
+fdfdfd
 
 # C++ Installation and Run 
 
 C++ is the original version of the software but a Python version was created to ease the learning curve of FASTCASST. However, Python does not have all the same functionality that C++ does so if you want to run the entire simulation suite you need to run the C++ version. I recommend utilizing a resource to learn C++ like this one: "Learn C++ in 21 days" - http://101.lv/learn/C++/. 
 
-6.) This readme is still a WIP but for now I recommend opening the Makefile and trying to compile and run the software in SIMONLY mode for an airplane
+This readme is still a WIP but for now I recommend opening the Makefile and trying to compile and run the software in SIMONLY mode for an airplane
 
 you will need a few packages before you can compile
 
@@ -98,6 +114,10 @@ which will invoke the python3 interpreter and clean, compile, run and plot the r
 # How to Add a New Controller for SIL
 
 # How to Add a New Vehicle in the libraries/ folder
+
+# Arduino Setup 
+
+The setup for Arduino involves opening the src/fastduino/fastduino.ino in the Arduino IDE and then flashing it onto an Arduino MEGA. Note that the setup guide for this is incomplete as support for the Arduino version is currently not on the high priority list. However, hopefully the comments and structure of the code in fastduino.ino will help you get started if that's something you're interested in doing.
 
 # References
 

@@ -128,7 +128,7 @@ class MODEL():
         self.logger.outdata[27] = self.baro.PRES
         self.logger.outdata[28] = self.baro.ALT
         self.logger.outdata[29] = self.baro.TEMP
-        #RC Channel #1-5
+        #RC Channel #1-6
         self.logger.outdata[30] = self.rcsignals[0]
         self.logger.outdata[31] = self.rcsignals[1]
         self.logger.outdata[32] = self.rcsignals[2]

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define dim 40
+#define dimension 40
 #define tlength 601
 
 class WRF {
@@ -16,16 +16,16 @@ class WRF {
     char* temp=(char*)malloc(8);
     int markX,markY,markZ,markT,parameters[5],mark1[2],mark2[2];
     int bounds,boundflag,pathlength,dx,dy,ztop;
-    double xcoord[dim],ycoord[dim],zcoord[dim],terrain[dim][dim],tcoord[tlength];
-    double U0[dim][dim][dim],Udt[dim][dim][dim],V0[dim][dim][dim],Vdt[dim][dim][dim];
-    double W0[dim][dim][dim],Wdt[dim][dim][dim];
+    double xcoord[dimension],ycoord[dimension],zcoord[dimension],terrain[dimension][dimension],tcoord[tlength];
+    double U0[dimension][dimension][dimension],Udt[dimension][dimension][dimension],V0[dimension][dimension][dimension],Vdt[dimension][dimension][dimension];
+    double W0[dimension][dimension][dimension],Wdt[dimension][dimension][dimension];
     char* U0name=(char*)malloc(256);
     char* Udtname =(char*)malloc(256);
     char* V0name=(char*)malloc(256);
     char* Vdtname =(char*)malloc(256);
     char* W0name=(char*)malloc(256);
     char* Wdtname =(char*)malloc(256);
-    void importwind(double outmat[dim][dim][dim],char* file);
+    void importwind(double outmat[dimension][dimension][dimension],char* file);
     int find(double invec[],int row,double value);
   public:
     WRF();

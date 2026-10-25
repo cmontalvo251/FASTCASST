@@ -64,7 +64,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //First extract the relavent commands from the receiver.
   throttle = rx_array[0];
   aileron = rx_array[1];
-  autopilot = rx_array[4];
+  autopilot = rx_array[5];
   int icontrol = 0;
 
   //Check for user controlled

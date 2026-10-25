@@ -362,7 +362,7 @@ def run_physics_simulation():
             logger.outdata[27] = baro.PRES
             logger.outdata[28] = baro.ALT
             logger.outdata[29] = baro.TEMP
-            #RC Channel #1-5
+            #RC Channel #1-6
             #print(rc.rcin.rcsignals)
             logger.outdata[30] = rc.rcin.rcsignals[0]
             logger.outdata[31] = rc.rcin.rcsignals[1]

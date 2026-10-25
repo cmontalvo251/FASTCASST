@@ -315,6 +315,7 @@ void DrawGLScene()
 {
   int ii,jj;
   double cg[3],ptp[3];
+  int rcmode;
   if (glhandle_g.initial == 0)
     {
       glhandle_g.initial = glutGet(GLUT_ELAPSED_TIME);
@@ -344,6 +345,7 @@ void DrawGLScene()
   	  cg[jj-1] = glhandle_g.state.cg.get(jj,ii);
 	  ptp[jj-1] = glhandle_g.state.ptp.get(jj,ii);
   	}
+      rcmode = glhandle_g.state.rcmode;
       statemutex.unlock();
 
       glTranslatef(cg[0],cg[1],cg[2]);
@@ -396,6 +398,18 @@ void DrawGLScene()
     glhandle_g.state.ptp.disp();
   }
   #endif
+
+  //Change the color of the scene depening on the mode
+  if (rcmode == 0) {
+    glColor3f(1.0, 0.25, 0.25);  //# Red
+  }
+  if (rcmode == 1) {
+    glColor3f(1.0, 0.85, 0.0);  //# Yellow
+  }
+  if (rcmode == 2) {
+    glColor3f(1.0, 1.0, 1.0); // White
+  }
+  
   glutSwapBuffers();
   ///////////////////////////////////////////////////////////
 }
@@ -444,13 +458,14 @@ void StateHistory::setTime(double simtime)
   timemutex.unlock();
 }
 
-void StateHistory::UpdateRender(double time,MATLAB cgin,MATLAB ptpin,int objectnumber,double keyboardOut[]) {
+void StateHistory::UpdateRender(double time,MATLAB cgin,MATLAB ptpin,int objectnumber,double keyboardOut[],int rcmodeIN) {
 
   //?Set Time
   setTime(time);
   
   //Set Position of All Objects  
   statemutex.lock();
+  rcmode = rcmodeIN;
   for (int idx = 1;idx<=3;idx++) {
     cg.set(idx,objectnumber,positionscale.get(objectnumber,1)*cgin.get(idx,1)+cgoffset.get(idx,objectnumber));
     ptp.set(idx,objectnumber,ptpin.get(idx,1)+ptpoffset.get(idx,objectnumber));

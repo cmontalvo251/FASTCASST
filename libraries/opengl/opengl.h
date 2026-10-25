@@ -116,11 +116,12 @@ public:
   MATLAB positionscale;
   MATLAB ptpoffset,cgoffset;
   MATLAB cg,ptp;
+  int rcmode = 0;
   double control[NUMCONTROLS]; //u,j h,k t,g and m,n
   void Initialize(int);
   void setTime(double);
   void getState(MATLAB,MATLAB);
-  void UpdateRender(double,MATLAB,MATLAB,int,double[]);
+  void UpdateRender(double,MATLAB,MATLAB,int,double[],int);
   double getTime();
  private:
   int numobjects_;

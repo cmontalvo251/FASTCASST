@@ -88,7 +88,7 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   headernames[28] = "Temperature (C)";
 
   //Initialize Logger
-  logger.init("logs/",NUMVARS+5+NUMACTUATORS); //Not minus 1 because you add time and the +5 is RC channels
+  logger.init("logs/",NUMVARS+6+NUMACTUATORS); //Not minus 1 because you add time and the +6 is RC channels
   //Set and log headers
 
   //TIME
@@ -96,12 +96,12 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
   //VARS
   logger.appendheaders(headernames,NUMVARS-1); //-1 because of quaternions
   //RC IN SIGNALS
-  rcnames = (char**)malloc((5)*sizeof(char*));
-  for (int i = 1;i<=5;i++) {
+  rcnames = (char**)malloc((6)*sizeof(char*));
+  for (int i = 1;i<=6;i++) {
     rcnames[i-1] = (char*)malloc((19)*sizeof(char));
     sprintf(rcnames[i-1],"Model RC Channel #%d",i);
   }
-  logger.appendheaders(rcnames,5);
+  logger.appendheaders(rcnames,6);
   //RC OUT SIGNALS
   logger.appendheaders(pwmnames,NUMACTUATORS);
   logger.printheaders();
@@ -286,7 +286,10 @@ void modeling::SetGPS() {
 }
 
 ///Loop
-void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix) {
+void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix,int rcmodeIN) {
+
+  //Grab the rcmode
+  rcmode = rcmodeIN;
 
   //Check to see if we're integrating too fast
   if (currentTime < integrationTime) {
@@ -371,8 +374,8 @@ void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix) {
     //output_matrix.disp();
     logger.print(output_matrix);
     logger.writecomma();
-    //Log the RC channel # 5
-    logger.printarray(rx_array,5);
+    //Log the RC channel # 6
+    logger.printarray(rx_array,6);
     logger.writecomma();
     //Then output the pwm array
     //logger.printarrayln(pwm_out_array,NUMACTUATORS);
@@ -388,7 +391,7 @@ void modeling::loop(double currentTime,int rx_array[],MATLAB control_matrix) {
   #ifdef OPENGL_H
   GLmutex.lock();
   if (glhandle_g.ready == 1) {
-    glhandle_g.state.UpdateRender(currentTime,cg,ptp,1,keyboardVars);
+    glhandle_g.state.UpdateRender(currentTime,cg,ptp,1,keyboardVars,rcmode);
     //printf("Key = ");
     //for (int i = 0;i<4;i++) {
     //printf("%lf ",keyboardVars[i]);

@@ -95,6 +95,7 @@ static volatile int rx_array_static[RECV_N_CHANNEL];
 
 class RCInput {
 public:
+  void ALWAYSARMED();
   void initialize();
   void readRCstate();
   void printRCstate(int);
@@ -113,6 +114,8 @@ public:
   int joy_fd=-1,*joycomm=NULL,*rx_array=NULL,*axis_id=NULL,num_of_axis=0,num_of_buttons=0,x;
   char *button = NULL,name_of_joystick[NAME_LENGTH];
   double keyboard[8]; //do max 8 just in case
+  bool ARMED=false;
+  int rcmode = 0; //0 = unarmed, 1 = armed but throttle not down, 2 = armed and throttle down
   #ifdef JOYSTICK
   struct js_event js;
   struct ControlMap {

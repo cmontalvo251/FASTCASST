@@ -79,6 +79,7 @@ class modeling {
   MATLAB model_matrix,integration_matrix,model_sense_matrix;
   //Status
   int ok=1;
+  int rcmode = 0;
   //Timing
   double TFINAL=1,TIMESTEP=0.1;
   //constructor
@@ -86,7 +87,7 @@ class modeling {
   //initialization routine
   void init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB in_configuration_matrix,int argc,char** argv);
   //Loop
-  void loop(double currentTime,int rx_array[],MATLAB control_matrix);
+  void loop(double currentTime,int rx_array[],MATLAB control_matrix,int rcmodeIN);
 };
 
 //Render Loop function

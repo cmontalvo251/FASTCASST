@@ -8,7 +8,7 @@
 1	 	 !PTHTYPE (0=off,1=MS,2=MPL,3=BME)
 0        !IMUTYPE (0=MPU,1=LSM,2=BNO055)
 0        !IMU Filter Constant //0 for no filtering and 1.0 for overfiltering
-5 	     !Control System (<0 is autopilot controlled by PIC, >0 always on,0=manual,1=inner,2=velocity,3=altitude,4=heading,5=waypoint)
+-5 	     !Control System (<0 is autopilot controlled by PIC, >0 always on,0=manual,1=inner,2=velocity,3=altitude,4=heading,5=waypoint)
 4        !Number of Waypoints
 500.0    !Waypoint 1 X (m)
 0.0      !Waypoint 1 Y (m)

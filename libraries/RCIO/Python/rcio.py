@@ -304,16 +304,16 @@ class RCInput():
         if not self.ARMED:
             #system is not armed. Let's try and arm it
             #Independent Safety precautions to arm system
-            if (self.armswitch > 1500) and (self.throttle < 1100):
+            if (self.armswitch > self.STICK_MID) and (self.throttle < self.STICK_MIN*1.1):
                 self.ARMED = True
                 self.color = 'Green' #for go
             #Let's say armswitch is is >1500 but throttle is not down
-            if (self.armswitch > 1500) and (self.throttle > 1100):
+            if (self.armswitch > self.STICK_MID) and (self.throttle > self.STICK_MIN*1.1):
                 #we aren't going to arm the system but....
                 #we are going to tell the user that you need to have throttle down
                 self.color = 'Yellow'
         #No matter what though
-        if self.armswitch < 1500:
+        if self.armswitch < self.STICK_MID:
             self.ARMED = False
             self.color = 'Red' #for no go
         return self.ARMED,self.color

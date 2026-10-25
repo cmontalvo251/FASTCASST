@@ -1,0 +1,42 @@
+{
+    "device_name": "Logitech Gamepad F310",
+    "deadzone": 0.05,
+    "mapping": {
+        "throttle": {
+            "axis": 1,
+            "invert": true,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "roll": {
+            "axis": 3,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "pitch": {
+            "axis": 4,
+            "invert": true,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "yaw": {
+            "axis": 0,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "arming_switch": {
+            "axis": 2,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
+        },
+        "autopilot_switch": {
+            "axis": 5,
+            "invert": false,
+            "min": -1.0,
+            "max": 1.0
+        }
+    }
+}

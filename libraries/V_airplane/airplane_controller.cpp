@@ -59,7 +59,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   //printf("Ail RX Ch = %lf ",aileron);
   elevator = rx_array[2];
   rudder = rx_array[3];
-  autopilot = rx_array[4];
+  autopilot = rx_array[5];
   int icontrol = 0;
 
   //Check for user controlled

@@ -84,9 +84,9 @@ WRF::WRF()
       printf("%s \n",inHeight);
       exit(1);
     }
-  for (ii = 0;ii<dim;ii++)
+  for (ii = 0;ii<dimension;ii++)
     {
-      for (jj = 0;jj<dim;jj++)
+      for (jj = 0;jj<dimension;jj++)
 	{
 	  fscanf(infile,"%lf ",&terrain[ii][jj]);
 	}
@@ -106,10 +106,10 @@ WRF::WRF()
   /* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
 
   /* %%%%%%%%%%%Create xcoord and ycoord%%%%%%% */
-  for (ii = 0;ii<dim;ii++)
+  for (ii = 0;ii<dimension;ii++)
     {
-      xcoord[ii] = -(double)dx*(dim-1)/2 + ii*dx;
-      ycoord[ii] = -(double)dy*(dim-1)/2 + ii*dy;
+      xcoord[ii] = -(double)dx*(dimension-1)/2 + ii*dx;
+      ycoord[ii] = -(double)dy*(dimension-1)/2 + ii*dy;
       //printf("%lf \n",xcoord[ii]);
     }
 
@@ -144,11 +144,11 @@ WRF::WRF()
   printf("UVW Initialization Complete \n");
 }
 
-void WRF::importwind(double outmat[dim][dim][dim],char* file)
+void WRF::importwind(double outmat[dimension][dimension][dimension],char* file)
 {
   FILE* fid=NULL;
   int ii,jj,kk,nii,njj;
-  double inmat[dim][dim][dim];
+  double inmat[dimension][dimension][dimension];
   printf("Importing File = %s \n",file);
   fid = fopen(file,"r");
   if (fid == NULL)
@@ -157,11 +157,11 @@ void WRF::importwind(double outmat[dim][dim][dim],char* file)
       printf("%s \n",file);
       exit(1);
     }
-  for(jj=0;jj<dim;jj++)
+  for(jj=0;jj<dimension;jj++)
     {
-      for(ii=0;ii<dim;ii++)
+      for(ii=0;ii<dimension;ii++)
 	{
-	  for(kk=0;kk<dim;kk++)
+	  for(kk=0;kk<dimension;kk++)
 	    {
 	      fscanf(fid,"%lf",&inmat[ii][kk][jj]);
 	      outmat[ii][kk][jj] = inmat[ii][kk][jj];
@@ -170,14 +170,14 @@ void WRF::importwind(double outmat[dim][dim][dim],char* file)
     }
   fclose(fid);
   /* %U0 = U0(end:-1:1,end:-1:1,:); */
-  /* for(kk=0;kk<dim;kk++) */
+  /* for(kk=0;kk<dimension;kk++) */
   /*   { */
-  /*     for(ii=0;ii<dim;ii++) */
+  /*     for(ii=0;ii<dimension;ii++) */
   /* 	{ */
-  /* 	  for(jj=0;jj<dim;jj++) */
+  /* 	  for(jj=0;jj<dimension;jj++) */
   /* 	    { */
-  /* 	      nii = dim-ii-1; */
-  /* 	      njj = dim-jj-1; */
+  /* 	      nii = dimension-ii-1; */
+  /* 	      njj = dimension-jj-1; */
   /* 	      outmat[ii][jj][kk] = inmat[nii][njj][kk]; */
   /* 	    } */
   /* 	} */
@@ -229,7 +229,7 @@ void WRF::getWRF(double wind[3],double xstar,double ystar,double zstar,double ts
   tinterp = 2;
 
   //%%Check X */
-  if (markX == dim-1)
+  if (markX == dimension-1)
     {
       markX--;
     }
@@ -241,10 +241,10 @@ void WRF::getWRF(double wind[3],double xstar,double ystar,double zstar,double ts
   else
     {
       //%Find markX
-      if (xstar > xcoord[dim-1])
+      if (xstar > xcoord[dimension-1])
 	{
 	  //%use endpt
-	  markX = dim-1;
+	  markX = dimension-1;
 	  stepX = -1;
 	  extrapX = 1;
 	}
@@ -257,8 +257,8 @@ void WRF::getWRF(double wind[3],double xstar,double ystar,double zstar,double ts
 	}
       else
 	{
-	  markX = find(xcoord,dim,xstar);
-	  if (markX == dim-1)
+	  markX = find(xcoord,dimension,xstar);
+	  if (markX == dimension-1)
 	    {
 	      markX--;
 	    }
@@ -273,7 +273,7 @@ void WRF::getWRF(double wind[3],double xstar,double ystar,double zstar,double ts
   //printf("markX = %d \n",markX);
 
   /* %%Check Y */
-  if (markY == dim-1);
+  if (markY == dimension-1);
   {
     markY--;
   }
@@ -285,10 +285,10 @@ void WRF::getWRF(double wind[3],double xstar,double ystar,double zstar,double ts
   else
     {
       //%Find markY */
-      if (ystar > ycoord[dim-1])
+      if (ystar > ycoord[dimension-1])
 	{
 	  //use endpt */
-	  markY = dim-1;
+	  markY = dimension-1;
 	  stepY = -1;
 	  extrapY = 1;
 	}
@@ -300,8 +300,8 @@ void WRF::getWRF(double wind[3],double xstar,double ystar,double zstar,double ts
 	}
       else
 	{
-	  markY = find(ycoord,dim,ystar);
-	  if (markY == dim-1)
+	  markY = find(ycoord,dimension,ystar);
+	  if (markY == dimension-1)
 	    {
 	      markY = markY--;
 	    } 
@@ -323,10 +323,10 @@ void WRF::getWRF(double wind[3],double xstar,double ystar,double zstar,double ts
   else
     {
       //%Find markZ
-      if (zstar > zcoord[dim-1])
+      if (zstar > zcoord[dimension-1])
 	{
 	  //%use endpt */
-	  markZ = dim-1;
+	  markZ = dimension-1;
 	  stepZ = -1;
 	  extrapZ = 1;
 	}
@@ -338,8 +338,8 @@ void WRF::getWRF(double wind[3],double xstar,double ystar,double zstar,double ts
 	}
       else
 	{
-	  markZ = find(zcoord,dim,zstar);
-	  if (markZ == dim-1)
+	  markZ = find(zcoord,dimension,zstar);
+	  if (markZ == dimension-1)
 	    {
 	      markZ--;
 	    }
@@ -366,7 +366,7 @@ void WRF::getWRF(double wind[3],double xstar,double ystar,double zstar,double ts
   else
     {
       //%Find markT */
-      if (tstar > tcoord[dim-1])
+      if (tstar > tcoord[dimension-1])
 	{
 	  //%use endpt
 	  markT = tlength-1;
@@ -380,7 +380,7 @@ void WRF::getWRF(double wind[3],double xstar,double ystar,double zstar,double ts
 	}
       else
 	{
-	  markT = find(tcoord,dim,tstar);
+	  markT = find(tcoord,dimension,tstar);
 	  if (markT == tlength-1)
 	    {
 	      markT--;

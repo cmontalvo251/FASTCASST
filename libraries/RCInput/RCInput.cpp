@@ -66,8 +66,8 @@ void RCInput::initialize() {
       json j = json::parse(f);
       auto mapping = j["mapping"];
 
-      const char* controls[5] = {"throttle", "roll", "pitch", "yaw", "autopilot_switch"};
-      for (int i = 0; i < 5; i++) {
+      const char* controls[6] = {"throttle", "roll", "pitch", "yaw", "arming_switch","autopilot_switch"};
+      for (int i = 0; i < 6; i++) {
         if (mapping.contains(controls[i])) {
           auto ctrl = mapping[controls[i]];
           if (ctrl.contains("axis")) {
@@ -192,12 +192,24 @@ void RCInput::setStickNeutral() {
   rx_array[1] = STICK_MID;
   rx_array[2] = STICK_MID;
   rx_array[3] = STICK_MID;
+  //And then arm switch and autopilot to MIN
+  rx_array[4] = STICK_MIN;
+  rx_array[5] = STICK_MIN;
 }
 
 int RCInput::bit2PWM(int val) {
   ///the values from the joystick are from -32678 to 32768 which is a 16 bit number
   //printf("val = %d \n");
   return (STICK_MAX-STICK_MID)*val/BIT_RANGE + STICK_MID;
+}
+
+void RCInput::ALWAYSARMED() {
+  rx_array[4] = STICK_MAX;
+  rx_array[5] = STICK_MAX;
+  //Put throttle down for the first timestep to arm the system
+  if (rcmode != 2) {
+    rx_array[0] = STICK_MIN;
+  }
 }
 
 void RCInput::readRCstate()
@@ -211,6 +223,8 @@ void RCInput::readRCstate()
       rx_array[idx] = STICK_MIN;
     }
   }
+  //When using the keyboard set the system to ARM
+  ALWAYSARMED();
   //printf("\n");
   //printRCstate(-4);
   #endif
@@ -249,15 +263,44 @@ void RCInput::readRCstate()
     mapjoy2rx();
   } else {
     setStickNeutral();
+    //If we can't read the joystick set autopilot and armed to true
+    ALWAYSARMED();
   }
   #endif
 
   #ifdef SIMONLY
   setStickNeutral();
+  //In simonly mode autopilot and armed are always flipped
+  ALWAYSARMED();
   #endif
 
   //LostCommCheck();
   saturation_block();
+
+  ///Check and see if system is ARMED
+  //rx_array[0] = throttle
+  double throttle = rx_array[0];
+  //rx_array[1] = aileron
+  //rx_array[2] = elevator
+  //rx_array[3] = rudder
+  //rx_array[4] = armswitch
+  double armswitch = rx_array[4];
+  //rx_array[5] = autopilot
+  if (!ARMED) {
+    if ((armswitch > STICK_MID) && (throttle < STICK_MIN*1.1)) {
+      ARMED = true;
+      rcmode = 2;
+    }
+    if ((armswitch > STICK_MID) && (throttle > STICK_MIN*1.1)) {
+      rcmode = 1;
+    }
+  }
+  if (armswitch < STICK_MID) {
+    ARMED = false;
+    rcmode = 0;
+  }
+
+  printRCstate(-6);
 
   //printf("TTTT ");
   //printRCstate(-4);
@@ -287,8 +330,8 @@ void RCInput::mapjoy2rx() {
   //Then based on the specific joystick and json file we'll map the joycomm values to the rx_array
   #ifdef JOYSTICK
   if (has_json_config) {
-    // 0: throttle, 1: roll (aileron), 2: pitch (elevator), 3: yaw (rudder), 4: autopilot
-    for (int i = 0; i < 5; i++) {
+    // 0: throttle, 1: roll (aileron), 2: pitch (elevator), 3: yaw (rudder), 4: arm switch, 5: autopilot
+    for (int i = 0; i < 6; i++) {
       int ax = axis_mappings[i].axis;
       if (ax >= 0 && ax < num_of_axis) {
         int val = joycomm[ax];
@@ -304,7 +347,7 @@ void RCInput::mapjoy2rx() {
 }
 
 void RCInput::printRCstate(int all) {
-  //printf("Axis State = ");
+  printf("Axis State = ");
   int val = num_of_axis;
   if (all < 0) {
     val = -all;
@@ -321,7 +364,7 @@ void RCInput::printRCstate(int all) {
     }
   }
   #endif
-  //printf("\n");
+  printf("\n");
 }
 
 //This is where the interrupts happen on the Arduino

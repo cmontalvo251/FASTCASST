@@ -93,7 +93,7 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   aileron = rx_array[1];
   elevator = rx_array[2];
   rudder = rx_array[3];
-  autopilot = rx_array[4]; //Autopilot - OUTMIN = cutoff, OUTMID = ACRO, OUTMAX = AUTOPILOT
+  autopilot = rx_array[5]; //Autopilot - OUTMIN = cutoff, OUTMID = ACRO, OUTMAX = AUTOPILOT
   int icontrol = 0;
 
   //Debug

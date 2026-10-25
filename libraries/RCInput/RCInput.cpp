@@ -71,10 +71,13 @@ void RCInput::initialize() {
         if (mapping.contains(controls[i])) {
           auto ctrl = mapping[controls[i]];
           if (ctrl.contains("axis")) {
+            //printf("Control = %s ",controls[i]);
             axis_mappings[i].axis = ctrl["axis"].get<int>();
             axis_mappings[i].invert = ctrl.value("invert", false);
             axis_mappings[i].min = ctrl.value("min", -1.0);
             axis_mappings[i].max = ctrl.value("max", 1.0);
+            //printf("Axis = %d \n",axis_mappings[i].axis);
+            //PAUSE();
           }
         }
       }
@@ -300,7 +303,7 @@ void RCInput::readRCstate()
     rcmode = 0;
   }
 
-  printRCstate(-6);
+  //printRCstate(-6);
 
   //printf("TTTT ");
   //printRCstate(-4);
@@ -323,13 +326,17 @@ int RCInput::invert(int val) {
 
 void RCInput::mapjoy2rx() {
   //First we're just going to copy everything over to make sure everything copies over properly
+  //printf("Joy = ");
   for (int i = 0;i<num_of_axis;i++) {
     rx_array[i] = joycomm[i];
+    //printf("%d %d ",i,joycomm[i]);
   }
+  //printf("\n");
 
   //Then based on the specific joystick and json file we'll map the joycomm values to the rx_array
   #ifdef JOYSTICK
   if (has_json_config) {
+    //printf(" RX MAPPED = ");
     // 0: throttle, 1: roll (aileron), 2: pitch (elevator), 3: yaw (rudder), 4: arm switch, 5: autopilot
     for (int i = 0; i < 6; i++) {
       int ax = axis_mappings[i].axis;
@@ -340,7 +347,9 @@ void RCInput::mapjoy2rx() {
         }
         rx_array[i] = val;
       }
+      //printf("%d %d %d ",i,rx_array[i],ax);
     }
+    //printf("\n");
     return;
   }
   #endif

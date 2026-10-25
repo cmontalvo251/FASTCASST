@@ -245,6 +245,7 @@ void loop() {
     //The CONTROLLOOP variable is set in the preamble of this cpp file
     if (CONTROLLOOP) {
       //printf("hw.loop %lf %lf %lf \n",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
+      //This sends the control.control_matrix to the PWM servos
       hw.loop(watch.currentTime,watch.elapsedTime,control.control_matrix);
       /////////////////////////////////////////
       
@@ -260,7 +261,13 @@ void loop() {
         lastControltime = watch.currentTime + model.TIMESTEP; //Run as fast as the timestep
         #endif
       #endif
+      //This sets the control.control_matrix variables
+      //So here we need to check and make sure we are armed
+      if (hw.rc.in.ARMED) {
         control.loop(watch.currentTime,hw.rc.in.rx_array,hw.sense.sense_matrix);
+      } else {
+        control.set_defaults();
+      }
       #ifndef AUTO
       }
       #endif

@@ -124,7 +124,7 @@ public:
     double min = -1.0;
     double max = 1.0;
   };
-  ControlMap axis_mappings[5]; // 0: throttle, 1: roll, 2: pitch, 3: yaw, 4: autopilot_switch
+  ControlMap axis_mappings[6]; // 0: throttle, 1: roll, 2: pitch, 3: yaw, 4: arming_switch, 5: autopilot_switch
   #endif
 private:
   int open_axis(int ch);

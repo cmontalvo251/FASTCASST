@@ -24,7 +24,6 @@ private:
 	double distance_dot = 0, distance_prev = -999, prevTime = 0;
 	double distance_dot_X = 0, distance_dot_Y = 0;
 	double distance_prev_X = -999, distance_prev_Y = -999;
-	void set_defaults();
 	void AttitudeLoop(MATLAB sense_matrix);
 	void AltitudeLoop(MATLAB sense_matrix);
 	void VelocityLoop(MATLAB sense_matrix);
@@ -58,6 +57,7 @@ public:
 	void loop(double currentTime,int rx_array[],MATLAB sense_matrix);
 	void init(MATLAB in_configuration_matrix);
 	void print();
+	void set_defaults();
 	controller();
 };
 

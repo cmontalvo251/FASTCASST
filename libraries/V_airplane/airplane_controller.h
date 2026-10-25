@@ -15,7 +15,6 @@ private:
   int PRINTER = 0;
   double elapsedTime = 0,lastTime=0; //These are used to keep track of time elapsed.
   int CONTROLLER_FLAG = -99;
-  void set_defaults();
   double throttle,aileron,elevator,rudder,autopilot,pitch_command,roll_command;
   double altitude_prev=-999,altitude_command,heading_command = 0;
   double velocity_command,velocityint = 0,headingint = 0;
@@ -34,6 +33,7 @@ public:
   void loop(double currentTime,int rx_array[],MATLAB sense_matrix);
   void init(MATLAB in_configuration_matrix);
   void print();
+  void set_defaults();
   controller(); //constructor
 };
 

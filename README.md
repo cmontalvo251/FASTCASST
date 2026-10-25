@@ -46,11 +46,13 @@ $ sudo emlidtool ardupilot
 The software is a simple zip download from this repo or a git clone if you have git. On Ubuntu this involves two simple commands
 
 $ sudo apt install git
+
 $ git clone 'https://www.github.com/cmontalvo251/FASTCASST.git'
 
 Note on Ubuntu, it is always recommended to run an update in the event that your distribution has new software for C++ or Python
 
 $ sudo apt update
+
 $ sudo apt upgrade
 
 Also, for the plotting and ground station routines, Python is required. As such, you must ensure you have a version of Python3 installed. You can check your version of Python using the command below.
@@ -74,8 +76,11 @@ $ python3 src/fast.py
 The first time invoking that command will undoubtedly result in numerous module errors. The following modules required are the following:
 
 $ pip3 install numpy
+
 $ pip3 install smbus
+
 $ pip3 install spidev
+
 $ pip3 install pyserial
 
 After installing those modules the simulation will run with some standard out prints and 2 files will be created. Skip below for details on the data files and how to plot them. In the preamble of src/fast.py there are a few variables that you can change that's different from FAST++ and the input deck as explained above. The variables you can change are VEHICLE, JSON_FILE_NAME, MODE, LATITUDE_ORIGIN and LONGITUDE_ORIGIN.
@@ -91,11 +96,13 @@ C++ is the original version of the software but a Python version was created to 
 It is assumed that you have 'make' and 'g++' already installed on your computer. You can check what versions you have by running 
 
 $ make --version
+
 $ g++ --version 
 
 and install them if you don't have them by running
 
 $ sudo apt install make
+
 $ sudo apt install g++
 
 You also need the boost libraries to run multiple threads in C++
@@ -205,7 +212,9 @@ Again type the letter 'q' to quit. Again, you can use the mouse to zoom and rota
 Adding a new vehicle is fairly simple but there are some fundamental steps. 
 
 1.) First you must create an Input_Files folder with the 3 standard files: Render.txt, Simulation.txt and Config.txt
+
 2.) You'll notice the Render.txt file points to objects defined in the objects/ folder. These are obj, mtl and bmp files. I typically make objs in Blender and export them as an obj and then create the 24 bit 256x256 texture files in GIMP but you can use anything you like provided the format is the same as the other obj files. Simply open up the obj and mtl files to see the standard format for those files.
+
 3.) Create the controller and force files. For Python you need to create a controller.py and a force.py file. For the force.py routine is called to get the mass and inertia as well as the forces and moments. The controller.py file is used to get the controller commands depending on the sensor readings. My recommendation is to read a different vehicle to see the standard routines that are called and the input parameters for those functions. For C++ the files are *_forces.cpp, *_forces.h, *_controller.cpp, and *_controller.h where the *_forces.cpp file is used to compute the forces and moments of the vehicle while *_controller.cpp is used to compute the control commands. The * here is used to denote whatever vehicle you are creating while the header files (.h) are simply the accompanying C++ header files for standard C++ classes. 
 
 # Arduino Setup 

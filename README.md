@@ -185,9 +185,19 @@ as well as the freeglut packages from synaptic
 
 $ sudo apt install freeglut3 freeglut3-dev
 
+If you'd like to pilot the vehicle manually you can edit the preamble of src/fast.py and change the JSON_FILE_NAME to a USB controller that you have connected to your computer. You may have to add a new .json file and directions for that are further below in this README. Note that in order to fly manually you must change the CONTROLMODE variable in libraries/V_*/Config.txt. For example, if flying the airpane you can set CONTROLMODE to -5. In this case you can fly completely manually but if the aircraft is about to crash you can switch on autopilot and it will begin traveling to predetermined waypoints. Note also when flying that in order to arm the vehicle you must have the arm switch set and the throttle low otherwise the vehicle won't operate. 
+
 # Running in SIL Mode (FAST++)
 
-To run SIL mode in C++ you must clean the entire project 
+To run SIL mode in C++ you must have a few extra packages. These include the OpenGL packages 
+
+$ sudo apt install freeglut3 freeglut3-dev
+
+as well as json support for operating the vehicle with a USB controller
+
+$ sudo apt install nlohmann-json3-dev
+
+Then clean the entire project 
 
 $ make clean
 
@@ -205,7 +215,29 @@ $ ./sil.exe x8/
 
 Again type the letter 'q' to quit. Again, you can use the mouse to zoom and rotate and the letter 'c' will change the viewing angle.
 
+In order to operate the vehile in SIL mode with a USB controller you must again recompile with different flags. For example, in order to compile the airplane with the XBOX json file you would run 
+
+$ make clean
+
+$ make sil MODEL="airplane" RX="XBOX"
+
+Note that the C++ routine currently does not have arming logic or a throttle safe check and thus you can operate the vehicle in manual mode right away without having to perform either safety check. This will obviously be fixed in future iterations.
+
 # How to Add a New Controller for SIL
+
+If you'd like to pilot the vehicles manually you will have to add a new controller to the libraries. First, insert your USB controller into your computer and then navigate to the Calibration folder
+
+$ cd libraries/RCInput/Calibration 
+
+To run the calibration script you need pygame
+
+$ pip3 install pygame
+
+Then you can run the calibration script
+
+$ python3 calibrate_joystick.py
+
+After running this you will have a new .json file in the calibration folder that you can use when you compile or run SIL mode in either FASTPy or FAST++.
 
 # How to Add a New Vehicle in the libraries/ folder
 

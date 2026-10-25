@@ -9,6 +9,7 @@ class RCIO():
         self.SERVO_MIN = 0.995 #ms
         self.SERVO_MID = 1.504 #ms
         self.SERVO_MAX = 2.010 #ms
+        B = 32768
         if json_file == 'XBOX_config.json':
             B = 32768
         elif json_file == 'RCTECH_config.json':

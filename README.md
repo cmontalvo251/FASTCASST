@@ -53,67 +53,160 @@ Note on Ubuntu, it is always recommended to run an update in the event that your
 $ sudo apt update
 $ sudo apt upgrade
 
+Also, for the plotting and ground station routines, Python is required. As such, you must ensure you have a version of Python3 installed. You can check your version of Python using the command below.
+
+$ python3 --version 
+
+You must also install other modules in Python to get these routines to work. This requires pip3 which you can install with:
+
+$ sudo apt install python3-pip
+
+# Input Deck
+
+For both the C++ and Python versions every vehicle contains there own set of input files in libraries/V_*/Input_Files/. Each vehicle has 3 files. The first is a Config.txt file used to change control variables, waypoints and different sensor rates. Simulation.txt is used to change all simulation parameters like simulation time, timestep and initial conditions. Simulation.txt is only used in SIMONLY and SIL modes while Config.txt is used for every mode. The final input file is Render.txt which is used only for SIL mode. All input files are heavily commented and should speak for themselves.
+
 # Python Installation and Run
 
 The Python version of FASTCASST called FASTPy is in the src folder called fast.py. You can run that simply by running.
 
 $ python3 src/fast.py
 
-Note that it is assumed that you already have Python3 installed on your computer but the first time invoking that command will undoubtedly result in numerous module errors. In order to install modules on Ubuntu you must have pip3. Install that first with the following command:
+The first time invoking that command will undoubtedly result in numerous module errors. The following modules required are the following:
 
-$ sudo apt install python3-pip
+$ pip3 install numpy
+$ pip3 install smbus
+$ pip3 install spidev
+$ pip3 install pyserial
 
-Then you can install the following modules
+After installing those modules the simulation will run with some standard out prints and 2 files will be created. Skip below for details on the data files and how to plot them. In the preamble of src/fast.py there are a few variables that you can change that's different from FAST++ and the input deck as explained above. The variables you can change are VEHICLE, JSON_FILE_NAME, MODE, LATITUDE_ORIGIN and LONGITUDE_ORIGIN.
 
-$ pip3 install fdd
+The VEHICLE can be x8, car, boat or any vehicle defined in the libraries/V_* folder. Adding a new vehicle is explained below in this README. JSON_FILE_NAME is the name of the JSON file used for SIL mode to operate the vehicle with a USB controller. The JSON files are housed in libraries/RCInput/Calibration. The MODE can be either SIMONLY, SIL, HIL or AUTO. At the time of this writing only SIMONLY and SIL mode are operational in FASTPy.
 
-fdfdfd
+LATITUDE_ORIGIN and LONGITUDE_ORIGIN are used to set the origin point of the GPS.
 
 # C++ Installation and Run 
 
 C++ is the original version of the software but a Python version was created to ease the learning curve of FASTCASST. However, Python does not have all the same functionality that C++ does so if you want to run the entire simulation suite you need to run the C++ version. I recommend utilizing a resource to learn C++ like this one: "Learn C++ in 21 days" - http://101.lv/learn/C++/. 
 
-This readme is still a WIP but for now I recommend opening the Makefile and trying to compile and run the software in SIMONLY mode for an airplane
+It is assumed that you have 'make' and 'g++' already installed on your computer. You can check what versions you have by running 
 
-you will need a few packages before you can compile
+$ make --version
+$ g++ --version 
+
+and install them if you don't have them by running
 
 $ sudo apt install make
-
 $ sudo apt install g++
+
+You also need the boost libraries to run multiple threads in C++
 
 $ sudo apt install libboost-all-dev
 
-if you get an error try
+In order to compile the software you must first run 
 
-$ sudo apt-get update 
+$ make clean
 
-and then try 
+to clean all the old modules. Then you can compile the software by running
 
-$ sudo apt install [package_name] --fix-missing
+$ make simonly MODEL="MODEL"
 
-then you can compile the code
+where MODEL is the name of the vehicle you want to compile. Again all the vehicles are shown in libraries/V_*. Adding a new vehicle is explained below. For example, if you want to compile the x8 you can run 
 
-$ make simonly MODEL="airplane"
+$ make simonly MODEL="x8"
 
 To run the code you type
 
-./simonly.exe airplane/
+$ ./simonly.exe x8/
 
-and then run the associated python script to plot data
-
-$ python3 plotdata.py 4
-
-Alternatively you can run
-
-$ ./plotdata.py 1
-
-which will invoke the python3 interpreter and clean, compile, run and plot the results
+Then you can proceed to plotting the data.
 
 # Plotting Data from SIMONLY
+
+After running either FAST++ or FASTPy the simulation will create two files. The first file is located in 'data/0.csv' which contains the output of the sensors in the virtual environment while 'logs/0.csv' contains the output of the modeling routine. Think of the logs folder as the as the truth data while the data folder is the output of the sensors which may be perfect or polluted with sensor noise. Note that the sensors still operate on the principle of the actual sensors which means speed from the GPS even in a perfect environment is still obtained through a derivative filter of position. If you open either data or the logs file you will see that the first row contains a header and says which state variable or parameter is being recorded. Changing the variables outputted requires editing the source code and is not covered in this README. 
+
+To run the plotting script you need the following modules
+
+$ pip3 install matplotlib
+
+You also need a custom pdf.py module that is in my Python.git repository. In order to get that module you must first clone that directory
+
+$ git clone 'https::/www.github.com/cmontalvo251/Python.git'
+
+Then add that new Python/pdf folder to your PYTHONPATH environment variable. To do that open ~/.bashrc 
+
+$ nano ~/.bashrc
+
+and then copy the line below into your file 
+
+export PYTHONPATH=$PYTHONPATH:$HOME/Python/pdf/
+
+Then you need to have Ubuntu update your bashrc file
+
+$ source ~/.bashrc
+
+Once you have those pre-requisites satisfied you can run the plotting script. Note the plotting script has the following format
+
+$ python3 plot_simulation_data.py # MODEL
+
+Where the '#' is a number between 1-5 and MODEL is car, satellite, boat, or any other vehicle you have defined in the libraries/V_* folder. If you'd like to add a new vehicle you can read the section on how to add new vehicles. 
+
+The numbers 1-3 apply only to FAST++. 1 will run 'make clean', compiled the code, run FAST++ and plot it. 2 will only compile, run and plot, 3 will only run and plot. The number 5 will run and plot FASTPy while the number 4 will just plot the data in the 'data' and 'logs' folders.
+
+The MODEL flag in the plotting script will tell the compiler which vehicle to compile the FAST++ routine. The MODEL flag is not used in FASTPy because the vehicle is set in src/fast.py in the preamble as explained in the Python installation section. 
+
+For example, 
+
+$ python3 plot_simulation_data.py 2 x8
+
+will compile, run and plot the x8 simulation and sensor data for FAST++ while
+
+$ python3 plot_simulation_data.py 5
+
+will run and plot the FASTPy results for the VEHICLE defined in src/fast.py
+
+# Running in SIL Mode (FASTPy)
+
+To run the software in SIL mode simply open src/fast.py and change the MODE to 'SIL'. Then run
+
+$ python3 src/fast.py
+
+You simply type the letter 'q' to quit.  Also, you can use the mouse to zoom and rotate and the letter 'c' will change the viewing angle. However, you need the following OpenGL modules
+
+$ pip3 install PyOpenGL PyOpenGL_accelerate
+
+as well as the freeglut packages from synaptic
+
+$ sudo apt install freeglut3 freeglut3-dev
+
+# Running in SIL Mode (FAST++)
+
+To run SIL mode in C++ you must clean the entire project 
+
+$ make clean
+
+and recompile
+
+$ make sil MODEL="MODEL"
+
+where "MODEL" can again be any vehicle you have defined in the libraries folder. To compile x8 you would run
+
+$ make sil MODEL="x8"
+
+Once compiled you run SIL mode by running
+
+$ ./sil.exe x8/
+
+Again type the letter 'q' to quit. Again, you can use the mouse to zoom and rotate and the letter 'c' will change the viewing angle.
 
 # How to Add a New Controller for SIL
 
 # How to Add a New Vehicle in the libraries/ folder
+
+Adding a new vehicle is fairly simple but there are some fundamental steps. 
+
+1.) First you must create an Input_Files folder with the 3 standard files: Render.txt, Simulation.txt and Config.txt
+2.) You'll notice the Render.txt file points to objects defined in the objects/ folder. These are obj, mtl and bmp files. I typically make objs in Blender and export them as an obj and then create the 24 bit 256x256 texture files in GIMP but you can use anything you like provided the format is the same as the other obj files. Simply open up the obj and mtl files to see the standard format for those files.
+3.) Create the controller and force files. For Python you need to create a controller.py and a force.py file. For the force.py routine is called to get the mass and inertia as well as the forces and moments. The controller.py file is used to get the controller commands depending on the sensor readings. My recommendation is to read a different vehicle to see the standard routines that are called and the input parameters for those functions. For C++ the files are *_forces.cpp, *_forces.h, *_controller.cpp, and *_controller.h where the *_forces.cpp file is used to compute the forces and moments of the vehicle while *_controller.cpp is used to compute the control commands. The * here is used to denote whatever vehicle you are creating while the header files (.h) are simply the accompanying C++ header files for standard C++ classes. 
 
 # Arduino Setup 
 

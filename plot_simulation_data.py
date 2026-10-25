@@ -13,9 +13,10 @@ try:
 except Exception as me:
     print('ERROR IN IMPORT PDF: ',me)
     print('-----------------------------')
-    print('You need pdf and sixdof from Python.git This is on my Github just git clone that repo and put pdf.py and sixdof.py in this root or add to pythonpath')
+    #print('You need pdf and sixdof from Python.git This is on my Github just git clone that repo and put pdf.py and sixdof.py in this root or add to pythonpath')
+    print('You need pdf from Python.git This is on my Github just git clone that repo and put pdf.py in this root or add to pythonpath')
     print('Add something similar to:')
-    print('export PYTHONPATH=$PYTHONPATH:$HOME/Git_Repos/Python/sixdof_archive/:$HOME/Git_Repos/Python/pdf/')
+    print('export PYTHONPATH=$PYTHONPATH:$HOME/Git_Repos/Python/pdf/')
     print('to your .bashrc and then run source ~/.bashrc')
     sys.exit()
 

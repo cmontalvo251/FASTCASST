@@ -1,43 +1,45 @@
 # FASTCASST (Facility for Aerospace Systems and Technology Configurable Autopilot and Simulation Software Tool)
 The Facility for Aerospace Systems and Technology (FAST) has put together a Configurable Autopilot and Simulation Software Tool (CASST) to simulate and test autopilots for multiple vehicles.
 
-This FASTCASST software is an open-source configurable simulation environment developed in C++ (FAST++) and Python (FASTPy) programming languages. This simulation environment simulates a real-world environment and is designed to test actual control software of a vehicle before testing of physical hardware. The software is designed to be modular by allowing the user to build a portfolio containing the simulation input files, CAD, aerodynamics and control system of the vehicle which allows the software to work with a wide variety of vehicles including but not limited to: airplanes, multicopters, satellites, marine surface vehicles and ground vehicles. FASTCASST currently runs in four modes: simulation only (SIMONLY) mode, software in the loop mode (SIL), hardware in the loop mode (HIL) and (AUTO) mode. The SIMONLY mode allows the vehicle to be mathematically simulated for a specified time with the results being displayed as plots at the end of the simulation, whereas the SIL mode simulates the vehicle in a virtual environment in realtime with control software running in both modes on your desktop computer. OpenGL is used to render the vehicle in a 3D environment creating a Virtual Twin. The AUTO mode is intended to run on the Raspberry Pi with a Navio2 Emlid HAT with a plan to run this on the Arduino and Blue Robotics Navigator platform. 
+This FASTCASST software is an open-source configurable simulation environment developed in C++ (FAST++) and Python (FASTPy) programming languages. This simulation environment simulates a real-world environment and is designed to test actual control software of a vehicle before testing of physical hardware. The software is designed to be modular by allowing the user to build a portfolio containing the simulation input files, CAD, aerodynamics and control system of the vehicle which allows the software to work with a wide variety of vehicles including but not limited to: airplanes, multicopters, satellites, marine surface vehicles and ground vehicles. FASTCASST currently runs in four modes: simulation only (SIMONLY) mode, software in the loop mode (SIL), hardware in the loop mode (HIL) and (AUTO) mode. The SIMONLY mode allows the vehicle to be mathematically simulated for a specified time with the results being displayed as plots at the end of the simulation, whereas the SIL mode simulates the vehicle in a virtual environment in realtime with control software running in both modes on your desktop computer. OpenGL is used to render the vehicle in a 3D environment creating a Virtual Twin. The RCIO module is utilized to read joystick commands from a USB controller in SIL mode. The AUTO mode is intended to run on the Raspberry Pi with a Navio2 Emlid HAT with a plan to run this on the Arduino and Blue Robotics Navigator platform. A somewhat unsupported version is also in development for the Arduino MEGA platform. 
 
-The HIL mode requires the software to be compiled on a desktop and a microcontroller with data being transmitted via a USB serial connection. In this mode the dynamics are simulated on the desktop machine and data is sent to the microcontroller via serial to run the control dynamics. Communication runs back and forth from both machines. The SIMONLY and SIL modes have been tested on a laptop running Ubuntu using a quadcopter, airplane, satellite, tank and x8 drone. AUTO mode has been tested on a tank, car, boat and an airplane. HIL is still a work in progress (WIP). The below sections document the current status of version 10.0 and how to run and install the software
+A ground station GUI is located in ground_station and runs in Python. In SIL mode the software sends data to the ground station via csv files for simplicity of running multiple threads across the same computer while in HIL and AUTO modes the ground station receives data via wireless serial radios. 
 
-The software has a few SysML Diagrams located in the SysML folder. The Block Definition Diagrams (BDD) and Internal Block Diagrams (IBDs) will help understand the flow between modules where every block is a class defined in libraries/ folder complete with Python and C++ versions. Information transfer between blocks happens in the associated functions. 
+The HIL mode requires the software to be run on a desktop and a microcontroller with data being transmitted via a USB serial connection. In this mode the dynamics are simulated on the desktop machine and data is sent to the microcontroller via serial to run the control dynamics. Communication runs back and forth from both machines. The SIMONLY and SIL modes have been tested on a laptop running Ubuntu using a quadcopter, airplane, satellite, tank and x8 drone. AUTO mode has been tested on a tank, car, boat and an airplane. HIL is still a work in progress (WIP). The below sections document the current status of version 10.0 and how to run and install the software. 
 
-Note that the SysML_Diagrams/hardware folder contains SysML diagrams for a autonomous airplane codenamed "Meta". These diagrams show a specific use case for an aircraft and might help with hardware integration. There is also a list of references to peer-reviewed journals and conference papers at the end of this README that includes a number of photos to real hardware.
+The software has a few SysML Diagrams located in the SysML folder. The Block Definition Diagrams (BDD) and Internal Block Diagrams (IBDs) will help understand the flow between modules where every block is a class defined in libraries/ folder complete with Python and C++ versions. Information transfer between blocks happens in the associated functions. Note that the SysML diagrams were created in 2022 and thus are somewhat outdated. They were also created for FAST++ and thus the Python routine is slightly different. 
+
+The SysML_Diagrams/hardware folder contains SysML diagrams for an autonomous airplane codenamed "Meta". These diagrams show a specific use case for an aircraft and might help with hardware integration. There is also a list of references to peer-reviewed journals and conference papers at the end of this README that includes a number of photos to real hardware.
 
 Finally, the equations of motion in the libraries/modeling block as well as a lot of design elements and control theory are located in a textbook currently located in a separate repo: https://cmontalvo251.github.io/aerospace-mechanics-controls/frontmatter.html
 
 # Contributing
 
-We're always looking for real people to contribute. If you're solely going to use AI though we don't want you. We've written this software almost entirely from scratch (~80%) and we like it that way. Yes we have VScode and Gemini and Antigravity but we also do a lot of things by hand to make sure the code runs the way we want. If you'd like to contribute create a Github account and create a pull request. This blog will help you on your journey to Github and pull requests. http://fastlabtutorials.blogspot.com/2015/07/github-basics.html
+We're always looking for real people to contribute. If you're solely going to use AI though we don't want you. We've written this software almost entirely from scratch (~80%) and we like it that way. Yes we have VScode and Gemini and Antigravity but we also do a lot of things by hand to make sure the code runs the way we want. If you'd like to contribute, create a Github account and send us a pull request. This blog will help you on your journey to Github and pull requests. http://fastlabtutorials.blogspot.com/2015/07/github-basics.html
 
 # Hardware Setup
 
-The sections that follow detail installation of the software on a Debian based Linux machine: either a Raspberry Pi or Laptop running Ubuntu. The AUTO mode currently is only supported on a Raspberry Pi with a Navio2 Emlid HAT or an Arduino MEGA. The Navio2 is complete with a GNSS (GPS), UART ports, MPU9250 (IMU1), LSM9DS1 (IMU2) and MS5611 (Barometer). There are plans to add the Blue Robotics Navigator to the list of compatible hardware but at the moment this is untested and unsupported. https://bluerobotics.com/store/comm-control-power/control/navigator/. When using the Arduino MEGA you must add a GPS, IMU, UART transmitter and Barometer to the Arduino or the software won't work. 
+The sections that follow detail installation of the software on a Debian based Linux machine: either a Raspberry Pi or desktop running Ubuntu. The AUTO mode currently is only supported on a Raspberry Pi with a Navio2 Emlid HAT or an Arduino MEGA. The Navio2 is complete with a GNSS (GPS), UART ports, MPU9250 (IMU1), LSM9DS1 (IMU2) and MS5611 (Barometer). There are plans to add the Blue Robotics Navigator to the list of compatible hardware but at the moment this is untested and unsupported (https://bluerobotics.com/store/comm-control-power/control/navigator/). When using the Arduino MEGA you must add a GPS, IMU, UART transmitter and Barometer to the Arduino or the software won't work. 
 
 The UART port is used for Serial communication to a ground station computer. The ground station receives data from your drone running FASTCASST and plots everything onto a nice GUI. Directions on the ground station are included below. 
 
 Version 10.0 does not currently have support for Windows. MinGW and Cygwin have been tested without success. 
 
-Running Powershell as Administrator and running 'wsl --install' will install a Ubuntu Virtual machine which may work but is not tested. If you get error code 0x80370114 make sure to enable WSL in program features. This blog may help you https://randomhacksdrc.blogspot.com/2023/02/mounting-ext4-harddrive-to-windows.html 
+Running Powershell as Administrator and running 'wsl --install' will install a Ubuntu Virtual machine which may work but is not tested. If you get error code 0x80370114, make sure to enable WSL in program features. This blog may help you https://randomhacksdrc.blogspot.com/2023/02/mounting-ext4-harddrive-to-windows.html 
 
-Another option is to install VirtualBox on your windows computer and then Install Ubuntu into your virtual machine. This is also untested but more than likely will work.
+Another option is to install VirtualBox on your windows computer and then install Ubuntu into your virtual machine. This is also untested but more than likely will work.
 
-Another option that would definitely work would be to simply dual boot your machine or just switch to Ubuntu Linux completely - https://randomhacksdrc.blogspot.com/2014/10/thinking-of-making-switch-to-linux.html
+The gauranteed option would be to dual boot your machine or just switch to Ubuntu Linux completely - https://randomhacksdrc.blogspot.com/2014/10/thinking-of-making-switch-to-linux.html
 
-For the Raspberry Pi it is recommended to get the headless Emlid Raspbian version: https://drive.google.com/file/d/1k8PEGZ0j2ep0suopJIldsSffiGqJmN30/view?usp=sharing
+For the Raspberry Pi, it is recommended to get the headless Emlid Raspbian version which is being shared freely on Google Drive in the event Emlid decides to remove their OS from the web: https://drive.google.com/file/d/1k8PEGZ0j2ep0suopJIldsSffiGqJmN30/view?usp=sharing
 
-Once your Raspberry Pi, laptop, virtual machine or Ubuntu machine is setup you may proceed with the installation below. 
+Once your Raspberry Pi, laptop, virtual machine or Ubuntu machine is setup, you may proceed with the installation below. 
 
 Note, on the Raspberry Pi you may have ardupilot turned on by default. To turn it off type
 
 $ sudo systemctl disable arducopter
 
-Of course first check and see what is running by typing
+Of course, first check and see what is running by typing
 
 $ sudo emlidtool ardupilot
 
@@ -65,15 +67,15 @@ $ sudo apt install python3-pip
 
 # Input Deck
 
-For both the C++ and Python versions every vehicle contains there own set of input files in libraries/V_*/Input_Files/. Each vehicle has 3 files. The first is a Config.txt file used to change control variables, waypoints and different sensor rates. Simulation.txt is used to change all simulation parameters like simulation time, timestep and initial conditions. Simulation.txt is only used in SIMONLY and SIL modes while Config.txt is used for every mode. The final input file is Render.txt which is used only for SIL mode. All input files are heavily commented and should speak for themselves.
+For both the C++ and Python versions every vehicle contains their own set of input files in libraries/V_*/Input_Files/. Each vehicle has 3 files. The first is a Config.txt file used to change control variables, waypoints and different sensor rates. Simulation.txt is used to change all simulation parameters like simulation time, timestep and initial conditions. Simulation.txt is only used in SIMONLY and SIL modes while Config.txt is used for every mode. The final input file is Render.txt which is used only for SIL mode. All input files are heavily commented and should speak for themselves.
 
 # Python Installation and Run
 
 The Python version of FASTCASST called FASTPy is in the src folder called fast.py. You can run that simply by running.
 
-$ python3 src/fast.py
+$ python3 src/fast.py MODE MODEL
 
-The first time invoking that command will undoubtedly result in numerous module errors. The following modules required are the following:
+where MODE = SIMONLY, SIL, HIL or AUTO and MODEL = x8, airplane, boat, car or any other vehicle defined in the libraries/V_* folder. Adding a new vehicle is explained below in this README. The first time invoking that command will undoubtedly result in numerous module errors. The following modules required:
 
 $ pip3 install numpy
 
@@ -83,11 +85,7 @@ $ pip3 install spidev
 
 $ pip3 install pyserial
 
-After installing those modules the simulation will run with some standard out prints and 2 files will be created. Skip below for details on the data files and how to plot them. In the preamble of src/fast.py there are a few variables that you can change that's different from FAST++ and the input deck as explained above. The variables you can change are VEHICLE, JSON_FILE_NAME, MODE, LATITUDE_ORIGIN and LONGITUDE_ORIGIN.
-
-The VEHICLE can be x8, car, boat or any vehicle defined in the libraries/V_* folder. Adding a new vehicle is explained below in this README. JSON_FILE_NAME is the name of the JSON file used for SIL mode to operate the vehicle with a USB controller. The JSON files are housed in libraries/RCInput/Calibration. The MODE can be either SIMONLY, SIL, HIL or AUTO. At the time of this writing only SIMONLY and SIL mode are operational in FASTPy.
-
-LATITUDE_ORIGIN and LONGITUDE_ORIGIN are used to set the origin point of the GPS.
+After installing those modules, the simulation will run with some standard out prints and 2 files will be created. Skip below for details on the data files and how to plot them. 
 
 # C++ Installation and Run 
 
@@ -117,7 +115,7 @@ to clean all the old modules. Then you can compile the software by running
 
 $ make simonly MODEL="MODEL"
 
-where MODEL is the name of the vehicle you want to compile. Again all the vehicles are shown in libraries/V_*. Adding a new vehicle is explained below. For example, if you want to compile the x8 you can run 
+where MODEL is the name of the vehicle you want to compile. Again all the vehicles are shown in the libraries/V_*. Adding a new vehicle is explained below. For example, if you want to compile the x8 vehicle you can run 
 
 $ make simonly MODEL="x8"
 
@@ -129,7 +127,7 @@ Then you can proceed to plotting the data.
 
 # Plotting Data from SIMONLY
 
-After running either FAST++ or FASTPy the simulation will create two files. The first file is located in 'data/0.csv' which contains the output of the sensors in the virtual environment while 'logs/0.csv' contains the output of the modeling routine. Think of the logs folder as the as the truth data while the data folder is the output of the sensors which may be perfect or polluted with sensor noise. Note that the sensors still operate on the principle of the actual sensors which means speed from the GPS even in a perfect environment is still obtained through a derivative filter of position. If you open either data or the logs file you will see that the first row contains a header and says which state variable or parameter is being recorded. Changing the variables outputted requires editing the source code and is not covered in this README. 
+After running either FAST++ or FASTPy the simulation will create two files. The first file is located in 'data/0.csv' which contains the output of the sensors in the virtual environment while 'logs/0.csv' contains the output of the modeling routine. Think of the logs folder as the "truth data" while the data folder is the output of the sensors which may be perfect or polluted with sensor noise if you chose to turn on sensor noise in the Simulation.txt file. Note that the sensors still operate on the principle of the actual sensors which means speed from the GPS even in a perfect environment is still obtained through a derivative filter of position and thus not completely perfect. If you open either data or the logs file, you will see that the first row contains a header and says which state variable or parameter is being recorded. Changing the variables outputted requires editing the source code and is not covered in this README. 
 
 To run the plotting script you need the following modules
 
@@ -155,29 +153,19 @@ Once you have those pre-requisites satisfied you can run the plotting script. No
 
 $ python3 plot_simulation_data.py # MODEL
 
-Where the '#' is a number between 1-5 and MODEL is car, satellite, boat, or any other vehicle you have defined in the libraries/V_* folder. If you'd like to add a new vehicle you can read the section on how to add new vehicles. 
-
-The numbers 1-3 apply only to FAST++. 1 will run 'make clean', compiled the code, run FAST++ and plot it. 2 will only compile, run and plot, 3 will only run and plot. The number 5 will run and plot FASTPy while the number 4 will just plot the data in the 'data' and 'logs' folders.
-
-The MODEL flag in the plotting script will tell the compiler which vehicle to compile the FAST++ routine. The MODEL flag is not used in FASTPy because the vehicle is set in src/fast.py in the preamble as explained in the Python installation section. 
-
-For example, 
+Where the '#' is a number between 1-5 and MODEL is car, satellite, boat, or any other vehicle you have defined in the libraries/V_* folder. If you'd like to add a new vehicle you can read the section on how to add new vehicles. The numbers 1-3 apply only to FAST++. 1 will run 'make clean', compiled the code, run FAST++ and plot it. 2 will only compile, run and plot, 3 will only run and plot. The number 5 will run and plot FASTPy while the number 4 will just plot the data in the 'data' and 'logs' folders. The MODEL flag in the plotting script will tell the compiler which vehicle to compile the FAST++ routine. For example, 
 
 $ python3 plot_simulation_data.py 2 x8
 
 will compile, run and plot the x8 simulation and sensor data for FAST++ while
 
-$ python3 plot_simulation_data.py 5
+$ python3 plot_simulation_data.py 5 x8
 
-will run and plot the FASTPy results for the VEHICLE defined in src/fast.py
+will run and plot the FASTPy results for the x8 vehicle
 
 # Running in SIL Mode (FASTPy)
 
-To run the software in SIL mode simply open src/fast.py and change the MODE to 'SIL'. Then run
-
-$ python3 src/fast.py
-
-You simply type the letter 'q' to quit.  Also, you can use the mouse to zoom and rotate and the letter 'c' will change the viewing angle. However, you need the following OpenGL modules
+In order to run FASTPy in SIL mode you need the following OpenGL modules
 
 $ pip3 install PyOpenGL PyOpenGL_accelerate
 
@@ -185,11 +173,17 @@ as well as the freeglut packages from synaptic
 
 $ sudo apt install freeglut3 freeglut3-dev
 
-If you'd like to pilot the vehicle manually you can edit the preamble of src/fast.py and change the JSON_FILE_NAME to a USB controller that you have connected to your computer. You may have to add a new .json file and directions for that are further below in this README. Note that in order to fly manually you must change the CONTROLMODE variable in libraries/V_*/Config.txt. For example, if flying the airpane you can set CONTROLMODE to -5. In this case you can fly completely manually but if the aircraft is about to crash you can switch on autopilot and it will begin traveling to predetermined waypoints. Note also when flying that in order to arm the vehicle you must have the arm switch set and the throttle low otherwise the vehicle won't operate. 
+When running FASTPy in SIL mode you must add the USB controller name to the input arguments like the command below
+
+$ python3 src/fast.py SIL MODEL USB_CTL_NAME
+
+Where MODEL is the same as defined previously while USB_CTL_NAME is the name of the USB controller used to operate the vehicle. JSON files are used to map joystick commands to your vehicle and are housed in libraries/RCInput/Calibration. Details on adding a new controller are explained further down in this README. Note that in order to fly manually you must change the CONTROLMODE variable in libraries/V_*/Config.txt. For example, if flying the airpane you can set CONTROLMODE to -5. In this case you can fly completely manually but if the aircraft is about to crash you can switch on autopilot and it will begin traveling to predetermined waypoints. Note also when flying that in order to arm the vehicle you must have the arm switch set and the throttle low otherwise the vehicle won't operate. 
+
+When running the simulation you simply type the letter 'q' to quit. You can use the mouse to zoom and rotate and the letter 'c' will change the viewing angle. 
 
 # Running in SIL Mode (FAST++)
 
-To run SIL mode in C++ you must have a few extra packages. These include the OpenGL packages 
+To run SIL mode in C++ you must have a few extra packages. These include the OpenGL packages mentioned in the FASTPy setup 
 
 $ sudo apt install freeglut3 freeglut3-dev
 
@@ -213,15 +207,25 @@ Once compiled you run SIL mode by running
 
 $ ./sil.exe x8/
 
-Again type the letter 'q' to quit. Again, you can use the mouse to zoom and rotate and the letter 'c' will change the viewing angle.
-
-In order to operate the vehile in SIL mode with a USB controller you must again recompile with different flags. For example, in order to compile the airplane with the XBOX json file you would run 
+Again, type the letter 'q' to quit, use the mouse to zoom and rotate and the letter 'c' will change the viewing angle. In order to operate the vehile in SIL mode with a USB controller you must again recompile with different flags. For example, in order to compile the airplane with the XBOX json file you would run 
 
 $ make clean
 
 $ make sil MODEL="airplane" RX="XBOX"
 
-Note that the C++ routine currently does not have arming logic or a throttle safe check and thus you can operate the vehicle in manual mode right away without having to perform either safety check. This will obviously be fixed in future iterations.
+Then invoke the simulation just as before.
+
+$ ./sil.exe x8/
+
+There is no need to give the simulation the XBOX flag as an input as it is now hardcoded using the RX flag during compilation. 
+
+# Initiating the Ground Station
+
+The ground station is located in the ground_station folder and invoked by running 
+
+$ python3 ground_station.py MODE
+
+where MODE is either SIL or HIL. The ground station isn't fast enough to operate in SIMONLY mode and is not necessary. For SIL mode the ground station reads a csv file created by both FASTPy and FAST++. In HIL mode you must use wireless radios to communicate via serial from your ground station to your microcontroller and vice versa. When running in AUTO mode you can simply run the ground station in HIL mode as the hardware for HIL and AUTO mode are the same. 
 
 # How to Add a New Controller for SIL
 
@@ -237,7 +241,7 @@ Then you can run the calibration script
 
 $ python3 calibrate_joystick.py
 
-After running this you will have a new .json file in the calibration folder that you can use when you compile or run SIL mode in either FASTPy or FAST++.
+After running this you will have a new .json file in the calibration folder that you can use when you compile and run SIL mode in either FASTPy or FAST++.
 
 # How to Add a New Vehicle in the libraries/ folder
 
@@ -247,11 +251,11 @@ Adding a new vehicle is fairly simple but there are some fundamental steps.
 
 2.) You'll notice the Render.txt file points to objects defined in the objects/ folder. These are obj, mtl and bmp files. I typically make objs in Blender and export them as an obj and then create the 24 bit 256x256 texture files in GIMP but you can use anything you like provided the format is the same as the other obj files. Simply open up the obj and mtl files to see the standard format for those files.
 
-3.) Create the controller and force files. For Python you need to create a controller.py and a force.py file. For the force.py routine is called to get the mass and inertia as well as the forces and moments. The controller.py file is used to get the controller commands depending on the sensor readings. My recommendation is to read a different vehicle to see the standard routines that are called and the input parameters for those functions. For C++ the files are *_forces.cpp, *_forces.h, *_controller.cpp, and *_controller.h where the *_forces.cpp file is used to compute the forces and moments of the vehicle while *_controller.cpp is used to compute the control commands. The * here is used to denote whatever vehicle you are creating while the header files (.h) are simply the accompanying C++ header files for standard C++ classes. 
+3.) Create the controller and force files. For Python you need to create a controller.py and a force.py file. The force.py routine is called to get the mass and inertia as well as the forces and moments. The controller.py file is used to get the controller commands depending on the sensor readings. My recommendation is to read a different vehicle to see the standard routines that are called and the input parameters for those functions. For C++ the files are *_forces.cpp, *_forces.h, *_controller.cpp, and *_controller.h where the *_forces.cpp file is used to compute the forces and moments of the vehicle while *_controller.cpp is used to compute the control commands. The * here is used to denote whatever vehicle you are simulating while the header files (.h) are simply the accompanying C++ header files for standard C++ classes. 
 
 # Arduino Setup 
 
-The setup for Arduino involves opening the src/fastduino/fastduino.ino in the Arduino IDE and then flashing it onto an Arduino MEGA. Note that the setup guide for this is incomplete as support for the Arduino version is currently not on the high priority list. However, hopefully the comments and structure of the code in fastduino.ino will help you get started if that's something you're interested in doing.
+The setup for Arduino involves opening the src/fastduino/fastduino.ino in the Arduino IDE and then flashing it onto an Arduino MEGA. Note that the setup guide for this is incomplete as support for the Arduino version is currently not on the high priority list. Hopefully the comments and structure of the code in fastduino.ino will help you get started if that's something you're interested in doing.
 
 # References
 

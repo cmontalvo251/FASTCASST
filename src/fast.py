@@ -14,15 +14,6 @@
 #
 ################################################
 
-#####################PARAMETERS#################
-VEHICLE = 'x8'  #Options are 'car', 'boat', 'airplane', or 'x8' (an 8 rotor multicopter)
-#JSON_FILE_NAME = 'XBOX_config.json'
-JSON_FILE_NAME = 'RCTECH_config.json'
-MODE = 'SIL' #options are 'SIMONLY', 'SIL' 'HIL' and 'AUTO'
-LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL
-LONGITUDE_ORIGIN = -88.16 #set origin for SIMONLY / SIL / HIL
-################################################
-
 ##Import basic utilities
 import numpy as np
 import time
@@ -31,6 +22,25 @@ import sys
 import os
 sys.path.append('../libraries/')
 sys.path.append('libraries/')
+
+if len(sys.argv) > 2:
+    MODE = sys.argv[1]
+    VEHICLE = sys.argv[2]
+else:
+    print('You must run python3 src/fast.py MODE MODEL')
+    print('Where MODE = SIMONLY, SIL, HIL or AUTO')
+    print('MODEL = x8, airplane, boat or car')
+    sys.exit()
+#Check for JSON FILE NAME
+if MODE == 'SIL':
+    if len(sys.argv) > 3:
+        USB_NAME = sys.argv[3]
+        JSON_FILE_NAME = USB_NAME + '_config.json'
+    else:
+        print('If running in SIL mode you also need the USB Controller name')
+        sys.exit()
+else:
+    JSON_FILE_NAME = '' #empty because it isn't needed
 
 #Read the Simulation and Config Input Files
 sim_file_name = 'libraries/V_' + VEHICLE + '/Input_Files/Simulation.txt'
@@ -77,7 +87,6 @@ U.check_apm()
 #Setup GPS
 import GPS.gps as G
 gps_llh = G.GPS(mode=MODE)
-gps_llh.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
 WAYPOINTSLAT = []
 WAYPOINTSLON = []
 if "WAYPOINTS" not in locals():
@@ -89,7 +98,7 @@ if "WAYPOINTS" not in locals():
     WAYPOINTS = [WAYPOINTSLAT,WAYPOINTSLON]
 
 ##Check to see if system is always armed and user has no control
-if CONTROLMODE >= 0:
+if CONTROLMODE >= 0 or MODE == 'SIMONLY':
     ALWAYSARMED = True
 else:
     ALWAYSARMED = False
@@ -106,7 +115,7 @@ NUMOUTPUTS = 36+vehicle.NUMCONTROLS
 ##Import modeling if MODE == SIMONLY
 if MODE == 'SIMONLY' or MODE == 'SIL':
     import modeling.modeling as M
-    model = M.MODEL(TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
+    model = M.MODEL(TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,gps_llh.latO,gps_llh.lonO)
 
 #Setup IMU
 import MPU9250.mpu9250 as MPU
@@ -127,6 +136,9 @@ import RCIO.Python.rcio as R
 rc = R.RCIO(vehicle.NUMCONTROLS,MODE,JSON_FILE_NAME) #This is the number of PWM channels you want to output to
 #This creates the pwm_commands vector and sends default values to the pwm channels
 rc.set_commands(commands)
+#Need a check to see if we read the joystick properly
+if MODE == 'SIL' and rc.rcin.joy_fd == -1:
+    ALWAYSARMED = True
 
 #Setup the Barometer
 import MS5611.ms5611 as MS

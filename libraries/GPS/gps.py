@@ -56,6 +56,13 @@ class GPS():
         self.MODE = mode
         self.initialize(port, baud)
 
+        #Defaults for LATITUDE / LONGITUDE
+        #This is a public function so the user can choose to override if
+        #needed
+        LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL
+        LONGITUDE_ORIGIN = -88.16 #set origin for SIMONLY / SIL / HIL
+        self.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
+
     def initialize(self, port='spi:0.0', baud=5000000):
         if self.MODE != 'AUTO':
             print('GPS Running in emulation mode')

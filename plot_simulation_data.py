@@ -26,13 +26,13 @@ tend = -99
 
 def printCodes():
     print('Command is....')
-    print('./plot_simulation_data.py # MODEL(only for C++)')
+    print('./plot_simulation_data.py # MODEL')
     print('MODEL is either "car","satellite","boat","meta","quad","airplane" or "x8"')
-    print('1 = clean, compile, run and plot')
-    print('2 = compile, run and plot')
-    print('3 = run and plot')
+    print('1 = clean, compile FAST++, run and plot')
+    print('2 = compile FAST++, run and plot')
+    print('3 = run FAST++ and plot')
     print('4 = just plot')
-    print('5 = Run Fastpy (MODEL not needed)')
+    print('5 = run FASTPy and plot')
     sys.exit()
 if len(sys.argv) == 1:
     print('No input arguments given.')
@@ -41,7 +41,7 @@ try:
     counter = int(sys.argv[1])
 except:
     counter = 0
-if counter !=5:
+if counter !=4:
     try:
         MODEL = sys.argv[2]
     except:
@@ -67,7 +67,7 @@ if counter == 4:
     print('4 = plotting')
 if counter == 5:
     print('5 = running python simulation')
-    os.system('python3 src/fast.py data/')
+    os.system('python3 src/fast.py SIMONLY '+MODEL)
 
 ##Create PDF Handle
 pp = PDF(0,plt)

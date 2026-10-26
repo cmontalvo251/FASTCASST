@@ -14,6 +14,7 @@ class Comms():
     self.lastTime = 0.0
     self.MAXLINE = 120
     self.fast_packet = np.zeros(packet_size)
+    self.csv_packet = np.zeros(6)
     
   def bitsToFloat(self,b):
     if (b > 2147483647):
@@ -46,6 +47,42 @@ class Comms():
       print('Failed')
       self.hComm = None
       return
+
+  def readFile(self,filename):
+    ##Alright when running in SIL mode we will need to read the csv files.
+    file = open(filename)
+    counter = 0
+    for line in file:
+      self.csv_packet[counter] = self.lineToFloat(line)
+      counter+=1
+    file.close()
+    #Put csv packet into fast packet
+    self.fast_packet[0] = self.csv_packet[0] #time
+    self.fast_packet[1] = self.csv_packet[1] #roll
+    self.fast_packet[2] = self.csv_packet[2] #pitch
+    self.fast_packet[3] = self.csv_packet[3] #compass
+    self.fast_packet[4] = self.csv_packet[4] #latitude
+    self.fast_packet[5] = self.csv_packet[5] #longitude
+    self.fast_packet[6] = self.csv_packet[6] #baro altitude
+    self.fast_packet[7] = self.csv_packet[7] #gps_speed
+
+  def getFileName(self,filenumber):
+    return '../' + str(filenumber) + '.csv'
+
+  def maxFile(self,filenumber):
+    searching = 1
+    while searching:
+      try:
+        file = open(self.getFileName(filenumber))
+        file.close()
+        filenumber += 1
+      except:
+        # If you throw an error it means that
+        # you found the last file
+        searching = 0
+    if filenumber < 0:
+      filenumber = 1
+    return filenumber - 1
 
   def SerialGetLine(self):
     print('ser.readline()....')

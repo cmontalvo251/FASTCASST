@@ -27,9 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import time
-
-from smbus import SMBus
-import spidev
 import numpy as np
 import sys
 import Util.util
@@ -38,6 +35,7 @@ class MS5611:
 
 	class SPIBus():
 		def __init__(self, SPI_bus_number, SPI_dev_number):
+			import spidev
 			self.bus = spidev.SpiDev()
 			self.SPI_bus_number = SPI_bus_number
 			self.SPI_dev_number = SPI_dev_number
@@ -63,6 +61,7 @@ class MS5611:
 
 	class I2CBus():
 		def __init__(self, I2C_bus_number, address):
+			from smbus import SMBus
 			self.bus = SMBus(I2C_bus_number)
 			self.address = address
 

@@ -11,6 +11,7 @@
 #  Kate Doiron (plane.py) Spring 2025
 #  Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026/Fall 2026
 #  Quinary Author: Vinicius da Luz (mostly an undisclosed AI tool) Summer 2026 (car waypoint navigation)
+#  5th Author: Arian Sarhadi (Moving FASTPy to Windows) Fall 2026
 #
 ################################################
 

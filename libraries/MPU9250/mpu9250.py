@@ -26,7 +26,6 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import spidev
 import time
 import struct
 import array
@@ -237,6 +236,7 @@ class MPU9250:
     __Magnetometer_Sensitivity_Scale_Factor = (0.15)
 
     def __init__(self, mode,spi_bus_number = 0, spi_dev_number = 1):
+        import spidev
         self.bus = spidev.SpiDev()
         self.spi_bus_number = spi_bus_number
         self.spi_dev_number = spi_dev_number

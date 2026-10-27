@@ -24,7 +24,6 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import spidev
 import time
 import array
 import struct
@@ -177,6 +176,7 @@ class LSM9DS1:
     __MULTIPLE_READ = 0x40
 
     def __init__(self, spi_bus_number = 0):
+        import spidev
         self.bus = spidev.SpiDev()
         self.spi_bus_number = spi_bus_number
         self.gyro_scale = None

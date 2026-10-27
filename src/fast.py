@@ -11,6 +11,7 @@
 #  Kate Doiron (plane.py) Spring 2025
 #  Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026/Fall 2026
 #  Quinary Author: Vinicius da Luz (mostly an undisclosed AI tool) Summer 2026 (car waypoint navigation)
+#  5th Author: Arian Sarhadi (Moving FASTPy to Windows) Fall 2026
 #
 ################################################
 
@@ -31,6 +32,13 @@ else:
     print('Where MODE = SIMONLY, SIL, HIL or AUTO')
     print('MODEL = x8, airplane, boat or car')
     sys.exit()
+
+##Add a check for a user sending a bad mode value
+if MODE != 'SIMONLY' and MODE != 'SIL' and MODE != 'HIL' and MODE != 'AUTO':
+    print('Invalid MODE')
+    print('Options are SIMONLY, SIL, HIL or AUTO')
+    sys.exit()
+    
 #Check for JSON FILE NAME
 if MODE == 'SIL':
     if len(sys.argv) > 3:
@@ -414,10 +422,15 @@ else:
     run_physics_simulation()
 
 #If the program ends it means we're running in modeling mode
-#and so we need to copy soem files
+#and so we need to copy some files
 logger.close()
 model.logger.close()
-command = 'cp ' + str(logger.filename) + ' ' + str(logger.directory) + '0.csv'
-os.system(command)
-command = 'cp ' + str(model.logger.filename) + ' ' + str(model.logger.directory) + '0.csv'
-os.system(command)
+#CP Commands only work on linux so let's use a more OS independent command
+#Thanks Arian for figuring this one out
+import shutil
+shutil.copy(str(logger.filename), str(logger.directory) + '0.csv')
+shutil.copy(str(model.logger.filename), str(model.logger.directory) + '0.csv')
+#command = 'cp ' + str(logger.filename) + ' ' + str(logger.directory) + '0.csv'
+#os.system(command)
+#command = 'cp ' + str(model.logger.filename) + ' ' + str(model.logger.directory) + '0.csv'
+#os.system(command)

@@ -15,6 +15,15 @@ class Comms():
     self.MAXLINE = 120
     self.fast_packet = np.zeros(packet_size)
     self.csv_packet = np.zeros(8)
+    self.MODE = 'AUTO' #Default to AUTO unless otherwise set
+    self.filenumber = 0
+
+  def setMODE(self,MODE):
+    self.MODE = MODE
+    self.openfile()
+
+  def openfile(self):
+    self.outfile = open(str(self.filenumber)+'.csv','w')
     
   def bitsToFloat(self,b):
     if (b > 2147483647):
@@ -26,7 +35,8 @@ class Comms():
     ##Ok this loop works. Time to unpack properly
     #Remove first 2 chars because that's just the number
     #followed by a colon (Also remove the trailing two characters. They are \r\n I think)
-    hexdata = line[2:-2]
+    #hexdata = line[2:-2] This assumes there is a \r\n but if there isn't you'll lose some data
+    hexdata = line.split(':',1)[1].strip() #this is better and co-pilot says so
     #Ok now what we do is convert the hex number to an int
     integer = int(hexdata,16)
     #Then finally we convert the int bits to float
@@ -101,10 +111,14 @@ class Comms():
     return rxchar;
 
   def SerialPutc(self,txchar,echo):
-    if self.hComm is not None:
-      if echo:
-        print("Sending ASCII Code = " + str(ord(txchar)))
-      self.hComm.write(txchar.encode("ascii"))
+    if self.MODE == 'AUTO':
+      if self.hComm is not None:
+        if echo:
+          print("Sending ASCII Code = " + str(ord(txchar)))
+        self.hComm.write(txchar.encode("ascii"))
+    elif self.MODE == "SIL":
+      #Then we're in simulation mode so write to a text file
+      self.outfile.write(txchar)
 
   def SerialPutString(self,string,echo=1):
     for s in string:
@@ -186,6 +200,10 @@ class Comms():
 
   def SerialSend(self,echo=1):
     self.SerialSendArray(self.fast_packet,echo)
+    if self.MODE == 'SIL':
+      self.outfile.close()
+      self.filenumber +=1
+      self.openfile()
       
   def SerialSendArray(self,number_array,echo=1):
     #union inparser inputvar; ##Need to look up how to do union inparser

@@ -156,8 +156,11 @@ if MODE != 'SIMONLY' and MODE != 'SIL':
 
 ##Setup Telemetry
 from Comms.Comms import Comms as S
-ser = S(13) #otherwise this defaults to 12
-ser.SerialInit(57600,"/dev/ttyAMA0",period=1.0)
+ser = S(8) #otherwise this defaults to 12
+if MODE == 'HIL' or MODE=='AUTO':
+    ser.SerialInit(57600,"/dev/ttyAMA0",period=1.0)
+else:
+    ser.setMODE(MODE)
 
 #Short break to build suspense
 if MODE != 'SIMONLY':
@@ -314,11 +317,11 @@ def run_physics_simulation():
             ser.fast_packet[5] = gps_llh.longitude #//6 - longitude
             ser.fast_packet[6] = baro.ALT #//7 - altitude (barometer)
             ser.fast_packet[7] = gps_llh.speed #//8 - speed (GPS)
-            ser.fast_packet[8] = gps_llh.altitude #//9 - altitude (GPS)
-            ser.fast_packet[9] = rc.rcin.throttle #//10 - throttle
-            ser.fast_packet[10] = rc.rcin.roll #//11 - aileron
-            ser.fast_packet[11] = rc.rcin.pitch #//12 - elevator
-            ser.fast_packet[12] = rc.rcin.yaw #//13 - rudder
+            #ser.fast_packet[8] = gps_llh.altitude #//9 - altitude (GPS)
+            #ser.fast_packet[9] = rc.rcin.throttle #//10 - throttle
+            #ser.fast_packet[10] = rc.rcin.roll #//11 - aileron
+            #ser.fast_packet[11] = rc.rcin.pitch #//12 - elevator
+            #ser.fast_packet[12] = rc.rcin.yaw #//13 - rudder
             ser.SerialSend(0)
         #Log data
         if (RunTime - logTime) >= LOGTIME:

@@ -241,10 +241,10 @@ void SerialComms::SerialSendArray(float number_array[],int num,int echo) {
     //This routine uses a while loop until it hits a NULL char
     //SerialPutSrting(hComm,outline);
     //This routine uses a for loop
-    SerialPutString(outline,11); //The 11 here is the number of characters in the string
+    SerialPutString(outline); //The 11 here is the number of characters in the string
     //H: - 2 chars
     //followed by 8 hex chars
-    //followed by a space - 1
+    //followed by a space - 1 - Apparently this space does not exist and create a NULL byte
     //11 total
     //Send a slash r after every number
     SerialPutc('\r');

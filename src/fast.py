@@ -1,4 +1,3 @@
-
 #############################################
 #
 #  FASTCASSTPy - Facility for Aerial Systems and Technology

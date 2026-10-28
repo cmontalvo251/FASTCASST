@@ -92,6 +92,27 @@ class WINDOW():
 		#Create logging file
 		outfilename = 'logs/Ground_Station_'+datetime.datetime.now().strftime("%m_%d_%Y_%H_%M_%S")+'.csv'
 		self.outfile = open(outfilename,'w')
+		self.running = True
+		self.fig.canvas.mpl_connect('key_press_event', self.on_key_press)
+		self.fig.canvas.mpl_connect('close_event', self.on_close)
+
+	def on_key_press(self, event):
+		if event.key in ['q', 'Q']:
+			print("Quit requested from GUI ('q')")
+			self.close()
+
+	def on_close(self, event):
+		print("GUI window closed")
+		self.running = False
+
+	def close(self):
+		self.running = False
+		try:
+			if hasattr(self, 'outfile') and not self.outfile.closed:
+				self.outfile.close()
+		except Exception:
+			pass
+		plt.close('all')
 
 	def logData(self,telemetry_packet):
 		ctr = 0
@@ -166,7 +187,7 @@ class WINDOW():
 		self.ax21.text(0,0.45,'Pitch (deg) = '+str(self.pitch))
 		self.ax21.text(0,0,'Yaw (deg) = '+str(self.yaw))
 		##GRID 2,2 - CUBE
-		CubeDraw(self.ax22,self.roll*np.pi/180.,self.pitch*np.pi/180.0,self.yaw*np.pi/180.0)
+		CubeDraw(self.ax22,self.roll*np.pi/180.,-self.pitch*np.pi/180.0,-self.yaw*np.pi/180.0)
 		##GRID 2,3 - TIME
 		self.ax23.text(0,0.5,'Time (sec) = '+str(self.t[-1]))
 		##GRID 3,1 - GPS AND PITOT SPEED
@@ -233,13 +254,18 @@ while True:
             UPDATEWINDOW = True
     if MODE == 'SIL':
         filenumberNEW = ser.maxFile(filenumber)
-        print('FASTCASST at = ',filenumberNEW,' GUI Time = ',time.monotonic()-startTime)
-        #Now this means though we need to read the file before
-        if filenumber > 0:
-            print('Reading File = ',filenumber-1)
-            ser.readFile(ser.getFileName(filenumber-1))
-            print(ser.fast_packet)
-            UPDATEWINDOW = True
+        if filenumberNEW != filenumber:
+            #This means we have a new file
+            filenumber = filenumberNEW
+            print('FASTCASST at = ',filenumberNEW,' GUI Time = ',time.monotonic()-startTime)
+			#Now this means though we need to read the file before
+            if filenumber > 0:
+                print('Reading File = ',filenumber-1)
+                ser.readFile(ser.getFileName(filenumber-1))
+                print(ser.fast_packet)
+                UPDATEWINDOW = True
+    if GND.running == False:
+        sys.exit()
 
     #Clear the GUI window
     if UPDATEWINDOW:

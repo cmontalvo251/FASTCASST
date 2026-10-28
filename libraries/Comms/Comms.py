@@ -14,7 +14,7 @@ class Comms():
     self.lastTime = 0.0
     self.MAXLINE = 120
     self.fast_packet = np.zeros(packet_size)
-    self.csv_packet = np.zeros(6)
+    self.csv_packet = np.zeros(8)
     
   def bitsToFloat(self,b):
     if (b > 2147483647):
@@ -53,6 +53,7 @@ class Comms():
     file = open(filename)
     counter = 0
     for line in file:
+      print(counter,line)
       self.csv_packet[counter] = self.lineToFloat(line)
       counter+=1
     file.close()

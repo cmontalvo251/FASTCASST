@@ -53,6 +53,9 @@ class MODEL():
         self.baro = MS.MS5611(mode='SIMONLY')
         self.baro.defaults()
         self.REARTH = 6371000.0
+        self.MEARTH = 5.972*10**24 #//%%%Mass of the earth in kg
+        self.G = 6.6742*10**-11
+        self.gravI = np.asarray([0.,0.,9.81])
 
         #Magnetometer
         self.magI = np.asarray([300.,0.,0.])
@@ -179,14 +182,17 @@ class MODEL():
         ##Magnetic Field Model
         self.mag = np.matmul(TBI,self.magI)
         
-        #Force and Moment Model 
+        #Force and Moment Model and Gravity
         if self.VEHICLE == 'satellite':
             Fbody,Mbody = self.vehicle.ForceMoment(t,dstate,self.commands,self.mag)
+            r = np.sqrt(x**2 + y**2 + z**2)
+            self.gravI[0] = -self.G * self.MEARTH / r**3 * x
+            self.gravI[1] = -self.G * self.MEARTH / r**3 * y
+            self.gravI[2] = -self.G * self.MEARTH / r**3 * z
         else:
             Fbody,Mbody = self.vehicle.ForceMoment(t,dstate,self.commands)
-
-        #Gravity
-        Fgrav = np.matmul(TBI,np.asarray([0,0,9.81]))*self.mass
+            self.gravI = np.asarray([0,0,9.81])
+        Fgrav = np.matmul(TBI,np.asarray(self.gravI))*self.mass
 
         #Ground Contact Model
         FgrndB = np.zeros(3)

@@ -62,6 +62,7 @@ class GPS():
         LATITUDE_ORIGIN = 30.69 #Set origin for SIMONLY / SIL / HIL
         LONGITUDE_ORIGIN = -88.16 #set origin for SIMONLY / SIL / HIL
         self.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
+        self.VEHICLE = '' #Leave this empty for now. Once you run the send() routine in SIMONLY/SIL mode it will update this
 
     def initialize(self, port='spi:0.0', baud=5000000):
         if self.MODE != 'AUTO':
@@ -168,7 +169,10 @@ class GPS():
         #Then we compute speed and heading here
         self.compute_heading_velocity()
         #And convert LAT/LON/ALT to XYZ
-        self.convertLATLON2XY()
+        if self.VEHICLE == 'satellite':
+            self.convertLATLON2XYSPHERICAL()
+        else:
+            self.convertLATLON2XY()
         return
 
     def send(self,state,statedot,VEHICLE):
@@ -177,6 +181,7 @@ class GPS():
         u = state[7]
         v = state[8]
         w = state[9]
+        self.VEHICLE = VEHICLE
         if VEHICLE == 'satellite':
             #Convert to lat/lon/alt using polar coordinates
             self.latitude,self.longitude,self.altitude = self.convertXY2LATLONSPHERICAL(state[0],state[1],state[2])
@@ -274,6 +279,18 @@ class GPS():
         lon = np.degrees(lon_rad)
         alt = rho - self.REARTH
         return lat, lon, alt
+
+    def convertLATLON2XYSPHERICAL(self):
+        #//Extract LLH
+        #//Compute spherical coordinates
+        thetaE = (90.0 - self.latitude)*np.pi/180.0;
+        psiE = self.longitude*np.pi/180.0;
+        rho = self.altitude + self.REARTH;
+        #///CONVERT LAT LON TO METERS
+        self.X = rho*np.sin(thetaE)*np.cos(psiE);
+        self.Y = rho*np.sin(thetaE)*np.sin(psiE);
+        self.Z = rho*np.cos(thetaE);
+        return
 
     def convertLATLON2XY(self):
         self.X = (self.latitude  - self.latO) * 60 * self.NM2FT * self.FT2M

@@ -243,6 +243,22 @@ $ python3 calibrate_joystick.py
 
 After running this you will have a new .json file in the calibration folder that you can use when you compile and run SIL mode in either FASTPy or FAST++.
 
+# Satellite Simulations
+
+In order to get the V_satellite simulation to run you need to get the IGRF model for both Python and C++. For python you simply run
+
+$ pip3 install pyIGRF
+
+You must also install the igrf coefficients file into your site-packages folder. At the time of this writing the igrf13coeffs.txt file can be downloaded from this website. https://www.ngdc.noaa.gov/IAGA/vmod/igrf.html
+
+If for whatever reason that website breaks, I have downloaded the coefficients and placed them on Google Drive. https://drive.google.com/file/d/13W4z7zfW-JDCYFT-6HADGnr70-H6tCOh/view?usp=sharing
+
+Once you have the coefficient file downloaded you must copy the txt into your site-packages folder. My recommendation is to run the code and have Python throw an error to figure out what folder and text file it is looking for. In this case, Python was looking in the folder below for igrf14coeffs.txt. 
+
+/home/carlos/.local/lib/python3.10/site-packages/pyIGRF/src/igrf14coeffs.txt
+
+Instead of looking for igrf14coeffs.txt I simply copied the igrf13coeffs.txt that I received from the web and renamed it to igrf14coeffs.txt
+
 # How to Add a New Vehicle in the libraries/ folder
 
 Adding a new vehicle is fairly simple but there are some fundamental steps. 

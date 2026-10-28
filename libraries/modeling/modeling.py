@@ -55,7 +55,14 @@ class MODEL():
         self.REARTH = 6371000.0
 
         #Magnetometer
-        self.magI = np.asarray([300,0,0])
+        self.magI = np.asarray([300.,0.,0.])
+        self.magUpdateRate = 1.0 #So we don't do it all the time
+        self.magNext = 0.0
+        #Check to see if we are a satellite and need an IGRF_Field
+        if self.VEHICLE == 'satellite':
+            import pyIGRF as IGRF
+            self.IGRF = IGRF
+            self.date = 2020 #Can change this later
 
     def log(self,RunTime):
         #Time (sec)
@@ -83,22 +90,16 @@ class MODEL():
         self.logger.outdata[10] = self.p*180/np.pi
         self.logger.outdata[11] = self.q*180/np.pi
         self.logger.outdata[12] = self.r*180/np.pi
-        #Mx(Gauss) ,My(Gauss) ,Mz(Gauss) _ The model currently has no magnetometer measurements
-        #we'll need to add it once we add the IGRF model for satellites
+        #Mx(Gauss) ,My(Gauss) ,Mz(Gauss) _ The model currently assumes 300,0,0 for flat earth vehicles
+        #and is using the IGRF model for satellites
         self.logger.outdata[13] = self.mag[0]
         self.logger.outdata[14] = self.mag[1]
         self.logger.outdata[15] = self.mag[2]
         #GPS Latitude (deg) ,GPS Longitude (deg) ,GPS Altitude (m)
         #Convert x,y,z
-        if self.VEHICLE == 'satellite':
-            #Convert to lat/lon/alt using polar coordinates
-            self.latitude,self.longitude,self.altitude = self.gps.convertXY2LATLONSPHERICAL(self.state[0],self.state[1],self.state[2])
-        else:
-            #convert to lat/lon/alt using flat earth approx
-            self.latitude,self.longitude,self.altitude = self.gps.convertXYZ2LATLON(self.state[0],self.state[1],self.state[2])
-        self.logger.outdata[16] = self.latitude
-        self.logger.outdata[17] = self.longitude
-        self.logger.outdata[18] = self.altitude
+        self.logger.outdata[16] = self.gps.latitude
+        self.logger.outdata[17] = self.gps.longitude
+        self.logger.outdata[18] = self.gps.altitude
         #GPS Heading (deg) ,IMU Heading (deg)
         if self.gps.heading == -999:
             heading = 0
@@ -179,7 +180,10 @@ class MODEL():
         self.mag = np.matmul(TBI,self.magI)
         
         #Force and Moment Model 
-        Fbody,Mbody = self.vehicle.ForceMoment(t,dstate,self.commands)
+        if self.VEHICLE == 'satellite':
+            Fbody,Mbody = self.vehicle.ForceMoment(t,dstate,self.commands,self.mag)
+        else:
+            Fbody,Mbody = self.vehicle.ForceMoment(t,dstate,self.commands)
 
         #Gravity
         Fgrav = np.matmul(TBI,np.asarray([0,0,9.81]))*self.mass
@@ -229,6 +233,14 @@ class MODEL():
         #Update GPS
         self.gps.send(self.state,self.statedot,self.VEHICLE)
         self.gps.poll(t)
+        #Update Magnetic Field
+        if t > self.magNext:
+            self.magNext += self.magUpdateRate
+            result = self.IGRF.igrf_value(self.gps.latitude,self.gps.longitude,self.gps.altitude,self.date)
+            self.magI[0] = result[3]
+            self.magI[1] = result[4]
+            self.magI[2] = result[5] #results are in nT
+            self.magI *= 1.0e-9 #convert to Tesla
         #Copy Commands and RCsignals
         self.commands = commands
         self.rcsignals = rcsignals

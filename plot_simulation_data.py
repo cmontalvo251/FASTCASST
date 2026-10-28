@@ -27,7 +27,7 @@ tend = -99
 def printCodes():
     print('Command is....')
     print('./plot_simulation_data.py # MODEL')
-    print('MODEL is either "car","satellite","boat","meta","quad","airplane" or "x8"')
+    print('MODEL is either "car","satellite","boat","tank","quadcopter","airplane" or "x8"')
     print('1 = clean, compile FAST++, run and plot')
     print('2 = compile FAST++, run and plot')
     print('3 = run FAST++ and plot')

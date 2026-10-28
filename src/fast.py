@@ -29,7 +29,7 @@ if len(sys.argv) > 2:
 else:
     print('You must run python3 src/fast.py MODE MODEL')
     print('Where MODE = SIMONLY, SIL, HIL or AUTO')
-    print('MODEL = x8, airplane, boat or car')
+    print('MODEL = satellite, tank, quadcopter, x8, airplane, boat or car')
     sys.exit()
 
 ##Add a check for a user sending a bad mode value
@@ -206,7 +206,7 @@ def run_physics_simulation():
         if MODE == 'SIMONLY' or MODE == 'SIL':
             #Send model states to sensors
             gps_llh.send(model.state,model.statedot,VEHICLE)
-            imu.send(model.state) #Just send the entire state vector
+            imu.send(model.state,model.magI) #Just send the entire state vector + the magnetic field
             baro.send(model.state) #again send the entire state vector
             #Integrate one timestep
             RunTime = LastTime + model.timestep
@@ -250,7 +250,11 @@ def run_physics_simulation():
         baro.poll(RunTime)
 
         #Run your control loop
-        controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,gdegs,baro)
+        if VEHICLE == 'satellite':
+            #Satellite needs the magnetometer and doesn't care about the barometer values
+            controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,gdegs,m)
+        else:
+            controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,gdegs,baro)            
 
         #Announce autopilot state changes in stdout
         if ARMED:
@@ -295,7 +299,10 @@ def run_physics_simulation():
             if MODE == 'SIMONLY':
                 str_xyz = [f"{model.state[i]:1.3f}" for i in range(0,3)]
                 str_speed = [f"{gps_llh.speed:3.3f}",f"{gps_llh.speed_x:3.3f}",f"{gps_llh.speed_y:3.3f}"]
-                print(f"{RunTime:4.4f}", str_xyz, str_rpy,str_speed)
+                if VEHICLE == 'satellite':
+                    print(f"{RunTime:4.4f}", str_xyz, str_rpy,str_g)
+                else:
+                    print(f"{RunTime:4.4f}", str_xyz, str_rpy,str_speed)
             else:
                 if ARMED:
                     arm_str = "AUTOPILOT" if control_color == 'Blue' else "ARMED"

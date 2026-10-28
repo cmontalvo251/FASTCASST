@@ -576,7 +576,7 @@ class MPU9250:
 # returns accel, gyro and mag values
 # -----------------------------------------------------------------------------------------------
 
-    def send(self,state):
+    def send(self,state,magI):
         #Need to generate a,g,m and temp
         #Acceleration needs to come from quaternion vector
         q0123 = np.asarray([state[3],state[4],state[5],state[6]])
@@ -588,8 +588,8 @@ class MPU9250:
         q = state[11]
         r = state[12]
         self.gyro = np.asarray([p,q,r])
-        #Magnetometer comes from assuming magnetic field is [300,0,0]
-        self.mag = np.matmul(TBI,np.asarray([300,0,0]))
+        #For magnetic field we need to use the magnetic field from the model
+        self.mag = np.matmul(TBI,magI)
         #self.mag = np.matmul(TIB,np.asarray([300,0,0]))
 
     def getALL(self,dt,gps_heading = -999): #gps heading defaults to -999 if not available

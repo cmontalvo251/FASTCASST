@@ -225,7 +225,7 @@ The ground station is located in the ground_station folder and invoked by runnin
 
 $ python3 ground_station.py MODE
 
-where MODE is either SIL or HIL. The ground station isn't fast enough to operate in SIMONLY mode and is not necessary. For SIL mode the ground station reads a csv file created by both FASTPy and FAST++. In HIL mode you must use wireless radios to communicate via serial from your ground station to your microcontroller and vice versa. When running in AUTO mode you can simply run the ground station in HIL mode as the hardware for HIL and AUTO mode are the same. 
+where MODE is either SIL or HIL. The ground station isn't fast enough to operate in SIMONLY mode and is not necessary. For SIL mode the ground station reads a csv file created by both FASTPy and FAST++. In HIL mode you must use wireless radios to communicate via serial from your ground station to your microcontroller and vice versa. When running in AUTO mode you can simply run the ground station in HIL mode as the hardware for HIL and AUTO mode are the same. The modules needed for the ground station are the same as those needed for FASTPy and the plotting script. Simply going through those setups will gaurantee you have everthing you need to run the ground station. To close the ground station simply type the letter q while the ground station is active. Be sure to close the ground station before closing the simulation or the ground station will hang.
 
 # How to Add a New Controller for SIL
 

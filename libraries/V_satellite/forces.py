@@ -44,6 +44,9 @@ class FORCES:
         Moment = np.asarray([0.,0.,0.])
         MMTVEC = np.asarray([0.,0.,0.])
 
+        ##Hardcode to test commands
+        #commands[2] = -1.0
+
         # Compute magnetorquer current and moment vector
         for i in range(3):
             if i < self.NUMTORQUERS:
@@ -88,5 +91,8 @@ class FORCES:
 
         # Reset time
         self.prev_time = time
+
+        #print(Force,Moment)
+        #print(commands)
 
         return Force,Moment

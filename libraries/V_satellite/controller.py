@@ -53,32 +53,38 @@ class CONTROLLER():
         elif rcin.autopilot > 1500:
             self.color = 'Blue'
             # Run control loop if active
-            # Extract PQR in (deg/s) from sense_matrix
-            self.pqr[0] = g[0]
-            self.pqr[1] = g[1]
-            self.pqr[2] = g[2]
-            # Convert to (rad/s)
-            self.pqr *= math.pi / 180.0
+            if self.CONTROLMODE == 1:
+                # Extract PQR in (deg/s) from sense_matrix
+                self.pqr[0] = g[0]
+                self.pqr[1] = g[1]
+                self.pqr[2] = g[2]
+                # Convert to (rad/s)
+                self.pqr *= math.pi / 180.0
 
-            # Check angular velocity norm for detumbling / reaction wheel spinup
-            if np.linalg.norm(self.pqr) < 1.0:
-                # Damping control: M_desired = -KD * (pqr_command - pqr_nav), assuming pqr_command = 0
-                KD = -0.1
-                desired_moments = self.pqr * KD / self.Irw
+                # Check angular velocity norm for detumbling / reaction wheel spinup
+                if np.linalg.norm(self.pqr) < 1.0:
+                    # Damping control: M_desired = -KD * (pqr_command - pqr_nav), assuming pqr_command = 0
+                    KD = -0.1
+                    desired_moments = self.pqr * KD / self.Irw
 
-                # Place into control matrix for reaction wheels (indices 3 to 5)
-                self.controls[3] = desired_moments[0]
-                self.controls[4] = desired_moments[1]
-                self.controls[5] = desired_moments[2]
-            else:   
-                # Extract Magnetometer Readings
-                # mu_ideal = k * (omega cross B)
-                desired_moments = np.cross(self.pqr,m)
-                desired_moments *= self.KMAG
-                # Convert to currents
-                desired_moments /= self.NUMTURNS * self.AREA
-                # Send to control matrix actuators
-                for i in range(self.NUMTORQUERS):
-                    self.controls[i] = desired_moments[i]
-        
+                    # Place into control matrix for reaction wheels (indices 3 to 5)
+                    self.controls[3] = desired_moments[0]
+                    self.controls[4] = desired_moments[1]
+                    self.controls[5] = desired_moments[2]
+                else:   
+                    # Extract Magnetometer Readings
+                    # mu_ideal = k * (omega cross B)
+                    desired_moments = np.cross(self.pqr,m)
+                    desired_moments *= self.KMAG
+                    # Convert to currents
+                    desired_moments /= self.NUMTURNS * self.AREA
+                    # Send to control matrix actuators
+                    for i in range(self.NUMTORQUERS):
+                        self.controls[i] = desired_moments[i]
+            elif self.CONTROLMODE == 0:
+                #Then we just set all controls to zero so we just pass
+                pass
+
+        #print(self.controls)
+            
         return self.controls,self.defaults,self.color

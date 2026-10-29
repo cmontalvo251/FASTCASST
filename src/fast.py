@@ -127,6 +127,9 @@ if MODE == 'SIMONLY' or MODE == 'SIL':
 #Setup IMU
 import MPU9250.mpu9250 as MPU
 imu = MPU.MPU9250(mode=MODE)
+if VEHICLE == 'satellite':
+    import startracker.startracker as st
+    star = st.STARTRACKER()
 
 #Setup datalogger
 import Datalogger.datalogger as D
@@ -208,6 +211,8 @@ def run_physics_simulation():
             gps_llh.send(model.state,model.statedot,VEHICLE)
             imu.send(model.state,model.magI) #Just send the entire state vector + the magnetic field
             baro.send(model.state) #again send the entire state vector
+            if VEHICLE=='satellite':
+                star.send(model.state) #this is where we send rpy 
             #Integrate one timestep
             RunTime = LastTime + model.timestep
             model.loop(RunTime,rc.rcin.rcsignals,commands)
@@ -243,6 +248,10 @@ def run_physics_simulation():
         #during boot up. Might be a good thing to test once you start hardware testing.
         #compass is the ahrs magnetometer heading + the gps heading
         a,gdegs,m,rpy,rpy_ahrs,temp,compass = imu.getALL(elapsedTime,gps_llh.heading) 
+        ##The satellite can't use the AHRS algorithm, it has to use a star tracker for rpy
+        #So don't even bother using the compass value
+        if VEHICLE == 'satellite':
+            rpy_star = star.get()
 
         #Get pressure which also converts to altitude (temperature is not currently working to speed up simulation)
         #If you really want temperature check the baro.poll() function and uncomment the temperature routine
@@ -252,7 +261,8 @@ def run_physics_simulation():
         #Run your control loop
         if VEHICLE == 'satellite':
             #Satellite needs the magnetometer and doesn't care about the barometer values
-            controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,gdegs,m)
+            #And we have to use the rpy values from the startracker
+            controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_star,gdegs,m)
         else:
             controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,gdegs,baro)            
 
@@ -294,7 +304,10 @@ def run_physics_simulation():
 
         #Print to Home
         if (RunTime - printTime) > PRINTTIME:
-            str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
+            if VEHICLE == 'satellite':
+                str_rpy = [f"{ang:3.3f}" for ang in rpy_star] #convert rpy to 3 sig figs
+            else:
+                str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
             str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
             if MODE == 'SIMONLY':
                 str_xyz = [f"{model.state[i]:1.3f}" for i in range(0,3)]
@@ -317,9 +330,14 @@ def run_physics_simulation():
             telemetryTime += TELEMETRYTIME	
             print('Sending telemtry packet...',RunTime)
             ser.fast_packet[0] = RunTime #//1 - Time
-            ser.fast_packet[1] = rpy_ahrs[0] #//2 - roll
-            ser.fast_packet[2] = rpy_ahrs[1] #//3 - pitch
-            ser.fast_packet[3] = rpy_ahrs[2] #//4 - yaw 
+            if VEHICLE == 'satellite':
+                ser.fast_packet[1] = rpy_star[0] #//2 - roll
+                ser.fast_packet[2] = rpy_star[1] #//3 - pitch
+                ser.fast_packet[3] = rpy_star[2] #//4 - yaw 
+            else:
+                ser.fast_packet[1] = rpy_ahrs[0] #//2 - roll
+                ser.fast_packet[2] = rpy_ahrs[1] #//3 - pitch
+                ser.fast_packet[3] = rpy_ahrs[2] #//4 - yaw
             ser.fast_packet[4] = gps_llh.latitude #//5 - latitude
             ser.fast_packet[5] = gps_llh.longitude #//6 - longitude
             ser.fast_packet[6] = baro.ALT #//7 - altitude (barometer)
@@ -343,13 +361,18 @@ def run_physics_simulation():
                 Z = -baro.ALT
             logger.outdata[3] = Z
             #Roll (deg) ,Pitch (deg) , Compass (deg)
-            logger.outdata[4] = rpy_ahrs[0]
-            logger.outdata[5] = rpy_ahrs[1]
-            if compass == -999:
-                yaw = rpy_ahrs[2]
+            if VEHICLE == 'satellite':
+                logger.outdata[4] = rpy_star[0]
+                logger.outdata[5] = rpy_star[1]
+                logger.outdata[6] = rpy_star[2]
             else:
-                yaw = compass
-            logger.outdata[6] = yaw
+                logger.outdata[4] = rpy_ahrs[0]
+                logger.outdata[5] = rpy_ahrs[1]
+                if compass == -999:
+                    yaw = rpy_ahrs[2]
+                else:
+                    yaw = compass
+                logger.outdata[6] = yaw
             #U(m/s) ,V(m/s) ,W(m/s)
             if gps_llh.speed_x == -99:
                 speed_X = 0.0
@@ -373,7 +396,8 @@ def run_physics_simulation():
             logger.outdata[16] = gps_llh.latitude
             logger.outdata[17] = gps_llh.longitude
             logger.outdata[18] = gps_llh.altitude
-            #GPS Heading (deg) ,IMU Heading (deg)
+            #GPS Heading (deg) ,IMU Heading (deg) -- for the satellite these values will be garbage anyway.
+            #So no real need to fix thise for the satellite. 
             if gps_llh.heading == -999:
                 heading = 0.0
             else:

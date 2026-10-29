@@ -261,28 +261,23 @@ class MODEL():
 
     def euler2quat(self,ptp):
         #%%%Input is a 3x1 vector and output is a 4x1 vector
-
-        phi = ptp[0];
+        phi = ptp[0]
         theta = ptp[1]
         psi = ptp[2]
-
-        q0 = np.cos(phi/2)*np.cos(theta/2)*np.cos(psi/2) + np.sin(phi/2)*np.sin(theta/2)*np.sin(psi/2);
-        q1 = np.sin(phi/2)*np.cos(theta/2)*np.cos(psi/2) - np.cos(phi/2)*np.sin(theta/2)*np.sin(psi/2);
-        q2 = np.cos(phi/2)*np.sin(theta/2)*np.cos(psi/2) + np.sin(phi/2)*np.cos(theta/2)*np.sin(psi/2);
-        q3 = np.cos(phi/2)*np.cos(theta/2)*np.sin(psi/2) - np.sin(phi/2)*np.sin(theta/2)*np.cos(psi/2);
-
-        return np.asarray([q0,q1,q2,q3]);
+        q0 = np.cos(phi/2)*np.cos(theta/2)*np.cos(psi/2) + np.sin(phi/2)*np.sin(theta/2)*np.sin(psi/2)
+        q1 = np.sin(phi/2)*np.cos(theta/2)*np.cos(psi/2) - np.cos(phi/2)*np.sin(theta/2)*np.sin(psi/2)
+        q2 = np.cos(phi/2)*np.sin(theta/2)*np.cos(psi/2) + np.sin(phi/2)*np.cos(theta/2)*np.sin(psi/2)
+        q3 = np.cos(phi/2)*np.cos(theta/2)*np.sin(psi/2) - np.sin(phi/2)*np.sin(theta/2)*np.cos(psi/2)
+        return np.asarray([q0,q1,q2,q3])
             
     def quat2euler(self,q0123):
         q0 = q0123[0]
         q1 = q0123[1]
         q2 = q0123[2]
         q3 = q0123[3]
-
         phi = (np.arctan2(2*(q0*q1 + q2*q3),1-2*(q1**2 + q2**2)))
         theta = np.arcsin(2*(q0*q2-q3*q1))
         psi = np.arctan2(2*(q0*q3 + q1*q2),1-2*(q2**2 + q3**2))
-
         return np.asarray([phi,theta,psi])
 
     def extract_Euler(self,T):

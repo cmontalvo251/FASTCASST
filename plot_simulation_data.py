@@ -181,17 +181,19 @@ if norm > REARTH:
     plti.set_ylabel('Angular Velocity (deg/s)')
     pp.savefig()
 
-    STICK_MAX = 2016.
-    STICK_MID = 1500.
-    STICK_MIN = 992.
+    if counter == 5: #This is python
+        STICK_MAX = 1.0
+        STICK_MID = 0.0
+        STICK_MIN = -1.0
+    else:
+        STICK_MAX = 2016.
+        STICK_MID = 1500.
+        STICK_MIN = 992.
     dOmega_max = 10.
     dPWM = (STICK_MAX-STICK_MIN)
     IpwmC = (dOmega_max/dPWM)
-    try:
-        control_signals = model_data[istart_model:iend_model,35:38]
-    except:
-        control_signals = model_data[istart_model:iend_model,35:37]
-    moments = (control_signals - STICK_MID)*IpwmC
+    current_signals = model_data[istart_model:iend_model,36:39]
+    moments = (current_signals - STICK_MID)*IpwmC
     fig = plt.figure()    
     plti = fig.add_subplot(1,1,1)
     #plti.plot(sense_time[istart_sense:iend_sense],control_signals)

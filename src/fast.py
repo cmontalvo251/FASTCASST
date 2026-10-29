@@ -380,7 +380,7 @@ def run_physics_simulation():
                 speed_Z = 0.0
             else:
                 if VEHICLE == 'satellite':
-                    TIB = imu.R123(rpy_star[0],rpy_star[1],rpy_star[2])
+                    TIB = imu.R123(rpy_star[0]*np.pi/180.0,rpy_star[1]*np.pi/180.0,rpy_star[2]*np.pi/180.0)
                     TBI = np.transpose(TIB)
                     xyzdot = np.asarray([gps_llh.speed_x,gps_llh.speed_y,gps_llh.speed_z])
                     uvw = np.matmul(TBI,xyzdot)

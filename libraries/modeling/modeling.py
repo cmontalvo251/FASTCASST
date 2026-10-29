@@ -47,6 +47,8 @@ class MODEL():
         #Setup GPS for lat/lon conversions
         self.gps = G.GPS(mode='SIMONLY')
         self.gps.setOrigin(LATITUDE_ORIGIN,LONGITUDE_ORIGIN)
+        self.gps.send(self.state,self.statedot,self.VEHICLE)
+        self.gps.poll(0.0)
 
         #Setup Barometer for pressure to altitude conversions
         import MS5611.ms5611 as MS
@@ -66,6 +68,11 @@ class MODEL():
             import pyIGRF as IGRF
             self.IGRF = IGRF
             self.date = 2020 #Can change this later
+            result = self.IGRF.igrf_value(self.gps.latitude,self.gps.longitude,self.gps.altitude,self.date)
+            self.magI[0] = result[3]
+            self.magI[1] = result[4]
+            self.magI[2] = result[5] #results are in nT
+            self.magI *= 1.0e-9 #convert to Tesla
 
     def log(self,RunTime):
         #Time (sec)

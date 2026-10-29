@@ -16,9 +16,9 @@ class STARTRACKER():
         phi = (np.arctan2(2*(q0*q1 + q2*q3),1-2*(q1**2 + q2**2)))
         theta = np.arcsin(2*(q0*q2-q3*q1))
         psi = np.arctan2(2*(q0*q3 + q1*q2),1-2*(q2**2 + q3**2))
-        self.rpy[0] = phi
-        self.rpy[1] = theta
-        self.rpy[2] = psi
+        self.rpy[0] = phi*180./np.pi
+        self.rpy[1] = theta*180./np.pi
+        self.rpy[2] = psi*180/np.pi
 
     def get(self):
         return self.rpy

@@ -46,6 +46,7 @@ class FORCES:
 
         ##Hardcode to test commands
         #commands[2] = -1.0
+        #print(mag)
 
         # Compute magnetorquer current and moment vector
         for i in range(3):

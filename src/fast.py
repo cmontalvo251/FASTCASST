@@ -265,6 +265,10 @@ def run_physics_simulation():
             controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_star,gdegs,m)
         else:
             controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,gdegs,baro)            
+        ##Saturation
+        for i in range(0, vehicle.NUMCONTROLS):
+            vehicle.controls[i] = min(max(vehicle.controls[i],-1),1)
+            vehicle.defaults[i] = min(max(vehicle.defaults[i],-1),1)
 
         #Announce autopilot state changes in stdout
         if ARMED:

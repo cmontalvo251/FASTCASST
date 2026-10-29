@@ -68,7 +68,8 @@ class MODEL():
             import pyIGRF as IGRF
             self.IGRF = IGRF
             self.date = 2020 #Can change this later
-            result = self.IGRF.igrf_value(self.gps.latitude,self.gps.longitude,self.gps.altitude,self.date)
+            #Lat/Lon/Altitude in Km
+            result = self.IGRF.igrf_value(self.gps.latitude,self.gps.longitude,self.gps.altitude/1000.0,self.date)
             self.magI[0] = result[3]
             self.magI[1] = result[4]
             self.magI[2] = result[5] #results are in nT
@@ -249,7 +250,8 @@ class MODEL():
         #Update Magnetic Field
         if t > self.magNext:
             self.magNext += self.magUpdateRate
-            result = self.IGRF.igrf_value(self.gps.latitude,self.gps.longitude,self.gps.altitude,self.date)
+            #Lat/Lon/Altitude in Km
+            result = self.IGRF.igrf_value(self.gps.latitude,self.gps.longitude,self.gps.altitude/1000.0,self.date)
             self.magI[0] = result[3]
             self.magI[1] = result[4]
             self.magI[2] = result[5] #results are in nT

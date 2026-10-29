@@ -23,11 +23,15 @@ class GPS():
         self.prev_latitude = -99
         self.longitude      = -99
         self.prev_longitude = -99
+        self.prevX          = -99
+        self.prevY          = -99
+        self.prevZ          = -99
         self.altitude       = -99
         self.heading        = -999
         self.speed          = -99
         self.speed_x        = -99
         self.speed_y        = -99
+        self.speed_z        = 0
         self.fix_quality    = 0
         self.num_satellites = 0
         self.has_fix        = False
@@ -49,7 +53,7 @@ class GPS():
         self.lonO   = -88.1
 
         ##Polling timing
-        self.GPSNEXT = 0.25
+        self.GPSNEXT = 1.0#0.25
         self.GPSTime = -self.GPSNEXT
 
         self.ubl = None
@@ -167,11 +171,13 @@ class GPS():
             self.num_satellites = 6
 
         #Then we compute speed and heading here
-        self.compute_heading_velocity()
         #And convert LAT/LON/ALT to XYZ
+        #but the algorithms are different if using a satellite
         if self.VEHICLE == 'satellite':
             self.convertLATLON2XYSPHERICAL()
+            self.computeSPEEDSPHERICAL()
         else:
+            self.compute_heading_velocity()
             self.convertLATLON2XY()
         return
 
@@ -193,6 +199,28 @@ class GPS():
             #Speed is updated in the compute_heading_velocity routine
             #self.speed = np.sqrt(u**2 + v**2)
         return
+
+    def computeSPEEDSPHERICAL(self):
+        if self.prevX != -99:
+            new_speed_x = (self.X - self.prevX) / self.elapsedTime
+            new_speed_y = (self.Y - self.prevY) / self.elapsedTime
+            new_speed_z = (self.Z - self.prevZ) / self.elapsedTime
+            if self.speed_x == -99:
+                self.speed_x = new_speed_x*self.filterConstant + self.speed_x*(1-self.filterConstant)
+                self.speed_y = new_speed_y*self.filterConstant + self.speed_y*(1-self.filterConstant)
+                self.speed_z = new_speed_z*self.filterConstant + self.speed_z*(1-self.filterConstant)
+            else:
+                self.speed_x = new_speed_x
+                self.speed_y = new_speed_y
+                self.speed_z = new_speed_z
+        else:
+            self.speed_x = 0.0
+            self.speed_y = 0.0
+            self.speed_z = 0.0
+        self.speed = np.sqrt(self.speed_x**2 + self.speed_y**2 + self.speed_z**2)            
+        self.prevX = self.X
+        self.prevY = self.Y
+        self.prevZ = self.Z
     
     def compute_heading_velocity(self):
         if self.prev_latitude != -99 and self.prev_longitude != -99:
@@ -235,7 +263,6 @@ class GPS():
                 self.speed = new_speed
             else:
                 self.speed = new_speed*self.filterConstant + self.speed*(1-self.filterConstant)
-
             if self.speed_x == -99:
                 self.speed_x = new_speed_x
             else:

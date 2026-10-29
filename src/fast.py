@@ -377,13 +377,24 @@ def run_physics_simulation():
             if gps_llh.speed_x == -99:
                 speed_X = 0.0
                 speed_Y = 0.0
+                speed_Z = 0.0
             else:
-                ang = rpy_ahrs[2]*np.pi/180.0
-                speed_X = gps_llh.speed_x*np.cos(ang) + gps_llh.speed_y*np.sin(ang)
-                speed_Y = -gps_llh.speed_x*np.sin(ang) + gps_llh.speed_y*np.cos(ang)
+                if VEHICLE == 'satellite':
+                    TIB = imu.R123(rpy_star[0],rpy_star[1],rpy_star[2])
+                    TBI = np.transpose(TIB)
+                    xyzdot = np.asarray([gps_llh.speed_x,gps_llh.speed_y,gps_llh.speed_z])
+                    uvw = np.matmul(TBI,xyzdot)
+                    speed_X = uvw[0]
+                    speed_Y = uvw[1]
+                    speed_Z = uvw[2]
+                else:
+                    ang = rpy_ahrs[2]*np.pi/180.0
+                    speed_X = gps_llh.speed_x*np.cos(ang) + gps_llh.speed_y*np.sin(ang)
+                    speed_Y = -gps_llh.speed_x*np.sin(ang) + gps_llh.speed_y*np.cos(ang)
+                    speed_Z = gps_llh.speed_z
             logger.outdata[7] = speed_X
             logger.outdata[8] = speed_Y
-            logger.outdata[9] = 0
+            logger.outdata[9] = speed_Z
             #P(deg/s) ,Q(deg/s) ,R(deg/s)
             logger.outdata[10] = gdegs[0]
             logger.outdata[11] = gdegs[1]

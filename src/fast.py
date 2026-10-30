@@ -237,9 +237,18 @@ def run_physics_simulation():
         gps_llh.poll(RunTime) 
 
         #Get acceleration,gyroscope, magnetometer & temperature data
+        #Note I do not recommend using rpy since that is solely using trigonometry
+        #in addition the yaw angle does not work at all
+        #rpy_ahrs works really well for obtaining the yaw angle
+        #It's possible though that the trigonometry routine for yaw angle doesn't work
+        #because it assumes the magnetic field is bhat = [1,0,0] and thus you need to calibrate said sensor
+        #during boot up. Might be a good thing to test once you start hardware testing.
+        #compass is the ahrs magnetometer heading + the gps heading
         a,gdegs,m,rpy,rpy_ahrs,temp,compass = imu.getALL(elapsedTime,gps_llh.heading) 
 
-        #Get pressure which also converts to altitude
+        #Get pressure which also converts to altitude (temperature is not currently working to speed up simulation)
+        #If you really want temperature check the baro.poll() function and uncomment the temperature routine
+        #Also keep in mind that the MPU9250 returns temperature automatically
         baro.poll(RunTime)
 
         #Run your control loop
@@ -316,7 +325,6 @@ def run_physics_simulation():
             ser.fast_packet[11] = rc.rcin.pitch #//12 - elevator
             ser.fast_packet[12] = rc.rcin.yaw #//13 - rudder
             ser.SerialSend(0)
-
         #Log data
         if (RunTime - logTime) >= LOGTIME:
             #Time (sec)
@@ -379,6 +387,7 @@ def run_physics_simulation():
             logger.outdata[28] = baro.ALT
             logger.outdata[29] = baro.TEMP
             #RC Channel #1-6
+            #print(rc.rcin.rcsignals)
             logger.outdata[30] = rc.rcin.rcsignals[0]
             logger.outdata[31] = rc.rcin.rcsignals[1]
             logger.outdata[32] = rc.rcin.rcsignals[2]
@@ -392,7 +401,11 @@ def run_physics_simulation():
             logTime += LOGTIME
             if MODE == 'SIMONLY':
                 model.log(RunTime)
-
+        #sleep so we don't spontaneously explode
+        #time.sleep(0.01) Since there are sleeps in the barometer you don't need this anymore.
+        #Also all the different sensor updates and calculations take so much time that the system won't spontaneously
+        #explode. However, if you start debugging and turning things off it easily could....
+        #Now, if we're running in SIL mode, we need a wait loop until our real time catches up to our simulation time
         if MODE == 'SIL':
             while (time.time() - realStartTime) < RunTime:
                 time.sleep(0.001) #sleep for 1 ms to not burn CPU cycles
@@ -408,12 +421,15 @@ if MODE=='SIL':
     glhandle_g.loop_init(fileroot=None,vehicleType=VEHICLE,inFarplane=10000, inWidth=800, inHeight=600)
 else:
     print("Launching in Headless / Non-GUI Mode...")
-    # Run physics directly on the main thread
+    # Run physics directly on the main thread (ideal for Raspberry Pi & server runs)
     run_physics_simulation()
 
 #If the program ends it means we're running in modeling mode
+#and so we need to copy some files
 logger.close()
 model.logger.close()
+#CP Commands only work on linux so let's use a more OS independent command
+#Thanks Arian for figuring this one out
 if os.name == 'nt':
     import shutil
     shutil.copy(str(logger.filename), str(logger.directory) + '0.csv')

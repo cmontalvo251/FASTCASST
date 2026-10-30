@@ -139,6 +139,7 @@ class RCInput():
 
         if self.MODE == 'SIL':
             print("Setting up RCIO SIL System")
+            #Create joystick object
             self.has_json_config = False
             self.axis_mappings = {}
             self.joy_fd = -1
@@ -205,11 +206,13 @@ class RCInput():
         if self.MODE == 'AUTO' or self.MODE == 'HIL':
             print("Setting up RCIO AUTO or HIL System")
             for i in range(self.num_channels):
+                #Read from PPM receiver
                 try:
                     f = open("/sys/kernel/rcio/rcin/ch%d" % i, "r")
                     print('Opening RCinput channel = ',i)
                 except: 
                     print ("Can't open file /sys/kernel/rcio/rcin/ch%d" % i)
+                    #Fall back on emulation mode
                     f = i
             self.channels.append(f)
             print('RCInput HW initialized')
@@ -247,6 +250,8 @@ class RCInput():
         for i in range(self.num_of_axis):
             if i == 0:
                 self.rcsignals[i] = self.STICK_MIN
+                #elif i == 3:
+            #    self.rcsignals[i] = self.STICK_MAX
             else:
                 self.rcsignals[i] = self.STICK_MID
 
@@ -262,6 +267,8 @@ class RCInput():
                                 actual_type = ev_type & ~0x80
                                 if actual_type == 2:  # JS_EVENT_AXIS
                                     if number < len(self.joycomm):
+                                        #if number == 4:
+                                        #    print(value)
                                         self.joycomm[number] = self.bit2PWM(value)
                                         self.joyraw[number] = value
                                 elif actual_type == 1:  # JS_EVENT_BUTTON
@@ -270,11 +277,14 @@ class RCInput():
                         except BlockingIOError:
                             break
                     self.mapjoy2rx()
+                    #print(self.joyraw)
                 except Exception as e:
                     print(f'Exception in readALL: {e}')
                     self.setStickNeutral()
+                    #print('Setting stick neutral because joy_fd = -1')
             else:
                 self.setStickNeutral()
+                #print('RCIO',self.rcsignals)
         else:
             for i in range(self.num_channels):
                 value = self.read(i)
@@ -286,26 +296,41 @@ class RCInput():
         self.yaw = float(self.rcsignals[3])
         self.armswitch = float(self.rcsignals[4])
         self.autopilot = float(self.rcsignals[5])
+        #print('RCIO',self.rcsignals)
+        #Turn TAER commands to floats between -1 and 1
         
         self.throttlerc = self.convert(self.throttle)
         self.rollrc = self.convert(self.roll)
         self.pitchrc = self.convert(self.pitch)
         self.yawrc = self.convert(self.yaw)
+        ##Signal loss detection: valid PWM is always >= 995 us.
+        ##If throttle reads below 800, the receiver has lost the transmitter.
         self.signal_lost = (self.throttle < 800)
         
         if not self.ARMED:
+            #system is not armed. Let's try and arm it
+            #Independent Safety precautions to arm system
             if (self.armswitch > self.STICK_MID) and (self.throttle < self.STICK_MIN*1.1):
                 self.ARMED = True
-                self.color = 'Green'
+                self.color = 'Green' #for go
+            #Let's say armswitch is is >1500 but throttle is not down
             if (self.armswitch > self.STICK_MID) and (self.throttle > self.STICK_MIN*1.1):
+                #we aren't going to arm the system but....
+                #we are going to tell the user that you need to have throttle down
                 self.color = 'Yellow'
+                #No matter what though
         if self.armswitch < self.STICK_MID:
             self.ARMED = False
             self.color = 'Red'
         return self.ARMED,self.color
 
     def convert(self,signal):
+        #y2 - y1 = m*(x2 - x1)
+        #y2 = m*(x2-x1) + y1
+        #rc = m*(signal - self.STICK_MIN) + -1
+        #m = (1 - -1) / (self.STICK_MAX - self.STICK_MIN)
         return 2.0/(self.STICK_MAX-self.STICK_MIN) * (signal - self.STICK_MIN) - 1.0
+        #return (signal - self.STICK_MID)/((self.STICK_MAX-self.STICK_MIN)/2)
         
     def read(self, ch):
         if self.MODE == 'AUTO' or self.MODE == 'HIL':

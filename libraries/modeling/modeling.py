@@ -248,14 +248,15 @@ class MODEL():
         self.gps.send(self.state,self.statedot,self.VEHICLE)
         self.gps.poll(t)
         #Update Magnetic Field
-        if t > self.magNext:
-            self.magNext += self.magUpdateRate
-            #Lat/Lon/Altitude in Km
-            result = self.IGRF.igrf_value(self.gps.latitude,self.gps.longitude,self.gps.altitude/1000.0,self.date)
-            self.magI[0] = result[3]
-            self.magI[1] = result[4]
-            self.magI[2] = result[5] #results are in nT
-            self.magI *= 1.0e-9 #convert to Tesla
+        if self.VEHICLE == 'satellite':
+            if t > self.magNext:
+                self.magNext += self.magUpdateRate
+                #Lat/Lon/Altitude in Km
+                result = self.IGRF.igrf_value(self.gps.latitude,self.gps.longitude,self.gps.altitude/1000.0,self.date)
+                self.magI[0] = result[3]
+                self.magI[1] = result[4]
+                self.magI[2] = result[5] #results are in nT
+                self.magI *= 1.0e-9 #convert to Tesla
         #Copy Commands and RCsignals
         self.commands = commands
         self.rcsignals = rcsignals

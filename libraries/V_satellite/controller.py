@@ -62,7 +62,7 @@ class CONTROLLER():
                 self.pqr *= math.pi / 180.0
 
                 # Check angular velocity norm for detumbling / reaction wheel spinup
-                if np.linalg.norm(self.pqr) < 1.0*np.pi/180.0:
+                if np.linalg.norm(self.pqr) < 10.0*np.pi/180.0:
                     # Damping control: M_desired = -KD * (pqr_command - pqr_nav), assuming pqr_command = 0
                     KD = -0.0001
                     desired_moments = self.pqr * KD / self.Irw

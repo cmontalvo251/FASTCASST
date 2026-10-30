@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import json
 import struct
@@ -138,21 +139,23 @@ class RCInput():
 
         if self.MODE == 'SIL':
             print("Setting up RCIO SIL System")
-            #Create joystick object
             self.has_json_config = False
             self.axis_mappings = {}
             self.joy_fd = -1
             for i in range(5):
                 self.axis_mappings[i] = {"axis": -1,"invert": False,"min": -1.0,"max": 1.0}                  
             self.config_file = json_file_name
-            """Initializes joystick file descriptor and loads JSON configuration."""
-            # Open joystick device (Linux /dev/input/js0 or similar)
+            
+            # Open joystick device safely across Linux and Windows
             joystick_dev = os.environ.get("JOY_DEV", "/dev/input/js0")
             try:
                 print("Initializing joystick")
-                self.joy_fd = os.open(joystick_dev, os.O_RDONLY | os.O_NONBLOCK)
+                flags = os.O_RDONLY
+                if hasattr(os, 'O_NONBLOCK'):
+                    flags |= os.O_NONBLOCK
+
+                self.joy_fd = os.open(joystick_dev, flags)
                 print("Getting information from the joystick")
-                # Default values if ioctl is omitted; non-blocking file descriptor active
                 self.name_of_joystick = "USB Controller"
                 self.joycomm = [self.STICK_MID]*max(num_channels,16)
                 self.joyraw  = [self.STICK_MID]*max(num_channels,16)
@@ -162,10 +165,11 @@ class RCInput():
                 print("Allocating Axes")
                 print(f"Number of Axes = {self.num_of_axis}")
                 print("Success!!!! Setting non-blocking mode")
-            except OSError:
+            except (OSError, AttributeError):
                 print("Couldn't open joysticks")
                 print("Defaulting to Stick min")
                 print(f"joy_fd = {self.joy_fd}")
+
             print(f"Using RX config file: {self.config_file}")
             f_data = None
             if self.config_file and os.path.exists(self.config_file):
@@ -192,22 +196,20 @@ class RCInput():
                     print(f"Loaded JSON config from {self.config_file}")
                 except Exception as e:
                     print(f"Error parsing JSON content: {e}")
-                    exit(1)
+                    sys.exit(1)
             else:
                 print(f"Could not open JSON config file: {self.config_file}")
-                exit(1)
+                sys.exit(1)
             print("Done")
 
         if self.MODE == 'AUTO' or self.MODE == 'HIL':
             print("Setting up RCIO AUTO or HIL System")
             for i in range(self.num_channels):
-                #Read from PPM receiver
                 try:
                     f = open("/sys/kernel/rcio/rcin/ch%d" % i, "r")
                     print('Opening RCinput channel = ',i)
                 except: 
                     print ("Can't open file /sys/kernel/rcio/rcin/ch%d" % i)
-                    #Fall back on emulation mode
                     f = i
             self.channels.append(f)
             print('RCInput HW initialized')
@@ -245,8 +247,6 @@ class RCInput():
         for i in range(self.num_of_axis):
             if i == 0:
                 self.rcsignals[i] = self.STICK_MIN
-            #elif i == 3:
-            #    self.rcsignals[i] = self.STICK_MAX
             else:
                 self.rcsignals[i] = self.STICK_MID
 
@@ -262,8 +262,6 @@ class RCInput():
                                 actual_type = ev_type & ~0x80
                                 if actual_type == 2:  # JS_EVENT_AXIS
                                     if number < len(self.joycomm):
-                                        #if number == 4:
-                                        #    print(value)
                                         self.joycomm[number] = self.bit2PWM(value)
                                         self.joyraw[number] = value
                                 elif actual_type == 1:  # JS_EVENT_BUTTON
@@ -272,14 +270,11 @@ class RCInput():
                         except BlockingIOError:
                             break
                     self.mapjoy2rx()
-                    #print(self.joyraw)
                 except Exception as e:
                     print(f'Exception in readALL: {e}')
                     self.setStickNeutral()
             else:
-                #print('Setting stick neutral because joy_fd = -1')
                 self.setStickNeutral()
-                #print('RCIO',self.rcsignals)
         else:
             for i in range(self.num_channels):
                 value = self.read(i)
@@ -291,41 +286,27 @@ class RCInput():
         self.yaw = float(self.rcsignals[3])
         self.armswitch = float(self.rcsignals[4])
         self.autopilot = float(self.rcsignals[5])
-        #print('RCIO',self.rcsignals)
-        #Turn TAER commands to floats between -1 and 1
+        
         self.throttlerc = self.convert(self.throttle)
         self.rollrc = self.convert(self.roll)
         self.pitchrc = self.convert(self.pitch)
         self.yawrc = self.convert(self.yaw)
-        ##Signal loss detection: valid PWM is always >= 995 us.
-        ##If throttle reads below 800, the receiver has lost the transmitter.
         self.signal_lost = (self.throttle < 800)
-        ##Check and see if system is ARMED
+        
         if not self.ARMED:
-            #system is not armed. Let's try and arm it
-            #Independent Safety precautions to arm system
             if (self.armswitch > self.STICK_MID) and (self.throttle < self.STICK_MIN*1.1):
                 self.ARMED = True
-                self.color = 'Green' #for go
-            #Let's say armswitch is is >1500 but throttle is not down
+                self.color = 'Green'
             if (self.armswitch > self.STICK_MID) and (self.throttle > self.STICK_MIN*1.1):
-                #we aren't going to arm the system but....
-                #we are going to tell the user that you need to have throttle down
                 self.color = 'Yellow'
-        #No matter what though
         if self.armswitch < self.STICK_MID:
             self.ARMED = False
-            self.color = 'Red' #for no go
+            self.color = 'Red'
         return self.ARMED,self.color
 
     def convert(self,signal):
-        #y2 - y1 = m*(x2 - x1)
-        #y2 = m*(x2-x1) + y1
-        #rc = m*(signal - self.STICK_MIN) + -1
-        #m = (1 - -1) / (self.STICK_MAX - self.STICK_MIN)
         return 2.0/(self.STICK_MAX-self.STICK_MIN) * (signal - self.STICK_MIN) - 1.0
-        #return (signal - self.STICK_MID)/((self.STICK_MAX-self.STICK_MIN)/2)
-    
+        
     def read(self, ch):
         if self.MODE == 'AUTO' or self.MODE == 'HIL':
             value = self.channels[ch].read()
@@ -336,4 +317,3 @@ class RCInput():
                 return self.STICK_MIN
             else:
                 return self.STICK_MID
-            

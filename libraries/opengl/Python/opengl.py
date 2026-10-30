@@ -1,12 +1,18 @@
 import math
 import os
+import sys
 import threading
 import time
 import numpy as np
 
-# Force PyOpenGL to use the X11 platform backend (fixes Linux/Wayland context errors)
-# Will need to change this if you are using a different platform (e.g., Windows or macOS)
-os.environ["PYOPENGL_PLATFORM"] = "x11"
+# Cross-platform PyOpenGL platform backend selection:
+# Use 'win32' on Windows, 'x11' on Linux/Wayland (fixes Linux/Wayland context errors)
+if sys.platform.startswith("win") or os.name == "nt":
+    os.environ["PYOPENGL_PLATFORM"] = "win32"
+else:
+    # Force PyOpenGL to use the X11 platform backend (fixes Linux/Wayland context errors)
+    # Will need to change this if you are using a different platform (e.g., Windows or macOS)
+    os.environ["PYOPENGL_PLATFORM"] = "x11"
 
 try:
     from OpenGL.GL import *

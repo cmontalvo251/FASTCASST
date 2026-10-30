@@ -236,8 +236,11 @@ class MPU9250:
     __Magnetometer_Sensitivity_Scale_Factor = (0.15)
 
     def __init__(self, mode,spi_bus_number = 0, spi_dev_number = 1):
-        import spidev
-        self.bus = spidev.SpiDev()
+        if mode == 'AUTO':
+            import spidev              # Raspberry Pi only
+            self.bus = spidev.SpiDev()
+        else:
+            self.bus = None            # emulation: no SPI hardware
         self.spi_bus_number = spi_bus_number
         self.spi_dev_number = spi_dev_number
         self.gyro_divider = 0.0

@@ -51,11 +51,12 @@ IMUSOURCES=$(wildcard libraries/IMU/*.cpp)
 MPUSOURCES=$(wildcard libraries/MPU9250/*.cpp)
 LSMSOURCES=$(wildcard libraries/LSM9DS1/*.cpp)
 GPSSOURCES=$(wildcard libraries/GPS/*.cpp)
+STARSOURCES=$(wildcard libraries/startracker/*.cpp)
 PTHSOURCES=$(wildcard libraries/PTH/*.cpp)
 MS5611SOURCES=$(wildcard libraries/MS5611/*.cpp)
 ADCSOURCES=$(wildcard libraries/ADC/*.cpp)
 HWSOURCES=libraries/sensors/sensors.cpp libraries/hardware/hardware.cpp
-HARDWARESOURCES=$(MPUSOURCES) $(LSMSOURCES) $(IMUSOURCES) $(GPSSOURCES) $(PTHSOURCES) $(ADCSOURCES) $(HWSOURCES) $(MS5611SOURCES)
+HARDWARESOURCES=$(MPUSOURCES) $(LSMSOURCES) $(IMUSOURCES) $(GPSSOURCES) $(PTHSOURCES) $(ADCSOURCES) $(HWSOURCES) $(MS5611SOURCES) $(STARSOURCES)
 HARDWAREOBJECTS=$(HARDWARESOURCES:.cpp=.o)
 
 ##MODELING

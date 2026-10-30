@@ -14,7 +14,6 @@ private:
   double elapsedTime = 0,lastTime=0; //These are used to keep track of time elapsed.
   int CONTROLLER_FLAG = -99;
   double Irw;
-  void set_defaults();
 public:
   int NUMSIGNALS=NUMTORQUERS+NUMRWS; //Number set in params.h
   MATLAB control_matrix; //This is a vector of TAERA1A2 in PWM signals
@@ -22,6 +21,7 @@ public:
   void init(MATLAB in_configuration_matrix);
   void print();
   controller(); //constructor
+  void set_defaults();
 };
 
 #endif

@@ -22,6 +22,11 @@
 #include <IMU/IMU.h>
 //GPS
 #include <GPS/GPS.h>
+#if defined (cubesat) || (satellite) 
+//Startracker
+#include <startracker/startracker.h>
+#include <Rotation/Rotation3.h>
+#endif
 
 class sensors {
  private:
@@ -49,6 +54,11 @@ class sensors {
   IMU orientation;
   GPS satellites;
   PTH atm;
+  #if defined (cubesat) || (satellite) 
+  STARTRACKER star;
+  Rotation3 ine2bod321;
+  MATLAB xyzdot,uvw;
+  #endif
   MATLAB sense_matrix,sense_matrix_dot;
   char** headernames,headernames_dot;
   double Heading_Mag,x_tilt,y_tilt,Hm,compass=0.0;

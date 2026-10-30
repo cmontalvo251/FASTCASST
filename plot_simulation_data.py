@@ -207,7 +207,7 @@ if norm > REARTH:
     plti.legend()
     plti.set_xlabel('Time (sec)')
     #plti.set_ylabel('Control Signals (us)')
-    plti.set_ylabel('Moments (N-m)')
+    plti.set_ylabel('MagT Moments (N-m)')
     pp.savefig()
 
     senseX = sense_data[istart_sense:iend_sense,1]

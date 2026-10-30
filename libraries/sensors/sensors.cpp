@@ -88,6 +88,10 @@ void sensors::init(MATLAB in_configuration_matrix,MATLAB in_simulation_matrix) {
   //Initialize q0123 and ptp
   q0123.zeros(4,1,"Sense Quaternions");
   ptp.zeros(3,1,"Sense Roll Pitch Yaw");
+  #if defined (cubesat) || (satellite)
+  uvw.zeros(3,1,"UVW Body Frame");
+  xyzdot.zeros(3,1,"XYZ Dot Inertial Frame");
+  #endif
 
   //Sensor Errors
   IERROR = in_simulation_matrix.get(21,1);
@@ -141,11 +145,10 @@ void sensors::sendXYZ2GPS(double currentTime,double X,double Y,double Z) {
     Y += pollute(bias_pos_matrix.get(2,1),noise_pos);
     Z += pollute(bias_pos_matrix.get(3,1),noise_pos);
   }
-  satellites.X = X;
-  satellites.Y = Y;
-  satellites.Z = Z;
-  //We need to reset the GPS values if we haven't gotten a valid coorinate yet
-  satellites.reset();
+  //This automatically gives the XYZ coordinates to the GPS. 
+  //I want to give the routine the latitude longitude and altitude
+  //and then have the GPS routine convert to XYZ
+  satellites.setLLH(X,Y,Z);
   //printf("%lf %lf %lf \n",sense.satellites.X,sense.satellites.Y,sense.satellites.Z);
   //PAUSE();
 }
@@ -175,10 +178,10 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
   //Quaternions
   //Convert the quaternions to Euler Angles if ERRORS present
   double q0,q1,q2,q3;
+  q0123.vecset(1,4,model_matrix,4);
+  //q0123.disp();
+  ptp.quat2euler(q0123); //ptp in radians
   if (IERROR) {
-    q0123.vecset(1,4,model_matrix,4);
-    //q0123.disp();
-    ptp.quat2euler(q0123);
     //ptp.disp();
     double roll = ptp.get(1,1)*180.0/PI;
     double pitch = ptp.get(2,1)*180.0/PI;
@@ -188,7 +191,7 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
     yaw += pollute(bias_angle_matrix.get(3,1),noise_angle);
     ptp.set(1,1,roll*PI/180.0);
     ptp.set(2,1,pitch*PI/180.0);
-    ptp.set(3,1,yaw*PI/180.0);
+    ptp.set(3,1,yaw*PI/180.0); //ptp in radians here
     q0123.euler2quat(ptp);
     q0 = q0123.get(1,1);
     q1 = q0123.get(2,1);
@@ -209,6 +212,11 @@ void sensors::send(double currentTime,MATLAB model_matrix) {
   orientation.ahrs.q2 = q2;
   orientation.ahrs.q3 = q3;
   //printf("send() %lf %lf %lf \n",sense.orientation.roll,sense.orientation.pitch,sense.orientation.yaw);
+  #if defined (cubesat) || (satellite)
+  star.roll = ptp.get(1,1)*180/PI; //convert to degrees
+  star.pitch = ptp.get(2,1)*180/PI;
+  star.yaw = ptp.get(3,1)*180/PI;
+  #endif
 
   //Set gx,gy,gz from sense_matrix for filtering 
   double gy = model_matrix.get(11,1);
@@ -305,6 +313,10 @@ void sensors::poll(double currentTime,double elapsedTime) {
   //Maxwell Cobar's mag heading loop 
   //Heading_Mag = mag_heading(orientation.roll,orientation.pitch,orientation.mx,orientation.my,orientation.mz);
 
+  #if defined (cubesat) || (satellite)
+  star.loop();
+  #endif
+
   //Read the GPS
   if (currentTime >= nextGPStime) {
     //printf("Polling GPS %lf \n",currentTime);
@@ -337,10 +349,25 @@ void sensors::populate(double currentTime,double elapsedTime) {
   ///XYZ
   sense_matrix.set(1,1,satellites.X);
   sense_matrix.set(2,1,satellites.Y);
-  //sense_matrix.set(3,1,(satellites.Z-atm.altitude)/2.0);  //Average GPS and BARO?
-  sense_matrix.set(3,1,-atm.altitude); //Let's use Barometer as altitude sensor
-  //sense_matrix.set(3,1,-atm.altitude);
 
+  #if defined (cubesat) || (satellite)
+  sense_matrix.set(3,1,satellites.Z); //Use GPS Z coordinate
+  sense_matrix.set(4,1,star.roll);
+  sense_matrix.set(5,1,star.pitch);
+  sense_matrix.set(6,1,star.yaw);
+  ine2bod321.L321(star.ptprad,0);
+  xyzdot.set(1,1,satellites.speed_x);
+  xyzdot.set(2,1,satellites.speed_y);
+  xyzdot.set(3,1,satellites.speed_z);
+  ine2bod321.rotateInertial2Body(uvw,xyzdot);
+  double u = uvw.get(1,1);
+  double v = uvw.get(2,1);
+  double w = uvw.get(3,1);
+  sense_matrix.set(7,1,u);
+  sense_matrix.set(8,1,v);
+  sense_matrix.set(9,1,w);
+  #else
+  sense_matrix.set(3,1,-atm.altitude); //Let's use Barometer as altitude sensor
   //Roll pitch Yaw
   sense_matrix.set(4,1,orientation.roll);
   sense_matrix.set(5,1,orientation.pitch);
@@ -357,6 +384,7 @@ void sensors::populate(double currentTime,double elapsedTime) {
   sense_matrix.set(7,1,u);
   sense_matrix.set(8,1,v);
   sense_matrix.set(9,1,satellites.vertical_speed);
+  #endif
 
   //PQR
   //printf("GXYZ = %lf %lf %lf \n",orientation.gx,orientation.gy,orientation.gz);

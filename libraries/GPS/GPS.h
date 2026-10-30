@@ -34,7 +34,6 @@ class GPS {
    double GPSupdateRate = 4.0; //every 4 seconds
    int VALIDGPS = 0;
    int GPSORIGINSET = 0;
-   double XYZ[3],LLH[3];
    double X_origin=-99,Y_origin=-99; 
    double X_origin_OVERRIDE=GPSORIGINX,Y_origin_OVERRIDE=GPSORIGINY; //These are set in mathp.h
  public:
@@ -52,7 +51,7 @@ class GPS {
   //In all modes except AUTO the origin is set automatically
   //Origin is set in mathp.h
   double latitude=-99,longitude=-99,altitude=0.0,X=0,Y=0,Z=0;
-  double xprev=0,yprev=0,zprev=0,prev_time=0;
+  double X_prev=0,Y_prev=0,Z_prev=0,prev_time=0;
   double latitude_prev=-99,longitude_prev=-99,altitude_prev=-99;
   double headingFilterConstant = 0.0;
   double heading=0;
@@ -64,7 +63,7 @@ class GPS {
   int start_pt = 1;
   MATLAB dist_vec;
   MATLAB time_vec;
-  double speed=0,speed_x=0,speed_y=0,vertical_speed,dist=0,speed_raw=0;
+  double speed=0,speed_x=0,speed_y=0,speed_z=0,vertical_speed,dist=0,speed_raw=0;
   //ARCHAIC VARIABLES CONSIDER DELETING
   //double vx = 0, vy = 0, vz = 0; //xyz dots
   unsigned long lastTime = 0;
@@ -72,16 +71,11 @@ class GPS {
   void poll(float);
   void reset();
   void processGPSCoordinates(double);
-  void decodeXYZ();
+  void decodeXYZ(double,double,double);
   int status();
-  void computeSpeed(double);
-  void computeGroundTrack(double);
   void compute_heading_velocity(double);
-  void computeCOG(double);
-  void ConvertGPS2XY();
+  void setLLH(double,double,double);
   Vector3D LatLonToUnitVector(double lat_deg, double lon_deg);
-  //void ConvertXYZ2LLH(); -- This has been moved to mathp.h as a helper function
-  void setXYZ(double,double,double);
   void setOrigin(double,double);
   void setOriginOverride(double,double);
 };

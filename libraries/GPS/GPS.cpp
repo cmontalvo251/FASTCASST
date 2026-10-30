@@ -37,6 +37,8 @@ void GPS::init() {
   #endif
   #else
   printf("Using Fictitious GPS Block For Simulation \n");
+  //Reset to override origin
+  reset();
   #endif
 }
 
@@ -44,28 +46,6 @@ void GPS::printLLH() {
   printstdoutdbl(latitude,8);
   printstdoutdbl(longitude,8);
   printstdoutdbl(altitude,8);
-}
-
-void GPS::decodeXYZ() {
-  //Assume that X,Y,Z coordinates are already set by some external function
-  XYZ[0] = X;
-  XYZ[1] = Y;
-  XYZ[2] = Z;
-  //printf("GPS ORIGIN = %lf %lf \n",X_origin,Y_origin);
-  #if defined (satellite) || (cubesat) 
-  //printf("Using Spherical conversion \n");
-  ConvertXYZ2LLHSPHERICAL(XYZ,LLH);
-  #else
-  //Note we need to use the override coordinates so we know where we are on the planet
-  ConvertXYZ2LLH(XYZ,LLH,X_origin_OVERRIDE,Y_origin_OVERRIDE);
-  #endif
-  latitude = LLH[0];
-  longitude = LLH[1];
-  altitude = LLH[2];
-  //printf("GPS XYZ = %lf %lf %lf \n",X,Y,Z);
-  //printf("GPS LLH = %lf %lf %lf \n",latitude,longitude,altitude);
-  //printf("Override X,Y = %lf %lf \n",X_origin_OVERRIDE,Y_origin_OVERRIDE);
-  //PAUSE();
 }
 
 void GPS::poll(float currentTime) {
@@ -85,8 +65,7 @@ void GPS::poll(float currentTime) {
   sensor.decodeSingleMessage(Ublox::NAV_POSLLH, pos_data);
   #endif
   #else
-  //USE SOFTWARE TO CREATE GPS COORDINATES
-  decodeXYZ();
+  //USE SOFTWARE TO CREATE GPS COORDINATES from sensors send routine
   //Then populate pos_data so that the routine below still works
   pos_data.resize(5,1);
   pos_data[0] = 0.0; //not really sure what this is
@@ -125,11 +104,6 @@ void GPS::processGPSCoordinates(double currentTime) {
       printstdout("GPS Coordinate initialized. Resetting GPS Vals \n");
       //Set the origin
       setOrigin(latitude,longitude);
-      //Convert to XYZ
-      ConvertGPS2XY(); 
-      //Reset Prev Values
-      xprev = X;
-      yprev = Y;
     }
   }
 }
@@ -152,8 +126,6 @@ void GPS::reset() {
     GPSORIGINSET = 1;
     printstdout("GPS Coordinate initialized. Resetting GPS Vals \n");
     setOrigin(X_origin_OVERRIDE,Y_origin_OVERRIDE);
-    xprev = X;
-    yprev = Y;
   }
 }
 
@@ -165,13 +137,6 @@ void GPS::setOrigin(double latitude,double longitude) {
   printstdout(" ");
   printstdoutdbl(Y_origin);
   printstdout("\n");
-}
-
-void GPS::setXYZ(double Xin,double Yin,double Zin) {
-  X = Xin;
-  Y = Yin;
-  Z = Zin;
-  //printf("XYZ Set to = %lf %lf %lf \n",X,Y,Z);
 }
 
 int GPS::status() {
@@ -211,30 +176,19 @@ int GPS::status() {
   return ok;
 }
 
-void GPS::ConvertGPS2XY()  {
-  if ((latitude == -99) || (longitude == -99) || (altitude == -99)) {
-    X = xprev;
-    Y = yprev;
-    Z = zprev;
-  } else {
-    //Populate LLH matrices
-    LLH[0] = latitude;
-    LLH[1] = longitude;
-    LLH[2] = altitude;
-    //printf("GPS LLH = %lf %lf %lf \n",latitude,longitude,altitude);
-    //printf("GPS Origin = %lf %lf \n",X_origin,Y_origin);
-    //PAUSE();
-    //These functions are in mathp.cpp
-    #if defined (satellite) || (cubesat) 
-    ConvertLLH2XYZSPHERICAL(XYZ,LLH);
-    #else
-    ConvertLLH2XYZ(XYZ,LLH,X_origin,Y_origin);
-    #endif
-    //Extract XYZ
-    X = XYZ[0];
-    Y = XYZ[1];
-    Z = XYZ[2];
-  }
+void GPS::setLLH(double Xin,double Yin,double Zin) {
+  double XYZ[3],LLH[3];
+  XYZ[0] = Xin;
+  XYZ[1] = Yin;
+  XYZ[2] = Zin;
+  #if defined (satellite) || (cubesat) 
+  ConvertXYZ2LLHSPHERICAL(XYZ,LLH);
+  #else
+  ConvertXYZ2LLH(XYZ,LLH,X_origin,Y_origin);
+  #endif
+  latitude = LLH[0];
+  longitude = LLH[1];
+  altitude = LLH[2];
 }
 
 // Converts (lat, lon) degrees to a 3D unit vector on a sphere
@@ -252,20 +206,25 @@ Vector3D GPS::LatLonToUnitVector(double lat_deg, double lon_deg) {
 void GPS::compute_heading_velocity(double current_time) {
   //#Get delta lat and delta lon
   double dt = abs(current_time - prev_time);
+
+  //These functions are in mathp.cpp
+  //First convert latitude,longitude and altitude to XYZ
+  double XYZ[3],LLH[3];
+  LLH[0] = latitude;
+  LLH[1] = longitude;
+  LLH[2] = altitude;
+  #if defined (satellite) || (cubesat) 
+  ConvertLLH2XYZSPHERICAL(XYZ,LLH);
+  #else
+  ConvertLLH2XYZ(XYZ,LLH,X_origin,Y_origin);
+  #endif
+  X = XYZ[0];
+  Y = XYZ[1];
+  Z = XYZ[2];
+
   if (latitude_prev != -99) {
 
     #if defined (cubesat) || (satellite)
-    double thetaE = (90.0 - latitude)*DEG2RAD;
-    double psiE = longitude*PI/180.0;
-    double thetaE_prev = (90.0 - latitude_prev)*DEG2RAD;
-    double psiE_prev = longitude_prev*PI/180.0;
-    ///CONVERT LAT LON TO METERS
-    double X,Y;
-    X = sin(thetaE)*cos(psiE);
-    Y = sin(thetaE)*sin(psiE);
-    double X_prev,Y_prev;
-    X_prev = sin(thetaE_prev)*cos(psiE_prev);
-    Y_prev = sin(thetaE_prev)*sin(psiE_prev);
     double new_heading = atan2(Y-Y_prev,X-X_prev)*RAD2DEG;
     #else
     //Flat Earth Model
@@ -273,10 +232,10 @@ void GPS::compute_heading_velocity(double current_time) {
     double phi2 = latitude*PI/180.0;
     double phi1 = latitude_prev*PI/180.0;
     double delta_lambda = (longitude - longitude_prev)*PI/180;
-    double Y = sin(delta_lambda) * cos(phi2);
-    double X = cos(phi1) * sin(phi2) - sin(phi1) * cos(phi2) * cos(delta_lambda);
+    double yheading = sin(delta_lambda) * cos(phi2);
+    double xheading = cos(phi1) * sin(phi2) - sin(phi1) * cos(phi2) * cos(delta_lambda);
     //Calculate initial bearing in radians and convert to degrees
-    double new_heading = atan2(Y,X)*180/PI;
+    double new_heading = atan2(yheading,xheading)*180/PI;
     #endif
 
     //Compute Heading
@@ -309,17 +268,26 @@ void GPS::compute_heading_velocity(double current_time) {
       //speed = distance_meters / dt;
       double dlat = latitude - latitude_prev;
       double dlon = longitude - longitude_prev;
+      #if defined (cubesat) || (satellite)
+      double new_speed_x = (X-X_prev)/dt;
+      double new_speed_y = (Y-Y_prev)/dt;
+      double new_speed_z = (Z-Z_prev)/dt;
+      #else
       double new_speed_x = (dlat*111000.)/dt;
       double new_speed_y = (dlon*111000.*cos(latitude*PI/180.))/dt;
+      double new_speed_z = 0;
+      #endif
       if (speedFLAG == 0) {
         speedFLAG = 1;
         speed = distance_meters/dt;
         speed_x = new_speed_x;
         speed_y = new_speed_y;
+        speed_z = new_speed_z;
       } else {
         speed = (distance_meters/dt)*(1-headingFilterConstant) + speed*(headingFilterConstant);
         speed_x = new_speed_x*(1-headingFilterConstant) + speed_x*(headingFilterConstant);
         speed_y = new_speed_y*(1-headingFilterConstant) + speed_y*(headingFilterConstant);
+        speed_z = new_speed_z*(1-headingFilterConstant) + speed_z*(headingFilterConstant);
       }
     }
     //Get Vx and Vy - ARCHAIC CODE. CONSIDER REMOVING
@@ -341,6 +309,12 @@ void GPS::compute_heading_velocity(double current_time) {
   }
   //Reset altitude
   altitude_prev = altitude;
+
+  //RESET XYZ Values
+  X_prev = X;
+  Y_prev = Y;
+  Z_prev = Z;
+
   //Reset time
   prev_time = current_time;
 }

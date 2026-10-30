@@ -307,7 +307,11 @@ void loop() {
       //printf("RX ");
       //hw.rc.in.printRCstate(-6);
       //Roll Pitch Yaw
+      #if defined (cubesat) || (satellite)
+      printf("RPY %lf %lf %lf ",hw.sense.star.roll,hw.sense.star.pitch,hw.sense.star.yaw);
+      #else
       printf("RPY %lf %lf %lf ",hw.sense.orientation.roll,hw.sense.orientation.pitch,hw.sense.orientation.yaw);
+      #endif
       //PQR
       printf("PQR %lf %lf %lf ",hw.sense.orientation.roll_rate,hw.sense.orientation.pitch_rate,hw.sense.orientation.yaw_rate);
       //PWM Array

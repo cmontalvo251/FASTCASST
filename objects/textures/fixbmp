@@ -1,0 +1,7 @@
+#!/bin/bash
+
+python3 -c '
+from PIL import Image
+img = Image.open("objects/textures/earth.bmp")
+img.save("objects/textures/earth.bmp", "BMP")
+'

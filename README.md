@@ -259,6 +259,16 @@ Once you have the coefficient file downloaded you must copy the txt into your si
 
 Instead of looking for igrf14coeffs.txt I simply copied the igrf13coeffs.txt that I received from the web and renamed it to igrf14coeffs.txt
 
+For FAST++ the GeographicLib is utilized and can be downloaded here: https://geographiclib.sourceforge.io/
+
+However, in order to preserve stability in this software the entire GeographicLib collection is in the libraries/ folder in this repo. The Makefile will compile the entire GeographicLib collection automatically but you still need the EGM and EMM coefficient files for both the WMM2000 Gravity Model and the EGM2008 magnetic field model. Those coefficient files are also hard to find and thus the the egm, wmm, and cof files have been shared on Google Drive for everyone to download freely: https://drive.google.com/drive/folders/1XP9b3Q0F7RMHJKHABI7B17MrL5j_V-h0?usp=drive_link
+
+Download all 4 files and place them in GeographicLib/EGM_EMM. With those files in place the satellite simulation should run with a simple 
+
+$ make simonly MODEL="satellite"
+
+$ ./simonly.exe satellite/
+
 # How to Add a New Vehicle in the libraries/ folder
 
 Adding a new vehicle is fairly simple but there are some fundamental steps. 

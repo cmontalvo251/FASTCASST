@@ -145,15 +145,15 @@ void RenderControl::loop(int argc,char** argv,char fileroot[],int inFarplane,int
               for (int ll = 0;ll<3;ll++) {
                 getline(file,input);
                 double offset = atof(input.c_str());
-                state.cgoffset.set(ii+1,ll+1,offset);
-                printf(" %lf ",state.cgoffset.get(ii+1,ll+1));
+                state.cgoffset.set(ll+1,ii+1,offset);
+                printf(" %lf ",state.cgoffset.get(ll+1,ii+1));
               }
               printf("\nPTP OFFSETS = ");
               for (int ll = 0;ll<3;ll++) {
                 getline(file,input);
                 double offset = atof(input.c_str());
-                state.ptpoffset.set(ii+1,ll+1,offset);
-                printf(" %lf ",state.ptpoffset.get(ii+1,ll+1));
+                state.ptpoffset.set(ll+1,ii+1,offset);
+                printf(" %lf ",state.ptpoffset.get(ll+1,ii+1));
               }
               printf("\n");
             }

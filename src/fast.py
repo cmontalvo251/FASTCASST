@@ -1,16 +1,16 @@
 #############################################
 #
-#  FASTCASSTPy - Facility for Aerial Systems and Technology
-#  Configurable Autopilot Simulation and Software Tool in Python
+#   FASTCASSTPy - Facility for Aerial Systems and Technology
+#   Configurable Autopilot Simulation and Software Tool in Python
 #
-#  Initially Created: Spring 2022
-#  Primary Author: Julia Nelson Spring 2022
-#  Secondary Author: Maxwell Cobar Spring 2023
-#  Tertiary Authors: Aramis Hoffmann (car.py)
-#  Kate Doiron (plane.py) Spring 2025
-#  Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026/Fall 2026
-#  Quinary Author: Vinicius da Luz (mostly an undisclosed AI tool) Summer 2026 (car waypoint navigation)
-#  5th Author: Arian Sarhadi (Moving FASTPy to Windows) Fall 2026
+#   Initially Created: Spring 2022
+#   Primary Author: Julia Nelson Spring 2022
+#   Secondary Author: Maxwell Cobar Spring 2023
+#   Tertiary Authors: Aramis Hoffmann (car.py)
+#   Kate Doiron (plane.py) Spring 2025
+#   Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026/Fall 2026
+#   Quinary Author: Vinicius da Luz (mostly an undisclosed AI tool) Summer 2026 (car waypoint navigation)
+#   5th Author: Arian Sarhadi (Moving FASTPy to Windows) Fall 2026
 #
 ################################################
 
@@ -29,7 +29,7 @@ if len(sys.argv) > 2:
 else:
     print('You must run python3 src/fast.py MODE MODEL')
     print('Where MODE = SIMONLY, SIL, HIL or AUTO')
-    print('MODEL = satellite, tank, quadcopter, x8, airplane, boat or car')
+    print('MODEL = x8, airplane, boat or car')
     sys.exit()
 
 ##Add a check for a user sending a bad mode value
@@ -127,9 +127,6 @@ if MODE == 'SIMONLY' or MODE == 'SIL':
 #Setup IMU
 import MPU9250.mpu9250 as MPU
 imu = MPU.MPU9250(mode=MODE)
-if VEHICLE == 'satellite':
-    import startracker.startracker as st
-    star = st.STARTRACKER()
 
 #Setup datalogger
 import Datalogger.datalogger as D
@@ -157,13 +154,15 @@ baro = MS.MS5611(mode=MODE)
 if MODE != 'SIMONLY' and MODE != 'SIL':
     baro.calibrate() #if you don't calibrate sea level defaults to 1013.25
 
-##Setup Telemetry
-from Comms.Comms import Comms as S
-ser = S(8) #otherwise this defaults to 12
-if MODE == 'HIL' or MODE=='AUTO':
-    ser.SerialInit(57600,"/dev/ttyAMA0",period=1.0)
-else:
-    ser.setMODE(MODE)
+##Setup Telemetry (Hardware-Agnostic check for AUTO / HIL)
+ser = None
+if MODE == 'AUTO' or MODE == 'HIL':
+    try:
+        from Comms.Comms import Comms as S
+        ser = S(13) #otherwise this defaults to 12
+        ser.SerialInit(57600,"/dev/ttyAMA0",period=1.0)
+    except Exception as e:
+        print(f"Serial port telemetry initialized in emulation mode: {e}")
 
 #Short break to build suspense
 if MODE != 'SIMONLY':
@@ -209,10 +208,8 @@ def run_physics_simulation():
         if MODE == 'SIMONLY' or MODE == 'SIL':
             #Send model states to sensors
             gps_llh.send(model.state,model.statedot,VEHICLE)
-            imu.send(model.state,model.magI) #Just send the entire state vector + the magnetic field
+            imu.send(model.state) #Just send the entire state vector
             baro.send(model.state) #again send the entire state vector
-            if VEHICLE=='satellite':
-                star.send(model.state) #this is where we send rpy 
             #Integrate one timestep
             RunTime = LastTime + model.timestep
             model.loop(RunTime,rc.rcin.rcsignals,commands)
@@ -248,10 +245,6 @@ def run_physics_simulation():
         #during boot up. Might be a good thing to test once you start hardware testing.
         #compass is the ahrs magnetometer heading + the gps heading
         a,gdegs,m,rpy,rpy_ahrs,temp,compass = imu.getALL(elapsedTime,gps_llh.heading) 
-        ##The satellite can't use the AHRS algorithm, it has to use a star tracker for rpy
-        #So don't even bother using the compass value
-        if VEHICLE == 'satellite':
-            rpy_star = star.get()
 
         #Get pressure which also converts to altitude (temperature is not currently working to speed up simulation)
         #If you really want temperature check the baro.poll() function and uncomment the temperature routine
@@ -259,16 +252,7 @@ def run_physics_simulation():
         baro.poll(RunTime)
 
         #Run your control loop
-        if VEHICLE == 'satellite':
-            #Satellite needs the magnetometer and doesn't care about the barometer values
-            #And we have to use the rpy values from the startracker
-            controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_star,gdegs,m)
-        else:
-            controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,gdegs,baro)            
-        ##Saturation
-        for i in range(0, vehicle.NUMCONTROLS):
-            vehicle.controls[i] = min(max(vehicle.controls[i],-1),1)
-            vehicle.defaults[i] = min(max(vehicle.defaults[i],-1),1)
+        controls,defaults,control_color = vehicle.loop(RunTime,rc.rcin,gps_llh,rpy_ahrs,gdegs,baro)
 
         #Announce autopilot state changes in stdout
         if ARMED:
@@ -308,18 +292,12 @@ def run_physics_simulation():
 
         #Print to Home
         if (RunTime - printTime) > PRINTTIME:
-            if VEHICLE == 'satellite':
-                str_rpy = [f"{ang:3.3f}" for ang in rpy_star] #convert rpy to 3 sig figs
-            else:
-                str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
+            str_rpy = [f"{ang:3.3f}" for ang in rpy_ahrs] #convert rpy to 3 sig figs
             str_g = [f"{gi:2.3f}" for gi in gdegs] #convert ang vel to 3 sig figs
             if MODE == 'SIMONLY':
                 str_xyz = [f"{model.state[i]:1.3f}" for i in range(0,3)]
                 str_speed = [f"{gps_llh.speed:3.3f}",f"{gps_llh.speed_x:3.3f}",f"{gps_llh.speed_y:3.3f}"]
-                if VEHICLE == 'satellite':
-                    print(f"{RunTime:4.4f}", str_xyz, str_rpy,str_g)
-                else:
-                    print(f"{RunTime:4.4f}", str_xyz, str_rpy,str_speed)
+                print(f"{RunTime:4.4f}", str_xyz, str_rpy,str_speed)
             else:
                 if ARMED:
                     arm_str = "AUTOPILOT" if control_color == 'Blue' else "ARMED"
@@ -330,27 +308,22 @@ def run_physics_simulation():
             printTime+=PRINTTIME
 
         ##Send Telemetry
-        if (RunTime - telemetryTime) >= TELEMETRYTIME and MODE != 'SIMONLY':
+        if (RunTime - telemetryTime) >= TELEMETRYTIME and MODE != 'SIMONLY' and ser is not None:
             telemetryTime += TELEMETRYTIME	
             print('Sending telemtry packet...',RunTime)
             ser.fast_packet[0] = RunTime #//1 - Time
-            if VEHICLE == 'satellite':
-                ser.fast_packet[1] = rpy_star[0] #//2 - roll
-                ser.fast_packet[2] = rpy_star[1] #//3 - pitch
-                ser.fast_packet[3] = rpy_star[2] #//4 - yaw 
-            else:
-                ser.fast_packet[1] = rpy_ahrs[0] #//2 - roll
-                ser.fast_packet[2] = rpy_ahrs[1] #//3 - pitch
-                ser.fast_packet[3] = rpy_ahrs[2] #//4 - yaw
+            ser.fast_packet[1] = rpy_ahrs[0] #//2 - roll
+            ser.fast_packet[2] = rpy_ahrs[1] #//3 - pitch
+            ser.fast_packet[3] = rpy_ahrs[2] #//4 - yaw 
             ser.fast_packet[4] = gps_llh.latitude #//5 - latitude
             ser.fast_packet[5] = gps_llh.longitude #//6 - longitude
             ser.fast_packet[6] = baro.ALT #//7 - altitude (barometer)
             ser.fast_packet[7] = gps_llh.speed #//8 - speed (GPS)
-            #ser.fast_packet[8] = gps_llh.altitude #//9 - altitude (GPS)
-            #ser.fast_packet[9] = rc.rcin.throttle #//10 - throttle
-            #ser.fast_packet[10] = rc.rcin.roll #//11 - aileron
-            #ser.fast_packet[11] = rc.rcin.pitch #//12 - elevator
-            #ser.fast_packet[12] = rc.rcin.yaw #//13 - rudder
+            ser.fast_packet[8] = gps_llh.altitude #//9 - altitude (GPS)
+            ser.fast_packet[9] = rc.rcin.throttle #//10 - throttle
+            ser.fast_packet[10] = rc.rcin.roll #//11 - aileron
+            ser.fast_packet[11] = rc.rcin.pitch #//12 - elevator
+            ser.fast_packet[12] = rc.rcin.yaw #//13 - rudder
             ser.SerialSend(0)
         #Log data
         if (RunTime - logTime) >= LOGTIME:
@@ -365,40 +338,24 @@ def run_physics_simulation():
                 Z = -baro.ALT
             logger.outdata[3] = Z
             #Roll (deg) ,Pitch (deg) , Compass (deg)
-            if VEHICLE == 'satellite':
-                logger.outdata[4] = rpy_star[0]
-                logger.outdata[5] = rpy_star[1]
-                logger.outdata[6] = rpy_star[2]
+            logger.outdata[4] = rpy_ahrs[0]
+            logger.outdata[5] = rpy_ahrs[1]
+            if compass == -999:
+                yaw = rpy_ahrs[2]
             else:
-                logger.outdata[4] = rpy_ahrs[0]
-                logger.outdata[5] = rpy_ahrs[1]
-                if compass == -999:
-                    yaw = rpy_ahrs[2]
-                else:
-                    yaw = compass
-                logger.outdata[6] = yaw
+                yaw = compass
+            logger.outdata[6] = yaw
             #U(m/s) ,V(m/s) ,W(m/s)
             if gps_llh.speed_x == -99:
                 speed_X = 0.0
                 speed_Y = 0.0
-                speed_Z = 0.0
             else:
-                if VEHICLE == 'satellite':
-                    TIB = imu.R123(rpy_star[0]*np.pi/180.0,rpy_star[1]*np.pi/180.0,rpy_star[2]*np.pi/180.0)
-                    TBI = np.transpose(TIB)
-                    xyzdot = np.asarray([gps_llh.speed_x,gps_llh.speed_y,gps_llh.speed_z])
-                    uvw = np.matmul(TBI,xyzdot)
-                    speed_X = uvw[0]
-                    speed_Y = uvw[1]
-                    speed_Z = uvw[2]
-                else:
-                    ang = rpy_ahrs[2]*np.pi/180.0
-                    speed_X = gps_llh.speed_x*np.cos(ang) + gps_llh.speed_y*np.sin(ang)
-                    speed_Y = -gps_llh.speed_x*np.sin(ang) + gps_llh.speed_y*np.cos(ang)
-                    speed_Z = gps_llh.speed_z
+                ang = rpy_ahrs[2]*np.pi/180.0
+                speed_X = gps_llh.speed_x*np.cos(ang) + gps_llh.speed_y*np.sin(ang)
+                speed_Y = -gps_llh.speed_x*np.sin(ang) + gps_llh.speed_y*np.cos(ang)
             logger.outdata[7] = speed_X
             logger.outdata[8] = speed_Y
-            logger.outdata[9] = speed_Z
+            logger.outdata[9] = 0
             #P(deg/s) ,Q(deg/s) ,R(deg/s)
             logger.outdata[10] = gdegs[0]
             logger.outdata[11] = gdegs[1]
@@ -411,8 +368,7 @@ def run_physics_simulation():
             logger.outdata[16] = gps_llh.latitude
             logger.outdata[17] = gps_llh.longitude
             logger.outdata[18] = gps_llh.altitude
-            #GPS Heading (deg) ,IMU Heading (deg) -- for the satellite these values will be garbage anyway.
-            #So no real need to fix thise for the satellite. 
+            #GPS Heading (deg) ,IMU Heading (deg)
             if gps_llh.heading == -999:
                 heading = 0.0
             else:
@@ -445,7 +401,6 @@ def run_physics_simulation():
             logTime += LOGTIME
             if MODE == 'SIMONLY':
                 model.log(RunTime)
-
         #sleep so we don't spontaneously explode
         #time.sleep(0.01) Since there are sleeps in the barometer you don't need this anymore.
         #Also all the different sensor updates and calculations take so much time that the system won't spontaneously
@@ -475,10 +430,12 @@ logger.close()
 model.logger.close()
 #CP Commands only work on linux so let's use a more OS independent command
 #Thanks Arian for figuring this one out
-import shutil
-shutil.copy(str(logger.filename), str(logger.directory) + '0.csv')
-shutil.copy(str(model.logger.filename), str(model.logger.directory) + '0.csv')
-#command = 'cp ' + str(logger.filename) + ' ' + str(logger.directory) + '0.csv'
-#os.system(command)
-#command = 'cp ' + str(model.logger.filename) + ' ' + str(model.logger.directory) + '0.csv'
-#os.system(command)
+if os.name == 'nt':
+    import shutil
+    shutil.copy(str(logger.filename), str(logger.directory) + '0.csv')
+    shutil.copy(str(model.logger.filename), str(model.logger.directory) + '0.csv')
+elif os.name == 'posix':
+    command = 'cp ' + str(logger.filename) + ' ' + str(logger.directory) + '0.csv'
+    os.system(command)
+    command = 'cp ' + str(model.logger.filename) + ' ' + str(model.logger.directory) + '0.csv'
+    os.system(command)

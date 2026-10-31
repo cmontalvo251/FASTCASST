@@ -1,12 +1,18 @@
 import math
 import os
+import sys
 import threading
 import time
 import numpy as np
 
-# Force PyOpenGL to use the X11 platform backend (fixes Linux/Wayland context errors)
-# Will need to change this if you are using a different platform (e.g., Windows or macOS)
-os.environ["PYOPENGL_PLATFORM"] = "x11"
+# Cross-platform PyOpenGL platform backend selection:
+# Use 'win32' on Windows, 'x11' on Linux/Wayland (fixes Linux/Wayland context errors)
+if sys.platform.startswith("win") or os.name == "nt":
+    os.environ["PYOPENGL_PLATFORM"] = "win32"
+else:
+    # Force PyOpenGL to use the X11 platform backend (fixes Linux/Wayland context errors)
+    # Will need to change this if you are using a different platform (e.g., Windows or macOS)
+    os.environ["PYOPENGL_PLATFORM"] = "x11"
 
 try:
     from OpenGL.GL import *
@@ -383,7 +389,6 @@ class OBJSETUP:
                     print(f"Not a valid BMP file: {filename}")
                     return
 
-                data_offset = int.from_bytes(header[10:14], byteorder="little")
                 width = int.from_bytes(header[18:22], byteorder="little")
                 height = int.from_bytes(header[22:26], byteorder="little")
                 bpp = int.from_bytes(header[28:30], byteorder="little")
@@ -392,8 +397,7 @@ class OBJSETUP:
                     print(f"BMP bpp is not 24 ({bpp}): {filename}")
                     return
 
-                f.seek(data_offset)
-                img_data = f.read(width * height * 3)
+                img_data = f.read()
                 img_array = bytearray(img_data)
 
                 # Swap BGR to RGB (matching C++ implementation)

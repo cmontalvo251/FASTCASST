@@ -236,8 +236,11 @@ class MPU9250:
     __Magnetometer_Sensitivity_Scale_Factor = (0.15)
 
     def __init__(self, mode,spi_bus_number = 0, spi_dev_number = 1):
-        import spidev
-        self.bus = spidev.SpiDev()
+        if mode == 'AUTO':
+            import spidev              # Raspberry Pi only
+            self.bus = spidev.SpiDev()
+        else:
+            self.bus = None            # emulation: no SPI hardware
         self.spi_bus_number = spi_bus_number
         self.spi_dev_number = spi_dev_number
         self.gyro_divider = 0.0
@@ -576,7 +579,7 @@ class MPU9250:
 # returns accel, gyro and mag values
 # -----------------------------------------------------------------------------------------------
 
-    def send(self,state,magI):
+    def send(self,state):
         #Need to generate a,g,m and temp
         #Acceleration needs to come from quaternion vector
         q0123 = np.asarray([state[3],state[4],state[5],state[6]])
@@ -588,8 +591,8 @@ class MPU9250:
         q = state[11]
         r = state[12]
         self.gyro = np.asarray([p,q,r])
-        #For magnetic field we need to use the magnetic field from the model
-        self.mag = np.matmul(TBI,magI)
+        #Magnetometer comes from assuming magnetic field is [300,0,0]
+        self.mag = np.matmul(TBI,np.asarray([300,0,0]))
         #self.mag = np.matmul(TIB,np.asarray([300,0,0]))
 
     def getALL(self,dt,gps_heading = -999): #gps heading defaults to -999 if not available
@@ -723,7 +726,6 @@ class MPU9250:
         byte_array = array.array("B", input_buffer)
         signed_16_bit_int, = struct.unpack("<h", byte_array)
         return float(signed_16_bit_int)
-
 
 
 

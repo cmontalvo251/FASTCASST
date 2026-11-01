@@ -60,6 +60,7 @@ try:
                 lines.append(part)
 except:
     print("Sim File Not Found:",sim_file_name)
+    sys.exit()
 TFINAL = float(lines[0])
 TIMESTEP = float(lines[1])
 ICs = np.zeros(13)

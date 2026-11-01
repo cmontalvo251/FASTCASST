@@ -1,5 +1,5 @@
-100.0 !Final Integration time
-0.0001 !Integration rate // seconds
+400.0 !Final Integration time
+0.1 !Integration rate // seconds
 2.0	!Initial X Position (m) ///Sixdof Model with quaternions
 0.0	!Initial Y Position (m)
 0.0	!Initial Z Position (m)
@@ -41,4 +41,7 @@
 0.1	!Settling Time (sec) of 2 actuator
 1500.0  !Initial Condition of Actuator 1 (Motor 1)
 1500.0  !Initial Condition of Actuator 2 (Motor 2)
- 
+4.66 !mass  //Point Mass (kg)
+0.056 !Ixx //(kg-m^2)
+0.035 !Iyy //(kg-m^2)
+0.077 !Izz //(kg-m^2)

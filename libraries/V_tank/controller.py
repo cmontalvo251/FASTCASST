@@ -1,0 +1,136 @@
+import numpy as np
+import math
+import time
+
+class CONTROLLER():
+    def __init__(self,WAYPOINTS,CONTROLMODE):
+        self.Kp_steer = 0.008
+        self.base_throttle = 0.4
+        self.throttle = 0.0
+        self.aileron = 0.0
+        self.NUMCONTROLS = 2
+        self.setdefaults()
+        self.WAYPOINTS = WAYPOINTS
+        self.WAYPOINTSLAT = WAYPOINTS[0]
+        self.WAYPOINTSLON = WAYPOINTS[1]
+        self.NUMWAYPOINTS = len(self.WAYPOINTSLAT)
+        self.WAYINDEX = 0
+        self.lastTime = 0.0
+        self.elapsedTime = 0.0
+        self.velocity_command = -99.0
+        self.heading_command = -99.0
+        self.velocityint = 0.0
+        self.CONTROLMODE = CONTROLMODE
+        return
+
+    def delpsi(self,psi1: float, psi2: float) -> float:
+        """Calculates relative angle wrapped between -pi and pi."""
+        dpsi = psi2 - psi1
+        return math.atan2(math.sin(dpsi), math.cos(dpsi))
+
+    def setdefaults(self):
+        self.defaults = [-1, -1]   #-1 is minimum and 0 is mid, 1 is maximum
+        self.controls = [-1, -1]
+        self.color = 'Red'
+
+    def loop(self, RunTime, rcin, gps_llh, rpy, g, baro):
+
+        self.elapsedTime = RunTime - self.lastTime
+        self.lastTime = RunTime
+        self.setdefaults()
+
+        if rcin.autopilot < 1500:
+            ##Manual control
+            self.color = 'Green'
+            self.controls[0] = rcin.throttlerc + rcin.yawrc
+            self.controls[1] = rcin.throttlerc - rcin.yawrc
+        elif rcin.autopilot > 1500:
+            #Autopilot mode
+            self.color = 'Blue'
+            self.heading_command = -99
+            if self.CONTROLMODE >= 3:
+                self.waypoint_loop(gps_llh)
+            if self.CONTROLMODE >= 2:
+                if self.heading_command == -99.0:
+                    self.heading_command = 45.0
+                self.heading_loop(rpy,g)
+            if self.CONTROLMODE >= 1:
+                self.velocity_loop(gps_llh)
+            if self.CONTROLMODE >= 0:
+                if self.velocity_command == -99.0:
+                    self.throttle = 0.75
+            # Output to Control Matrix 
+            self.controls[0] = self.throttle + self.aileron
+            self.controls[1] = self.throttle - self.aileron
+
+        ##Saturation
+        for i in range(0, self.NUMCONTROLS):
+            self.controls[i] = min(max(self.controls[i],-1),1)
+
+        #print(self.controls)
+        return self.controls, self.defaults, self.color
+
+    def waypoint_loop(self,gps_llh):
+        """Waypoint navigation calculations."""
+        LAT = gps_llh.latitude
+        LON = gps_llh.longitude
+
+        DLAT = self.WAYPOINTSLAT[self.WAYINDEX] - LAT
+        DLON = self.WAYPOINTSLON[self.WAYINDEX] - LON
+
+        #HEADING ANGLE COMPUTATION FROM GEMINI
+        phi2 = math.radians(self.WAYPOINTSLAT[self.WAYINDEX])
+        phi1 = math.radians(LAT)
+        delta_lambda = math.radians(DLON)
+        # Formula components
+        y = math.sin(delta_lambda) * math.cos(phi2)
+        x = math.cos(phi1) * math.sin(phi2) - math.sin(phi1) * math.cos(phi2) * math.cos(delta_lambda)
+        # Calculate initial bearing in radians and convert to degrees
+        self.heading_command = math.atan2(y, x)*180/np.pi
+        #self.heading_command = math.atan2(DLON, DLAT) * 180.0 / math.pi
+
+        NM2FT  = 6076.115485560000
+        FT2M   = 0.3048
+        GPSVAL = 60.0 * NM2FT * FT2M
+        distance = math.sqrt(DLAT**2 + DLON**2)*GPSVAL
+
+        if distance < 5:
+            print(f"WAY (LAT,LON) = ({self.WAYPOINTSLAT[self.WAYINDEX]},{self.WAYPOINTSLON[self.WAYINDEX]}) " f"GPS (LAT,LON) = {LAT} {LON} HCOMM = {self.heading_command} DIST = {distance}")
+            self.WAYINDEX += 1
+            if self.WAYINDEX > self.NUMWAYPOINTS - 1:
+                self.WAYINDEX = 0
+
+    def heading_loop(self,rpy,g):
+        """Heading control proportional feedback loop."""
+        kp = 2.5*np.pi/180.0
+        heading = rpy[2] #In degrees
+        dheading = self.delpsi(heading * math.pi / 180.0, self.heading_command * math.pi / 180.0)*180.0/math.pi
+        #print(heading,self.heading_command,dheading)
+        #time.sleep(1.0)
+        if dheading > 180:
+            dheading -= 180
+            dheading *= -1
+        if dheading < -180:
+            dheading += 180
+            dheading *= -1
+        self.aileron = kp * dheading
+        # Constrain aileron deflection
+        self.aileron = min(max(self.aileron, -1),1)
+
+    def velocity_loop(self,gps_llh):
+        """PI speed controller."""
+        u = gps_llh.speed
+        self.velocity_command = 5.0
+        velocityerror = self.velocity_command - u
+
+        kp = 60.0/500.0
+        ki = 20.0/500.0
+
+        self.throttle = kp * velocityerror + ki * self.velocityint
+        self.throttle = min(max(self.throttle,0),1)
+
+        #print(self.throttle,u)
+
+        # Anti-windup integration
+        if -1 < self.throttle < 1:
+            self.velocityint += self.elapsedTime * velocityerror

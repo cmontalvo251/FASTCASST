@@ -57,8 +57,7 @@ class CONTROLLER():
                 self.velocity_loop(gps_llh)
             if self.CONTROLMODE >= 0:
                 if self.velocity_command == -99.0:
-                    self.throttle_left = 0.75
-                    self.throttle_right = 0.75
+                    self.throttle = 0.75
             # Output to Control Matrix 
             self.controls[0] = self.throttle + self.aileron
             self.controls[1] = self.throttle - self.aileron

@@ -299,6 +299,7 @@ class OBJSETUP:
                 content = f.read()
         except FileNotFoundError:
             print(f"File not found: {filename}")
+            os._exit(0)
             self.ok = 0
             return
 
@@ -343,6 +344,7 @@ class OBJSETUP:
                             break
             except FileNotFoundError:
                 print(f"Material file not found: {mtl_path}")
+                os._exit(0)
 
         # Load BMP texture if referenced in MTL
         if texture_file:
@@ -433,6 +435,7 @@ class OBJSETUP:
                 print(f"Loaded texture: {filename} ({width}x{height})")
         except FileNotFoundError:
             print(f"Texture file not found: {filename}")
+            os._exit(0)
 
 
 class MouseControl:

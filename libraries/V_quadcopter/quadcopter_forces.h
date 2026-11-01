@@ -1,16 +1,6 @@
 #ifndef FORCES_H
 #define FORCES_H
 
-/* Forces Template 2021
-
-This forces file is a template for a fictitious portalcube
-with thrusters and a simple aero model. The Dynamics.cpp module
-will call a few candidate functions. If you make your own aero
-file with header and cpp file you must conform to the following
-functions otherwise the software will completely break.
-
-*/
-
 #include <Environment/environment.h>
 #include <MATLAB/MATLAB.h> //This is needed for variable length arrays as inputs
 #include <Mathp/mathp.h> //this is for density at sea-level
@@ -24,7 +14,7 @@ class forces {
   double Rrotor,cq,ct,kt,rx,ry,rz,AREA,spin_slope;
   MATLAB thrust_motors,torque_motors;
   void compute_thrust_and_torque(MATLAB pwm_out);
-  int NUMMOTORS = 4;
+  int NUMMOTORS = 8;
  public:
   double length = 1; //This is the length of the x8. It is used in the Dryden model
   //These are 3x1 MATLAB vectors that must be in units of Newtons

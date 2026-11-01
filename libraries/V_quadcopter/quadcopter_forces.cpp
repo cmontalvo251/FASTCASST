@@ -1,4 +1,4 @@
-//This is for an x8 quad with 4 motors on top and 4 motors on bottom
+//This is for an quadcopter with 4 motors
 
 #include "quadcopter_forces.h"
 
@@ -87,17 +87,25 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   //First we need to make sure we understand the right order
   //Then we extract the four forces
   //From the controller - us signals
-  //ctlcomms.set(1,1,motor_upper_left);
-  //ctlcomms.set(2,1,motor_upper_right);
-  //ctlcomms.set(3,1,motor_lower_right);
-  //ctlcomms.set(4,1,motor_lower_left);
+  //ctlcomms.set(1,1,motor_upper_left_bottom);
+  //ctlcomms.set(2,1,motor_upper_right_bottom);
+  //ctlcomms.set(3,1,motor_lower_right_bottom);
+  //ctlcomms.set(4,1,motor_lower_left_bottom);
+  //ctlcomms.set(5,1,motor_upper_left_top);
+  //ctlcomms.set(6,1,motor_upper_right_top);
+  //ctlcomms.set(7,1,motor_lower_right_top);
+  //ctlcomms.set(8,1,motor_lower_left_top);
   //thrust_motors.disp();
   
   //We then extract the motors
-  double motor_upper_left = thrust_motors.get(1,1);
-  double motor_upper_right = thrust_motors.get(2,1);
-  double motor_lower_right = thrust_motors.get(3,1);
-  double motor_lower_left = thrust_motors.get(4,1);
+  double motor_upper_left_bottom = thrust_motors.get(1,1);
+  double motor_upper_right_bottom = thrust_motors.get(2,1);
+  double motor_lower_right_bottom = thrust_motors.get(3,1);
+  double motor_lower_left_bottom = thrust_motors.get(4,1);
+  double motor_upper_left_top = thrust_motors.get(5,1);
+  double motor_upper_right_top = thrust_motors.get(6,1);
+  double motor_lower_right_top = thrust_motors.get(7,1);
+  double motor_lower_left_top = thrust_motors.get(8,1);
 
   //then we add up all the torques in a specific way
   //note the commands from the controller
@@ -111,25 +119,34 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   //motor_lower_left_bottom = throttle - droll + dpitch - dyaw;
   //motor_lower_right_bottom = throttle + droll + dpitch + dyaw;
 
-  double torque_upper_left = torque_motors.get(1,1);
-  double torque_upper_right = torque_motors.get(2,1);
-  double torque_lower_right = torque_motors.get(3,1);
-  double torque_lower_left = torque_motors.get(4,1);
+  double torque_upper_left_bottom = torque_motors.get(1,1);
+  double torque_upper_right_bottom = torque_motors.get(2,1);
+  double torque_lower_right_bottom = torque_motors.get(3,1);
+  double torque_lower_left_bottom = torque_motors.get(4,1);
+  double torque_upper_left_top = torque_motors.get(5,1);
+  double torque_upper_right_top = torque_motors.get(6,1);
+  double torque_lower_right_top = torque_motors.get(7,1);
+  double torque_lower_left_top = torque_motors.get(8,1);
 
   //pwm_out.disp();
   //torque_motors.disp();
   //thrust_motors.disp();
   //PAUSE();
 
-  double yaw_torque = -torque_upper_left + torque_upper_right + torque_lower_left - torque_lower_right;
-  MB.set(3,1,yaw_torque);
+  double yaw_torque_bottom = -torque_upper_left_bottom + torque_upper_right_bottom + torque_lower_left_bottom - torque_lower_right_bottom;
+  double yaw_torque_top = torque_upper_left_top - torque_upper_right_top - torque_lower_left_top + torque_lower_right_top;
+  MB.set(3,1,yaw_torque_top+yaw_torque_bottom);
 
   //Now we compute torque on roll and pitch
-  double roll_torque = (motor_upper_left+motor_lower_left)*ry - (motor_upper_right+motor_lower_right)*ry;
-  double pitch_torque = (motor_upper_left+motor_upper_right)*rx - (motor_lower_right+motor_lower_left)*rx;
+  double roll_torque_top = (motor_upper_left_top+motor_lower_left_top)*ry - (motor_upper_right_top+motor_lower_right_top)*ry;
+  double pitch_torque_top = (motor_upper_left_top+motor_upper_right_top)*rx - (motor_lower_right_top+motor_lower_left_top)*rx;
+
+  //Now we compute torque on roll and pitch
+  double roll_torque_bottom = (motor_upper_left_bottom+motor_lower_left_bottom)*ry - (motor_upper_right_bottom+motor_lower_right_bottom)*ry;
+  double pitch_torque_bottom = (motor_upper_left_bottom+motor_upper_right_bottom)*rx - (motor_lower_right_bottom+motor_lower_left_bottom)*rx;
   
-  MB.set(1,1,roll_torque);
-  MB.set(2,1,pitch_torque);
+  MB.set(1,1,roll_torque_top+roll_torque_bottom);
+  MB.set(2,1,pitch_torque_top+pitch_torque_bottom);
 
   //MB.disp();
   //FB.disp();

@@ -3,16 +3,18 @@ import math
 
 class FORCES():
 
-    def __init__(self):
+    def __init__(self,mass,I):
         ##Define mass properties
-        self.mass = 4.66
-        Ixx = 0.056 #!Ixx //(kg-m^2)
-        Iyy = 0.035 #!Iyy //(kg-m^2)
-        Izz = 0.077 #!Izz //(kg-m^2)
-        Ixz = 0.0
-        Ixy = 0.0
-        Iyz = 0.0
-        self.I = np.asarray([[Ixx,Ixy,Ixz],[Ixy,Iyy,Iyz],[Ixz,Iyz,Izz]])
+        self.mass = mass
+        self.I = I
+        #self.mass = 4.66
+        #Ixx = 0.056 #!Ixx //(kg-m^2)
+        #Iyy = 0.035 #!Iyy //(kg-m^2)
+        #Izz = 0.077 #!Izz //(kg-m^2)
+        #Ixz = 0.0
+        #Ixy = 0.0
+        #Iyz = 0.0
+        #self.I = np.asarray([[Ixx,Ixy,Ixz],[Ixy,Iyy,Iyz],[Ixz,Iyz,Izz]])
 
     def ForceMoment(self,time,state,commands):
         Force = np.asarray([0,0,0])

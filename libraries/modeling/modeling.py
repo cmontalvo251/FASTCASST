@@ -5,7 +5,7 @@ import Datalogger.datalogger as D
 import GPS.gps as G
 
 class MODEL():
-    def __init__(self,TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,LATITUDE_ORIGIN,LONGITUDE_ORIGIN):
+    def __init__(self,TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,LATITUDE_ORIGIN,LONGITUDE_ORIGIN,MASS,I):
         self.timestep = TIMESTEP
         print('Running Physics engine for SIMONLY or SIL mode')
         self.statedot = np.zeros(13)
@@ -34,7 +34,7 @@ class MODEL():
         sys.path.append('../libraries/V_'+self.VEHICLE)
         sys.path.append('libraries/V_'+self.VEHICLE)
         import forces
-        self.vehicle = forces.FORCES()
+        self.vehicle = forces.FORCES(MASS,I)
         self.mass = self.vehicle.mass
         self.I = self.vehicle.I
         self.Iinv = np.linalg.inv(self.I)

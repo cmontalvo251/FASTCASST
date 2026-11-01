@@ -3,18 +3,20 @@ import numpy as np
 
 
 class FORCES():
-    def __init__(self):
+    def __init__(self,mass,I):
         self.NUMMOTORS = 4
         self.RHOSLSI = 1.225
         self.GEARTH = 9.81
         self.PI = math.pi
 
         #Math and inertia
-        self.mass = 0.735 #!mass  (kg)
-        Ixx = 0.0146 #!Ixx    (kg-m^2)
-        Iyy = 0.0146 #!Iyy    (kg-m^2)
-        Izz = 0.0285 #!Izz     (kg-m^2)
-        self.I = np.asarray([[Ixx,0,0],[0,Iyy,0],[0,0,Izz]])
+        self.mass = mass
+        self.I = I
+        #self.mass = 0.735 #!mass  (kg)
+        #Ixx = 0.0146 #!Ixx    (kg-m^2)
+        #Iyy = 0.0146 #!Iyy    (kg-m^2)
+        #Izz = 0.0285 #!Izz     (kg-m^2)
+        #self.I = np.asarray([[Ixx,0,0],[0,Iyy,0],[0,0,Izz]])
         
         # Motor arrays
         self.thrust_motors = np.zeros(self.NUMMOTORS)

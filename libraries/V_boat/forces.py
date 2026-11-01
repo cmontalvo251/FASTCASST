@@ -2,16 +2,18 @@ import numpy as np
 
 class FORCES():
 
-    def __init__(self):
+    def __init__(self,mass,I):
         ##Define mass properties
-        self.mass = 1.0
-        Ixx = 1.0
-        Iyy = 2.0
-        Izz = 3.0
-        Ixz = 0.0
-        Ixy = 0.0
-        Iyz = 0.0
-        self.I = np.asarray([[Ixx,Ixy,Ixz],[Ixy,Iyy,Iyz],[Ixz,Iyz,Izz]])
+        self.mass = mass
+        self.I = I
+        #self.mass = 1.0
+        #Ixx = 1.0
+        #Iyy = 2.0
+        #Izz = 3.0
+        #Ixz = 0.0
+        #Ixy = 0.0
+        #Iyz = 0.0
+        #self.I = np.asarray([[Ixx,Ixy,Ixz],[Ixy,Iyy,Iyz],[Ixz,Iyz,Izz]])
 
     def ForceMoment(self,time,state,commands):
         Force = np.asarray([0,0,0])

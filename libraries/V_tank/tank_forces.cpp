@@ -50,6 +50,7 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   
   //Calculate Forces
   double force_max = (((1.7)/2.2)*9.81 + 4.454)*1.0;
+  //printf("Force Max = %lf \n",force_max);
   double s = 0.007681;
   //motor1_US = STICK_MAX;
   //motor2_US = STICK_MAX;

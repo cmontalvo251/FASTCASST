@@ -43,6 +43,12 @@ void environment::init(MATLAB in_simulation_matrix) {
 
   //Magnet and Gravity Model Stuff
   Gravity_Flag = in_simulation_matrix.get(17,1);
+  //If the user sets the gravity flag to 4 it means this is a flat earth/ground vehicle
+  //So we'll use 3 to setup the flat earth model but elsewhere in the code we can still check 
+  //for Gravity_Flag == 4 to handle specific flat earth logic.
+  if (Gravity_Flag == 4) {
+    Gravity_Flag = 3;
+  }
   Magnetic_Flag = in_simulation_matrix.get(18,1);
   time_magnet_next = in_simulation_matrix.get(19,1);
   time_wrf_next = in_simulation_matrix.get(19,1);

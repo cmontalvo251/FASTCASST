@@ -163,7 +163,7 @@ void controller::WaypointLoop(MATLAB sense_matrix) {
 }
 
 void controller::HeadingLoop(MATLAB sense_matrix) {
-  double kp = 2.0;
+  double kp = 3.0;
   double heading = sense_matrix.get(6,1);
   //I think the wrap issue is here
   double dheading = -delpsi(heading*PI/180.0,heading_command*PI/180.0)*180.0/PI;

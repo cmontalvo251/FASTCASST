@@ -4,7 +4,7 @@ import numpy as np
 
 class FORCES():
     def __init__(self):
-        self.NUMMOTORS = 8
+        self.NUMMOTORS = 4
         self.RHOSLSI = 1.225
         self.GEARTH = 9.81
         self.PI = math.pi
@@ -73,36 +73,23 @@ class FORCES():
         motor_upper_right_bottom = self.thrust_motors[1]
         motor_lower_right_bottom = self.thrust_motors[2]
         motor_lower_left_bottom = self.thrust_motors[3]
-        motor_upper_left_top = self.thrust_motors[4]
-        motor_upper_right_top = self.thrust_motors[5]
-        motor_lower_right_top = self.thrust_motors[6]
-        motor_lower_left_top = self.thrust_motors[7]
 
         # Extract individual motor torques
         torque_upper_left_bottom = self.torque_motors[0]
         torque_upper_right_bottom = self.torque_motors[1]
         torque_lower_right_bottom = self.torque_motors[2]
         torque_lower_left_bottom = self.torque_motors[3]
-        torque_upper_left_top = self.torque_motors[4]
-        torque_upper_right_top = self.torque_motors[5]
-        torque_lower_right_top = self.torque_motors[6]
-        torque_lower_left_top = self.torque_motors[7]
 
         # Compute yaw torques for bottom and top rotors
         yaw_torque_bottom = -torque_upper_left_bottom + torque_upper_right_bottom + torque_lower_left_bottom - torque_lower_right_bottom
-        yaw_torque_top = torque_upper_left_top - torque_upper_right_top - torque_lower_left_top + torque_lower_right_top
-        Moment[2] = yaw_torque_top + yaw_torque_bottom
-
-        # Compute roll and pitch torques for top rotors
-        roll_torque_top = (motor_upper_left_top + motor_lower_left_top) * self.ry - (motor_upper_right_top + motor_lower_right_top) * self.ry
-        pitch_torque_top = (motor_upper_left_top + motor_upper_right_top) * self.rx - (motor_lower_right_top + motor_lower_left_top) * self.rx
+        Moment[2] = yaw_torque_bottom
 
         # Compute roll and pitch torques for bottom rotors
         roll_torque_bottom = (motor_upper_left_bottom + motor_lower_left_bottom) * self.ry - (motor_upper_right_bottom + motor_lower_right_bottom) * self.ry
         pitch_torque_bottom = (motor_upper_left_bottom + motor_upper_right_bottom) * self.rx - (motor_lower_right_bottom + motor_lower_left_bottom) * self.rx
 
         # Set total roll and pitch moments
-        Moment[0] = roll_torque_top + roll_torque_bottom
-        Moment[1] = pitch_torque_top + pitch_torque_bottom
+        Moment[0] = roll_torque_bottom
+        Moment[1] = pitch_torque_bottom
 
         return Force,Moment

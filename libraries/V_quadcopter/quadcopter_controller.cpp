@@ -61,10 +61,6 @@ void controller::set_defaults() {
   control_matrix.set(2,1,OUTMIN);
   control_matrix.set(3,1,OUTMIN);
   control_matrix.set(4,1,OUTMIN);
-  control_matrix.set(5,1,OUTMIN);
-  control_matrix.set(6,1,OUTMIN);
-  control_matrix.set(7,1,OUTMIN);
-  control_matrix.set(8,1,OUTMIN);
 }
 
 //Print control matrix
@@ -162,10 +158,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
     motor_upper_right_bottom = throttle + (aileron-OUTMID) - (elevator-OUTMID) - (rudder-OUTMID);
     motor_lower_right_bottom = throttle + (aileron-OUTMID) + (elevator-OUTMID) + (rudder-OUTMID);
     motor_lower_left_bottom = throttle - (aileron-OUTMID) + (elevator-OUTMID) - (rudder-OUTMID);
-    motor_upper_left_top = throttle - (aileron-OUTMID) - (elevator-OUTMID) - (rudder-OUTMID);
-    motor_upper_right_top = throttle + (aileron-OUTMID) - (elevator-OUTMID) + (rudder-OUTMID);
-    motor_lower_right_top = throttle + (aileron-OUTMID) + (elevator-OUTMID) - (rudder-OUTMID);
-    motor_lower_left_top = throttle - (aileron-OUTMID) + (elevator-OUTMID) + (rudder-OUTMID);
     break;
   }
   
@@ -174,10 +166,6 @@ void controller::loop(double currentTime,int rx_array[],MATLAB sense_matrix) {
   control_matrix.set(2, 1, motor_upper_right_bottom);    
   control_matrix.set(3, 1, motor_lower_right_bottom);    
   control_matrix.set(4, 1, motor_lower_left_bottom);     
-  control_matrix.set(5, 1, motor_upper_left_top);  
-  control_matrix.set(6, 1, motor_upper_right_top); 
-  control_matrix.set(7, 1, motor_lower_right_top); 
-  control_matrix.set(8, 1, motor_lower_left_top);  
 
   //Constrain the control matrix to be within the min and max values
   for (int i = 1;i<=NUMSIGNALS;i++) {

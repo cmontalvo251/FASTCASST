@@ -34,17 +34,15 @@ private:
 	int PRINTER = 0;
   	std::vector<double> WAYPOINTS_X;
   	std::vector<double> WAYPOINTS_Y;
-	//At a minimum you need to compute the 8 motor signals
-  	double motor_upper_left_top = OUTMIN;
-  	double motor_upper_right_top = OUTMIN;
-  	double motor_lower_left_top = OUTMIN;
-  	double motor_lower_right_top = OUTMIN;
+	//At a minimum you need to compute the 4 motor signals
+	//we're removing the top motors to make the quadcopter
+	//so these just say bottom and there is no top
   	double motor_upper_left_bottom = OUTMIN;
   	double motor_upper_right_bottom = OUTMIN;
   	double motor_lower_left_bottom = OUTMIN;
 	double motor_lower_right_bottom = OUTMIN;
 public:
-	int NUMMOTORS = 0, MOTORSOFF = 0, NUMSIGNALS = 8;
+	int NUMMOTORS = 0, MOTORSOFF = 0, NUMSIGNALS = 4;
 	int MOTORSRUNNING;
 	MATLAB control_matrix;
 	MATLAB M, U, H, HT, HHT, HHT_inv, HT_inv_HHT, Q, CHI;

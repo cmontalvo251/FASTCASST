@@ -91,29 +91,17 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   //ctlcomms.set(2,1,motor_upper_right_bottom);
   //ctlcomms.set(3,1,motor_lower_right_bottom);
   //ctlcomms.set(4,1,motor_lower_left_bottom);
-  //ctlcomms.set(5,1,motor_upper_left_top);
-  //ctlcomms.set(6,1,motor_upper_right_top);
-  //ctlcomms.set(7,1,motor_lower_right_top);
-  //ctlcomms.set(8,1,motor_lower_left_top);
   //thrust_motors.disp();
   
   //We then extract the motors
+  //We're removing the top from the x8 code to make the quadcopter
   double motor_upper_left_bottom = thrust_motors.get(1,1);
   double motor_upper_right_bottom = thrust_motors.get(2,1);
   double motor_lower_right_bottom = thrust_motors.get(3,1);
   double motor_lower_left_bottom = thrust_motors.get(4,1);
-  double motor_upper_left_top = thrust_motors.get(5,1);
-  double motor_upper_right_top = thrust_motors.get(6,1);
-  double motor_lower_right_top = thrust_motors.get(7,1);
-  double motor_lower_left_top = thrust_motors.get(8,1);
 
   //then we add up all the torques in a specific way
   //note the commands from the controller
-  //motor_upper_left_top = throttle - droll - dpitch - dyaw;
-  //motor_upper_right_top = throttle + droll - dpitch + dyaw;
-  //motor_lower_left_top = throttle - droll + dpitch + dyaw;
-  //motor_lower_right_top = throttle + droll + dpitch - dyaw;
-  
   //motor_upper_left_bottom = throttle - droll - dpitch + dyaw;
   //motor_upper_right_bottom = throttle + droll - dpitch - dyaw;
   //motor_lower_left_bottom = throttle - droll + dpitch - dyaw;
@@ -123,10 +111,6 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   double torque_upper_right_bottom = torque_motors.get(2,1);
   double torque_lower_right_bottom = torque_motors.get(3,1);
   double torque_lower_left_bottom = torque_motors.get(4,1);
-  double torque_upper_left_top = torque_motors.get(5,1);
-  double torque_upper_right_top = torque_motors.get(6,1);
-  double torque_lower_right_top = torque_motors.get(7,1);
-  double torque_lower_left_top = torque_motors.get(8,1);
 
   //pwm_out.disp();
   //torque_motors.disp();
@@ -134,19 +118,14 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   //PAUSE();
 
   double yaw_torque_bottom = -torque_upper_left_bottom + torque_upper_right_bottom + torque_lower_left_bottom - torque_lower_right_bottom;
-  double yaw_torque_top = torque_upper_left_top - torque_upper_right_top - torque_lower_left_top + torque_lower_right_top;
-  MB.set(3,1,yaw_torque_top+yaw_torque_bottom);
-
-  //Now we compute torque on roll and pitch
-  double roll_torque_top = (motor_upper_left_top+motor_lower_left_top)*ry - (motor_upper_right_top+motor_lower_right_top)*ry;
-  double pitch_torque_top = (motor_upper_left_top+motor_upper_right_top)*rx - (motor_lower_right_top+motor_lower_left_top)*rx;
+  MB.set(3,1,yaw_torque_bottom);
 
   //Now we compute torque on roll and pitch
   double roll_torque_bottom = (motor_upper_left_bottom+motor_lower_left_bottom)*ry - (motor_upper_right_bottom+motor_lower_right_bottom)*ry;
   double pitch_torque_bottom = (motor_upper_left_bottom+motor_upper_right_bottom)*rx - (motor_lower_right_bottom+motor_lower_left_bottom)*rx;
   
-  MB.set(1,1,roll_torque_top+roll_torque_bottom);
-  MB.set(2,1,pitch_torque_top+pitch_torque_bottom);
+  MB.set(1,1,roll_torque_bottom);
+  MB.set(2,1,pitch_torque_bottom);
 
   //MB.disp();
   //FB.disp();

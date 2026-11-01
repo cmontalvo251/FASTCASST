@@ -5,7 +5,7 @@ import numpy as np
 class CONTROLLER():
     def __init__(self,WAYPOINTS,CONTROLMODE):
         # Constants & PWM parameters
-        self.NUMCONTROLS = 8 #must be the same as forces.py
+        self.NUMCONTROLS = 4 #must be the same as forces.py
         self.PI = math.pi
 
         # State Variables
@@ -49,10 +49,6 @@ class CONTROLLER():
         self.prevTime = 0.0
 
         # Motor Commands
-        self.motor_upper_left_top = -1
-        self.motor_upper_right_top = -1
-        self.motor_lower_left_top = -1
-        self.motor_lower_right_top = -1
         self.motor_upper_left_bottom = -1
         self.motor_upper_right_bottom = -1
         self.motor_lower_left_bottom = -1
@@ -87,10 +83,6 @@ class CONTROLLER():
             self.motor_upper_right_bottom = rcin.throttlerc + rcin.rollrc - rcin.pitchrc - rcin.yawrc
             self.motor_lower_right_bottom = rcin.throttlerc + rcin.rollrc + rcin.pitchrc + rcin.yawrc
             self.motor_lower_left_bottom = rcin.throttlerc - rcin.rollrc + rcin.pitchrc - rcin.yawrc
-            self.motor_upper_left_top = rcin.throttlerc - rcin.rollrc - rcin.pitchrc - rcin.yawrc
-            self.motor_upper_right_top = rcin.throttlerc + rcin.rollrc - rcin.pitchrc + rcin.yawrc
-            self.motor_lower_right_top = rcin.throttlerc + rcin.rollrc + rcin.pitchrc - rcin.yawrc
-            self.motor_lower_left_top = rcin.throttlerc - rcin.rollrc + rcin.pitchrc + rcin.yawrc
         elif rcin.autopilot > 1500:
             self.color = 'Blue'
             if self.CONTROLMODE >= 4:
@@ -122,20 +114,12 @@ class CONTROLLER():
             self.motor_upper_right_bottom = self.throttle + self.aileron - self.elevator - self.rudder
             self.motor_lower_right_bottom = self.throttle + self.aileron + self.elevator + self.rudder
             self.motor_lower_left_bottom = self.throttle - self.aileron + self.elevator - self.rudder
-            self.motor_upper_left_top = self.throttle - self.aileron - self.elevator - self.rudder
-            self.motor_upper_right_top = self.throttle + self.aileron - self.elevator + self.rudder
-            self.motor_lower_right_top = self.throttle + self.aileron + self.elevator - self.rudder
-            self.motor_lower_left_top = self.throttle - self.aileron + self.elevator + self.rudder
 
         # Send motor commands to control matrix
         self.controls[0] = self.motor_upper_left_bottom
         self.controls[1] = self.motor_upper_right_bottom
         self.controls[2] = self.motor_lower_right_bottom
         self.controls[3] = self.motor_lower_left_bottom
-        self.controls[4] = self.motor_upper_left_top
-        self.controls[5] = self.motor_upper_right_top
-        self.controls[6] = self.motor_lower_right_top
-        self.controls[7] = self.motor_lower_left_top
 
         # Constrain control matrix values
         for i in range(self.NUMCONTROLS):

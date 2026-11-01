@@ -26,7 +26,7 @@ private:
   void HeadingLoop(MATLAB);
   void WaypointLoop(MATLAB);
 public:
-  int NUMSIGNALS=2; //1 motor and 1 servo
+  int NUMSIGNALS=2; //2 motors
   MATLAB control_matrix; //This is a vector of motor and servo pwm signals
   void loop(double currentTime,int rx_array[],MATLAB sense_matrix);
   void init(MATLAB in_configuration_matrix);

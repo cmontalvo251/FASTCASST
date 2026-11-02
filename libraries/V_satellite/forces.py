@@ -3,7 +3,7 @@ import numpy as np
 
 class FORCES:
 
-    def __init__(self):
+    def __init__(self,mass,I):
         # ==========================================
         # Parameters (Equivalent to params.h)
         # ==========================================
@@ -31,11 +31,13 @@ class FORCES:
         self.MAXACCEL = self.MAXTORQUE / self.Irw
         self.MAXOMEGA = self.MAXMOMENT / self.Irw
 
-        self.mass = 3.0	#!Mass (kg)
-        self.Ixx = 0.005 # !Ixx (kg-m^2)
-        self.Iyy = 0.011 #!Iyy(kg-m^2)
-        self.Izz = 0.011 #!Izz(kg-m^2)
-        self.I = np.asarray([[self.Ixx, 0.0, 0.0], [0.0,self.Iyy, 0.0], [0.0, 0.0, self.Izz]])
+        self.mass = mass
+        self.I = I
+        #self.mass = 3.0	#!Mass (kg)
+        #self.Ixx = 0.005 # !Ixx (kg-m^2)
+        #self.Iyy = 0.011 #!Iyy(kg-m^2)
+        #self.Izz = 0.011 #!Izz(kg-m^2)
+        #self.I = np.asarray([[self.Ixx, 0.0, 0.0], [0.0,self.Iyy, 0.0], [0.0, 0.0, self.Izz]])
 
     def ForceMoment(self,time,state,commands,mag):
         """Calculates forces and moments for the satellite in the body frame."""

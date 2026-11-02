@@ -59,6 +59,7 @@ class modeling {
   double mass,tlastRCread=-99,tlastCTL=-99,tRC,tCTL;
   Rotation3 ine2bod321;
   environment env;
+  bool GROUND_VEHICLE = false;
   forces extforces;
   //double ACTUATOR_ERROR_PERCENT;
   void rk4step(double time,MATLAB control_matrix);

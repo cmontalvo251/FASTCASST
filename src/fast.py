@@ -60,11 +60,25 @@ try:
                 lines.append(part)
 except:
     print("Sim File Not Found:",sim_file_name)
+    sys.exit()
 TFINAL = float(lines[0])
 TIMESTEP = float(lines[1])
 ICs = np.zeros(13)
 for i in range(0,13):
     ICs[i] = float(lines[2+i])
+NUMACTUATORS = int(lines[38])
+print(NUMACTUATORS)
+MASS = float(lines[39+2*NUMACTUATORS])
+Ixx = float(lines[39+2*NUMACTUATORS+1])
+Iyy = float(lines[39+2*NUMACTUATORS+2])
+Izz = float(lines[39+2*NUMACTUATORS+3])
+Ixy = float(lines[39+2*NUMACTUATORS+4])
+Ixz = float(lines[39+2*NUMACTUATORS+5])
+Iyz = float(lines[39+2*NUMACTUATORS+6])
+I = np.asarray([[Ixx,Ixy,Ixz],[Ixy,Iyy,Iyz],[Ixz,Iyz,Izz]])
+print(MASS,I)
+
+##NOW THE CONFIG FILE NAME
 config_file_name = 'libraries/V_' + VEHICLE + '/Input_Files/Config.txt'
 try:
     lines = []
@@ -122,7 +136,7 @@ NUMOUTPUTS = 36+vehicle.NUMCONTROLS
 ##Import modeling if MODE == SIMONLY
 if MODE == 'SIMONLY' or MODE == 'SIL':
     import modeling.modeling as M
-    model = M.MODEL(TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,gps_llh.latO,gps_llh.lonO)
+    model = M.MODEL(TIMESTEP,ICs,VEHICLE,NUMOUTPUTS,gps_llh.latO,gps_llh.lonO,MASS,I)
 
 #Setup IMU
 import MPU9250.mpu9250 as MPU

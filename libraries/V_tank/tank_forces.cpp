@@ -50,12 +50,13 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   
   //Calculate Forces
   double force_max = (((1.7)/2.2)*9.81 + 4.454)*1.0;
+  //printf("Force Max = %lf \n",force_max);
   double s = 0.007681;
   //motor1_US = STICK_MAX;
   //motor2_US = STICK_MAX;
   double dpwm1 = (motor1_US-STICK_MID);
   double dpwm2 = (motor2_US-STICK_MID); //Need to find equation by plotting microsec vs force
-  force1 = -copysign(1.0,dpwm1)*force_max*(1-exp(-s*fabs(dpwm1)));
+  force1 = copysign(1.0,dpwm1)*force_max*(1-exp(-s*fabs(dpwm1)));
   force2 = copysign(1.0,dpwm2)*force_max*(1-exp(-s*fabs(dpwm2)));
   //printf("forces before = %lf %lf \n",force1,force2);
   

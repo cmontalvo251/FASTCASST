@@ -55,10 +55,12 @@ class AeroPack:
 
 class FORCES():
 
-    def __init__(self):
+    def __init__(self,mass,I):
         self.aeropack = AeroPack()
-        self.mass = self.aeropack.mass
-        self.I = np.asarray([[self.aeropack.Ixx, 0.0, 0.0], [0.0,self.aeropack.Iyy, 0.0], [0.0, 0.0, self.aeropack.Izz]])
+        self.mass = mass
+        self.I = I
+        #self.mass = self.aeropack.mass
+        #self.I = np.asarray([[self.aeropack.Ixx, 0.0, 0.0], [0.0,self.aeropack.Iyy, 0.0], [0.0, 0.0, self.aeropack.Izz]])
 
     def ForceMoment(self,time,state,commands):
         """Calculates aerodynamic forces and body moments."""

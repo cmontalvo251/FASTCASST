@@ -159,6 +159,13 @@ void modeling::init(char root_folder_name[],MATLAB in_simulation_matrix,MATLAB i
     env.dryden.setWingSpan(extforces.length);
     env.dryden.setVelocity(integrator.StateDel.get(8,1));
   }
+
+  ///Check for Ground Vehicle
+  int GRAVITY_FLAG = in_simulation_matrix.get(17,1);
+  if (GRAVITY_FLAG == 4) {
+    //This is a ground vehicle
+    GROUND_VEHICLE = true;
+  }
   
   //integration_matrix.disp();
   //PAUSE();
@@ -568,15 +575,15 @@ void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
   //when the ground forces are zero. This is to avoid the vehicle from flying off the ground when it shouldn't be.
   //For a car, tank or boat the external forces and moments are always added in because they are supposed to be on the ground.
   //In this case we have a #ifdef to help
-  #if defined (boat) || (car)
+  if (GROUND_VEHICLE) {
     //This is a ground vehicle
     FTOTALB.plus_eq(extforces.FB);
-  #else
+   } else {
     //This is an air vehicle so only add in the external forces and moments if the ground forces are zero
     if (FGNDB.norm() == 0) {
       FTOTALB.plus_eq(extforces.FB);
     }
-  #endif
+  }
   //extforces.FB.disp();
   //FGNDB.disp();
   //FTOTALB.disp();  
@@ -604,15 +611,15 @@ void modeling::Derivatives(double currentTime,MATLAB control_matrix) {
   //when the ground forces are zero. This is to avoid the vehicle from flying off the ground when it shouldn't be.
   //For a car, tank or boat the external forces and moments are always added in because they are supposed to be on the ground.
   //In this case we have a forces_flag to help with this
-  #if defined (boat) || (car)
+  if (GROUND_VEHICLE) {
     //This is a ground vehicle
     MTOTALB.plus_eq(extforces.MB);
-  #else
+  } else {
     //This is an air vehicle so only add in the external forces and moments if the ground forces are zero
     if (FGNDB.norm() == 0) {
       MTOTALB.plus_eq(extforces.MB);
     }
-  #endif
+  }
   //extforces.MB.disp();
   //MTOTALB.disp();
   //pqr.disp();

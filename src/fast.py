@@ -1,16 +1,16 @@
 #############################################
 #
-#  FASTCASSTPy - Facility for Aerial Systems and Technology
-#  Configurable Autopilot Simulation and Software Tool in Python
+#   FASTCASSTPy - Facility for Aerial Systems and Technology
+#   Configurable Autopilot Simulation and Software Tool in Python
 #
-#  Initially Created: Spring 2022
-#  Primary Author: Julia Nelson Spring 2022
-#  Secondary Author: Maxwell Cobar Spring 2023
-#  Tertiary Authors: Aramis Hoffmann (car.py)
-#  Kate Doiron (plane.py) Spring 2025
-#  Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026/Fall 2026
-#  Quinary Author: Vinicius da Luz (mostly an undisclosed AI tool) Summer 2026 (car waypoint navigation)
-#  5th Author: Arian Sarhadi (Moving FASTPy to Windows) Fall 2026
+#   Initially Created: Spring 2022
+#   Primary Author: Julia Nelson Spring 2022
+#   Secondary Author: Maxwell Cobar Spring 2023
+#   Tertiary Authors: Aramis Hoffmann (car.py)
+#   Kate Doiron (plane.py) Spring 2025
+#   Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026/Fall 2026
+#   Quinary Author: Vinicius da Luz (mostly an undisclosed AI tool) Summer 2026 (car waypoint navigation)
+#   5th Author: Arian Sarhadi (Moving FASTPy to Windows) Fall 2026
 #
 ################################################
 
@@ -141,6 +141,7 @@ if MODE == 'SIMONLY' or MODE == 'SIL':
 #Setup IMU
 import MPU9250.mpu9250 as MPU
 imu = MPU.MPU9250(mode=MODE)
+
 if VEHICLE == 'satellite':
     import startracker.startracker as st
     star = st.STARTRACKER()
@@ -171,10 +172,10 @@ baro = MS.MS5611(mode=MODE)
 if MODE != 'SIMONLY' and MODE != 'SIL':
     baro.calibrate() #if you don't calibrate sea level defaults to 1013.25
 
-##Setup Telemetry
+##Setup Telemetry (Hardware-Agnostic check for AUTO / HIL)
 from Comms.Comms import Comms as S
 ser = S(8) #otherwise this defaults to 12
-if MODE == 'HIL' or MODE=='AUTO':
+if MODE == 'AUTO' or MODE == 'HIL':
     ser.SerialInit(57600,"/dev/ttyAMA0",period=1.0)
 else:
     ser.setMODE(MODE)
@@ -223,7 +224,7 @@ def run_physics_simulation():
         if MODE == 'SIMONLY' or MODE == 'SIL':
             #Send model states to sensors
             gps_llh.send(model.state,model.statedot,VEHICLE)
-            imu.send(model.state,model.magI) #Just send the entire state vector + the magnetic field
+            imu.send(model.state,model.magI) #Just send the entire state vector + the magnetic field vector from the model
             baro.send(model.state) #again send the entire state vector
             if VEHICLE=='satellite':
                 star.send(model.state) #this is where we send rpy 
@@ -262,6 +263,7 @@ def run_physics_simulation():
         #during boot up. Might be a good thing to test once you start hardware testing.
         #compass is the ahrs magnetometer heading + the gps heading
         a,gdegs,m,rpy,rpy_ahrs,temp,compass = imu.getALL(elapsedTime,gps_llh.heading) 
+
         ##The satellite can't use the AHRS algorithm, it has to use a star tracker for rpy
         #So don't even bother using the compass value
         if VEHICLE == 'satellite':
@@ -272,7 +274,6 @@ def run_physics_simulation():
         #Also keep in mind that the MPU9250 returns temperature automatically
         baro.poll(RunTime)
 
-        #Run your control loop
         if VEHICLE == 'satellite':
             #Satellite needs the magnetometer and doesn't care about the barometer values
             #And we have to use the rpy values from the startracker
@@ -344,14 +345,14 @@ def run_physics_simulation():
             printTime+=PRINTTIME
 
         ##Send Telemetry
-        if (RunTime - telemetryTime) >= TELEMETRYTIME and MODE != 'SIMONLY':
+        if (RunTime - telemetryTime) >= TELEMETRYTIME and MODE != 'SIMONLY' and ser is not None:
             telemetryTime += TELEMETRYTIME	
             print('Sending telemtry packet...',RunTime)
             ser.fast_packet[0] = RunTime #//1 - Time
             if VEHICLE == 'satellite':
                 ser.fast_packet[1] = rpy_star[0] #//2 - roll
                 ser.fast_packet[2] = rpy_star[1] #//3 - pitch
-                ser.fast_packet[3] = rpy_star[2] #//4 - yaw 
+                ser.fast_packet[3] = rpy_star[2] #//4 - yaw
             else:
                 ser.fast_packet[1] = rpy_ahrs[0] #//2 - roll
                 ser.fast_packet[2] = rpy_ahrs[1] #//3 - pitch
@@ -382,7 +383,10 @@ def run_physics_simulation():
             if VEHICLE == 'satellite':
                 logger.outdata[4] = rpy_star[0]
                 logger.outdata[5] = rpy_star[1]
-                logger.outdata[6] = rpy_star[2]
+                if compass == -999:
+                    yaw = rpy_star[2]
+                else:
+                    yaw = compass
             else:
                 logger.outdata[4] = rpy_ahrs[0]
                 logger.outdata[5] = rpy_ahrs[1]
@@ -390,7 +394,7 @@ def run_physics_simulation():
                     yaw = rpy_ahrs[2]
                 else:
                     yaw = compass
-                logger.outdata[6] = yaw
+            logger.outdata[6] = yaw
             #U(m/s) ,V(m/s) ,W(m/s)
             if gps_llh.speed_x == -99:
                 speed_X = 0.0
@@ -459,7 +463,6 @@ def run_physics_simulation():
             logTime += LOGTIME
             if MODE == 'SIMONLY':
                 model.log(RunTime)
-
         #sleep so we don't spontaneously explode
         #time.sleep(0.01) Since there are sleeps in the barometer you don't need this anymore.
         #Also all the different sensor updates and calculations take so much time that the system won't spontaneously
@@ -489,10 +492,12 @@ logger.close()
 model.logger.close()
 #CP Commands only work on linux so let's use a more OS independent command
 #Thanks Arian for figuring this one out
-import shutil
-shutil.copy(str(logger.filename), str(logger.directory) + '0.csv')
-shutil.copy(str(model.logger.filename), str(model.logger.directory) + '0.csv')
-#command = 'cp ' + str(logger.filename) + ' ' + str(logger.directory) + '0.csv'
-#os.system(command)
-#command = 'cp ' + str(model.logger.filename) + ' ' + str(model.logger.directory) + '0.csv'
-#os.system(command)
+if os.name == 'nt':
+    import shutil
+    shutil.copy(str(logger.filename), str(logger.directory) + '0.csv')
+    shutil.copy(str(model.logger.filename), str(model.logger.directory) + '0.csv')
+elif os.name == 'posix':
+    command = 'cp ' + str(logger.filename) + ' ' + str(logger.directory) + '0.csv'
+    os.system(command)
+    command = 'cp ' + str(model.logger.filename) + ' ' + str(model.logger.directory) + '0.csv'
+    os.system(command)

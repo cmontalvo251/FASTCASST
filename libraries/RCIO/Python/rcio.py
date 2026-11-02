@@ -157,6 +157,7 @@ class RCInput():
 
                 self.joy_fd = os.open(joystick_dev, flags)
                 print("Getting information from the joystick")
+                # Default values if ioctl is omitted; non-blocking file descriptor active
                 self.name_of_joystick = "USB Controller"
                 self.joycomm = [self.STICK_MID]*max(num_channels,16)
                 self.joyraw  = [self.STICK_MID]*max(num_channels,16)
@@ -307,6 +308,7 @@ class RCInput():
         ##If throttle reads below 800, the receiver has lost the transmitter.
         self.signal_lost = (self.throttle < 800)
         
+        ##Check and see if system is ARMED
         if not self.ARMED:
             #system is not armed. Let's try and arm it
             #Independent Safety precautions to arm system
@@ -321,7 +323,7 @@ class RCInput():
                 #No matter what though
         if self.armswitch < self.STICK_MID:
             self.ARMED = False
-            self.color = 'Red'
+            self.color = 'Red' #for no go
         return self.ARMED,self.color
 
     def convert(self,signal):

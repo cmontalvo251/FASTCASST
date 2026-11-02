@@ -390,7 +390,7 @@ class OBJSETUP:
                 if len(header) < 54 or header[:2] != b"BM":
                     print(f"Not a valid BMP file: {filename}")
                     return
-
+                data_offset = int.from_bytes(header[10:14], byteorder="little")
                 width = int.from_bytes(header[18:22], byteorder="little")
                 height = int.from_bytes(header[22:26], byteorder="little")
                 bpp = int.from_bytes(header[28:30], byteorder="little")
@@ -399,7 +399,8 @@ class OBJSETUP:
                     print(f"BMP bpp is not 24 ({bpp}): {filename}")
                     return
 
-                img_data = f.read()
+                f.seek(data_offset)
+                img_data = f.read(width * height * 3)
                 img_array = bytearray(img_data)
 
                 # Swap BGR to RGB (matching C++ implementation)

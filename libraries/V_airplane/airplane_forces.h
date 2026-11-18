@@ -46,16 +46,16 @@ struct Aero_Pack {
   double bws=1.4859;  //#Wing span: m
   double S = cbar*bws;
   double mass = 1.2364; //This has got to be Newtons - Maxwell says yes since the a/c is like 2.72 lbf = 2.72*4.44 ~= 12.0
-  double Tmax = mass*GEARTH;//these are set in the setup() routine
+  double Tmax = 2.47/2.2*9.81; //Maximum 2.47 lbf converted to Newtons
   double max_speed = 30; //this is just from anectodal evidence and looking at plots
   double Rrotor = (9.5/12.0)/(2*3.28); //9.5 inch props to meters
   double AREA = PI*pow(Rrotor,2.0);  //m^2
   double Voltage = 3.7*4; //4 Cell
   double KV = 950.0;
   double omegaRPM = KV*Voltage;
-  double omegarads = omegaRPM*2.0*PI/180.0;
-  double spin_slope = omegarads/(STICK_MAX-STICK_MIN);
-  double ct = Tmax/(0.5*RHOSLSI*AREA*pow(Rrotor*omegarads,2.0)); //.0335
+  double omegarads = omegaRPM*2.0*PI/60.0;
+  double spin_slope = omegarads/(OUTMAX-OUTMIN);
+  double ct = Tmax/(RHOSLSI*AREA*pow(Rrotor*omegarads,2.0)); //.0335
   double cq = pow(ct,3.0/2.0)/sqrt(2.0); 
 };
 

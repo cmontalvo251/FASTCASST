@@ -68,18 +68,26 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   double deleUS = pwm_out.get(3,1);
   double delrUS = pwm_out.get(4,1);
 
-  //Convert US to degrees
-  double dela = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(delaUS-OUTMID);
-  double dele = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(deleUS-OUTMID); 
-  double delr = 2*30*PI/(180.0*(OUTMAX-OUTMIN))*(delrUS-OUTMID);
+  //delaUS = OUTMIN;
+  //printdouble(delaUS,"delaUS");
+
+  //Convert US to radians
+  double dela = PI/(3.0*(OUTMAX-OUTMIN))*(delaUS-OUTMID);
+  double dele = PI/(3.0*(OUTMAX-OUTMIN))*(deleUS-OUTMID); 
+  double delr = PI/(3.0*(OUTMAX-OUTMIN))*(delrUS-OUTMID);
+
+  //printdouble(dela,"dela");
   
   //printf("DELR = %lf \n",delr);
   
   //actuators.disp();
   
   //Compute Thrust
+  //mewt = OUTMAX;
   double omega = aeropack.spin_slope*(mewt - OUTMIN);
-  double Thrust = 0.5*RHOSLSI*aeropack.AREA*pow(omega*aeropack.Rrotor,2.0)*aeropack.ct;
+  //printdouble(omega,"OMEGA");
+  double Thrust = RHOSLSI*aeropack.AREA*pow(omega*aeropack.Rrotor,2.0)*aeropack.ct;
+  //printdouble(Thrust,"Thrust");
   if (vinf < aeropack.max_speed) {
     Thrust *= vinf/aeropack.max_speed;
   } else {

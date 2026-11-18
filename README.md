@@ -23,19 +23,16 @@ The sections that follow detail installation of the software on a Debian based L
 
 The UART port is used for Serial communication to a ground station computer. The ground station receives data from your drone running FASTCASST and plots everything onto a nice GUI. Directions on the ground station are included below. 
 
-# VERSION 10.0 (11.0 has extra vehicles included)
+# VERSION 12.0 
 
-Version 10.0 does not currently have support for Windows. MinGW and Cygwin have been tested without success. 
-
-Running Powershell as Administrator and running 'wsl --install' will install a Ubuntu Virtual machine which may work but is not tested. If you get error code 0x80370114, make sure to enable WSL in program features. This blog may help you https://randomhacksdrc.blogspot.com/2023/02/mounting-ext4-harddrive-to-windows.html 
-
-Another option is to install VirtualBox on your windows computer and then install Ubuntu into your virtual machine. This is also untested but more than likely will work.
-
-The gauranteed option would be to dual boot your machine or just switch to Ubuntu Linux completely - https://randomhacksdrc.blogspot.com/2014/10/thinking-of-making-switch-to-linux.html
+Version 10.0 - First deployment of FAST-CASST only supported on Ubuntu Linux
+Version 11.0 - Added extra vehicles
+Version 11.5 - Includes support for FASTPy (SIMONLY and SIL) on Windows
+Version 12.0 - Includes support for FAST++ on Windows (SIMONLY and SIL)
 
 For the Raspberry Pi, it is recommended to get the headless Emlid Raspbian version which is being shared freely on Google Drive in the event Emlid decides to remove their OS from the web: https://drive.google.com/file/d/1k8PEGZ0j2ep0suopJIldsSffiGqJmN30/view?usp=sharing
 
-Once your Raspberry Pi, laptop, virtual machine or Ubuntu machine is setup, you may proceed with the installation below. 
+Once your Raspberry Pi, Windows laptop, virtual machine or Ubuntu OS is setup, you may proceed with the installation below. 
 
 Note, on the Raspberry Pi you may have ardupilot turned on by default. To turn it off type
 
@@ -44,10 +41,6 @@ $ sudo systemctl disable arducopter
 Of course, first check and see what is running by typing
 
 $ sudo emlidtool ardupilot
-
-# VERSION 11.5
-
-Version 11.5 has FASTPy Support for Windows. So no need for a virtual machine or dual boot on Linux. Directions for FASTPy on Windows are below
 
 # Downloading Software (Linux)
 
@@ -117,7 +110,15 @@ For windows though you you just need numpy and pyserial to run the simulation be
 
 %run src/fast.py MODE MODEL
 
-# C++ Installation and Run 
+# C++ Installation and Run (Windows) 
+
+On Windows you need to use Powershell to install Windows Subsystem for Linux (WSL)
+
+C:\> wsl --install
+
+Once you have WSL installed and working you can then proceed with the C++ Installation and Run (Linux) as the commands are almost identical
+
+# C++ Installation and Run (Linux)
 
 C++ is the original version of the software but a Python version was created to ease the learning curve of FASTCASST. However, Python does not have all the same functionality that C++ does so if you want to run the entire simulation suite you need to run the C++ version. I recommend utilizing a resource to learn C++ like this one: "Learn C++ in 21 days" - http://101.lv/learn/C++/. 
 
@@ -206,7 +207,7 @@ $ python3 plot_simulation_data.py 5 x8
 
 will run and plot the FASTPy results for the x8 vehicle
 
-# Running in SIL Mode (FASTPy)
+# Running in SIL Mode (FASTPy) (Windows and Linux)
 
 In order to run FASTPy in SIL mode you need the following OpenGL modules
 
@@ -232,7 +233,7 @@ Where MODEL is the same as defined previously while USB_CTL_NAME is the name of 
 
 When running the simulation you simply type the letter 'q' to quit. You can use the mouse to zoom and rotate and the letter 'c' will change the viewing angle. 
 
-# Running in SIL Mode (FAST++)
+# Running in SIL Mode (FAST++) (Windows and Linux)
 
 To run SIL mode in C++ you must have a few extra packages. These include the OpenGL packages mentioned in the FASTPy setup 
 

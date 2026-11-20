@@ -32,26 +32,19 @@ class AeroPack:
         self.cbar = 0.2286  # Chord length (m)
         self.bws = 1.4859  # Wing span (m)
         self.S = self.cbar * self.bws
-        self.mass = 1.2364
         self.GEARTH = 9.80665
-        self.Tmax = self.mass * self.GEARTH
+        self.Tmax = 2.47/2.2*9.81
         self.max_speed = 30.0
         self.Rrotor = (9.5 / 12.0) / (2 * 3.28)
         self.AREA = math.pi * pow(self.Rrotor, 2.0)
         self.Voltage = 3.7 * 4
         self.KV = 950.0
         self.omegaRPM = self.KV * self.Voltage
-        self.omegarads = self.omegaRPM * 2.0 * math.pi / 180.0
-        self.Ixx = 0.23083252176875	#!Ixx(kg-m^2)
-        self.Iyy = 0.12326181467115 	#!Iyy(kg-m^2)
-        self.Izz = 0.261842767316082 #!Izz(kg-m^2)
-        self.spin_slope = self.omegarads 
+        self.omegarads = self.omegaRPM * 2.0 * math.pi / 60.0
+        self.spin_slope = self.omegarads/(1 - - 1) #OUTMAX - OUTMIN
         self.RHOSLSI = 1.225  # Sea level density standard
-        self.ct = self.Tmax / (
-            0.5 * self.RHOSLSI * self.AREA * pow(self.Rrotor * self.omegarads, 2.0)
-        )
+        self.ct = self.Tmax / (self.RHOSLSI * self.AREA * pow(self.Rrotor*self.omegarads, 2.0))
         self.cq = pow(self.ct, 3.0 / 2.0) / math.sqrt(2.0)
-
 
 class FORCES():
 
@@ -59,8 +52,6 @@ class FORCES():
         self.aeropack = AeroPack()
         self.mass = mass
         self.I = I
-        #self.mass = self.aeropack.mass
-        #self.I = np.asarray([[self.aeropack.Ixx, 0.0, 0.0], [0.0,self.aeropack.Iyy, 0.0], [0.0, 0.0, self.aeropack.Izz]])
 
     def ForceMoment(self,time,state,commands):
         """Calculates aerodynamic forces and body moments."""
@@ -102,9 +93,9 @@ class FORCES():
         delr = scalar_conv * delrUS
 
         # Compute Thrust
-        omega = self.aeropack.spin_slope * (mewt + 1)/2.0
+        omega = self.aeropack.spin_slope * (mewt + 1)
         #print(omega)
-        thrust = 0.5*self.aeropack.RHOSLSI*self.aeropack.AREA*pow(omega * self.aeropack.Rrotor, 2.0)*self.aeropack.ct
+        thrust = self.aeropack.RHOSLSI*self.aeropack.AREA*pow(omega*self.aeropack.Rrotor, 2.0)*self.aeropack.ct
         if vinf < self.aeropack.max_speed:
             thrust *= vinf / self.aeropack.max_speed
         else:

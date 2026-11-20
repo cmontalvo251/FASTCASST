@@ -198,8 +198,8 @@ void controller::HeadingLoop(MATLAB sense_matrix) {
   double ki = 0.0;*/
 
   
-  double heading = sense_matrix.get(6,1);
-  double yaw_rate = sense_matrix.get(12,1);
+  double heading = sense_matrix.get(6,1); // This is in degrees 
+  double yaw_rate = sense_matrix.get(12,1); //And this is deg/s
   //I think the wrap issue is here
   //printf("HEADING COMMAND = %lf \n",heading_command);
   double dheading = -delpsi(heading*PI/180.0,heading_command*PI/180.0)*180.0/PI;
@@ -286,7 +286,7 @@ void controller::InnerLoop(MATLAB sense_matrix) {
     double kpa = 10.0;
     double kda = 2.0;
     double kpe = 10.0; //Tested Meta 1 with 25 and 1.0 and kinda wobbly so lowering gains to 10 and 0.5 - 11/12/2023
-    double kde = 0.5; 
+    double kde = 2.0; 
     double kr = 1.0;
     
     //Apprentice APPRENTICE apprentice

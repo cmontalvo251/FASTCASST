@@ -150,11 +150,11 @@ class CONTROLLER():
     def heading_loop(self,rpy,g):
         """Heading control feedback loop."""
         kp = 0.4
-        kd = 0.25
+        kd = 0.1
         ki = 0.001
 
         heading = rpy[2] #In degrees
-        yaw_rate = g[2]
+        yaw_rate = g[2] #In degrees/s
 
         dheading = self.delpsi(heading * math.pi / 180.0, self.heading_command * math.pi / 180.0)*180.0/math.pi
         #print(heading,self.heading_command,dheading)
@@ -194,7 +194,7 @@ class CONTROLLER():
         kp = 120.0/500.0
         ki = 8.0/500.0
 
-        self.throttle = kp * velocityerror + ki * self.velocityint
+        self.throttle = kp * velocityerror + ki * self.velocityint - 1
         self.throttle = min(max(self.throttle,-1), 1)
         if -1 < self.throttle < 1:
             self.velocityint += self.elapsedTime * velocityerror
@@ -209,11 +209,12 @@ class CONTROLLER():
         kpa = 10.0/500.0
         kda = 2.0/500.0
         kpe = 10.0/500.0
-        kde = 0.5/500.0
-        kr = 1.0
+        kde = 2.0/500.0
 
         self.aileron = kpa * (roll - self.roll_command) + kda * roll_rate
         self.elevator = kpe * (pitch - self.pitch_command) + kde * pitch_rate
+
+        kr = 1.0
         self.rudder = kr * self.aileron
 
         #print(self.pitch_command,pitch,pitch_rate,self.elevator)

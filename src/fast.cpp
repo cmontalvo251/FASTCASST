@@ -31,13 +31,18 @@
 #  Andrew Wearran helped integrate the x8 controller into this SW from
 #  2024-2025
 
-#  Current development is being done by Carlos Montalvo to text the
-#  waypoint controller of the car - 2026
+#  Vinicius da Luz (mostly an undisclosed AI tool) fixed a GPS NaN bug and 
+#  enabled/validated the car's waypoint controller in SIL, then ported the 
+#  boat's GPS waypoint navigation to the car's Python controller - Summer 2026
 
-#  Vinicius da Luz (mostly an undisclosed AI tool) fixed a GPS NaN bug and enabled/validated the car's
-#  waypoint controller in SIL, then ported the boat's GPS waypoint
-#  navigation to the car's Python controller - Summer 2026
-#
+#  Carlos Montalvo was able to release Version 10.0 which includes SIMONLY
+#  and SIL modes for many vehicles. He then created Version 11.0 which added
+#  a few more vehicles - Fall 2026
+
+#  Darell Malone was able to run through the README and get SIMONLY and SIL
+#  mode working on a Windows computer using Windows Subsystem for Linux. This marks
+#  the release of Version 12.0 - Fall 2026
+
 ######################################################################*/
 
 ///The Main source files have no header files

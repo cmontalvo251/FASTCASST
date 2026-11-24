@@ -187,7 +187,7 @@ void controller::VelocityLoop(MATLAB sense_matrix) {
   //printf("------\n");
   //sense_matrix.disp();
   double u = sense_matrix.get(7,1);
-  velocity_command = 5;
+  velocity_command = 10;
   double velocityerror = velocity_command - u;
   //printf("Sense U = %lf \n",u);
   //printf("Velocity Error = %lf \n",velocityerror);

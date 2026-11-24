@@ -120,7 +120,7 @@ class CONTROLLER():
     def velocity_loop(self,gps_llh):
         """PI speed controller."""
         u = gps_llh.speed
-        self.velocity_command = 5.0
+        self.velocity_command = 10.0
         velocityerror = self.velocity_command - u
 
         kp = 60.0/500.0

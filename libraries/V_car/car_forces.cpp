@@ -46,7 +46,7 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   double r = state.get(13,1);
   
   //Calculate Forces
-  double force_max = 50;
+  double force_max = 85;
   double s = 0.007681;
   double dpwm = (motor-STICK_MID);
   //printf("dpwm = %lf \n",dpwm);

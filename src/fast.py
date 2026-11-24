@@ -9,8 +9,9 @@
 #   Tertiary Authors: Aramis Hoffmann (car.py)
 #   Kate Doiron (plane.py) Spring 2025
 #   Quaternary Author: Carlos Montalvo Fall 2025/Spring 2026/Fall 2026
-#   Quinary Author: Vinicius da Luz (mostly an undisclosed AI tool) Summer 2026 (car waypoint navigation)
-#   5th Author: Arian Sarhadi (Moving FASTPy to Windows) Fall 2026
+#   Quinary Author: Vinicius da Luz (mostly an undisclosed AI tool) Summer 2026
+#   5th Author: Arian Sarhadi (Moving FASTPy to Windows) Fall 2026 (Version 12.0)
+#   6th Author: Hatem Al-Saadi (Moved FASTPy to Mac) Fall 2026 (Version 12.0)
 #
 ################################################
 

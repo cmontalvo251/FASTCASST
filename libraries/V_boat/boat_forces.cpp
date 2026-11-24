@@ -54,7 +54,7 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   double EXT = 1.0;
   
   //Calculate Forces
-  double force_max = 50;
+  double force_max = 85; //to make boat go faster
   double s = 0.007681;
   double dpwm = ((motor1+motor2)/2.0-STICK_MID);
   force = copysign(1.0,dpwm)*force_max*(1-exp(-s*fabs(dpwm)));

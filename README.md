@@ -28,7 +28,7 @@ The UART port is used for Serial communication to a ground station computer. The
 Version 10.0 - First deployment of FAST-CASST only supported on Ubuntu Linux
 Version 11.0 - Added extra vehicles
 Version 11.5 - Includes support for FASTPy (SIMONLY and SIL) on Windows
-Version 12.0 - Includes support for FAST++ on Windows (SIMONLY and SIL)
+Version 12.0 - Includes support for FAST++ on Windows and FASTPy on Mac (SIMONLY and SIL)
 
 For the Raspberry Pi, it is recommended to get the headless Emlid Raspbian version which is being shared freely on Google Drive in the event Emlid decides to remove their OS from the web: https://drive.google.com/file/d/1k8PEGZ0j2ep0suopJIldsSffiGqJmN30/view?usp=sharing
 
@@ -42,7 +42,7 @@ Of course, first check and see what is running by typing
 
 $ sudo emlidtool ardupilot
 
-# Downloading Software (Linux)
+# Downloading Software (Linux and Mac)
 
 The software is a simple zip download from this repo or a git clone if you have git. On Ubuntu this involves two simple commands
 

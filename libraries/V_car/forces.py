@@ -6,14 +6,6 @@ class FORCES():
         ##Define mass properties
         self.mass = mass
         self.I = I
-        #self.mass = 1.0
-        #Ixx = 1.0
-        #Iyy = 2.0
-        #Izz = 3.0
-        #Ixz = 0.0
-        #Ixy = 0.0
-        #Iyz = 0.0
-        #self.I = np.asarray([[Ixx,Ixy,Ixz],[Ixy,Iyy,Iyz],[Ixz,Iyz,Izz]])
 
     def ForceMoment(self,time,state,commands):
         Force = np.asarray([0.,0.,0.])
@@ -37,7 +29,7 @@ class FORCES():
         r = state[12]
 
         # Calculate Forces
-        force_max = 50.0
+        force_max = 85.0 #to make vehicle go faster
         s = 0.007681
         dpwm = 500*(motor - 0)
         dsteer = 500*(steering - 0)

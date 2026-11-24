@@ -50,7 +50,7 @@ $ sudo apt install git
 
 $ git clone 'https://www.github.com/cmontalvo251/FASTCASST.git'
 
-Note on Ubuntu, it is always recommended to run an update in the event that your distribution has new software for C++ or Python
+On Mac you may already have git installed. If not follow online directions to install git in your Terminal app. Note on Ubuntu, it is always recommended to run an update in the event that your distribution has new software for C++ or Python.
 
 $ sudo apt update
 
@@ -60,23 +60,29 @@ Also, for the plotting and ground station routines, Python is required. As such,
 
 $ python3 --version 
 
-You must also install other modules in Python to get these routines to work. This requires pip3 which you can install with:
+You can also run many python functions using Spyder6.0 and has shown success on both Windows and Mac. You must also install other modules in Python to get these routines to work. This requires pip3 which you can install with:
 
 $ sudo apt install python3-pip
+
+On many installations of Mac python3 and pip3 are already installed. Again you can test this by running 
+
+$ pip3 --version
+
+as well as the python --version command shown above.
 
 # Downloading Software (Windows)
 
 Download git bash (git-scm.com) which creates its own terminal like window where you can run git commands.
 
-Then you can run the same git clone command as linux inside git bash
+Then you can run the same git clone command as Linux inside git bash
 
-To install python on your computer I recommend using Spyder6.0
+To install python on your computer I recommend using Spyder6.0 similar to on a Mac.
 
 # Input Deck
 
 For both the C++ and Python versions every vehicle contains their own set of input files in libraries/V_*/Input_Files/. Each vehicle has 3 files. The first is a Config.txt file used to change control variables, waypoints and different sensor rates. Simulation.txt is used to change all simulation parameters like simulation time, timestep and initial conditions. Simulation.txt is only used in SIMONLY and SIL modes while Config.txt is used for every mode. The final input file is Render.txt which is used only for SIL mode. All input files are heavily commented and should speak for themselves.
 
-# Python Installation and Run (Linux)
+# Python Installation and Run (Linux and Mac)
 
 The Python version of FASTCASST called FASTPy is in the src folder called fast.py. You can run that simply by running.
 
@@ -84,15 +90,15 @@ $ python3 src/fast.py MODE MODEL
 
 where MODE = SIMONLY, SIL, HIL or AUTO and MODEL = x8, airplane, boat, car or any other vehicle defined in the libraries/V_* folder. Adding a new vehicle is explained below in this README. The first time invoking that command will undoubtedly result in numerous module errors. The following modules required:
 
-$ pip3 install numpy
+$ pip3 install numpy pyserial
 
-$ pip3 install smbus
+On Linux you also need these modules but they are not necessary on Mac
 
-$ pip3 install spidev
+$ pip3 install smbus spidev
 
-$ pip3 install pyserial
+After installing those modules, the simulation will run with some standard out prints and 2 files will be created. Skip below for details on the data files and how to plot them. Note you can also run the software in Spyder6.0 using the command below
 
-After installing those modules, the simulation will run with some standard out prints and 2 files will be created. Skip below for details on the data files and how to plot them. 
+%run src/fast.py MODE MODEL
 
 # Python Installation and Run (Windows)
 
@@ -100,25 +106,23 @@ In order to run the simulation in Spyder you must install numerous packages usin
 
 C:\> python.exe -m ensurepip --default-pip
 
-Of course this is assuming you have python.exe in your current working directory. Once you have pip you can install packages just like linux by running
+Of course this is assuming you have python.exe in your current working directory. Once you have pip you can install packages just like Linux and Mac by running
 
-C:\> pip3 install numpy
+C:\> pip3 install numpy pyserial
 
-C:\> pip3 install pyserial
-
-For windows though you you just need numpy and pyserial to run the simulation because smbus and spidev are if flagged out and do not work on Windows. Once you have those modules installed you can run fast.py in Spyder using the command
+Once you have those modules installed you can run fast.py in Spyder using the command
 
 %run src/fast.py MODE MODEL
 
-# C++ Installation and Run (Windows) 
+# C++ Prep (Windows Only) 
 
-On Windows you need to use Powershell to install Windows Subsystem for Linux (WSL)
+On Windows you need to use Powershell to install Windows Subsystem for Linux (WSL). Open Powershell and run the following command.
 
 C:\> wsl --install
 
-Once you have WSL installed and working you can then proceed with the C++ Installation and Run (Linux) as the commands are almost identical
+Once you have WSL installed and working you can open WSL and proceed with the C++ Installation and Run below as the commands in WSL are almost identical to Linux.
 
-# C++ Installation and Run (Linux)
+# C++ Installation and Run (Linux and Windows(WSL))
 
 C++ is the original version of the software but a Python version was created to ease the learning curve of FASTCASST. However, Python does not have all the same functionality that C++ does so if you want to run the entire simulation suite you need to run the C++ version. I recommend utilizing a resource to learn C++ like this one: "Learn C++ in 21 days" - http://101.lv/learn/C++/. 
 
@@ -130,9 +134,7 @@ $ g++ --version
 
 and install them if you don't have them by running
 
-$ sudo apt install make
-
-$ sudo apt install g++
+$ sudo apt install make g++
 
 You also need the boost libraries to run multiple threads in C++
 
@@ -156,13 +158,21 @@ $ ./simonly.exe x8/
 
 Then you can proceed to plotting the data.
 
-# Adding PDF Support (Linux Only)
+# Adding PDF Support for Plotting (All Machines)
 
-The best way to include pdf.py in your working directory is to first clone the separate repo as shown below
+In order to plot data from FAST++ and FASTPy you need an extra PDF utility located in a separate repo. This pdf.py script must be in your working directory. The best way to include pdf.py in your working directory is to first clone the separate repo as shown below (replace the command below depending on Mac/Windows or Linux)
 
 $ git clone 'https::/www.github.com/cmontalvo251/Python.git'
 
-Then add that new Python/pdf folder to your PYTHONPATH environment variable. To do that open ~/.bashrc 
+Then copy or move the Python/pdf/pdf.py script into your FASTCASST working directory. You can also just download the script directly at this website 
+
+https::/www.github.com/cmontalvo251/Python.git/pdf/pdf.py
+
+and then download that file into your working directory. If you chose to download the whole repo into a separate folder you can add that new Python/pdf folder to your PYTHONPATH environment variables but this is different depending on the machine you're using. The directions for environment variables is shown below.
+
+# Adding PYTHONPATH Environment Variables (Linux)
+
+Open ~/.bashrc 
 
 $ nano ~/.bashrc
 
@@ -174,22 +184,19 @@ Then you need to have Ubuntu update your bashrc file
 
 $ source ~/.bashrc
 
-# Plotting Data from SIMONLY (Windows and Linux)
+# Plotting Data from SIMONLY (Windows, Mac and Linux)
 
-After running either FAST++ or FASTPy the simulation will create two files. The first file is located in 'data/0.csv' which contains the output of the sensors in the virtual environment while 'logs/0.csv' contains the output of the modeling routine. Think of the logs folder as the "truth data" while the data folder is the output of the sensors which may be perfect or polluted with sensor noise if you chose to turn on sensor noise in the Simulation.txt file. Note that the sensors still operate on the principle of the actual sensors which means speed from the GPS even in a perfect environment is still obtained through a derivative filter of position and thus not completely perfect. If you open either data or the logs file, you will see that the first row contains a header and says which state variable or parameter is being recorded. Changing the variables outputted requires editing the source code and is not covered in this README. 
+After running either FAST++ or FASTPy the simulation will create two files. The first file is located in 'data/0.csv' which contains the output of the sensors in the virtual environment while 'logs/0.csv' contains the output of the modeling routine. Think of the logs folder as the "truth data" while the data folder is the output of the sensors which may be perfect or polluted with sensor noise if you chose to turn on sensor noise in the Simulation.txt file. Note that the sensors still operate on the principle of the actual sensors which means speed from the GPS even in a perfect environment is still obtained through a derivative filter of position and thus not completely perfect. If you open either data or the logs file, you will see that the first row contains a header and says which state variable or parameter is being recorded as well as its units. Changing the variables outputted requires editing the source code and is not covered in this README. 
 
-To run the plotting script you need the following modules
+To run the plotting script you need one more extra module (Linux and Mac)
 
 $ pip3 install matplotlib
 
-on windows you run the same command but just in command prompt
+on Windows you run the same command but just in command prompt
 
 C:\> pip3 install matplotlib
 
-On Windows make sure you have pdf.py by simply navigating to this website below and manually copying pdf.py into your working directory.
-https::/www.github.com/cmontalvo251/Python.git/pdf/pdf.py
-
-Once you have those pre-requisites satisfied you can run the plotting script. Note the plotting script has the following format
+Once you have those pre-requisites satisfied you can run the plotting script. Note the plotting script has the following format (Linux and Mac)
 
 $ python3 plot_simulation_data.py # MODEL
 
@@ -197,7 +204,7 @@ on Windows in Spyder you run
 
 %run plot_simulation_data.py # MODEL
 
-Where the '#' is a number between 1-5 and MODEL is car, satellite, boat, or any other vehicle you have defined in the libraries/V_* folder. If you'd like to add a new vehicle you can read the section on how to add new vehicles. The numbers 1-3 apply only to FAST++. 1 will run 'make clean', compiled the code, run FAST++ and plot it. 2 will only compile, run and plot, 3 will only run and plot. The number 5 will run and plot FASTPy while the number 4 will just plot the data in the 'data' and 'logs' folders. The MODEL flag in the plotting script will tell the compiler which vehicle to compile the FAST++ routine. For example, 
+Where the '#' is a number between 1-5 and MODEL is car, satellite, boat, or any other vehicle you have defined in the libraries/V_* folder. If you'd like to add a new vehicle you can read the section on how to add new vehicles. The numbers 1-3 apply only to FAST++. 1 will run 'make clean', compiled the code, run FAST++ and plot it. 2 will only compile, run and plot, 3 will only run and plot. The number 5 will run and plot FASTPy while the number 4 will just plot the data in the 'data' and 'logs' folders. The MODEL flag in the plotting script will tell the compiler which vehicle to compile the FAST++ routine. For example on Linux and Mac, 
 
 $ python3 plot_simulation_data.py 2 x8
 
@@ -205,9 +212,9 @@ will compile, run and plot the x8 simulation and sensor data for FAST++ while
 
 $ python3 plot_simulation_data.py 5 x8
 
-will run and plot the FASTPy results for the x8 vehicle
+will run and plot the FASTPy results for the x8 vehicle. Again, the command above is for Linux and Mac but the syntax is similar for running on Spyder for Windows or Mac if you decide to run Spyder on a Mac.
 
-# Running in SIL Mode (FASTPy) (Windows and Linux)
+# Running in SIL Mode (FASTPy) (Windows, Linux, Mac)
 
 In order to run FASTPy in SIL mode you need the following OpenGL modules
 
@@ -217,15 +224,15 @@ or on windows you run
 
 C:\> pip3 install PyOpenGL PyOpenGL_accelerate
 
-On Linux you also need the freeglut packages from synaptic
+Remember you must run this in WSL. On Linux you also need the freeglut packages from synaptic
 
 $ sudo apt install freeglut3 freeglut3-dev
 
-When running FASTPy in SIL mode you must add the USB controller name to the input arguments like the command below
+When running FASTPy in SIL mode you must add the USB controller name to the input arguments like the command below for Linux and Mac
 
 $ python3 src/fast.py SIL MODEL USB_CTL_NAME
 
-or on windows in Spyder you would run
+or on Windows in Spyder you would run
 
 %run src/fast.py SIL MODEL USB_CTL_NAME
 
@@ -271,23 +278,25 @@ $ ./sil.exe x8/
 
 There is no need to give the simulation the XBOX flag as an input as it is now hardcoded using the RX flag during compilation. 
 
-# Initiating the Ground Station (Windows and Linux)
+# Initiating the Ground Station (Windows, Linux and Mac)
 
 The ground station is located in the ground_station folder and invoked by running 
 
-$ python3 ground_station.py MODE
+$ python3 ground_station/ground_station.py MODE
 
-or on Windows
+on Linux and Mac or on Windows you run
 
 C:\> ground_station/ground_station.py MODE
 
 where MODE is either SIL or HIL. The ground station isn't fast enough to operate in SIMONLY mode and is not necessary. For SIL mode the ground station reads a csv file created by both FASTPy and FAST++. In HIL mode you must use wireless radios to communicate via serial from your ground station to your microcontroller and vice versa. When running in AUTO mode you can simply run the ground station in HIL mode as the hardware for HIL and AUTO mode are the same. The modules needed for the ground station are the same as those needed for FASTPy and the plotting script. Simply going through those setups will gaurantee you have everthing you need to run the ground station. To close the ground station simply type the letter q while the ground station is active. Be sure to close the ground station before closing the simulation or the ground station will hang.
 
-Note on Windows you need to edit the IPython Console by going to Tools>Preferences>IPython Console>Plotting>Backend>Qt
+Note if running this ground station in Spyder6.0 you need to edit the IPython Console by going to Tools>Preferences>IPython Console>Plotting>Backend>Qt
 
 and you need PyQt
 
 C:\> pip3 install pyqt6
+
+On Mac you can just run the ground station from Terminal like Linux.
 
 # How to Add a New Controller for SIL
 

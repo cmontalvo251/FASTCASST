@@ -7,11 +7,14 @@ import numpy as np
 
 # Cross-platform PyOpenGL platform backend selection:
 # Use 'win32' on Windows, 'x11' on Linux/Wayland (fixes Linux/Wayland context errors)
+# and darwin on Mac
 if sys.platform.startswith("win") or os.name == "nt":
     os.environ["PYOPENGL_PLATFORM"] = "win32"
+elif sys.platform == "darwin":
+    # MACOS FIX: Use Apple's native Darwin OpenGL backend instead of Linux X11/GLX
+    os.environ["PYOPENGL_PLATFORM"] = "darwin"
 else:
     # Force PyOpenGL to use the X11 platform backend (fixes Linux/Wayland context errors)
-    # Will need to change this if you are using a different platform (e.g., Windows or macOS)
     os.environ["PYOPENGL_PLATFORM"] = "x11"
 
 try:

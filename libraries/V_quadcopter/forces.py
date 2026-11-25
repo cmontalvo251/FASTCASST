@@ -31,9 +31,8 @@ class FORCES():
         self.cq = pow(self.ct, 3.0 / 2.0) / math.sqrt(2.0)
 
         # Distance from CG to rotor
-        self.rx = 0.10115
-        self.ry = 0.10115
-        self.rz = 0.0508
+        self.rx = 0.133
+        self.ry = 0.214
         
         self.length = 1.0  # Used in Dryden model
 

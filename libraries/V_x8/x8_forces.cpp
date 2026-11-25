@@ -70,8 +70,14 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   //printf("thrust = %lf \n",thrust);
   double u = state.get(8,1);
   double v = state.get(9,1);
-  FB.set(1,1,-thrust*((A1C/eta+dx)*u-A1S*v));
-  FB.set(2,1,-thrust*((A1S/eta)*u+(A1C/eta+dy)*v));
+  double fxdrag = 0;
+  double fydrag = 0;
+  if (eta != 0) {
+    fxdrag = -thrust*((A1C/eta+dx)*u-A1S*v);
+    fydrag = -thrust*((A1S/eta)*u+(A1C/eta+dy)*v);
+  }
+  FB.set(1,1,fxdrag);
+  FB.set(2,1,fydrag);
   FB.set(3,1,-thrust);
 
   //Torque is a bit more complex

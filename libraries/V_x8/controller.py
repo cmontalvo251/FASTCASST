@@ -274,10 +274,10 @@ class CONTROLLER():
         pitch_rate = g[1]
         yaw_rate = g[2]
 
-        kp = 10.0 / 500.0
-        kd = 2.0 / 500.0
-        kpyaw = 10.0 / 100.0
-        kdyaw = 5.0 / 100.0
+        kp = 1.0 / 500.0
+        kd = 0.2 / 500.0
+        kpyaw = 1.0 / 100.0
+        kdyaw = 0.5 / 100.0
 
         droll = kp * (roll - self.roll_command) + kd * roll_rate
         droll = min(max(droll, -0.5), 0.5)

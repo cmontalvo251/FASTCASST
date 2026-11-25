@@ -73,8 +73,13 @@ class FORCES():
         dy = 0.01
         u = state[7]
         v = state[8]
-        Force[0] = -thrust*((A1C/self.eta+dx)*u-A1S*v);
-        Force[1] = -thrust*((A1S/self.eta)*u+(A1C/self.eta+dy)*v);
+        fxdrag = 0
+        fydrag = 0
+        if self.eta != 0:
+            fxdrag = -thrust*((A1C/self.eta+dx)*u-A1S*v);
+            fydrag = -thrust*((A1S/self.eta)*u+(A1C/self.eta+dy)*v);
+        Force[0] = fxdrag
+        Force[1] = fydrag
         Force[2] = -thrust
 
         # Extract individual motor forces (Converting 1-based C++ MATLAB indexing to 0-based Python indices)

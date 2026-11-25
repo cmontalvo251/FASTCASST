@@ -332,10 +332,10 @@ void controller::AttitudeLoop(MATLAB sense_matrix) {
   double yaw_rate = sense_matrix.get(12,1); //Check IMU.cpp to see for HIL
   //state.disp();
   //printf("PQR Rate in Controller %lf %lf %lf \n",roll_rate,pitch_rate,yaw_rate);
-  double kp = 10.0;
-  double kd = 2.0;
-  double kpyaw = 10.0;
-  double kdyaw = 5.0;
+  double kp = 1.0;
+  double kd = 0.2;
+  double kpyaw = 1.0;
+  double kdyaw = 0.5;
   //roll_command = 20;
   double droll = kp*(roll-roll_command) + kd*(roll_rate);
   droll = CONSTRAIN(droll,-500,500);

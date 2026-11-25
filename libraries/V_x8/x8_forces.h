@@ -21,7 +21,8 @@ class forces {
  private:
   //You can put any private functions or vars in here that you like but it 
   //must adhere to the standards below
-  double Rrotor,cq,ct,kt,rx,ry,rz,AREA,spin_slope;
+  double Rrotor,cq,ct,kt,rx,ry,rz,AREA,spin_slope,eta;
+  double dx=0.01,dy=0.01,A1C=0.01,A1S=0.01;
   MATLAB thrust_motors,torque_motors;
   void compute_thrust_and_torque(MATLAB pwm_out);
   int NUMMOTORS = 8;

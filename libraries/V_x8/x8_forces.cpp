@@ -34,8 +34,10 @@ forces::forces() {
 }
 
 void forces::compute_thrust_and_torque(MATLAB pwm_out) {
+  eta = 0;
   for (int i = 1;i<=NUMMOTORS;i++) {
     double omega = spin_slope*(pwm_out.get(i,1) - OUTMIN);
+    eta+=omega*Rrotor;
     double thrust = RHOSLSI*AREA*pow(omega*Rrotor,2.0)*ct;
     double torque = RHOSLSI*AREA*pow(omega*Rrotor,2.0)*Rrotor*cq;
     thrust_motors.set(i,1,thrust);
@@ -63,6 +65,10 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   //Thrust on the body is simply the total thrust
   double thrust = thrust_motors.sum();
   //printf("thrust = %lf \n",thrust);
+  double u = state.get(7,1);
+  double v = state.get(8,1);
+  FB.set(1,1,-thrust*((A1C/eta+dx)*u-A1S*v));
+  FB.set(2,1,-thrust*((A1S/eta)*u+(A1C/eta+dy)*v));
   FB.set(3,1,-thrust);
 
   //Torque is a bit more complex

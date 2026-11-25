@@ -20,11 +20,13 @@ class FORCES():
         # Quadcopter Aerodynamic Parameters
         self.Rrotor = (9.0/ 12.0) / (2.0 * 3.28)
         self.AREA = self.PI * pow(self.Rrotor, 2.0)
+        self.Ir = 8.8e-5
         
         #Spin Slope
         self.eta = 0
         omegarads = 1250.0 
         self.spin_slope = omegarads / 2.0
+        self.OmegaR = 0
 
         # Compute ct and cq
         self.ct = 0.0071
@@ -39,9 +41,13 @@ class FORCES():
     def compute_thrust_and_torque(self,commands):
         #print(commands)
         self.eta = 0 
+        pm = 1
+        self.OmegaR = 0
         for i in range(self.NUMMOTORS):
             omega = self.spin_slope * (commands[i] + 1)
             self.eta += omega*self.Rrotor
+            self.OmegaR += omega*pm
+            pm*=-1
             thrust = self.RHOSLSI * self.AREA * pow(omega * self.Rrotor, 2.0) * self.ct
             torque = self.RHOSLSI * self.AREA * pow(omega * self.Rrotor, 2.0) * self.Rrotor * self.cq
             self.thrust_motors[i] = thrust
@@ -92,7 +98,9 @@ class FORCES():
         pitch_torque_bottom = (motor_upper_left_bottom + motor_upper_right_bottom) * self.rx - (motor_lower_right_bottom + motor_lower_left_bottom) * self.rx
 
         # Set total roll and pitch moments
-        Moment[0] = roll_torque_bottom
-        Moment[1] = pitch_torque_bottom
+        p = state[10]
+        q = state[11]
+        Moment[0] = roll_torque_bottom + self.Ir*self.OmegaR*q
+        Moment[1] = pitch_torque_bottom - self.Ir*self.OmegaR*p
 
         return Force,Moment

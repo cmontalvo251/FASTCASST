@@ -34,9 +34,13 @@ forces::forces() {
 
 void forces::compute_thrust_and_torque(MATLAB pwm_out) {
   eta = 0;
+  int pm = 1;
+  OmegaR = 0;
   for (int i = 1;i<=NUMMOTORS;i++) {
     double omega = spin_slope*(pwm_out.get(i,1) - OUTMIN);
     eta+=omega*Rrotor;
+    OmegaR += pm*omega;
+    pm*=-1;
     double thrust = RHOSLSI*AREA*pow(omega*Rrotor,2.0)*ct;
     double torque = RHOSLSI*AREA*pow(omega*Rrotor,2.0)*Rrotor*cq;
     thrust_motors.set(i,1,thrust);
@@ -132,8 +136,10 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   double roll_torque_bottom = (motor_upper_left_bottom+motor_lower_left_bottom)*ry - (motor_upper_right_bottom+motor_lower_right_bottom)*ry;
   double pitch_torque_bottom = (motor_upper_left_bottom+motor_upper_right_bottom)*rx - (motor_lower_right_bottom+motor_lower_left_bottom)*rx;
   
-  MB.set(1,1,roll_torque_top+roll_torque_bottom);
-  MB.set(2,1,pitch_torque_top+pitch_torque_bottom);
+  double p = state.get(11,1);
+  double q = state.get(12,1);
+  MB.set(1,1,roll_torque_top+roll_torque_bottom + Ir*OmegaR*q);
+  MB.set(2,1,pitch_torque_top+pitch_torque_bottom - Ir*OmegaR*p);
 
   //MB.disp();
   //FB.disp();

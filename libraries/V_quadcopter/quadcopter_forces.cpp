@@ -18,20 +18,6 @@ forces::forces() {
   //Spin slope
   double omegarads = 1250;
   spin_slope = omegarads/(STICK_MAX-STICK_MIN);
-  //printf("omegarads = %lf \n",omegarads);
-  
-  //These come from data sheets
-  //at a signal of
-  //double pwm_datapt = STICK_MID;
-  //thrust is
-  //double Tdatapt = 0.735*GEARTH/4.0; //Newtons to kg to lbf
-  	
-  //Compute Kt
-  //double dpwm = pwm_datapt - STICK_MIN;
-  //kt = Tdatapt/(dpwm*dpwm);
-  
-  //Angular Velocity computation
-  //double a = (omegaRPMdatapt*2*PI/60.0)/dpwm;
   
   //Compute ct and cq
   ct = 0.0071;
@@ -46,8 +32,10 @@ forces::forces() {
 }
 
 void forces::compute_thrust_and_torque(MATLAB pwm_out) {
+  eta = 0;
   for (int i = 1;i<=NUMMOTORS;i++) {
     double omega = spin_slope*(pwm_out.get(i,1) - OUTMIN);
+    eta += omega*Rrotor;
     double thrust = RHOSLSI*AREA*pow(omega*Rrotor,2.0)*ct;
     double torque = RHOSLSI*AREA*pow(omega*Rrotor,2.0)*Rrotor*cq;
     thrust_motors.set(i,1,thrust);
@@ -75,6 +63,10 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   //Thrust on the body is simply the total thrust
   double thrust = thrust_motors.sum();
   //printf("thrust = %lf \n",thrust);
+  double u = state.get(8,1);
+  double v = state.get(9,1);
+  FB.set(1,1,-thrust*((A1C/eta+dx)*u-A1S*v));
+  FB.set(2,1,-thrust*((A1S/eta)*u+(A1C/eta+dy)*v));
   FB.set(3,1,-thrust);
 
   //Torque is a bit more complex

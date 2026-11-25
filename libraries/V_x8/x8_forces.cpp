@@ -65,8 +65,8 @@ void forces::ForceMoment(double time,MATLAB state,MATLAB statedot,MATLAB pwm_out
   //Thrust on the body is simply the total thrust
   double thrust = thrust_motors.sum();
   //printf("thrust = %lf \n",thrust);
-  double u = state.get(7,1);
-  double v = state.get(8,1);
+  double u = state.get(8,1);
+  double v = state.get(9,1);
   FB.set(1,1,-thrust*((A1C/eta+dx)*u-A1S*v));
   FB.set(2,1,-thrust*((A1S/eta)*u+(A1C/eta+dy)*v));
   FB.set(3,1,-thrust);

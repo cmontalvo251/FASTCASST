@@ -24,6 +24,7 @@ class FORCES():
         ##Spin slope
         omegarads = 3565.0
         self.spin_slope = omegarads / 2.0
+        self.eta = 0
 
         # Compute ct and cq
         self.ct = 0.011321
@@ -38,8 +39,10 @@ class FORCES():
 
     def compute_thrust_and_torque(self,commands):
         #print(commands)
+        self.eta = 0
         for i in range(self.NUMMOTORS):
             omega = self.spin_slope * (commands[i] + 1)
+            self.eta += omega*self.Rrotor
             thrust = self.RHOSLSI * self.AREA * pow(omega * self.Rrotor, 2.0) * self.ct
             torque = self.RHOSLSI * self.AREA * pow(omega * self.Rrotor, 2.0) * self.Rrotor * self.cq
             self.thrust_motors[i] = thrust
@@ -59,6 +62,14 @@ class FORCES():
 
         # Thrust on the body is simply the total thrust (applied along the negative z-axis in body frame)
         thrust = np.sum(self.thrust_motors)
+        A1C = 0.01
+        dx = 0.01
+        A1S = 0.01
+        dy = 0.01
+        u = state[7]
+        v = state[8]
+        Force[0] = -thrust*((A1C/self.eta+dx)*u-A1S*v);
+        Force[1] = -thrust*((A1S/self.eta)*u+(A1C/self.eta+dy)*v);
         Force[2] = -thrust
 
         # Extract individual motor forces (Converting 1-based C++ MATLAB indexing to 0-based Python indices)

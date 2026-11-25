@@ -11,18 +11,12 @@ forces::forces() {
   torque_motors.zeros(NUMMOTORS,1,"Torque Motors");
 
   //Quadcopter Aerodynamic Parameters
-  double thrust_max = 0.4*GEARTH; //kilograms * gravity
   //Rotor Size
-  Rrotor = (9.5/12.0)/(2*3.28); //9.5 inch props to meters
+  Rrotor = (9.0/12.0)/(2*3.28); //9.5 inch props to meters
   //Area
   AREA = PI*pow(Rrotor,2.0);  //m^2
-  //Battery Size
-  double Voltage = 3.7*4; //4 Cell
-  //KV Rating
-  double KV = 950.0;
-  //angular velocity is
-  double omegaRPM = KV*Voltage;
-  double omegarads = omegaRPM*2.0*PI/180.0;
+  //Spin slope
+  double omegarads = 1250;
   spin_slope = omegarads/(STICK_MAX-STICK_MIN);
   //printf("omegarads = %lf \n",omegarads);
   
@@ -40,7 +34,7 @@ forces::forces() {
   //double a = (omegaRPMdatapt*2*PI/60.0)/dpwm;
   
   //Compute ct and cq
-  ct = thrust_max/(0.5*RHOSLSI*AREA*pow(Rrotor*omegarads,2.0)); //.0335
+  ct = 0.0071;
   cq = pow(ct,3.0/2.0)/sqrt(2.0); 
   //printf("CT/CQ = %lf/%lf \n",ct,cq);
   //PAUSE();
@@ -54,8 +48,8 @@ forces::forces() {
 void forces::compute_thrust_and_torque(MATLAB pwm_out) {
   for (int i = 1;i<=NUMMOTORS;i++) {
     double omega = spin_slope*(pwm_out.get(i,1) - OUTMIN);
-    double thrust = 0.5*RHOSLSI*AREA*pow(omega*Rrotor,2.0)*ct;
-    double torque = 0.5*RHOSLSI*AREA*pow(omega*Rrotor,2.0)*Rrotor*cq;
+    double thrust = RHOSLSI*AREA*pow(omega*Rrotor,2.0)*ct;
+    double torque = RHOSLSI*AREA*pow(omega*Rrotor,2.0)*Rrotor*cq;
     thrust_motors.set(i,1,thrust);
     torque_motors.set(i,1,torque);
   }

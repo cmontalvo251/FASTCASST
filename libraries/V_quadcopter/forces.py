@@ -12,30 +12,21 @@ class FORCES():
         #Math and inertia
         self.mass = mass
         self.I = I
-        #self.mass = 0.735 #!mass  (kg)
-        #Ixx = 0.0146 #!Ixx    (kg-m^2)
-        #Iyy = 0.0146 #!Iyy    (kg-m^2)
-        #Izz = 0.0285 #!Izz     (kg-m^2)
-        #self.I = np.asarray([[Ixx,0,0],[0,Iyy,0],[0,0,Izz]])
         
         # Motor arrays
         self.thrust_motors = np.zeros(self.NUMMOTORS)
         self.torque_motors = np.zeros(self.NUMMOTORS)
 
         # Quadcopter Aerodynamic Parameters
-        thrust_max = 0.4 * self.GEARTH
-        self.Rrotor = (9.5 / 12.0) / (2.0 * 3.28)
+        self.Rrotor = (9.0/ 12.0) / (2.0 * 3.28)
         self.AREA = self.PI * pow(self.Rrotor, 2.0)
         
-        Voltage = 3.7 * 4
-        KV = 950.0
-        omegaRPM = KV * Voltage
-        # Following C++ implementation exactly: omegaRPM * 2.0 * PI / 180.0
-        omegarads = omegaRPM * 2.0 * self.PI / 180.0
+        #Spin Slope
+        omegarads = 1250.0 
         self.spin_slope = omegarads / 2.0
 
         # Compute ct and cq
-        self.ct = thrust_max / (0.5 * self.RHOSLSI * self.AREA * pow(self.Rrotor * omegarads, 2.0))
+        self.ct = 0.0071
         self.cq = pow(self.ct, 3.0 / 2.0) / math.sqrt(2.0)
 
         # Distance from CG to rotor
@@ -49,8 +40,8 @@ class FORCES():
         #print(commands)
         for i in range(self.NUMMOTORS):
             omega = self.spin_slope * (commands[i] + 1)
-            thrust = 0.5 * self.RHOSLSI * self.AREA * pow(omega * self.Rrotor, 2.0) * self.ct
-            torque = 0.5 * self.RHOSLSI * self.AREA * pow(omega * self.Rrotor, 2.0) * self.Rrotor * self.cq
+            thrust = self.RHOSLSI * self.AREA * pow(omega * self.Rrotor, 2.0) * self.ct
+            torque = self.RHOSLSI * self.AREA * pow(omega * self.Rrotor, 2.0) * self.Rrotor * self.cq
             self.thrust_motors[i] = thrust
             self.torque_motors[i] = torque
         #print(self.thrust_motors)

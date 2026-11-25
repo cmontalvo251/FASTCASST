@@ -280,8 +280,8 @@ void controller::WaypointLoop(MATLAB sense_matrix,double currentTime) {
   if (PHASE == 1) {
     // INCREASE SPEED TOWARDS TARGET!!!
     // Velocity PID
-    double kp = 20.0 / 200.0;
-    double kd = 100.0 / 200.0;
+    double kp = 0.1;
+    double kd = 0.5;
     velocity_command_X = kp * distanceBodyX + kd * distance_dot_X;
     velocity_command_Y = kp * distanceBodyY + kd * distance_dot_Y;
     double topSpeed = 10.0;
